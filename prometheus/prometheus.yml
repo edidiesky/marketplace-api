@@ -1,0 +1,82 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          group: 'prometheus'
+
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+        labels:
+          group: 'grafana'
+
+  - job_name: 'api_gateway'
+    static_configs:
+      - targets: ['api_gateway:8000']
+        labels:
+          group: 'api_gateway'
+
+  - job_name: 'auth'
+    static_configs:
+      - targets: ['auth:4001']
+        labels:
+          group: 'auth'
+
+  - job_name: 'reporting'
+    static_configs:
+      - targets: ['reporting:4002']
+        labels:
+          group: 'reporting'
+
+  - job_name: 'filings'
+    static_configs:
+      - targets: ['filings:4003']
+        labels:
+          group: 'filings'
+
+  - job_name: 'tcc'
+    static_configs:
+      - targets: ['tcc:4010']
+        labels:
+          group: 'tcc'
+
+  - job_name: 'payment'
+    static_configs:
+      - targets: ['payment:4004']
+        labels:
+          group: 'payment'
+
+  - job_name: 'remittance'
+    static_configs:
+      - targets: ['remittance:4005']
+        labels:
+          group: 'remittance'
+
+  - job_name: 'notification'
+    static_configs:
+      - targets: ['notification:4006']
+        labels:
+          group: 'notification'
+
+  - job_name: 'assessment'
+    static_configs:
+      - targets: ['assessment:4009']
+        labels:
+          group: 'assessment'
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15672']
+        labels:
+          group: 'rabbitmq'
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+        labels:
+          group: 'redis'

@@ -21,6 +21,7 @@ SELLEASI-ARCHITECTURE/
 ├── stores # Manages store profiles and configurations per tenant.
 ├── tenant # Handles multi-tenancy, allowing students to create and manage isolated stores.
 ├── prometheus # Monitoring and metrics collection.
+├── etc # Promtail and Loki configuration for metrics scraping and querying of Logs via Loki using Grafana
 ├── architecture # Various High level diagram depicting my thinking and also some deep dives
 ├── redis # Configurations for each of the Redis cluster participating Nodes (Master and both slave config)
 ├── .gitignore
