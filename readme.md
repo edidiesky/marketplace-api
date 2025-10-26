@@ -1,6 +1,6 @@
 # Read This First, bro!
 
-SellEasi API is a multi-tenant e-commerce platform designed specifically for students to sell products of their choice. It enables users to create and manage their own tenant stores, handle inventory, process payments, and facilitate sales in a scalable, secure manner. The platform is built using a microservices architecture to ensure modularity, fault tolerance, and ease of scaling each services independently.
+SellEasi API is a multi-tenant e-commerce platform designed specifically for students to sell products of their choice. It enables users to create and manage their own tenant stores, handle inventory, process payments, and facilitate sales in a scalable, secure manner. The platform is built using a microservices architecture to ensure modularity, fault tolerance, and ease of scaling each services independently. It also features detailed Monitoring of Logs and service route unique metrics using Prometheus, Loki, and Promtail (Latency, throughput, error rates, and utilization) via Grafana unique Dashboard
 
 ![Project Screenshot](/architecture/Onboarding%20workflow.png)
 ![Project Screenshot](/architecture/Payment%20Workflow.png)
@@ -100,7 +100,7 @@ In a failure scenario, services publish rollback events to undo partial changes,
 ### Prerequisites
 
 1. Docker and docker-compose installed.
-2. Node.js/Python/Go (depending on service implementations—assume Go for services).
+2. Node.js runtime available on yourn Local machine.
 3. Kafka and Redis clusters (configured in docker-compose.dev.yml).
 4. Environment variables: Set API keys for payments, database connections, etc., in .env files per service.
 
