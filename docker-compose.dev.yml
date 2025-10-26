@@ -312,10 +312,8 @@ services:
     networks:
       - app-tier
     volumes:
-      # Mount Docker socket to read container logs
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./etc/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
-      # Mount log directories
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./audit:/app/audit
       - ./products:/app/products

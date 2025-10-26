@@ -580,7 +580,6 @@ export const seedSuperAdmin = asyncHandler(
 
       await session.commitTransaction();
       logger.info("Super admin seeded successfully", {
-        tin: superAdmin.tin,
         roleCode: superAdminRole.roleCode,
         service: "auth_service",
         timestamp: new Date().toISOString(),

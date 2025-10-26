@@ -18,14 +18,10 @@ import {
   RevokeUserRole,
   UpdateUserRole,
   CreateRole,
-  seedSuperAdmin
+  seedSuperAdmin,
 } from "../controllers/role.controller";
-import { sendUserMessage } from "../messaging/producer";
+// import { sendUserMessage } from "../messaging/producer";
 const router = Router();
-
-// ROLE MANAGEMENT ROUTES
-
-// Seed roles
 
 router.post(
   "/seed",
@@ -33,21 +29,13 @@ router.post(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
   (req: Request, res: Response, next: NextFunction): void => {
     void seedSuperAdmin(req, res, next);
   }
 );
-
 
 // Assign role to user
 router.post(
@@ -56,18 +44,9 @@ router.post(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
-  // requirePermissions([Permission.MANAGE_ROLES]),
-  // requireMinimumRoleLevel(RoleLevel.DEPUTY_DIRECTOR),
   validateRequest(createRoleSchema),
   (req: Request, res: Response, next: NextFunction): void => {
     void CreateRole(req, res, next);
@@ -81,14 +60,7 @@ router.post(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
   requirePermissions([Permission.MANAGE_ROLES]),
@@ -106,14 +78,7 @@ router.delete(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
   requirePermissions([Permission.MANAGE_ROLES]),
@@ -142,14 +107,7 @@ router.get(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
   requirePermissions([Permission.READ_USER]),
@@ -165,14 +123,7 @@ router.get(
     windowMs: 5 * 60 * 1000,
     max: 5,
     prefix: "auth",
-    onLimitReached: (req) => {
-      sendUserMessage("RATE_LIMIT_ALERT", {
-        userId: req.user?.userId,
-        ip: req.ip,
-        path: req.path,
-        timestamp: new Date(),
-      });
-    },
+    onLimitReached: (req) => {},
   }),
   authenticate,
   requirePermissions([Permission.MANAGE_ROLES]),

@@ -2,7 +2,9 @@
 
 SellEasi API is a multi-tenant e-commerce platform designed specifically for students to sell products of their choice. It enables users to create and manage their own tenant stores, handle inventory, process payments, and facilitate sales in a scalable, secure manner. The platform is built using a microservices architecture to ensure modularity, fault tolerance, and ease of scaling each services independently.
 
-![Project Screenshot](/workflow.png)
+![Project Screenshot](/architecture/Onboarding%20workflow.png)
+![Project Screenshot](/architecture/Payment%20Workflow.png)
+![Audit Workflow](/architecture/Payment_Audit_Workflow.png)
 
 # Repo Map
 ```bash
@@ -71,7 +73,7 @@ SELLEASI-ARCHITECTURE/
 ## Features
 
 1. Multi-tenant store creation and management.
-2. Secure authentication with JWT.
+2. Secure authentication with JWT and Role Based Access Control.
 3. Comprehensive product catalog with reviews.
 4. Real-time inventory tracking.
 5. Seamless payment processing.

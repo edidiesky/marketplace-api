@@ -7,9 +7,9 @@ export function setupSwagger(app: Express) {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'Auth Service API',
+        title: 'Product Service API',
         version: '1.0.0',
-        description: 'API documentation for Auth Service',
+        description: 'API documentation for Product Service',
       },
     },
     apis: ['./src/routes/*.ts'], // Adjust as needed
