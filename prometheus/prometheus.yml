@@ -3,80 +3,111 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["localhost:9090"]
         labels:
-          group: 'prometheus'
+          group: "prometheus"
 
-  - job_name: 'grafana'
+  - job_name: "grafana"
     static_configs:
-      - targets: ['grafana:3000']
+      - targets: ["grafana:3000"]
         labels:
-          group: 'grafana'
+          group: "grafana"
 
-  - job_name: 'api_gateway'
+  - job_name: "api_gateway"
     static_configs:
-      - targets: ['api_gateway:8000']
+      - targets: ["api_gateway:8000"]
         labels:
-          group: 'api_gateway'
+          group: "api_gateway"
 
-  - job_name: 'auth'
+  - job_name: "authentication"
     static_configs:
-      - targets: ['auth:4001']
+      - targets: ["authentication:4001"]
         labels:
-          group: 'auth'
+          group: "authentication"
 
-  - job_name: 'reporting'
+  - job_name: "audit"
     static_configs:
-      - targets: ['reporting:4002']
+      - targets: ["audit:4002"]
         labels:
-          group: 'reporting'
+          group: "audit"
 
-  - job_name: 'filings'
+  - job_name: "products"
     static_configs:
-      - targets: ['filings:4003']
+      - targets: ["products:4003"]
         labels:
-          group: 'filings'
+          group: "products"
 
-  - job_name: 'tcc'
+  - job_name: "payment"
     static_configs:
-      - targets: ['tcc:4010']
+      - targets: ["payment:4004"]
         labels:
-          group: 'tcc'
+          group: "payment"
 
-  - job_name: 'payment'
+  - job_name: "categories"
     static_configs:
-      - targets: ['payment:4004']
+      - targets: ["categories:4005"]
         labels:
-          group: 'payment'
+          group: "categories"
 
-  - job_name: 'remittance'
+  - job_name: "stores"
     static_configs:
-      - targets: ['remittance:4005']
+      - targets: ["stores:4007"]
         labels:
-          group: 'remittance'
+          group: "stores"
 
-  - job_name: 'notification'
+  - job_name: "notification"
     static_configs:
-      - targets: ['notification:4006']
+      - targets: ["notification:4006"]
         labels:
-          group: 'notification'
+          group: "notification"
 
-  - job_name: 'assessment'
+  - job_name: "cart"
     static_configs:
-      - targets: ['assessment:4009']
+      - targets: ["cart:4008"]
         labels:
-          group: 'assessment'
+          group: "cart"
 
-  - job_name: 'rabbitmq'
+  - job_name: "tenant"
     static_configs:
-      - targets: ['rabbitmq:15672']
+      - targets: ["tenant:4010"]
         labels:
-          group: 'rabbitmq'
+          group: "tenant"
 
-  - job_name: 'redis'
+  - job_name: "review"
     static_configs:
-      - targets: ['redis:6379']
+      - targets: ["review:4011"]
         labels:
-          group: 'redis'
+          group: "review"
+
+  - job_name: "orders"
+    static_configs:
+      - targets: ["orders:4012"]
+        labels:
+          group: "orders"
+
+  - job_name: "color"
+    static_configs:
+      - targets: ["color:4013"]
+        labels:
+          group: "color"
+
+
+  - job_name: "view"
+    static_configs:
+      - targets: ["view:4014"]
+        labels:
+          group: "view"
+
+  - job_name: "rabbitmq"
+    static_configs:
+      - targets: ["rabbitmq:15672"]
+        labels:
+          group: "rabbitmq"
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis:6379"]
+        labels:
+          group: "redis"

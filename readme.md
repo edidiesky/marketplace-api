@@ -44,6 +44,7 @@ SELLEASI-ARCHITECTURE/
 9. Caching with Redis for performance optimization.
 10. Notifications for order updates.
 11. Monitoring with Prometheus.
+12. Detailed unit and Integration tests for each services
 
 
 

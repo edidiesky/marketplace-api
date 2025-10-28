@@ -8,8 +8,6 @@ import { connectMongoDB } from "./utils/connectDB";
 import {
   trackError,
   serverHealthGauge,
-  databaseConnectionsGauge,
-  businessOperationCounter,
 } from "./utils/metrics";
 
 async function GracefulShutdown() {
