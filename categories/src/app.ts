@@ -2,12 +2,12 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/product.routes"
+import categoryRoute from "./routes/category.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, productRegistry } from "./utils/metrics";
+import { reqReplyTime, categoryRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
 
@@ -44,22 +44,22 @@ app.use((req, res, next) => {
 
 /** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Product route is Fine!" });
+  res.json({ status: "Category route is Fine!" });
 });
 
 /** ROUTES */
-app.use("/api/v1/products", productRoute);
+app.use("/api/v1/categories", categoryRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server
  */
 app.get("/metrics", async (req, res) => {
   try {
-    res.set("Content-Type", productRegistry.contentType);
-    res.end(await productRegistry.metrics());
-    logger.info("Product Metrics has been scraped successfully!");
+    res.set("Content-Type", categoryRegistry.contentType);
+    res.end(await categoryRegistry.metrics());
+    logger.info("Category Metrics has been scraped successfully!");
   } catch (error) {
-    logger.error("Product Metrics scraping error:", { error });
+    logger.error("Category Metrics scraping error:", { error });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });

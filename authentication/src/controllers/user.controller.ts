@@ -118,7 +118,7 @@ export const GetAllUsersHandler = asyncHandler(
  * @description It gets a single User by ID.
  * @route GET /Users/:id
  * @access Private (it will need JWT authentication)
- * @param {string} req.params.id - The TIN ID of the User to fetch
+ * @param {string} req.params.id - The ID of the User to fetch
  */
 export const GetSingleUsersHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -127,6 +127,7 @@ export const GetSingleUsersHandler = asyncHandler(
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(user);
   }
 );
+
 
 /**
  * @description It Updates an existing User by ID.
@@ -137,15 +138,15 @@ export const GetSingleUsersHandler = asyncHandler(
  */
 export const UpdateUserHandler = asyncHandler(
   async (req: Request, res: Response) => {
-    const { id } = req.params; // TIN
+    const { id } = req.params; //
     const user = (req as AuthenticatedRequest).user;
-    const { userId, directorates, permissions } = user;
+    const { userId, permissions } = user;
     const { currentPassword, newPassword, confirmPassword, ...otherFields } =
       req.body;
 
     logger.info("User update requested", { userId, id });
 
-    const existingUser = await User.findOne({ tin: id });
+    const existingUser = await User.findOne({_id: id });
     if (!existingUser) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("User not found");
@@ -153,7 +154,7 @@ export const UpdateUserHandler = asyncHandler(
 
     // Ensure passwordHash exists
     if (!existingUser.passwordHash) {
-      logger.error("User missing passwordHash", { tin: id });
+      logger.error("User missing passwordHash", {_id: id });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("User account is misconfigured. Contact support.");
     }
@@ -276,7 +277,7 @@ export const GetAggregatedUserHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const startTime = process.hrtime();
     const user = (req as AuthenticatedRequest).user;
-    const { userId, directorates, userType } = user;
+    const { userId, userType } = user;
     const role = userType;
     const {
       timeFrameDays = "60",

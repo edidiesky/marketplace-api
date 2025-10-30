@@ -94,7 +94,7 @@ const LoginUser = asyncHandler(
       trackCacheMiss("redis", "user_lookup");
       user = await measureDatabaseQuery("login", async () =>
         User.findOne({ email }).select(
-          "+passwordHash +phone +email +companyEmail +userType +firstName +lastName +companyName +agencyName +groupName"
+          "+passwordHash +phone +email +userType +firstName +lastName"
         )
       );
 
@@ -713,6 +713,7 @@ const LogoutUserHandler = asyncHandler(
     res.status(200).json({ message: "Logged out succesfully!!" });
   }
 );
+
 
 export {
   RegisterUser,

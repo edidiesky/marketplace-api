@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import logger from "../utils/logger";
 import { UNAUTHORIZED_STATUS_CODE } from "../constants";
-import { DirectorateType, Permission, RoleLevel } from "../models/User";
+import { Permission, RoleLevel } from "../types";
 
 export const authenticate = async (
   req: Request,
@@ -34,7 +34,6 @@ export const authenticate = async (
       userType: string;
       name: string;
       permissions: Permission[];
-      directorates: DirectorateType[];
       roleLevel?: RoleLevel;
     };
 
@@ -43,13 +42,11 @@ export const authenticate = async (
       userType:decoded.userType,
       name: decoded.name,
       permissions: decoded.permissions || [],
-      directorates: decoded.directorates || [],
       roleLevel: decoded.roleLevel,
     };
 
     logger.info("User authenticated", {
       userId: decoded.userId,
-      directorates: decoded.directorates,
     });
     next();
   } catch (error ) {
@@ -98,39 +95,6 @@ export const requirePermissions = (requiredPermissions: Permission[]) => {
   };
 };
 
-export const requireDirectorate = (allowedDirectorates: DirectorateType[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user?.directorates) {
-      logger.info("Unauthorized attempt: No directorate access", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-      });
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No directorate access" });
-      return;
-    }
-
-    const hasAccess = allowedDirectorates.some((directorate) =>
-      req.user!.directorates.includes(directorate)
-    );
-
-    if (!hasAccess) {
-      logger.info("Unauthorized attempt: Directorate access denied", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-        userId: req.user.userId,
-        required: allowedDirectorates,
-        current: req.user.directorates,
-      });
-      res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Directorate access denied",
-        required: allowedDirectorates,
-        current: req.user.directorates,
-      });
-      return;
-    }
-    next();
-  };
-};
 
 export const requireMinimumRoleLevel = (minimumLevel: RoleLevel) => {
   return (req: Request, res: Response, next: NextFunction): void => {

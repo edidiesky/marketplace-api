@@ -8,7 +8,6 @@ declare module "express-serve-static-core" {
       userType: string;
       name: string;
       permissions: Permission[];
-      directorates: DirectorateType[];
       roleLevel?: RoleLevel;
     };
   }

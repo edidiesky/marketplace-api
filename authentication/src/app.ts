@@ -7,8 +7,6 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import usersRoutes from "./routes/users.routes";
-import MDAsRoutes from "./routes/MDAs.routes";
-import taxOfficeRoutes from "./routes/taxOffice.routes";
 import roleRoutes from "./routes/role.routes";
 import { setupSwagger } from "./swagger";
 import cookieParser from "cookie-parser";
@@ -16,7 +14,7 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, userRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import createLimiter from "./utils/customRateLimiter";
-import { sendUserMessage } from "./messaging/producer";
+// import { sendUserMessage } from "./messaging/producer";
 
 const app = express();
 /** MIDDLEWARE */
@@ -56,27 +54,8 @@ app.get("/health", (_req, res) => {
   res.json({ status: "✅ " });
 });
 
-// Rate limiting
-const mdaLimiter = createLimiter({
-  windowMs: 5 * 60 * 1000,
-  max: 5,
-  prefix: "mda",
-  onLimitReached: (req) => {
-    sendUserMessage("RATE_LIMIT_ALERT", {
-      userId: req.user?.userId,
-      ip: req.ip,
-      path: req.path,
-      timestamp: new Date(),
-    });
-  },
-});
-
 /** ROUTES */
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/users", usersRoutes);
-app.use("/api/v1/roles", roleRoutes);
-app.use("/api/v1/MDAs", mdaLimiter, MDAsRoutes);
-app.use("/api/v1/taxOffices", taxOfficeRoutes);
 setupSwagger(app);
 
 // /metrics endpoint (after routes but before error handlers)

@@ -8,3 +8,10 @@ export type AuthenticatedRequest = Request & {
     // permissions: Permission[];
   };
 };
+
+
+
+export interface CreateSizeInput {
+  name: string;
+  value: string;
+}

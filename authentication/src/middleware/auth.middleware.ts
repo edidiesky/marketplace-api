@@ -29,7 +29,7 @@ export const authenticate = async (
   try {
     const decoded = jwt.verify(token, jwtSecret) as {
       userId: string;
-      userType: string;
+      role: string;
       name: string;
       permissions: Permission[];
       roleLevel?: RoleLevel;
@@ -37,7 +37,7 @@ export const authenticate = async (
 
     req.user = {
       userId: decoded.userId,
-      userType:decoded.userType,
+      role:decoded.role,
       name: decoded.name,
       permissions: decoded.permissions || [],
       roleLevel: decoded.roleLevel,

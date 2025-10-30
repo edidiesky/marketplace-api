@@ -8,3 +8,10 @@ export type AuthenticatedRequest = Request & {
     // permissions: Permission[];
   };
 };
+
+
+
+export interface CreateColorInput {
+  name: string;
+  value: string;
+}
