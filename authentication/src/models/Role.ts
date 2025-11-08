@@ -1,9 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { DirectorateType, RoleLevel, Permission } from "./User";
+import { RoleLevel, Permission } from "./User";
 export interface IRole extends Document {
   roleCode: string;
   roleName: string;
-  directorate: DirectorateType;
   level: RoleLevel;
   permissions: Permission[];
   description?: string;
@@ -26,11 +25,6 @@ const RoleSchema = new Schema<IRole>(
       type: String,
       required: true,
       trim: true,
-    },
-    directorate: {
-      type: String,
-      enum: Object.values(DirectorateType),
-      required: true,
     },
     level: {
       type: Number,

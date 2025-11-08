@@ -1,7 +1,8 @@
 import { FilterQuery, Types } from "mongoose";
 import SizeModel, { ISize } from "../models/Size";
-import { CreateSizeInput } from "../types/index";
-import { measureDatabaseQuery } from "../utils/metrics";
+import { measureDatabaseQuery, trackCacheHit, trackCacheMiss } from "../utils/metrics";
+import redisClient from "../config/redis";
+import logger from "../utils/logger";
 
 /**
  * @description Create Size Service
@@ -12,7 +13,7 @@ import { measureDatabaseQuery } from "../utils/metrics";
 export const CreateSizeService = async (
   userId: string,
   storeId: string,
-  { name, value }: CreateSizeInput
+  { name, value }: Partial<ISize>
 ) => {
   const sizeData = {
     user: new Types.ObjectId(userId),
@@ -65,7 +66,23 @@ export const GetAllStoreSizeService = async (
  * @returns
  */
 export const GetASingleSizeService = async (id: string) => {
-  return await SizeModel.findById(new Types.ObjectId(id)).lean();
+   const redisKey = `size:${id}`;
+  const cachedSize = await redisClient.get(redisKey);
+  if (cachedSize) {
+    logger.info("Fetched size from cache succesfully", { id });
+    trackCacheHit("size", "fetch_single_product");
+    return JSON.parse(cachedSize);
+  }
+  const size = await measureDatabaseQuery("fetch_single_product", () =>
+    SizeModel.findById(id)
+  );
+  logger.info("Fetched size from DB succesfully", { id });
+  if (size) {
+    trackCacheMiss("size", "fetch_single_product");
+    await redisClient.set(redisKey, JSON.stringify(size), "EX", 3600);
+    logger.info("Cached size succesfully", { id });
+  }
+  return size;
 };
 
 /**
@@ -75,7 +92,7 @@ export const GetASingleSizeService = async (id: string) => {
  */
 export const UpdateSizeService = async (
   sizeId: string,
-  updates: Partial<CreateSizeInput>
+  updates: Partial<Partial<ISize>>
 ) => {
   return await SizeModel.findByIdAndUpdate(
     new Types.ObjectId(sizeId),

@@ -15,6 +15,7 @@ import {
 } from "../constants";
 import { IProduct } from "../models/Product";
 import { FilterQuery } from "mongoose";
+import { AuthenticatedRequest } from "../types";
 
 // @description: Create Product handler
 // @route  POST /products/:storeid
@@ -22,7 +23,7 @@ import { FilterQuery } from "mongoose";
 const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const storeId = req.params.storeid;
-    const { userId } = req.user as { userId: string };
+    const { userId } = (req as AuthenticatedRequest).user
     const description = sanitizeHtml(req.body.description || "", {
       allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
       allowedAttributes: { a: ["href"] },
@@ -41,7 +42,7 @@ const CreateProductHandler = asyncHandler(
 // @access  Private
 const GetAllStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = req.user as { userId: string };
+     const { userId } = (req as AuthenticatedRequest).user
     const { page = 1, limit = 10, name, size, category, price } = req.query;
     const storeId = req.params.storeid;
 

@@ -42,7 +42,7 @@ app.use(errorHandler);
 
 app.listen(PORT, async () => {
   const serverStartTime = process.hrtime();
-  logger.info(`Auth Server running on port ${PORT}`);
+  logger.info(`Product Server running on port ${PORT}`);
 
   const mongoUrl = process.env.DATABASE_URL;
   if (!mongoUrl) {

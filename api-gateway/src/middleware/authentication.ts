@@ -19,7 +19,6 @@ export const authenticate = (
 ): void => {
   const token =
     req.cookies.jwt ||
-    req.cookies.jwt ||
     req.headers.authorization?.split(" ")[1];
 
   if (!token) {

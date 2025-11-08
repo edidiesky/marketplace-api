@@ -2,7 +2,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/product.routes"
+import productRoute from "./routes/product.routes";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -20,11 +20,7 @@ if (!process.env.WEB_ORIGIN) {
 app.use(helmet());
 app.use(
   cors({
-    origin: [
-      process.env.WEB_ORIGIN!,
-      process.env.WEB_ORIGIN2!,
-      process.env.WEB_ORIGIN3!,
-    ],
+    origin: [process.env.WEB_ORIGIN],
     credentials: true,
   })
 );

@@ -6,7 +6,7 @@ declare module "express-serve-static-core" {
   interface Request {
     user?: {
       userId: string;
-      userType: string;
+      role: string;
       name: string;
       permissions: Permission[];
       roleLevel?: RoleLevel;

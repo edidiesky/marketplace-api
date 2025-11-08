@@ -11,7 +11,7 @@ import {
   BAD_REQUEST_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
-} from "../constants.js";
+} from "../constants";
 import { AuthenticatedRequest } from "../types/index";
 import { FilterQuery } from "mongoose";
 import { IColor } from "../models/Color";

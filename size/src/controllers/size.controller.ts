@@ -19,7 +19,7 @@ import { ISize } from "../models/Size";
 
 export const CreateSizeHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { name, value } = req.body as { name: string; value: string };
+    const { name, value } = req.body;
     const storeid = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
 

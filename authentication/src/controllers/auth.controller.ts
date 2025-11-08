@@ -262,10 +262,6 @@ const RestrictAccountHandler = async (
   res: Response
 ): Promise<void> => {
   const { email } = req.body;
-  const { userId: restrictedByTin, name: restrictedByName } = req.user || {
-    userId: "SYSTEM",
-    name: "SYSTEM",
-  };
   // Validate input
   if (!email) {
     res.status(BAD_REQUEST_STATUS_CODE);
@@ -373,10 +369,6 @@ const RestrictAccountHandler = async (
 const UnrestrictAccountHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body;
-    const { userId: restrictedByTin, name: restrictedByName } = req.user || {
-      userId: "SYSTEM",
-      name: "SYSTEM",
-    };
     // Validate input
     if (!email) {
       res.status(BAD_REQUEST_STATUS_CODE);

@@ -3,19 +3,23 @@ import jwt from "jsonwebtoken";
 import logger from "../utils/logger";
 import { UNAUTHORIZED_STATUS_CODE } from "../constants";
 import { Permission, RoleLevel } from "../models/User";
+import { AuthenticatedRequest } from "../types";
 
 export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const token = req.cookies.jwt || req.headers.authorization?.split(" ")[1];
+  const token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
+
   if (!token) {
     logger.warn("Authentication failed: No token provided", {
       ip: req.ip,
       "user-agent": req.headers["user-agent"],
     });
-    res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Authentication required" });
+    res
+      .status(UNAUTHORIZED_STATUS_CODE)
+      .json({ error: "Authentication required" });
     return;
   }
 
@@ -27,90 +31,70 @@ export const authenticate = async (
   }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      role: string;
-      name: string;
-      permissions: Permission[];
-      roleLevel?: RoleLevel;
-    };
+    const decoded = (jwt.verify(token, jwtSecret) as AuthenticatedRequest).user;
 
-    req.user = {
+    // Now safe to assign
+    (req as AuthenticatedRequest).user = {
       userId: decoded.userId,
-      role:decoded.role,
+      role: decoded.role,
       name: decoded.name,
       permissions: decoded.permissions || [],
       roleLevel: decoded.roleLevel,
     };
 
-    logger.info("User authenticated", {
-      userId: decoded.userId,
-    });
+    logger.info("User authenticated", {});
     next();
-  } catch (error ) {
+  } catch (error) {
     logger.warn("Authentication failed: Invalid token", {
       ip: req.ip,
       "user-agent": req.headers["user-agent"],
       error: error instanceof Error ? error.message : "Unknown error",
     });
     res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Invalid token" });
-    return;
   }
 };
 
+// Permission middleware — now uses req.user safely
 export const requirePermissions = (requiredPermissions: Permission[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user?.permissions) {
-      logger.info("Unauthorized attempt: No permissions in request", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-      });
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Unauthorized attempt: Insufficient permissions" });
+      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No permissions" });
       return;
     }
- 
-    const hasPermission = requiredPermissions.every((permission)=> !req.user?.permissions?.includes(permission))
 
-    if (!hasPermission) {
-      logger.info("Unauthorized attempt: Insufficient permissions", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-        userId: req.user.userId,
-        required: requiredPermissions,
-        current: req.user.permissions,
-        userObject:req.user
-      });
+    const hasAll = requiredPermissions.every((p) =>
+      req.user!.permissions.includes(p)
+    );
+
+    if (!hasAll) {
       res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Unauthorized attempt: Insufficient permissions",
+        error: "Insufficient permissions",
         required: requiredPermissions,
         current: req.user.permissions,
       });
       return;
     }
+
     next();
   };
 };
 
-
 export const requireMinimumRoleLevel = (minimumLevel: RoleLevel) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user?.roleLevel) {
-      logger.info("Unauthorized attempt: No role level assigned", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-      });
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No role level assigned" });
+      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No role level" });
       return;
     }
 
     if (req.user.roleLevel > minimumLevel) {
-      logger.info("Unauthorized attempt: Insufficient role level", {
-        ip: req.ip,
-        "user-agent": req.headers["user-agent"],
-        userId: req.user.userId,
-        required: minimumLevel,
-        current: req.user.roleLevel,
-      });
       res.status(UNAUTHORIZED_STATUS_CODE).json({
         error: "Insufficient role level",
         required: minimumLevel,
@@ -118,10 +102,7 @@ export const requireMinimumRoleLevel = (minimumLevel: RoleLevel) => {
       });
       return;
     }
+
     next();
   };
 };
-
-
-
-

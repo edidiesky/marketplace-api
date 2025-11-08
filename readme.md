@@ -1,4 +1,4 @@
-# Read This First, bro!
+# Kindly, Read This First!
 
 SellEasi API is a multi-tenant e-commerce platform designed specifically for students to sell products of their choice. It enables users to create and manage their own tenant stores, handle inventory, process payments, and facilitate sales in a scalable, secure manner. The platform is built using a microservices architecture to ensure modularity, fault tolerance, and ease of scaling each services independently. It also features detailed Monitoring of Logs and service route unique metrics using Prometheus, Loki, and Promtail (Latency, throughput, error rates, and utilization) via Grafana unique Dashboard
 

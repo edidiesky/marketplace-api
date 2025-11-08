@@ -7,16 +7,13 @@ import { PermissionService } from "../services/permission.service";
 export const signJwt = async (tin: string, role: string, name: string) => {
   try {
     const permissions = await PermissionService.getUserPermissions(tin);
-    const directorates = await PermissionService.getUserDirectorates(tin);
     const roleLevel = await PermissionService.getUserRoleLevel(
       tin,
-      directorates[0]
     );
     const payload = {
       userId: tin,
       name,
       permissions,
-      directorates,
       roleLevel,
       userType: role,
     };

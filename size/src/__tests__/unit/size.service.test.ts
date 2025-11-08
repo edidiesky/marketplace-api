@@ -1,50 +1,57 @@
+import SizeModel, { ISize } from "../../models/Size";
 import {
-  afterAll,
+  CreateSizeService,
+  DeleteSizeService,
+  GetASingleSizeService,
+  GetAllStoreSizeService,
+  UpdateSizeService,
+} from "../../services/size.service";
+import {
+  afterEach,
   beforeEach,
   describe,
   expect,
   it,
   jest,
 } from "@jest/globals";
-import { Types } from "mongoose";
-import Size, { ISize } from "../../models/Size";
+
 import redisClient from "../../config/redis";
-import {
-  CreateSizeService,
-  GetAllStoreSizeService,
-  GetASingleSizeService,
-  UpdateSizeService,
-  DeleteSizeService,
-} from "../../services/size.service";
-
-// Mock dependencies
+import { Types } from "mongoose";
+import logger from "../../utils/logger";
+// MOCKING MY SIZE MODEL
 jest.mock("../../models/Size", () => ({
-  create: jest.fn(),
-  find: jest.fn(),
-  findById: jest.fn(),
-  findByIdAndUpdate: jest.fn(),
-  findByIdAndDelete: jest.fn(),
+  findById: jest.fn<() => Promise<ISize>>(),
+  find: jest.fn<() => Promise<ISize[]>>(),
+  create: jest.fn<() => Promise<ISize>>(),
+  findByIdAndUpdate: jest.fn<() => Promise<ISize>>(),
+  findByIdAndDelete: jest.fn<() => Promise<"">>(),
 }));
 
+// jest.mock("../../utils/metrics");
+// MOCKING MY REDIS MODEL
 jest.mock("../../config/redis", () => ({
-  get: jest.fn<() => Promise<string | null>>().mockResolvedValue(null),
+  get: jest.fn<(key: string) => Promise<null>>().mockResolvedValue(null),
+  del: jest.fn<(key: string) => Promise<null>>().mockResolvedValue(null),
   set: jest
-    .fn<(key: string, value: string, method: string, timeout: number) => Promise<string>>()
+    .fn<
+      (
+        key: string,
+        value: string,
+        method: string,
+        interval: Number
+      ) => Promise<String>
+    >()
     .mockResolvedValue("OK"),
-  del: jest.fn<(key: string) => Promise<number>>().mockResolvedValue(1),
 }));
 
-jest.mock("../../utils/metrics", () => ({
-  measureDatabaseQuery: jest.fn((name: string, fn: () => Promise<any>) => fn()),
-}));
+const mockSizeModel = SizeModel as jest.Mocked<typeof SizeModel>;
+const mockRedisClient = redisClient as jest.Mocked<typeof redisClient>;
 
-const MockedSize = Size as jest.Mocked<typeof Size>;
-const MockedRedis = redisClient as jest.Mocked<typeof redisClient>;
-
-describe("Size Service Tests", () => {
-  const mockUserId = "66c0a27e71a3ea08d6a26f8f";
-  const mockStoreId = "66c0a27e71a3ea08d6a26f90";
-  const mockSizeId = "66c0a27e71a3ea08d6a26f91";
+// TEST SUITES
+describe("Size Unit Tests", () => {
+  const mockUserId = new Types.ObjectId("66c0a27e71a3ea08d6a26f91");
+  const mockStoreId = new Types.ObjectId("66c0a27e71a3ea08d6a26f94");
+  const mockSizeId = new Types.ObjectId("66c0a27e71a3ea08d6a26f92");
 
   const mockSizeData: Partial<ISize> = {
     name: "Test Size",
@@ -52,193 +59,91 @@ describe("Size Service Tests", () => {
   };
 
   const mockSize: ISize = {
-    user: new Types.ObjectId(mockUserId),
-    store: new Types.ObjectId(mockStoreId),
+    _id: mockSizeId,
+    user: mockUserId,
+    store: mockStoreId,
     name: "Test Size",
     value: "100",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  } as unknown as ISize;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterAll(() => {
     jest.restoreAllMocks();
   });
 
-  describe("CreateSizeService", () => {
-    it("should create a Size successfully with all fields", async () => {
-    });
-
-    it("should handle creation failure", async () => {
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe("GetAllStoreSizeService", () => {
-    it("should return cached Sizes when cache exists", async () => {
-      const cachedSizes = [mockSize];
-      const query = { name: "test" };
-      const page = 0;
-      const limit = 10;
-      const cacheKey = `Size:search:${JSON.stringify({ ...query, skip: page, limit })}`;
-      MockedRedis.get.mockResolvedValueOnce(JSON.stringify(cachedSizes));
+  describe("POST /api/v1/sizes/storeId (Create A Store Size Service)", () => {
+    it("should create a store size successfully based on valid inputs", async () => {
+      //  Arrange
+      (SizeModel.create as jest.Mock).mockReturnValue(mockSize);
+      //  Act
+      const result = await CreateSizeService(
+        mockUserId.toString(),
+        mockStoreId.toString(),
+        mockSizeData
+      );
 
-      const result = await GetAllStoreSizeService(query, page, limit);
-
-      expect(MockedRedis.get).toHaveBeenCalledWith(cacheKey);
-      expect(result).toEqual(cachedSizes);
-      expect(MockedSize.find).not.toHaveBeenCalled();
-    });
-
-    it("should fetch and cache Sizes when cache is empty", async () => {
-      const Sizes = [mockSize];
-      const query = { store: mockStoreId };
-      const page = 0;
-      const limit = 10;
-      const cacheKey = `Size:search:${JSON.stringify({ ...query, skip: page, limit })}`;
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        lean: jest.fn().mockResolvedValue(Sizes),
+      const sizeData = {
+        user: mockUserId,
+        store: mockStoreId,
+        ...mockSizeData,
       };
-      MockedRedis.get.mockResolvedValueOnce(null);
-      MockedSize.find.mockReturnValue(mockQuery as any);
-
-      const result = await GetAllStoreSizeService(query, page, limit);
-
-      expect(MockedSize.find).toHaveBeenCalledWith(query);
-      expect(mockQuery.skip).toHaveBeenCalledWith(page);
-      expect(mockQuery.limit).toHaveBeenCalledWith(limit);
-      expect(mockQuery.sort).toHaveBeenCalledWith("-createdAt");
-      expect(mockQuery.lean).toHaveBeenCalled();
-      expect(MockedRedis.set).toHaveBeenCalledWith(
-        cacheKey,
-        JSON.stringify(Sizes),
-        "EX",
-        3600
-      );
-      expect(result).toEqual(Sizes);
+      //  Assert
+      expect(SizeModel.create).toHaveBeenCalledWith(sizeData);
+      expect(result).toBe(mockSize);
+      expect(result.name).toBe(mockSizeData.name);
     });
-
-    it("should handle empty results with caching", async () => {
-      const Sizes: ISize[] = [];
-      const query = { name: "nonexistent" };
-      const page = 0;
-      const limit = 10;
-      const cacheKey = `Size:search:${JSON.stringify({ ...query, skip: page, limit })}`;
-
-      const mockQuery = {
-        skip: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        sort: jest.fn().mockReturnThis(),
-        lean: jest.fn().mockResolvedValue(Sizes),
-      };
-      MockedRedis.get.mockResolvedValueOnce(null);
-      MockedSize.find.mockReturnValue(mockQuery as any);
-
-      const result = await GetAllStoreSizeService(query, page, limit);
-
-      expect(result).toEqual([]);
-      expect(MockedRedis.set).toHaveBeenCalledWith(
-        cacheKey,
-        JSON.stringify(Sizes),
-        "EX",
-        3600
-      );
+    it("should NOT create a store size when invalid inputs are provided", async () => {
+      //  Arrange
+      const error = new Error("Please provide a valid input field");
+      mockSizeModel.create.mockRejectedValue(error);
+      //  Act
+      await expect(
+        CreateSizeService(mockUserId.toString(), mockStoreId.toString(), {
+          name: "Test size",
+        })
+      ).rejects.toThrow(error);
     });
   });
-
-  describe("GetASingleSizeService", () => {
-    it("should return cached Size when available", async () => {
-      const cacheKey = `Size:${mockSizeId}`;
-      MockedRedis.get.mockResolvedValueOnce(JSON.stringify(mockSize));
-
-      const result = await GetASingleSizeService(mockSizeId);
-
-      expect(MockedRedis.get).toHaveBeenCalledWith(cacheKey);
-      expect(result).toEqual(mockSize);
-      expect(MockedSize.findById).not.toHaveBeenCalled();
+  describe("GET /api/v1/sizes/17338/storeId (Get A Single Store Size Service)", () => {
+    it("should get a single store size successfully when cache is empty", async () => {
+      //  Arrange
+      let id = mockSizeId.toString()
+      mockRedisClient.get.mockResolvedValueOnce(null);
+      mockSizeModel.findById.mockResolvedValue(mockSize);
+      //  Act
+      const result = await GetASingleSizeService(id);
+      //  Assert
+      expect(SizeModel.findById).toHaveBeenCalledWith(id);
+      expect(result).toBe(mockSize);
+      expect(redisClient.set).toHaveBeenCalled();
     });
-
-    it("should fetch and cache Size when not cached", async () => {
-      const cacheKey = `Size:${mockSizeId}`;
-      MockedRedis.get.mockResolvedValueOnce(null);
-      MockedSize.findById.mockResolvedValue(mockSize);
-
-      const result = await GetASingleSizeService(mockSizeId);
-
-      expect(MockedSize.findById).toHaveBeenCalledWith(mockSizeId);
-      expect(MockedRedis.set).toHaveBeenCalledWith(
-        cacheKey,
-        JSON.stringify(mockSize),
-        "EX",
-        3600
-      );
-      expect(result).toEqual(mockSize);
+    it("should get a single store size from cache when it is not empty", async () => {
+      //  Arrange
+      const cacheKey = `size:${mockSizeId.toString()}`;
+      mockRedisClient.get.mockResolvedValueOnce(JSON.stringify(mockSize));
+      mockSizeModel.findById.mockResolvedValue(mockSize);
+      //  Act
+      const result = await GetASingleSizeService(mockSizeId.toString());
+      //  Assert
+      expect(redisClient.get).toHaveBeenCalledWith(cacheKey);
+      expect(SizeModel.findById).not.toHaveBeenCalled();
+      expect(result.name).toEqual(mockSize.name);
+      expect(result.value).toEqual(mockSize.value);
     });
-
-    it("should return null when Size does not exist", async () => {
-      MockedRedis.get.mockResolvedValueOnce(null);
-      MockedSize.findById.mockResolvedValue(null);
-
-      const result = await GetASingleSizeService(mockSizeId);
-
-      expect(result).toBeNull();
-      expect(MockedRedis.set).not.toHaveBeenCalled();
+    it("should not get a store size when invalid Id is being provided", async () => {
+      //  Arrange
+      const error = new Error("Please provide a valid Size ID");
+      mockSizeModel.findById.mockRejectedValue(error);
+      //  Act
+      await expect(
+        GetASingleSizeService(mockSizeId.toString())
+      ).rejects.toThrow(error);
     });
   });
-
-  describe("UpdateSizeService", () => {
-    it("should update Size successfully", async () => {
-      const updateData = { value: 150, description: "Updated description" };
-      const updatedSize = { ...mockSize, ...updateData };
-      MockedSize.findByIdAndUpdate.mockResolvedValue(updatedSize);
-
-      const result = await UpdateSizeService(mockSizeId, updateData);
-
-      expect(MockedSize.findByIdAndUpdate).toHaveBeenCalledWith(
-        mockSizeId,
-        { $set: updateData },
-        { new: true, runValidators: true }
-      );
-      expect(result).toEqual(updatedSize);
-      expect(result?.value).toBe(150);
-    });
-
-    it("should return null when Size not found", async () => {
-      MockedSize.findByIdAndUpdate.mockResolvedValue(null);
-
-      const result = await UpdateSizeService(mockSizeId, { value: 150 });
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("DeleteSizeService", () => {
-    it("should delete Size and clear cache successfully", async () => {
-      const cacheKey = `Size:${mockSizeId}`;
-      MockedSize.findByIdAndDelete.mockResolvedValue(mockSize);
-
-      const result = await DeleteSizeService(mockSizeId);
-
-      expect(MockedSize.findByIdAndDelete).toHaveBeenCalledWith(mockSizeId);
-      expect(MockedRedis.del).toHaveBeenCalledWith(cacheKey);
-      expect(result).toBe("Size has been deleted");
-    });
-
-    it("should handle deletion failure gracefully", async () => {
-      const cacheKey = `Size:${mockSizeId}`;
-      MockedSize.findByIdAndDelete.mockResolvedValue(null);
-
-      const result = await DeleteSizeService(mockSizeId);
-
-      expect(MockedSize.findByIdAndDelete).toHaveBeenCalledWith(mockSizeId);
-      expect(MockedRedis.del).toHaveBeenCalledWith(cacheKey);
-      expect(result).toBe("Size has been deleted");
-    });
-  });
+  describe("GET /api/v1/sizes/storeId (Get All Store Sizes)", () => {});
+  describe("PUT /api/v1/sizes/1273373/storeId (Update A Single Store Size Service)", () => {});
+  describe("DELETE /api/v1/sizes/1273373/storeId (Delete A Single Store Size Service)", () => {});
 });

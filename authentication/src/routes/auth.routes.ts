@@ -6,9 +6,6 @@ import {
   twoFASchema,
   passwordResetSchema,
   requestPasswordResetSchema,
-  uploadSchema,
-  adminSignupSchema,
-  UploadBulkCompanyCSVHandlerSchema,
 } from "../validators/auth.validator";
 import {
   LoginUser,
@@ -16,73 +13,17 @@ import {
   RegisterUser,
   RequestPasswordResetHandler,
   ResetPasswordHandler,
-  UploadTaxpayerCSVHandler,
   Verify2FA,
   RefreshToken,
   ChangePasswordHandler,
-  RegisterAdminUser,
-  RegisterAgency,
-  RegisterGroup,
-  BulkTaxpayerProgressHandler,
-  getUserEmployeeUploadStatus,
-  getSingleUserEmployeeUploadStatus,
-  UploadExpartiateTaxpayerCSVHandler,
-  UploadCompanyBranchCSVHandler,
   RestrictAccountHandler,
   UnrestrictAccountHandler,
-  UploadBulkCompanyCSVHandler,
-  BulkCompanyProgressHandler,
 } from "../controllers/auth.controller";
 import {
   authenticate,
-  requirePermissions,
 } from "../middleware/auth.middleware";
-import { Permission, RoleLevel } from "../models/User";
-import { agencySignupSchema } from "../validators/agency.validator";
-import { groupSignupSchema } from "../validators/group.validators";
 const router = Router();
 
-// bulk-taxpayer-progress
-
-router.get(
-  "/upload-status",
-  authenticate,
-  (req: Request, res: Response): void => {
-    void getUserEmployeeUploadStatus(req, res);
-  }
-);
-router.get(
-  "/upload-status/:id",
-  authenticate,
-  (req: Request, res: Response): void => {
-    void getSingleUserEmployeeUploadStatus(req, res);
-  }
-);
-router.get(
-  "/bulk-taxpayer-progress/:id",
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void BulkTaxpayerProgressHandler(req, res, next);
-  }
-);
-
-router.get(
-  "/bulk-company-progress/:publicId",
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void BulkCompanyProgressHandler(req, res, next);
-  }
-);
-
-router.post(
-  "/group-signup",
-  authenticate,
-  requirePermissions([Permission.CREATE_USER]),
-  validateRequest(groupSignupSchema),
-  (req: Request, res: Response, next: NextFunction): void => {
-    void RegisterGroup(req, res, next);
-  }
-);
 
 router.post(
   "/signup",
@@ -135,43 +76,6 @@ router.post(
   }
 );
 
-router.post(
-  "/bulk-taxpayer-upload",
-  validateRequest(uploadSchema),
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void UploadTaxpayerCSVHandler(req, res, next);
-  }
-);
-router.post(
-  "/bulk-taxpayer-upload/expartiate",
-  validateRequest(uploadSchema),
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void UploadExpartiateTaxpayerCSVHandler(req, res, next);
-  }
-);
-
-// UploadCompanyBranchCSVHandler
-router.post(
-  "/bulk-taxpayer-upload/company-branch",
-  validateRequest(uploadSchema),
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void UploadCompanyBranchCSVHandler(req, res, next);
-  }
-);
-
-router.post(
-  "/bulk-taxpayer-upload/company",
-  validateRequest(UploadBulkCompanyCSVHandlerSchema),
-  authenticate,
-  requirePermissions([Permission.CREATE_USER]),
-  (req: Request, res: Response, next: NextFunction): void => {
-    void UploadBulkCompanyCSVHandler(req, res, next);
-  }
-);
-
 // UploadExpartiateTaxpayerCSVHandler
 router.post(
   "/password-change",
@@ -187,50 +91,17 @@ router.post(
   }
 );
 
-// Admin user registration
-router.post(
-  "/admin-signup",
-  authenticate,
-  // requireMinimumRoleLevel(RoleLevel.DIRECTORATE_HEAD),
-  // requirePermissions([Permission.CREATE_USER]),
-  validateRequest(adminSignupSchema),
-  (req: Request, res: Response, next: NextFunction): void => {
-    void RegisterAdminUser(req, res, next);
-  }
-);
-
-// Adgency user registration
-router.post(
-  "/agency-signup",
-  authenticate,
-  // requireMinimumRoleLevel(RoleLevel.DIRECTORATE_HEAD),
-  // requirePermissions([Permission.CREATE_USER]),
-  validateRequest(agencySignupSchema),
-  (req: Request, res: Response, next: NextFunction): void => {
-    void RegisterAgency(req, res, next);
-  }
-);
-
-//  RestrictAccountHandler,
-// UnrestrictAccountHandler,
-
 router.put(
   "/restrict-account",
   authenticate,
-  // requireMinimumRoleLevel(RoleLevel.DIRECTORATE_HEAD),
-  // requirePermissions([Permission.CREATE_USER]),
-  // validateRequest(agencySignupSchema),
   (req: Request, res: Response, next: NextFunction): void => {
-    void RestrictAccountHandler(req, res, next);
+    void RestrictAccountHandler(req, res);
   }
 );
 
 router.put(
   "/unrestrict-account",
   authenticate,
-  // requireMinimumRoleLevel(RoleLevel.DIRECTORATE_HEAD),
-  // requirePermissions([Permission.CREATE_USER]),
-  // validateRequest(agencySignupSchema),
   (req: Request, res: Response, next: NextFunction): void => {
     void UnrestrictAccountHandler(req, res, next);
   }

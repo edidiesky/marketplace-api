@@ -1,10 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { validateRequest } from "../middleware/validate.middleware";
 import {
-  createRoleSchema,
-  roleAssignmentSchema,
-} from "../validators/auth.validator";
-import {
   authenticate,
   requireMinimumRoleLevel,
   requirePermissions,
@@ -47,7 +43,6 @@ router.post(
     onLimitReached: (req) => {},
   }),
   authenticate,
-  validateRequest(createRoleSchema),
   (req: Request, res: Response, next: NextFunction): void => {
     void CreateRole(req, res, next);
   }
@@ -63,9 +58,6 @@ router.post(
     onLimitReached: (req) => {},
   }),
   authenticate,
-  requirePermissions([Permission.MANAGE_ROLES]),
-  requireMinimumRoleLevel(RoleLevel.DEPUTY_DIRECTOR),
-  validateRequest(roleAssignmentSchema),
   (req: Request, res: Response, next: NextFunction): void => {
     void AssignRoleToUser(req, res, next);
   }
@@ -92,9 +84,6 @@ router.delete(
 router.put(
   "/update-role",
   authenticate,
-  requirePermissions([Permission.MANAGE_ROLES]),
-  requireMinimumRoleLevel(RoleLevel.DEPUTY_DIRECTOR),
-  validateRequest(roleAssignmentSchema),
   (req: Request, res: Response, next: NextFunction): void => {
     void UpdateUserRole(req, res, next);
   }

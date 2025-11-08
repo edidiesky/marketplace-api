@@ -37,7 +37,7 @@ const CategorySchema = new Schema<ICategory>(
   { timestamps: true }
 );
 
-CategorySchema.index({ store: 1, _id: 1 });
+CategorySchema.index({ store: 1, user: 1 });
 
 const CategoryModel = mongoose.model<ICategory>("Category", CategorySchema);
 export default CategoryModel;

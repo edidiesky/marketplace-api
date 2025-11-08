@@ -4,8 +4,9 @@ export type AuthenticatedRequest = Request & {
   user: {
     role: string;
     userId: string;
-    name: string;
-    // permissions: Permission[];
+    name: string; 
+    permissions: Permission[];
+    roleLevel?: RoleLevel;
   };
 };
 
@@ -14,12 +15,7 @@ export enum RoleLevel {
   SUPER_ADMIN = 1,
   EXECUTIVE = 2,
   DIRECTORATE_HEAD = 3,
-  DEPUTY_DIRECTOR = 4,
-  ASSISTANT_DIRECTOR = 5,
-  PRINCIPAL_OFFICER = 6,
-  SENIOR_OFFICER = 7,
-  OFFICER = 8,
-  MEMBER = 9,
+  MEMBER = 4,
 }
 
 export enum Permission {

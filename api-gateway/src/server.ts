@@ -19,7 +19,6 @@ declare module "express" {
     proxyTarget?: string;
   }
 }
-
 const app: Application = express();
 
 // Custom request logging middleware
@@ -65,6 +64,7 @@ app.use(
       "User-Agent",
     ],
   })
+  
 );
 
 /**
@@ -145,6 +145,13 @@ app.use(
     const targetURL = services[service];
     const requestPath = req.params[0];
 
+    logger.info("service data:", {
+      service,
+      targetURL,
+      requestPath,
+      params: req.params
+    })
+
     if (!targetURL) {
       logger.error(`Service not found: ${service}`);
       res.status(BAD_REQUEST_STATUS_CODE);
@@ -158,7 +165,6 @@ app.use(
         cookie: req.headers.cookie,
         "x-paystack-signature": req.headers["x-paystack-signature"],
         "verif-hash": req.headers["verif-hash"],
-        "x-interswitch-signature": req.headers["x-interswitch-signature"],
       };
 
       const queryParams = new URLSearchParams();

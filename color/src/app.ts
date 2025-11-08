@@ -55,8 +55,8 @@ app.use("/api/v1/colors", ColorRoute);
  */
 app.get("/metrics", async (req, res) => {
   try {
-    res.set("Content-Type", ColorRegistry.contentType);
-    res.end(await ColorRegistry.metrics());
+    res.set("Content-Type", colorRegistry.contentType);
+    res.end(await colorRegistry.metrics());
     logger.info("Color Metrics has been scraped successfully!");
   } catch (error) {
     logger.error("Color Metrics scraping error:", { error });

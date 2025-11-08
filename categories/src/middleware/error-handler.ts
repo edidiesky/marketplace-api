@@ -1,4 +1,4 @@
-import { NOT_FOUND_STATUS_CODE, SERVER_ERROR_STATUS_CODE, SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+import { NOT_FOUND_STATUS_CODE } from "../constants";
 import logger from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
 
@@ -15,7 +15,7 @@ const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  const statuscode = res.statusCode === SUCCESSFULLY_FETCHED_STATUS_CODE ? SERVER_ERROR_STATUS_CODE : res.statusCode;
+  const statuscode = res.statusCode === 200 ? 500 : res.statusCode;
   const errMessage = err.message;
   logger.error("Error message:", errMessage);
   res.status(statuscode);

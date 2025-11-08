@@ -8,34 +8,16 @@ export enum VerificationStatus {
   PENDING = "PENDING",
 }
 export enum UserType {
-  INDIVIDUAL = "INDIVIDUAL",
-  COMPANY = "COMPANY",
-  MDA = "MDA",
+  SELLERS = "SELLERS",
   ADMIN = "ADMIN",
-  AKIRS = "AKIRS",
-  AGENT = "AGENT",
-  WHT = "WHT",
-  PAYE = "PAYE",
-  AGENCY = "AGENCY",
-  ASSESSMENT = "ASSESSMENT",
-  GROUPS = "GROUPS",
-  CHAIRMAN = "CHAIRMAN",
-  FEDERAL = "FEDERAL",
-  STATE = "STATE",
-  LOCALGOVT = "LOCALGOVT",
-  SUPERADMIN = "SUPERADMIN",
+  INVESTORS = "INVESTORS",
 }
 
 export enum RoleLevel {
   SUPER_ADMIN = 1,
   EXECUTIVE = 2,
   DIRECTORATE_HEAD = 3,
-  DEPUTY_DIRECTOR = 4,
-  ASSISTANT_DIRECTOR = 5,
-  PRINCIPAL_OFFICER = 6,
-  SENIOR_OFFICER = 7,
-  OFFICER = 8,
-  MEMBER = 9,
+  MEMBER = 4,
 }
 
 export enum Permission {
@@ -140,37 +122,22 @@ const UserSchema = new Schema<IUser>(
     firstName: {
       type: String,
       trim: true,
-      // required: function (this: IUser) {
-      //   return this.userType === UserType.INDIVIDUAL;
-      // },
     },
     middleName: { type: String, trim: true },
     lastName: {
       type: String,
       trim: true,
-      // required: function (this: IUser) {
-      //   return this.userType === UserType.INDIVIDUAL;
-      // },
     },
     dateOfBirth: {
       type: String,
-      // required: function (this: IUser) {
-      //   return this.userType === UserType.INDIVIDUAL;
-      // },
     },
     gender: {
       type: String,
       enum: Object.values(Gender),
-      // required: function (this: IUser) {
-      //   return this.userType === UserType.INDIVIDUAL;
-      // },
     },
     maritalStatus: {
       type: String,
       enum: Object.values(MaritalStatus),
-      // required: function (this: IUser) {
-      //   return this.userType === UserType.INDIVIDUAL;
-      // },
     },
     lastActiveAt: {
       type: Date,
