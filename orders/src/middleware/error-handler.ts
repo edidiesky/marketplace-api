@@ -1,10 +1,11 @@
+import { NOT_FOUND_STATUS_CODE } from "../constants";
 import logger from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
 
 const NotFound = (req: Request, res: Response, next: NextFunction) => {
   const error = new Error(`Not found - ${req.originalUrl}`);
   logger.error("Error message:", error);
-  res.status(404);
+  res.status(NOT_FOUND_STATUS_CODE);
   next(error);
 };
 

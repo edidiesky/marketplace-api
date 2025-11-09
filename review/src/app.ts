@@ -2,7 +2,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/product.routes";
+import productRoute from "./routes/product.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -20,7 +20,11 @@ if (!process.env.WEB_ORIGIN) {
 app.use(helmet());
 app.use(
   cors({
-    origin: [process.env.WEB_ORIGIN],
+    origin: [
+      process.env.WEB_ORIGIN!,
+      process.env.WEB_ORIGIN2!,
+      process.env.WEB_ORIGIN3!,
+    ],
     credentials: true,
   })
 );
@@ -40,7 +44,7 @@ app.use((req, res, next) => {
 
 /** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Product route is Fine!" });
+  res.json({ status: "Review route is Fine!" });
 });
 
 /** ROUTES */
@@ -53,9 +57,9 @@ app.get("/metrics", async (req, res) => {
   try {
     res.set("Content-Type", productRegistry.contentType);
     res.end(await productRegistry.metrics());
-    logger.info("Product Metrics has been scraped successfully!");
+    logger.info("Review Metrics has been scraped successfully!");
   } catch (error) {
-    logger.error("Product Metrics scraping error:", { error });
+    logger.error("Review Metrics scraping error:", { error });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });

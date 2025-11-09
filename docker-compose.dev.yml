@@ -172,6 +172,24 @@ services:
     build:
       context: ./stores
       dockerfile: Dockerfile
+  inventory:
+    depends_on:
+      redis:
+        condition: service_healthy
+    container_name: inventory
+    env_file:
+      - ./inventory/.env
+    networks:
+      - app-tier
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://inventory:4007/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    build:
+      context: ./inventory
+      dockerfile: Dockerfile
   # cart
   cart:
     depends_on:
@@ -317,6 +335,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./audit:/app/audit
       - ./products:/app/products
+      - ./inventory:/app/inventory
       - ./auth:/app/auth
       - ./payment:/app/payment
       - ./categories:/app/categories

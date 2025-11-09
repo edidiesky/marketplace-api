@@ -16,45 +16,35 @@ import {
   UpdateProductService,
   DeleteProductService,
 } from "../../services/product.service";
-import { measureDatabaseQuery } from "../../utils/metrics";
 
 // Mock dependencies
 jest.mock("../../models/Product", () => ({
-  create: jest.fn<() => Promise<IProduct>>(),
-  find: jest.fn<() => Promise<IProduct[]>>(),
-  findById: jest.fn<() => Promise<IProduct>>(),
-  findOneAndUpdate: jest.fn<() => Promise<IProduct>>(),
-  findByIdAndDelete: jest.fn<() => Promise<"">>(),
+  create: jest.fn(),
+  find: jest.fn(),
+  findById: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn(),
 }));
 
 jest.mock("../../config/redis", () => ({
   get: jest.fn<() => Promise<string | null>>().mockResolvedValue(null),
   set: jest
-    .fn<
-      (
-        key: string,
-        value: string,
-        secondsToken: "EX",
-        seconds: number | string
-      ) => Promise<"OK">
-    >()
+    .fn<(key: string, value: string, method: string, timeout: number) => Promise<string>>()
     .mockResolvedValue("OK"),
   del: jest.fn<(key: string) => Promise<number>>().mockResolvedValue(1),
 }));
 
+jest.mock("../../utils/metrics", () => ({
+  measureDatabaseQuery: jest.fn((name: string, fn: () => Promise<any>) => fn()),
+}));
+
 const MockedProduct = Product as jest.Mocked<typeof Product>;
 const MockedRedis = redisClient as jest.Mocked<typeof redisClient>;
-const MockedMeasure = measureDatabaseQuery as jest.MockedFunction<
-  typeof measureDatabaseQuery
->;
 
 describe("Product Service Tests", () => {
-  const userId = "66c0a27e71a3ea08d6a26f8f";
-  const productId = "66c0a27e71a3ea08d6a26f91";
-  const storeId = "66c0a27e71a3ea08d6a26f90";
-  const mockUserId = new Types.ObjectId(userId);
-  const mockStoreId = new Types.ObjectId(storeId);
-  const mockProductId = new Types.ObjectId(productId);
+  const mockUserId = "66c0a27e71a3ea08d6a26f8f";
+  const mockStoreId = "66c0a27e71a3ea08d6a26f90";
+  const mockProductId = "66c0a27e71a3ea08d6a26f91";
 
   const mockProductData: Partial<IProduct> = {
     name: "Test Product",
@@ -64,15 +54,17 @@ describe("Product Service Tests", () => {
   };
 
   const mockProduct: IProduct = {
-    _id: productId,
-    user: userId,
-    store: storeId,
+    _id: new Types.ObjectId(mockProductId),
+    user: new Types.ObjectId(mockUserId),
+    store: new Types.ObjectId(mockStoreId),
     name: "Test Product",
     price: 100,
     images: ["https://example.com/image.jpg"],
     description: "Test description",
     isArchive: false,
-  } as unknown as IProduct;
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -81,212 +73,195 @@ describe("Product Service Tests", () => {
   afterAll(() => {
     jest.restoreAllMocks();
   });
-  describe("POST /api/v1/products/store/3748484", () => {
-    it("should create a product based on complete record", async () => {
-      // Arrange
-      (Product.create as jest.Mock).mockReturnValue(mockProduct);
 
-      // Act
-      const result = await CreateProductService(
-        userId,
-        storeId,
-        mockProductData
-      );
-      // Assert
-      expect(Product.create).toHaveBeenCalledWith({
+  describe("CreateProductService", () => {
+    it("should create a product successfully with all fields", async () => {
+      MockedProduct.create.mockResolvedValue(mockProduct);
+
+      const result = await CreateProductService(mockUserId, mockStoreId, mockProductData);
+
+      expect(MockedProduct.create).toHaveBeenCalledWith({
+        user: new Types.ObjectId(mockUserId),
+        store: new Types.ObjectId(mockStoreId),
         ...mockProductData,
-        user: mockUserId,
-        store: mockStoreId,
       });
-
       expect(result).toEqual(mockProduct);
-      expect(result.description).toBe(mockProduct.description);
-      expect(result.name).toBe(mockProduct.name);
-      expect(result.price).toBe(mockProduct.price);
+      expect(result.name).toBe(mockProductData.name);
+      expect(result.price).toBe(mockProductData.price);
     });
-    it("should return Database error when the DB is down", async () => {
-      const dbError = new Error(
-        "Database is down. Kindly contact support team"
-      );
-      MockedProduct.create.mockRejectedValue(dbError);
+
+    it("should handle creation failure", async () => {
+      MockedProduct.create.mockRejectedValue(new Error("DB Error"));
+
       await expect(
-        CreateProductService(userId, storeId, mockProductData)
-      ).rejects.toThrow("Database is down. Kindly contact support team");
-    });
-    it("should handle validation errors", async () => {
-      const validationError = new Error("Validation failed: price is required");
-      MockedProduct.create.mockRejectedValue(validationError);
-      // ACT & ASSERT
-      await expect(
-        CreateProductService(mockUserId.toString(), mockStoreId.toString(), {
-          name: "Invalid Product",
-          images: [],
-        } as any)
-      ).rejects.toThrow("Validation failed");
+        CreateProductService(mockUserId, mockStoreId, mockProductData)
+      ).rejects.toThrow("DB Error");
     });
   });
-  describe("GET /api/v1/products", () => {
-    it("should return cached product when cache exists", async () => {
-      // Arrange
+
+  describe("GetAllStoreProductService", () => {
+    it("should return cached products when cache exists", async () => {
       const cachedProducts = [mockProduct];
-      const query = { name: "Test" };
+      const query = { name: "test" };
       const page = 0;
       const limit = 10;
-      const cacheKey = `product:search:${JSON.stringify({
-        ...query,
-        skip: page,
-        limit,
-      })}`;
-      MockedRedis.get.mockResolvedValue(JSON.stringify(cachedProducts));
+      const cacheKey = `product:search:${JSON.stringify({ ...query, skip: page, limit })}`;
+      MockedRedis.get.mockResolvedValueOnce(JSON.stringify(cachedProducts));
 
-      // ACT
       const result = await GetAllStoreProductService(query, page, limit);
 
-      // ASSERT
       expect(MockedRedis.get).toHaveBeenCalledWith(cacheKey);
       expect(result).toEqual(cachedProducts);
       expect(MockedProduct.find).not.toHaveBeenCalled();
     });
-    it("should fetch product from DB when the cache is empty", async () => {
-      // Arrange
-      const productData = [mockProduct];
 
-      const skip = 0;
+    it("should fetch and cache products when cache is empty", async () => {
+      const products = [mockProduct];
+      const query = { store: mockStoreId };
+      const page = 0;
       const limit = 10;
-      const sort = "-createdAt";
-      const query = { user: mockUserId };
-      const cacheKey = `product:search:${JSON.stringify({
-        ...query,
-        skip,
-        limit,
-      })}`;
-      const queryChain = {
+      const cacheKey = `product:search:${JSON.stringify({ ...query, skip: page, limit })}`;
+
+      const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
-        lean: jest
-          .fn<() => Promise<IProduct[]>>()
-          .mockResolvedValue(productData),
+        lean: jest.fn().mockResolvedValue(products),
       };
       MockedRedis.get.mockResolvedValueOnce(null);
-      MockedProduct.find.mockReturnValue(queryChain as any);
-      // Act
-      const result = await GetAllStoreProductService(query, skip, limit);
-      // Assert
-      expect(Product.find).toHaveBeenCalledWith(query);
-      expect(queryChain.skip).toHaveBeenCalledWith(skip);
-      expect(queryChain.limit).toHaveBeenCalledWith(limit);
-      expect(queryChain.sort).toHaveBeenCalledWith(sort);
-      expect(queryChain.lean).toHaveBeenCalled();
-      expect(result).toBe(productData);
-      expect(MockedRedis.set).toHaveBeenCalled();
+      MockedProduct.find.mockReturnValue(mockQuery as any);
+
+      const result = await GetAllStoreProductService(query, page, limit);
+
+      expect(MockedProduct.find).toHaveBeenCalledWith(query);
+      expect(mockQuery.skip).toHaveBeenCalledWith(page);
+      expect(mockQuery.limit).toHaveBeenCalledWith(limit);
+      expect(mockQuery.sort).toHaveBeenCalledWith("-createdAt");
+      expect(mockQuery.lean).toHaveBeenCalled();
+      expect(MockedRedis.set).toHaveBeenCalledWith(
+        cacheKey,
+        JSON.stringify(products),
+        "EX",
+        3600
+      );
+      expect(result).toEqual(products);
     });
-    it("should fetch no product when filter query does not match", async () => {
-      const skip = 0;
+
+    it("should handle empty results with caching", async () => {
+      const products: IProduct[] = [];
+      const query = { name: "nonexistent" };
+      const page = 0;
       const limit = 10;
-      const sort = "-createdAt";
-      const query = { user: "23e3321" };
-      const cacheKey = `product:search:${JSON.stringify({
-        ...query,
-        skip,
-        limit,
-      })}`;
-      const queryChain = {
+      const cacheKey = `product:search:${JSON.stringify({ ...query, skip: page, limit })}`;
+
+      const mockQuery = {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
-        lean: jest.fn<() => Promise<IProduct[]>>().mockResolvedValue([]),
+        lean: jest.fn().mockResolvedValue(products),
       };
       MockedRedis.get.mockResolvedValueOnce(null);
-      MockedProduct.find.mockReturnValue(queryChain as any);
-      // Act
-      const result = await GetAllStoreProductService(query, skip, limit);
-      // Assert
-      expect(Product.find).toHaveBeenCalledWith(query);
+      MockedProduct.find.mockReturnValue(mockQuery as any);
+
+      const result = await GetAllStoreProductService(query, page, limit);
+
       expect(result).toEqual([]);
+      expect(MockedRedis.set).toHaveBeenCalledWith(
+        cacheKey,
+        JSON.stringify(products),
+        "EX",
+        3600
+      );
     });
   });
-  describe("GET /api/v1/products/273373", () => {
-    it("should fetch single product from DB when cache is empty", async () => {
-      // Arrange
-      const id = productId;
-      const cacheKey = `product:${id}`;
+
+  describe("GetASingleProductService", () => {
+    it("should return cached product when available", async () => {
+      const cacheKey = `product:${mockProductId}`;
+      MockedRedis.get.mockResolvedValueOnce(JSON.stringify(mockProduct));
+
+      const result = await GetASingleProductService(mockProductId);
+
+      expect(MockedRedis.get).toHaveBeenCalledWith(cacheKey);
+      expect(result).toEqual(mockProduct);
+      expect(MockedProduct.findById).not.toHaveBeenCalled();
+    });
+
+    it("should fetch and cache product when not cached", async () => {
+      const cacheKey = `product:${mockProductId}`;
       MockedRedis.get.mockResolvedValueOnce(null);
       MockedProduct.findById.mockResolvedValue(mockProduct);
-      // Act
-      const result = await GetASingleProductService(productId);
-      // Assert
-      expect(MockedProduct.findById).toHaveBeenCalledWith(id);
-      expect(result).toBe(mockProduct);
-      expect(MockedRedis.set).toHaveBeenCalled();
+
+      const result = await GetASingleProductService(mockProductId);
+
+      expect(MockedProduct.findById).toHaveBeenCalledWith(mockProductId);
+      expect(MockedRedis.set).toHaveBeenCalledWith(
+        cacheKey,
+        JSON.stringify(mockProduct),
+        "EX",
+        3600
+      );
+      expect(result).toEqual(mockProduct);
     });
-    it("should return null when the product does not exists", async () => {
-      // Arrange
-      const id = "";
-      const cacheKey = `product:${id}`;
+
+    it("should return null when product does not exist", async () => {
       MockedRedis.get.mockResolvedValueOnce(null);
       MockedProduct.findById.mockResolvedValue(null);
-      // Act
-      const result = await GetASingleProductService(productId);
-      // Assert
+
+      const result = await GetASingleProductService(mockProductId);
+
       expect(result).toBeNull();
       expect(MockedRedis.set).not.toHaveBeenCalled();
     });
-    it("should fetch single product from cache when cache is not empty", async () => {
-      // Arrange
-      const id = productId;
-      const cacheKey = `product:${id}`;
-      MockedRedis.get.mockResolvedValueOnce(JSON.stringify(mockProduct));
-      MockedProduct.findById.mockResolvedValue(null);
-      // Act
-      const result = await GetASingleProductService(productId);
-      // Assert
-      expect(MockedProduct.findById).not.toHaveBeenCalled();
-      expect(result).toEqual(mockProduct);
-      expect(MockedRedis.get).toHaveBeenCalledWith(cacheKey);
-    });
   });
-  describe("PUT /api/v1/products/173348", () => {
-    it("should update product succesfully", async () => {
-      const id = productId;
-      const mockProductData: Partial<IProduct> = {
-        name: "Test2 Product",
-        description: "Test2 description",
-        price: 200,
-      };
-      const mockUpdatedProduct: IProduct = {
-        _id: productId,
-        user: userId,
-        store: storeId,
-        images: ["https://example.com/image.jpg"],
-        isArchive: false,
-        ...mockProductData,
-      } as unknown as IProduct;
-      MockedProduct.findOneAndUpdate.mockResolvedValue(mockUpdatedProduct);
 
-      // Act
-      const result = await UpdateProductService(id, mockProductData);
-      // Assert
-      expect(MockedProduct.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: productId },
-        { $set: mockProductData },
+  describe("UpdateProductService", () => {
+    it("should update product successfully", async () => {
+      const updateData = { price: 150, description: "Updated description" };
+      const updatedProduct = { ...mockProduct, ...updateData };
+      MockedProduct.findByIdAndUpdate.mockResolvedValue(updatedProduct);
+
+      const result = await UpdateProductService(mockProductId, updateData);
+
+      expect(MockedProduct.findByIdAndUpdate).toHaveBeenCalledWith(
+        mockProductId,
+        { $set: updateData },
         { new: true, runValidators: true }
       );
-      expect(result).toBe(mockUpdatedProduct);
+      expect(result).toEqual(updatedProduct);
+      expect(result?.price).toBe(150);
     });
+
     it("should return null when product not found", async () => {
-      const id = "";
-      const mockProductData: Partial<IProduct> = {
-        name: "Test2 Product",
-        description: "Test2 description",
-        price: 200,
-      };
-  
-      MockedProduct.findOneAndUpdate.mockResolvedValue(null);
-      // Act
-      const result = await UpdateProductService(id, mockProductData);
-      // Assert
+      MockedProduct.findByIdAndUpdate.mockResolvedValue(null);
+
+      const result = await UpdateProductService(mockProductId, { price: 150 });
+
       expect(result).toBeNull();
+    });
+  });
+
+  describe("DeleteProductService", () => {
+    it("should delete product and clear cache successfully", async () => {
+      const cacheKey = `product:${mockProductId}`;
+      MockedProduct.findByIdAndDelete.mockResolvedValue(mockProduct);
+
+      const result = await DeleteProductService(mockProductId);
+
+      expect(MockedProduct.findByIdAndDelete).toHaveBeenCalledWith(mockProductId);
+      expect(MockedRedis.del).toHaveBeenCalledWith(cacheKey);
+      expect(result).toBe("Product has been deleted");
+    });
+
+    it("should handle deletion failure gracefully", async () => {
+      const cacheKey = `product:${mockProductId}`;
+      MockedProduct.findByIdAndDelete.mockResolvedValue(null);
+
+      const result = await DeleteProductService(mockProductId);
+
+      expect(MockedProduct.findByIdAndDelete).toHaveBeenCalledWith(mockProductId);
+      expect(MockedRedis.del).toHaveBeenCalledWith(cacheKey);
+      expect(result).toBe("Product has been deleted");
     });
   });
 });

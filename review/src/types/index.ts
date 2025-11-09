@@ -26,3 +26,8 @@ export enum Permission {
   DELETE_USER = "DELETE_USER",
   VIEW_REPORTS = "VIEW_REPORTS",
 }
+
+export interface CreateCategoryInput {
+  name: string;
+  value: string;
+}

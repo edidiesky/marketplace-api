@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 
 /** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Product route is Fine!" });
+  res.json({ status: "View route is Fine!" });
 });
 
 /** ROUTES */
@@ -57,9 +57,9 @@ app.get("/metrics", async (req, res) => {
   try {
     res.set("Content-Type", productRegistry.contentType);
     res.end(await productRegistry.metrics());
-    logger.info("Product Metrics has been scraped successfully!");
+    logger.info("View Metrics has been scraped successfully!");
   } catch (error) {
-    logger.error("Product Metrics scraping error:", { error });
+    logger.error("View Metrics scraping error:", { error });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });

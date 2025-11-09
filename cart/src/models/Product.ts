@@ -8,6 +8,8 @@ export interface IProduct {
   images: string[];
   description?: string;
   price: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ProductSchema = new Schema<IProduct>(

@@ -8,6 +8,8 @@ import { connectMongoDB } from "./utils/connectDB";
 import {
   trackError,
   serverHealthGauge,
+  databaseConnectionsGauge,
+  businessOperationCounter,
 } from "./utils/metrics";
 
 async function GracefulShutdown() {
@@ -42,7 +44,7 @@ app.use(errorHandler);
 
 app.listen(PORT, async () => {
   const serverStartTime = process.hrtime();
-  logger.info(`Product Server running on port ${PORT}`);
+  logger.info(`Stores Server running on port ${PORT}`);
 
   const mongoUrl = process.env.DATABASE_URL;
   if (!mongoUrl) {
