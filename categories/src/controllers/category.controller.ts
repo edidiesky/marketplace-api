@@ -13,8 +13,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { AuthenticatedRequest } from "../types/index";
-import { FilterQuery } from "mongoose";
-import { ICategory } from "../models/Categories";
+import buildQuery from "../utils/buildQuery";
 
 export const CreateCategoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -22,56 +21,26 @@ export const CreateCategoryHandler = asyncHandler(
     const storeid = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
 
-    const category = await CreateCategoryService(userId, storeid, { name, value });
+    const category = await CreateCategoryService(userId, storeid, {
+      name,
+      value,
+    });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(category);
   }
 );
 
 export const GetAllStoreCategoryHandler = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const storeid = req.params.storeid;
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      name,
-      startDate,
-      endDate,
-    } = req.query;
+    const { page = 1, limit = 10 } = req.query;
 
     const parsedPage = Number(page) || 1;
     const parsedLimit = Number(limit) || 10;
     const skip = (parsedPage - 1) * parsedLimit;
 
-    let queryFilter: FilterQuery<ICategory> = {
-      store: storeid,
-      user: userId,
-    };
+    let queryFilter = buildQuery(req);
 
-    if (startDate && endDate) {
-      queryFilter.createdAt = {
-        $gte: new Date(startDate as string),
-        $lte: new Date(endDate as string),
-      };
-    }
-
-    if (search) {
-      queryFilter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { value: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (name) {
-      queryFilter.name = { $regex: name, $options: "i" };
-    }
-
-    const { categories, totalCount, totalPages } = await GetAllStoreCategoryService(
-      queryFilter,
-      skip,
-      parsedLimit
-    );
+    const { categories, totalCount, totalPages } =
+      await GetAllStoreCategoryService(queryFilter, skip, parsedLimit);
 
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       data: categories,

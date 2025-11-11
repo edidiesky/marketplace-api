@@ -1,10 +1,11 @@
 import { Kafka, logLevel, Consumer } from "kafkajs";
 import logger from "../utils/logger";
 import { PaymentTopic } from "./topics";
+import { sendPaymentMessage } from "./producer";
 
 const kafka = new Kafka({
   clientId: "Payment_Service",
-  brokers: ["kafka:9092"],
+  brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   logLevel: logLevel.ERROR,
   retry: {
     initialRetryTime: 2000,
@@ -17,7 +18,7 @@ const kafka = new Kafka({
 const consumer: Consumer = kafka.consumer({
   groupId: "Payment-group",
   sessionTimeout: 30000,
-  heartbeatInterval: 3000, 
+  heartbeatInterval: 3000,
   rebalanceTimeout: 60000,
   maxBytesPerPartition: 1048576,
   maxWaitTimeInMs: 5000,
@@ -72,7 +73,7 @@ export async function connectConsumer() {
 }
 
 /**
- * Start consuming messages
+ * SHandler for Consuming Messages
  */
 async function startConsuming() {
   await consumer.run({
@@ -115,7 +116,7 @@ async function startConsuming() {
           return;
         }
         await handler(data);
-        // COMMITING OFFSET AFTER THE MESSAGE AHS BEEN PROCESSED
+        // COMMITING OFFSET AFTER THE MESSAGE HAS BEEN PROCESSED
         await commitOffset(topic, partition, message.offset);
 
         // Send heartbeat periodically (especially for long-running tasks)
@@ -174,7 +175,7 @@ async function commitOffset(topic: string, partition: number, offset: string) {
 }
 
 /**
- * Send failed messages to Dead Letter Queue
+ * Handler for Dead Letter Queue
  */
 async function sendToDLQ(
   originalTopic: string,
@@ -184,8 +185,6 @@ async function sendToDLQ(
   error: Error
 ) {
   try {
-    const { sendPaymentMessage } = await import("./producer");
-
     await sendPaymentMessage(
       "payment.dlq",
       {
@@ -202,7 +201,7 @@ async function sendToDLQ(
         },
         failedAt: new Date().toISOString(),
       },
-      message.key?.toString() // Maintain same partition key
+      message.key?.toString()
     );
 
     logger.info("Message sent to DLQ", {

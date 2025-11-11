@@ -1,0 +1,426 @@
+# API GATEWAY
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: eddy/api-gateway
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# AUDIT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: audit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audit
+  template:
+    metadata:
+      labels:
+        app: audit
+    spec:
+      containers:
+        - name: audit
+          image: eddy/audit
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+
+# AUTHENTICATION
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: authentication
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication
+  template:
+    metadata:
+      labels:
+        app: authentication
+    spec:
+      containers:
+        - name: authentication
+          image: eddy/authentication
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# CART
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart
+  template:
+    metadata:
+      labels:
+        app: cart
+    spec:
+      containers:
+        - name: cart
+          image: eddy/cart
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+---
+# CATEGORIES
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: categories
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: categories
+  template:
+    metadata:
+      labels:
+        app: categories
+    spec:
+      containers:
+        - name: categories
+          image: eddy/categories
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# COLOR
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: color
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: color
+  template:
+    metadata:
+      labels:
+        app: color
+    spec:
+      containers:
+        - name: color
+          image: eddy/color
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# INVENTORY
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+  template:
+    metadata:
+      labels:
+        app: inventory
+    spec:
+      containers:
+        - name: inventory
+          image: eddy/inventory
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# ORDERS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders
+  template:
+    metadata:
+      labels:
+        app: orders
+    spec:
+      containers:
+        - name: orders
+          image: eddy/orders
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# PAYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: payment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+        - name: payment
+          image: eddy/payment
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+---
+# PRODUCTS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: products
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products
+  template:
+    metadata:
+      labels:
+        app: products
+    spec:
+      containers:
+        - name: products
+          image: eddy/products
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+
+---
+# REVIEW
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: review
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: review
+  template:
+    metadata:
+      labels:
+        app: review
+    spec:
+      containers:
+        - name: review
+          image: eddy/review
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+---
+# SIZE
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: size
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: size
+  template:
+    metadata:
+      labels:
+        app: size
+    spec:
+      containers:
+        - name: size
+          image: eddy/size
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+---
+# STORES
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: stores
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stores
+  template:
+    metadata:
+      labels:
+        app: stores
+    spec:
+      containers:
+        - name: stores
+          image: eddy/stores
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+---
+# TENANT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tenant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tenant
+  template:
+    metadata:
+      labels:
+        app: tenant
+    spec:
+      containers:
+        - name: tenant
+          image: eddy/tenant
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+
+
+---
+# VIEW
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: view
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: view
+  template:
+    metadata:
+      labels:
+        app: view
+    spec:
+      containers:
+        - name: view
+          image: eddy/view
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "200Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"

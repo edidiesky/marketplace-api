@@ -5,3 +5,5 @@ export const SUCCESSFULLY_FETCHED_STATUS_CODE = 200;
 export const UNAUTHENTICATED_STATUS_CODE = 401;
 export const NOT_FOUND_STATUS_CODE = 404;
 export const SERVER_ERROR_STATUS_CODE = 500;
+
+export const 
