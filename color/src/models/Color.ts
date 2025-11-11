@@ -1,8 +1,9 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 export interface IColor {
-  user: Types.ObjectId;
-  store: Types.ObjectId; 
+  userId: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  storeId: Types.ObjectId;
   name: string;
   value: string;
   createdAt: Date;
@@ -11,12 +12,17 @@ export interface IColor {
 
 const ColorSchema = new Schema<IColor>(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "User",
     },
-    store: {
+    storeId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "Store",
+    },
+    tenantId: {
       type: Schema.Types.ObjectId,
       required: true,
       ref: "Store",
@@ -37,8 +43,7 @@ const ColorSchema = new Schema<IColor>(
   { timestamps: true }
 );
 
-
-ColorSchema.index({ store: 1, _id: 1 });
+ColorSchema.index({ storeId: 1, userId: 1, tenantId: 1 });
 
 const ColorModel = mongoose.model<IColor>("Color", ColorSchema);
 export default ColorModel;

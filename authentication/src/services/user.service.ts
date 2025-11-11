@@ -12,15 +12,15 @@ import { REDIS_TTL } from "../constants";
 interface ChartDataPoint {
   date: string;
   totalUsers: number;
-  individualUsers: number;
-  corporateUsers: number;
+  customer: number;
+  sellers: number;
 }
 
 
 interface UserChartData {
   totalUsers: number;
-  individualUsers: number;
-  corporateUsers: number;
+  customer: number;
+  sellers: number;
   adminUsers: number;
   payeUsers: number;
   chartData: ChartDataPoint[];
@@ -374,28 +374,18 @@ export const getUserChartDataService = async (
             $cond: [{ $eq: ["$_id.userType", UserType.ADMIN] }, "$count", 0],
           },
         },
-        chairman: {
-          $sum: {
-            $cond: [{ $eq: ["$_id.userType", UserType.CHAIRMAN] }, "$count", 0],
-          },
-        },
-        paye: {
-          $sum: {
-            $cond: [{ $eq: ["$_id.userType", UserType.PAYE] }, "$count", 0],
-          },
-        },
-        individualUsers: {
+        customer: {
           $sum: {
             $cond: [
-              { $eq: ["$_id.userType", UserType.INDIVIDUAL] },
+              { $eq: ["$_id.userType", UserType.CUSTOMER] },
               "$count",
               0,
             ],
           },
         },
-        corporateUsers: {
+        sellers: {
           $sum: {
-            $cond: [{ $eq: ["$_id.userType", UserType.COMPANY] }, "$count", 0],
+            $cond: [{ $eq: ["$_id.userType", UserType.SELLERS] }, "$count", 0],
           },
         },
       },
@@ -406,12 +396,12 @@ export const getUserChartDataService = async (
     {
       $project: {
         date: "$_id",
-        totalUsers: { $add: ["$individualUsers", "$corporateUsers"] },
+        totalUsers: { $add: ["$customer", "$sellers"] },
         totalAdminstrators: { $add: ["$adminUsers", "$payeUsers"] },
-        individualUsers: 1,
+        customer: 1,
         adminUsers: 1,
         payeUsers: 1,
-        corporateUsers: 1,
+        sellers: 1,
         _id: 0,
       },
     },
@@ -428,12 +418,12 @@ export const getUserChartDataService = async (
     (sum, point) => sum + point.totalUsers,
     0
   );
-  const individualUsers = chartData.reduce(
-    (sum, point) => sum + point.individualUsers,
+  const customer = chartData.reduce(
+    (sum, point) => sum + point.customer,
     0
   );
-  const corporateUsers = chartData.reduce(
-    (sum, point) => sum + point.corporateUsers,
+  const sellers = chartData.reduce(
+    (sum, point) => sum + point.sellers,
     0
   );
 
@@ -446,8 +436,8 @@ export const getUserChartDataService = async (
 
   const result: UserChartData = {
     totalUsers,
-    individualUsers,
-    corporateUsers,
+    customer,
+    sellers,
     chartData,
     adminUsers,
     payeUsers,

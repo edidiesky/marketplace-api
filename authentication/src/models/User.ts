@@ -11,6 +11,7 @@ export enum UserType {
   SELLERS = "SELLERS",
   ADMIN = "ADMIN",
   INVESTORS = "INVESTORS",
+  CUSTOMER = "CUSTOMER",
 }
 
 export enum RoleLevel {

@@ -32,8 +32,8 @@ import { AuthenticatedRequest } from "../types";
 export const GetAllUsersHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const user = (req as AuthenticatedRequest).user;
-    const { userId, userType: role } = user;
-    // let role = userType
+    const { userId, role } = user;
+    // let role = role
     const {
       page = "1",
       limit = "10",
@@ -43,9 +43,8 @@ export const GetAllUsersHandler = asyncHandler(
       endDate,
       directory,
     } = req.query;
-    const queryObjects: FilterQuery<IUser> = {
-    };
-    if (userType) queryObjects.userType = userType;
+    const queryObjects: FilterQuery<IUser> = {};
+    if (userType) queryObjects.role = userType;
     if (startDate)
       queryObjects.createdAt = {
         $gte: new Date(startDate as string),
@@ -128,7 +127,6 @@ export const GetSingleUsersHandler = asyncHandler(
   }
 );
 
-
 /**
  * @description It Updates an existing User by ID.
  * @route PUT /Users/:id
@@ -146,7 +144,7 @@ export const UpdateUserHandler = asyncHandler(
 
     logger.info("User update requested", { userId, id });
 
-    const existingUser = await User.findOne({_id: id });
+    const existingUser = await User.findOne({ _id: id });
     if (!existingUser) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("User not found");
@@ -154,7 +152,7 @@ export const UpdateUserHandler = asyncHandler(
 
     // Ensure passwordHash exists
     if (!existingUser.passwordHash) {
-      logger.error("User missing passwordHash", {_id: id });
+      logger.error("User missing passwordHash", { _id: id });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("User account is misconfigured. Contact support.");
     }
@@ -277,8 +275,7 @@ export const GetAggregatedUserHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const startTime = process.hrtime();
     const user = (req as AuthenticatedRequest).user;
-    const { userId, userType } = user;
-    const role = userType;
+    const { userId, role } = user;
     const {
       timeFrameDays = "60",
       activeTimeFrameDays = "60",
@@ -288,11 +285,7 @@ export const GetAggregatedUserHandler = asyncHandler(
     } = req.query;
 
     const {
-      totalAdmin,
-      totalCompanies,
       totalIndividuals,
-      totalMaleEmployees,
-      totalFemaleEmployees,
       totalUsers,
     } = await getAggregatedUserService(
       userId,
@@ -315,14 +308,10 @@ export const GetAggregatedUserHandler = asyncHandler(
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       totalUsers,
       totalIndividuals,
-      totalCompanies,
-      totalAdmin,
-      totalMaleEmployees,
-      totalFemaleEmployees,
       chartData: {
         totalUsers: chartData.totalUsers,
-        individualUsers: chartData.individualUsers,
-        corporateUsers: chartData.corporateUsers,
+        customerUsers: chartData.customer,
+        sellers: chartData.sellers,
         series: chartData.chartData,
       },
       duration: `${seconds}seconds ${nanoseconds / 1e6}millis`,

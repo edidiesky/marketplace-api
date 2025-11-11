@@ -9,6 +9,10 @@
     "test:watch": "jest --watch --coverage"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.67.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
+    "@opentelemetry/sdk-node": "^0.208.0",
     "amqplib": "^0.10.8",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.1",

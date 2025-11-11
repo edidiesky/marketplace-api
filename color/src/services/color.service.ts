@@ -12,11 +12,13 @@ import { measureDatabaseQuery } from "../utils/metrics";
 export const CreateColorService = async (
   userId: string,
   storeId: string,
+  tenantId:string,
   { name, value }: CreateColorInput
 ) => {
   const colorData = {
     user: new Types.ObjectId(userId),
     store: new Types.ObjectId(storeId),
+    tenantId:new Types.ObjectId(tenantId),
     name,
     value,
   };

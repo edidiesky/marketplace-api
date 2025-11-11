@@ -565,6 +565,16 @@ services:
       - prom_data:/prometheus
     networks:
       - app-tier
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200" # HTTP API
+      - "4318:4318" # OTLP gRPC
+      - "4317:4317" # OTLP HTTP
   loki:
     image: grafana/loki:latest
     ports:
@@ -632,6 +642,7 @@ services:
     volumes:
       - ./grafana.ini:/etc/grafana/grafana.ini
       - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources/tempo.yaml:/etc/grafana/provisioning/datasources/tempo.yaml
     networks:
       - app-tier
 volumes:

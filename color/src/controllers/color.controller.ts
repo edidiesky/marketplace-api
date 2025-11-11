@@ -13,59 +13,33 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { AuthenticatedRequest } from "../types/index";
-import { FilterQuery } from "mongoose";
-import { IColor } from "../models/Color";
+import buildQuery from "../utils/buildQuery";
 
 export const CreateColorHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { name, value } = req.body as { name: string; value: string };
+    const { name, value, tenantId } = req.body
     const storeid = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
-
-    const color = await CreateColorService(userId, storeid, { name, value });
+    const color = await CreateColorService(userId, storeid, tenantId, {
+      name,
+      value,
+    });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(color);
   }
 );
 
 export const GetAllStoreColorHandler = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const storeid = req.params.storeid;
     const {
       page = 1,
       limit = 10,
-      search,
-      name,
-      startDate,
-      endDate,
     } = req.query;
 
     const parsedPage = Number(page) || 1;
     const parsedLimit = Number(limit) || 10;
     const skip = (parsedPage - 1) * parsedLimit;
 
-    let queryFilter: FilterQuery<IColor> = {
-      store: storeid,
-      user: userId,
-    };
-
-    if (startDate && endDate) {
-      queryFilter.createdAt = {
-        $gte: new Date(startDate as string),
-        $lte: new Date(endDate as string),
-      };
-    }
-
-    if (search) {
-      queryFilter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { value: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    if (name) {
-      queryFilter.name = { $regex: name, $options: "i" };
-    }
+    let queryFilter = buildQuery(req)
 
     const { colors, totalCount, totalPages } = await GetAllStoreColorService(
       queryFilter,
