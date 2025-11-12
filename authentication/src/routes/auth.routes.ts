@@ -16,8 +16,6 @@ import {
   Verify2FA,
   RefreshToken,
   ChangePasswordHandler,
-  RestrictAccountHandler,
-  UnrestrictAccountHandler,
 } from "../controllers/auth.controller";
 import {
   authenticate,
@@ -88,22 +86,6 @@ router.post(
   "/logout",
   (req: Request, res: Response, next: NextFunction): void => {
     void LogoutUserHandler(req, res, next);
-  }
-);
-
-router.put(
-  "/restrict-account",
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void RestrictAccountHandler(req, res);
-  }
-);
-
-router.put(
-  "/unrestrict-account",
-  authenticate,
-  (req: Request, res: Response, next: NextFunction): void => {
-    void UnrestrictAccountHandler(req, res, next);
   }
 );
 

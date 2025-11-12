@@ -1,17 +1,17 @@
-// consumer.ts
 import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 import logger from "../utils/logger";
-import { PaymentTopic } from "./topics";
-import { sendPaymentMessage } from "./producer";
+import { NotificationTopic } from "./topics";
+import { sendNotificationMessage } from "./producer";
+import { QUEUES } from "../constants";
 
 const kafka = new Kafka({
-  clientId: "Payment_Service",
+  clientId: "Notification_Service",
   brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
 });
 
 const consumer: Consumer = kafka.consumer({
-  groupId: "Payment-group",
+  groupId: "Notification-group",
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
   rebalanceTimeout: 60000,
@@ -32,16 +32,10 @@ export async function connectConsumer() {
     try {
       await consumer.connect();
       await consumer.subscribe({
-        topics: [
-          "Payment.initiated",
-          "Payment.processed",
-          "Payment.recorded",
-          "Payment.failed",
-          "Payment.completed",
-        ],
+        topics: Object.values(QUEUES),
         fromBeginning: false,
       });
-      logger.info("Payment consumer connected");
+      logger.info("Notification consumer connected");
       await startConsuming();
       return;
     } catch (err) {
@@ -59,7 +53,6 @@ async function startConsuming() {
       const { topic, partition, message, heartbeat, pause } = payload;
       const start = Date.now();
 
-      // --- SAFE PARSING ---
       let data: any;
       try {
         if (!message.value) {
@@ -93,7 +86,7 @@ async function startConsuming() {
         });
 
         const handler =
-          PaymentTopic[topic as keyof typeof PaymentTopic];
+          NotificationTopic[topic as keyof typeof NotificationTopic];
         if (!handler) {
           logger.warn("No handler for topic", { topic });
           await commitOffset(topic, partition, message.offset);
@@ -149,7 +142,7 @@ async function sendToDLQ(
   err: Error
 ) {
   try {
-    await sendPaymentMessage("Payment.dlq", {
+    await sendNotificationMessage("Notification.dlq", {
       originalTopic: origTopic,
       partition,
       offset: msg.offset,

@@ -1,3 +1,3 @@
-export const PaymentTopic  = {
-    "":async()=> {}
-}
+export const PaymentTopic = {
+  "": async (data: any) => {},
+};

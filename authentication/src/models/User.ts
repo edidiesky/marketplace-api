@@ -148,14 +148,12 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 UserSchema.index({
-  createdAt: 1,
+  createdAt: -1,
   userType: 1,
   institutionType: 1,
 });
-UserSchema.index({ cacNumber: 1 }, { sparse: true });
-UserSchema.index({ nin: 1 }, { sparse: true });
-UserSchema.index({ phone: 1 }, { unique: true, sparse: true });
-UserSchema.index({ firstName: 1 }, { sparse: true });
+UserSchema.index({createdAt: -1, firstName: 1 });
+UserSchema.index({createdAt: -1, email: 1 });
 
 UserSchema.pre<IUser>("save", function (next) {
   if (this.isModified() || this.isNew) {
