@@ -1,31 +1,20 @@
 import bcrypt from "bcryptjs";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import User, {
-  IUser,
-  NationalType,
-  UserType,
-  VerificationStatus,
-} from "../models/User";
+import User from "../models/User";
 import { v4 as uuidv4 } from "uuid";
 import { generateToken, signJwt } from "../utils/generateToken";
-import { generateUniquePassword } from "../utils/generatePassword";
 import logger from "../utils/logger";
 import { generateSecureToken } from "../utils/resetTokenGenerator";
 import { PasswordResetToken } from "../models/ResetPassword";
 import {
-  ACCOUNT_RESTRICTION,
-  ACCOUNT_UNRESTRICTION,
   BAD_REQUEST_STATUS_CODE,
-  BULK_TAXPAYER_SMS_TOPIC,
-  LOGIN_2FA_TOPIC,
   NOT_FOUND_STATUS_CODE,
-  REDIS_TTL,
-  SERVER_ERROR_STATUS_CODE,
+  BASE_EXPIRATION_SEC,
   SUCCESSFULLY_CREATED_STATUS_CODE,
-  USER_LOGIN_TOPIC,
-  USER_NOTIFICATION_SUCCESS,
-  USER_REGISTRATION_TOPIC,
+  SERVER_ERROR_STATUS_CODE,
+  SUCCESSFULLY_FETCHED_STATUS_CODE,
+  NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
 import {
@@ -35,7 +24,209 @@ import {
 } from "../utils/metrics";
 import { normalizePhoneNumber } from "../utils/normalizePhoneNumber";
 import mongoose from "mongoose";
-import { Role, UserRole } from "../models/Role";
+import {
+  getRedisOnboardingKey,
+  setOnboardingData,
+} from "../utils/redisOnboarding";
+import { IOnboarding } from "../types";
+import { sendAuthenticationMessage } from "@/messaging/producer";
+
+/**
+ * @description Handler email Onboarding step
+ * @route POST /api/v1/auth/email/confirmation
+ * @access Public
+ */
+export const HandleEmailOnboardingStep = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, firstName, lastName, notificationId } = req.body;
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Prevent duplicate
+      const existingUser = await User.findOne({ email: normalizedEmail });
+      if (existingUser) {
+        logger.error("Email already exists in the system:", email);
+        throw new Error("Email already registered");
+      }
+
+      // Sending magic link
+      const token = uuidv4();
+      const link = `${
+        process.env.WEB_ORIGIN
+      }/onboarding/verify-email?token=${token}&email=${encodeURIComponent(
+        normalizedEmail
+      )}`;
+
+      const expiresAt = Date.now() + 60 * 15;
+      // Saving to Redis
+      await setOnboardingData({
+        email: normalizedEmail,
+        step: "email",
+        firstName,
+        lastName,
+        tokenObject: {
+          token,
+          expiresAt,
+        },
+      });
+
+      await sendAuthenticationMessage(
+        NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
+        {
+          email,
+          firstName,
+          lastName,
+          notificationId,
+          verification_url: link,
+        }
+      );
+
+      res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+        data: null,
+        success: true,
+        statusCode: SUCCESSFULLY_CREATED_STATUS_CODE,
+        message: `Verification email has been to this email, ${email}. Please check your email to proceed to the next stage of onboarding`,
+      });
+    } catch (error) {
+      logger.error("Email onboarding error:", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+        stack:
+          error instanceof Error
+            ? error.stack
+            : "An unknown has occurred during email onboarding",
+      });
+      res.status(SERVER_ERROR_STATUS_CODE).json({
+        data: null,
+        success: false,
+        statusCode: SERVER_ERROR_STATUS_CODE,
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+      });
+    }
+  }
+);
+
+/**
+ * @description Handler email Onboarding Token confirmation step
+ * @route GET /api/v1/auth/email/confirmation?email="email"&token="token"
+ * @access Public
+ */
+export const HandleConfirmEmailToken = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token, email } = req.query as { email: string; token: string };
+      const key = getRedisOnboardingKey(email);
+      const state = await redisClient.get(key);
+      if (!state) {
+        throw new Error(
+          "No onboarding session found for this process. Please kindly restart"
+        );
+      }
+      let existingOnboardingData: IOnboarding = JSON.parse(state);
+
+      if (existingOnboardingData.tokenObject?.token !== token) {
+        throw new Error("The token provided is not valid for onboarding");
+      }
+
+      if (
+        existingOnboardingData.tokenObject?.expiresAt &&
+        new Date(existingOnboardingData.tokenObject?.expiresAt) < new Date()
+      ) {
+        logger.error(
+          "The token provided has already expired please can u retry the onboarding flow again"
+        );
+        throw new Error(
+          "The token provided has already expired please can u retry the onboarding flow again"
+        );
+      }
+
+      res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+        data: null,
+        success: true,
+        message: "Email verified! Proceed to phone verification.",
+        nextStep: "phone",
+      });
+    } catch (error) {
+      logger.error("Email onboarding error:", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+        stack:
+          error instanceof Error
+            ? error.stack
+            : "An unknown has occurred during email onboarding",
+      });
+      res.status(SERVER_ERROR_STATUS_CODE).json({
+        data: null,
+        success: false,
+        statusCode: SERVER_ERROR_STATUS_CODE,
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+      });
+    }
+  }
+);
+
+/**
+ * @description Handler password Onboarding step
+ * @route POST /api/v1/auth/password/confirmation
+ * @access Public
+ */
+export const HandlePasswordOnboardingStep = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { password, email } = req.body;
+      const normalizedPassword = password.toLowerCase().trim();
+
+      let salt = await bcrypt.genSalt(12);
+      let hashedPassword = await bcrypt.hash(normalizedPassword, salt);
+
+      await setOnboardingData({
+        email,
+        passwordHash: hashedPassword,
+        step: "password",
+      });
+
+      res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+        data: {
+          email,
+        },
+        success: true,
+        statusCode: SUCCESSFULLY_CREATED_STATUS_CODE,
+        message: `Verification Password set in place, kindly, proceed to the next stage of onboarding`,
+      });
+    } catch (error) {
+      logger.error("Email onboarding error:", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+        stack:
+          error instanceof Error
+            ? error.stack
+            : "An unknown has occurred during email onboarding",
+      });
+      res.status(SERVER_ERROR_STATUS_CODE).json({
+        data: null,
+        success: false,
+        statusCode: SERVER_ERROR_STATUS_CODE,
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during email onboarding",
+      });
+    }
+  }
+);
+
 
 /**
  * @description Handler to Registers a new Client.
@@ -67,7 +258,7 @@ const RegisterUser = asyncHandler(
 );
 
 /**
- * @description Hnadler to login the user and also initialize 2FA
+ * @description Handler to login the user and also initialize 2FA
  * @route POST /api/v1/auth/login
  * @access Public
  * @param {object} req.body - { email, password }
@@ -100,7 +291,7 @@ const LoginUser = asyncHandler(
       if (user) {
         await redisClient.setex(
           cacheKey,
-          REDIS_TTL,
+          BASE_EXPIRATION_SEC,
           JSON.stringify(user.toObject())
         );
       }
@@ -325,7 +516,7 @@ const RefreshToken = asyncHandler(
       `refresh:${newRefreshToken}`,
       JSON.stringify({ email, userType, name }),
       "EX",
-      REDIS_TTL
+      BASE_EXPIRATION_SEC
     );
     // Set new access token in cookie
     res.cookie("jwt", newAccessToken, {
@@ -408,7 +599,11 @@ const ResetPasswordHandler = asyncHandler(
       // Update Redis cache
       const cacheKey = `user:${user.email}`;
       const userObject = user.toObject();
-      await redisClient.setex(cacheKey, REDIS_TTL, JSON.stringify(userObject));
+      await redisClient.setex(
+        cacheKey,
+        BASE_EXPIRATION_SEC,
+        JSON.stringify(userObject)
+      );
 
       logger.info("Password reset successfully", { email: user.email });
 
@@ -470,7 +665,6 @@ const LogoutUserHandler = asyncHandler(
     res.status(200).json({ message: "Logged out succesfully!!" });
   }
 );
-
 
 export {
   RegisterUser,

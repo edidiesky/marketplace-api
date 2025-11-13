@@ -43,13 +43,6 @@ export enum TWOFA {
   APP = "APP",
 }
 
-/** ENUM FOR Marital Status */
-export enum MaritalStatus {
-  SINGLE = "SINGLE",
-  MARRIED = "MARRIED",
-  DIVORCED = "DIVORCED",
-}
-
 export enum NationalType {
   NIGERIAN = "NIGERIAN",
   FOREIGN = "FOREIGN",
@@ -77,7 +70,6 @@ export interface IUser extends Document {
   profileImage: string;
   gender?: Gender;
   nationality?: string;
-  maritalStatus?: MaritalStatus;
   lastActiveAt?: Date;
   falseIdentificationFlag: boolean;
 }
@@ -136,10 +128,6 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(Gender),
     },
-    maritalStatus: {
-      type: String,
-      enum: Object.values(MaritalStatus),
-    },
     lastActiveAt: {
       type: Date,
     },
@@ -154,6 +142,7 @@ UserSchema.index({
 });
 UserSchema.index({createdAt: -1, firstName: 1 });
 UserSchema.index({createdAt: -1, email: 1 });
+UserSchema.index({createdAt: -1, role: 1 });
 
 UserSchema.pre<IUser>("save", function (next) {
   if (this.isModified() || this.isNew) {
