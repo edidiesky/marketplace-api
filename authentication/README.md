@@ -70,7 +70,7 @@ The service requires the following environment variables:
 
 Redis is used for:
 
-- Storing TIN pools for different user types
+- Storing Email, userMetdata pools for different user types
 - Session management
 - Rate limiting
 
