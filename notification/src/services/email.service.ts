@@ -67,33 +67,37 @@ export class EmailService {
     }
   }
   /**
-   * @description Send Welcome Email
+   * @description Send User Onboarding Confirmation Email
    * @param recipientEmail
    * @param data
    */
-  async sendWelcomeEmail(recipientEmail: string, data: any): Promise<void> {
+  async sendUserOnboardingConfirmationEmail(
+    recipientEmail: string,
+    data: any
+  ): Promise<void> {
     try {
-      const { subject, tin, password, name, accountType, unsubscribeLink } =
-        data;
+      const {
+        subject,
+        verification_url,
+        email,
+        firstName,
+        lastName,
+        unsubscribeLink,
+      } = data;
       const templatePath = path.join(
         __dirname,
-        "../providers/email/templates/welcome-template.html"
+        "../providers/email/templates/onboardingEmailConfirmation.html"
       );
       const source = fs.readFileSync(templatePath, "utf-8");
       const template = handlebars.compile(source);
       const html = template({
         subject,
-        tin,
-        password,
-        account_name: name,
-        name,
-        accountType,
+        verification_url,
+        email,
+        firstName,
+        lastName,
         from_name: "SellEasi",
-        action_url: `${
-          process.env.WEB_ORIGIN2
-            ? process.env.WEB_ORIGIN2
-            : process.env.WEB_ORIGIN
-        }/auth/signin`,
+        action_url: `${process.env.WEB_ORIGIN}/auth/signin`,
         unsubscribeLink: unsubscribeLink || "https://SellEasi.com/unsubscribe",
       });
       await axios.post(
@@ -101,7 +105,74 @@ export class EmailService {
         {
           from: { email: process.env.EMAIL_FROM! },
           to: [{ email: recipientEmail }],
-          subject: subject || "Welcome to AKIRS",
+          subject: subject || "Welcome to SellEasi World",
+          html,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (error: any) {
+      if (error.response) {
+        logger.error("Failed to send welcome email - API response:", {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+          config: error.config,
+        });
+      } else {
+        logger.error("Failed to send welcome email - General error:", {
+          message: error.message,
+          stack: error.stack,
+        });
+      }
+      throw error;
+    }
+  }
+
+   /**
+   * @description Send User Store Created Email
+   * @param recipientEmail
+   * @param data
+   */
+  async sendUserStoreCreatedEmail(
+    recipientEmail: string,
+    data: any
+  ): Promise<void> {
+    try {
+      const {
+        subject,
+        verification_url,
+        email,
+        firstName,
+        lastName,
+        unsubscribeLink,
+      } = data;
+      const templatePath = path.join(
+        __dirname,
+        "../providers/email/templates/onboardingStoreCreated.html"
+      );
+      const source = fs.readFileSync(templatePath, "utf-8");
+      const template = handlebars.compile(source);
+      const html = template({
+        subject,
+        verification_url,
+        email,
+        firstName,
+        lastName,
+        from_name: "SellEasi",
+        action_url: `${process.env.WEB_ORIGIN}/auth/signin`,
+        unsubscribeLink: unsubscribeLink || "https://SellEasi.com/unsubscribe",
+      });
+      await axios.post(
+        "https://api.mailersend.com/v1/email",
+        {
+          from: { email: process.env.EMAIL_FROM! },
+          to: [{ email: recipientEmail }],
+          subject: subject || "Welcome to SellEasi World",
           html,
         },
         {
