@@ -1,6 +1,7 @@
-### Authentication Service (SellEasi World)
+# Authentication Service (SellEasi)
 
 The Authentication Service is a microservice within the SellEsi Platform that handles user authentication and authorization. It provides endpoints for user registration, login, permissions, and token management.
+
 ![Project Screenshot](/architecture/Main-Onboarding-1.png)
 
 ## Repo Location
