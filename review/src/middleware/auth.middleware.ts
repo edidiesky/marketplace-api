@@ -53,7 +53,6 @@ export const authenticate = async (
   }
 };
 
-// Permission middleware
 export const requirePermissions = (requiredPermissions: Permission[]) => {
   return (
     req: AuthenticatedRequest,
@@ -81,27 +80,24 @@ export const requirePermissions = (requiredPermissions: Permission[]) => {
     next();
   };
 };
+export const requireStoreOwner = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role !== "store_owner" && req.user?.role !== "admin") {
+    return res.status(403).json({ error: "Only store owners can respond" });
+  }
+  next();
+};
 
-export const requireMinimumRoleLevel = (minimumLevel: RoleLevel) => {
-  return (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): void => {
-    if (!req.user?.roleLevel) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No role level" });
-      return;
-    }
-
-    if (req.user.roleLevel > minimumLevel) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Insufficient role level",
-        required: minimumLevel,
-        current: req.user.roleLevel,
-      });
-      return;
-    }
-
-    next();
-  };
+export const requireAdmin = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
 };

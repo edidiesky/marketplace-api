@@ -25,9 +25,20 @@ export enum Permission {
   UPDATE_USER = "UPDATE_USER",
   DELETE_USER = "DELETE_USER",
   VIEW_REPORTS = "VIEW_REPORTS",
+  CREATE_REVIEW = "CREATE_REVIEW",
+  RESPOND_TO_REVIEW = "RESPOND_TO_REVIEW",     // ← For store owners
+  MANAGE_REVIEWS = "MANAGE_REVIEWS",           // ← For admins
+  MARK_HELPFUL = "MARK_HELPFUL",
+  VIEW_REVIEWS = "VIEW_REVIEWS",
 }
 
-export interface CreateCategoryInput {
-  name: string;
-  value: string;
+export interface IError {
+  message:string;
+  stack?:string;
+  status?:number;
 }
+
+export type Rating = 1 | 2 | 3 | 4 | 5;
+
+export const isValidRating = (value: number): value is Rating => 
+  [1, 2, 3, 4, 5].includes(value as Rating);
