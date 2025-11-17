@@ -2,7 +2,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/product.routes"
+import productRoute from "./routes/review.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -44,11 +44,11 @@ app.use((req, res, next) => {
 
 /** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Review route is Fine!" });
+  res.json({ status: "Product route is Fine!" });
 });
 
 /** ROUTES */
-app.use("/api/v1/products", productRoute);
+app.use("/api/v1/reviews", productRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server
@@ -57,9 +57,9 @@ app.get("/metrics", async (req, res) => {
   try {
     res.set("Content-Type", productRegistry.contentType);
     res.end(await productRegistry.metrics());
-    logger.info("Review Metrics has been scraped successfully!");
+    logger.info("Product Metrics has been scraped successfully!");
   } catch (error) {
-    logger.error("Review Metrics scraping error:", { error });
+    logger.error("Product Metrics scraping error:", { error });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });

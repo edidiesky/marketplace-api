@@ -8,8 +8,6 @@ import { connectMongoDB } from "./utils/connectDB";
 import {
   trackError,
   serverHealthGauge,
-  databaseConnectionsGauge,
-  businessOperationCounter,
 } from "./utils/metrics";
 
 async function GracefulShutdown() {
@@ -19,6 +17,8 @@ async function GracefulShutdown() {
     const shutdownStart = process.hrtime();
 
     await mongoose.connection.close();
+    // await disconnectConsumer();
+    // await disconnectUserProducer();
     await redisClient.quit();
 
     const shutdownDuration = process.hrtime(shutdownStart);
@@ -63,6 +63,7 @@ app.listen(PORT, async () => {
       const stepStart = process.hrtime();
 
       try {
+
         if (step.name === "redis") {
           await step.fn();
           logger.info(`Successfully connected to Redis at`);
@@ -90,6 +91,8 @@ app.listen(PORT, async () => {
 
     const totalDuration = process.hrtime(serverStartTime);
     const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
+
+    // Mark server as healthy only after all components are initialized
     serverHealthGauge.set(1);
 
     logger.info("Server initialized successfully", {
@@ -120,6 +123,7 @@ process.on("unhandledRejection", (reason, promise) => {
   GracefulShutdown();
 });
 
+// Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
   trackError("uncaught_exception", "process", "critical");
   logger.error("Uncaught Exception:", error);

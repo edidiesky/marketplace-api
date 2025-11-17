@@ -27,7 +27,8 @@ export enum Permission {
   VIEW_REPORTS = "VIEW_REPORTS",
 }
 
-export interface CreateCategoryInput {
-  name: string;
-  value: string;
+export interface IError {
+  message:string;
+  stack?:string;
+  status?:number;
 }
