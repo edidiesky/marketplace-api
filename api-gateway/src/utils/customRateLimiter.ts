@@ -15,10 +15,6 @@ const createLimiter = (options: RateLimitOptions) => {
   return rateLimit({
     windowMs: options.windowMs,
     max: options.max,
-    // store: new RedisStore({
-    //   client: redisClient,
-    //   prefix: options.prefix ? `rate:${options.prefix}:` : "rate:",
-    // }),
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,

@@ -29,6 +29,13 @@ export const NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC =
   "notification.tenant.onboarding.confirmation.topic";
 
 /**
+ * @description USER TOPICS
+ */
+export const USER_ONBOARDING_COMPLETED_TOPIC =
+  "user.onboarding.completed.topic";
+export const TENANT_CREATION_FAILED_TOPIC = "tenant.onboarding.failed.topic";
+
+/**
  * @description TENANT TOPICS
  */
 export const TENANT_ONBOARDING_COMPLETED_TOPIC =

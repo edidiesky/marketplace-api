@@ -1,12 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-/** ENUM FOR Verification Status */
-export enum VerificationStatus {
-  VERIFIED = "VERIFIED",
-  UNVERIFIED = "UNVERIFIED",
-  FAILED = "FAILED",
-  PENDING = "PENDING",
-}
 export enum UserType {
   SELLERS = "SELLERS",
   ADMIN = "ADMIN",
@@ -58,20 +51,19 @@ export interface IUser extends Document {
   password: string;
   /** Common Contact Information */
   address?: string;
-  lga: string;
-  occupation?: string;
-  state: string;
-  position?: string;
   firstName?: string;
-  middleName?: string;
   lastName?: string;
-  // dateOfBirth?: Date;
-  dateOfBirth?: string;
   profileImage: string;
   gender?: Gender;
   nationality?: string;
   lastActiveAt?: Date;
+  isEmailVerified:boolean;
   falseIdentificationFlag: boolean;
+
+  // tenant metadata
+  tenantId:string;
+  tenantType:string;
+  tenantPlan:string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -104,25 +96,15 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
-
-    // Common fields
     address: { type: String, trim: true },
-    lga: {
-      type: String,
-      trim: true,
-    },
     profileImage: { type: String },
     firstName: {
       type: String,
       trim: true,
     },
-    middleName: { type: String, trim: true },
     lastName: {
       type: String,
       trim: true,
-    },
-    dateOfBirth: {
-      type: String,
     },
     gender: {
       type: String,
@@ -132,6 +114,7 @@ const UserSchema = new Schema<IUser>(
       type: Date,
     },
     falseIdentificationFlag: Boolean,
+    isEmailVerified: Boolean, //isEmailVerified
   },
   { timestamps: true }
 );

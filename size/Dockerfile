@@ -30,6 +30,6 @@ RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 
 # Expose port
-EXPOSE 4001
+EXPOSE 4015
 
 CMD ["node", "dist/server.js"]

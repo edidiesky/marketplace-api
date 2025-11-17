@@ -11,6 +11,7 @@ import {
   NOTIFICATION_ONBOARDING_USER_COMPLETED_TOPIC,
   NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC,
 } from "../constants";
+
 import redisClient from "../config/redis";
 import { EmailService } from "../services/email.service";
 

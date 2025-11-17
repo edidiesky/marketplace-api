@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import User from "../models/User";
+import User, { UserType } from "../models/User";
 import { v4 as uuidv4 } from "uuid";
 import { generateToken, signJwt } from "../utils/generateToken";
 import logger from "../utils/logger";
@@ -15,6 +15,8 @@ import {
   SERVER_ERROR_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
   NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
+  NOTIFICATION_ONBOARDING_USER_COMPLETED_TOPIC,
+  USER_ONBOARDING_COMPLETED_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
 import {
@@ -25,11 +27,14 @@ import {
 import { normalizePhoneNumber } from "../utils/normalizePhoneNumber";
 import mongoose from "mongoose";
 import {
+  deleteOnboardingState,
+  getOnboardingState,
   getRedisOnboardingKey,
   setOnboardingData,
 } from "../utils/redisOnboarding";
 import { IOnboarding } from "../types";
-import { sendAuthenticationMessage } from "@/messaging/producer";
+import { sendAuthenticationMessage } from "../messaging/producer";
+import { UserRole } from "../models/Role";
 
 /**
  * @description Handler email Onboarding step
@@ -227,7 +232,6 @@ export const HandlePasswordOnboardingStep = asyncHandler(
   }
 );
 
-
 /**
  * @description Handler to Registers a new Client.
  * @route POST /api/v1/auth/signup
@@ -237,22 +241,119 @@ const RegisterUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const session = await mongoose.startSession();
     session.startTransaction();
+
     try {
-    } catch (error: any) {
-      if (error.code === 11000) {
-        // Duplicate key error
-        const duplicateField = error.keyPattern
-          ? Object.keys(error.keyPattern)[0]
-          : "unknown";
-        const duplicateValue = error.keyValue
-          ? error.keyValue[duplicateField]
-          : "unknown";
-        res.status(BAD_REQUEST_STATUS_CODE).json({
-          message: `Duplicate value for ${duplicateField}: ${duplicateValue}. This already exists.`,
-          status: "error",
-        });
-        return;
+      const { email, userType, phone, address, gender, plan } = req.body;
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Get onboarding data
+      const onboardingData = await getOnboardingState(normalizedEmail);
+      if (!onboardingData || onboardingData.step !== "password") {
+        logger.error("The user has not completed the onboarding steps")
+        throw new Error("Please kindly Complete all onboarding steps first");
       }
+
+      const { passwordHash, firstName, lastName } = onboardingData;
+
+      // Checking if the user exists
+      const isUserExisting = await User.findOne({
+        email: onboardingData.email,
+      }).session(session);
+
+      if (isUserExisting) {
+        logger.error("Existing user is trying to crrate an account:", {
+          email,
+        });
+        throw new Error(
+          "Please, kindly login rather than creating an account since you have an existing account with us. "
+        );
+      }
+
+      // Create User
+      const [user] = await User.create(
+        [
+          {
+            email: onboardingData.email,
+            passwordHash,
+            firstName,
+            lastName,
+            userType,
+            isEmailVerified: true,
+            phone,
+            address,
+            gender,
+          },
+        ],
+        { session }
+      );
+
+      if (userType !== UserType.CUSTOMER) {
+        await sendAuthenticationMessage(USER_ONBOARDING_COMPLETED_TOPIC, {
+          ownerId: user?._id,
+          ownerEmail: user?.email,
+          ownerName: user?.firstName,
+          type: userType,
+          billingPlan: plan,
+        });
+      }
+      // 3. Create Tenant
+      // const tenant = await Tenant.create(
+      //   [{
+      //     ownerId: user[0]._id,
+      //     ownerEmail: normalizedEmail,
+      //     ownerName: `${onboardingData.firstName} ${onboardingData.lastName}`,
+      //     type: TenantType.SELLER_INDIVIDUAL,
+      //     status: TenantStatus.DRAFT,
+      //     billingPlan: BillingPlan.FREE,
+      //     trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      //   }],
+      //   { session }
+      // );
+
+      // 5. Commit transaction
+      await session.commitTransaction();
+      // 6. Delete Redis state
+      await deleteOnboardingState(normalizedEmail);
+      logger.info("User account has been created succesfully.", {
+        data: user?._id,
+      });
+
+      res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+        success: true,
+        data: user?._id,
+        message:
+          "Your account is processing. You can kindly check your mail for futher step or extra information for setting up an acccunt",
+      });
+    } catch (error: any) {
+      await session.abortTransaction();
+
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        const value = error.keyValue[field];
+        throw new Error(`Duplicate ${field}: ${value}`);
+      }
+
+      logger.error("Signup error:", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "An unknown has occurred during creating an account",
+        stack:
+          error instanceof Error
+            ? error.stack
+            : "An unknown has occurred during creating an account",
+      });
+
+      res.status(BAD_REQUEST_STATUS_CODE).json({
+        success: false,
+        data: null,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Please kindly reach out to the support team, if error continues after retry",
+      });
+    } finally {
+      session.endSession();
     }
   }
 );
@@ -440,6 +541,7 @@ const Verify2FA = asyncHandler(
     });
   }
 );
+
 
 /**
  * @description It reset the password of a user

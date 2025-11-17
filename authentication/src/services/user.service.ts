@@ -8,7 +8,7 @@ import {
   measureDatabaseQuery,
   trackCacheHit,
 } from "../utils/metrics";
-import { REDIS_TTL } from "../constants";
+import { BASE_EXPIRATION_SEC } from "../constants";
 interface ChartDataPoint {
   date: string;
   totalUsers: number;
@@ -144,7 +144,7 @@ export const UpdateUserService = async (
 
     await redisClient.setex(
       redisKey,
-      REDIS_TTL,
+      BASE_EXPIRATION_SEC,
       JSON.stringify(updatedUser?.toObject())
     );
     logger.info("User updated successfully", { _id: userID });

@@ -1,12 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import {
-  CreateTenantService,
-  GetAllStoreTenantService,
-  GetASingleTenantService,
-  UpdateTenantService,
-  DeleteTenantService,
-} from "../services/tenant.service";
+
 import {
   BAD_REQUEST_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
@@ -15,6 +9,7 @@ import {
 import { ITenant } from "../models/Tenant";
 import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
+import { tenantService } from "../services";
 
 // @description: Create Tenant handler
 // @route  POST /api/v1/tenants
@@ -23,7 +18,7 @@ const CreateTenantHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const storeId = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
-    const tenant = await CreateTenantService(userId, {
+    const tenant = await tenantService.createTenant(userId, {
       ...req.body,
     });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(tenant);
@@ -49,7 +44,7 @@ const GetAllTenantHandler = asyncHandler(
     if (price) query.price = price;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const tenants = await GetAllStoreTenantService(
+    const tenants = await tenantService.getAllTenants(
       query,
       skip,
       Number(limit)
@@ -64,7 +59,7 @@ const GetAllTenantHandler = asyncHandler(
 const GetSingleTenantHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const Tenant = await GetASingleTenantService(id);
+    const Tenant = await tenantService.getTenantById(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(Tenant);
   }
 );
@@ -75,13 +70,13 @@ const GetSingleTenantHandler = asyncHandler(
 const UpdateTenantHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingTenant = await GetASingleTenantService(id);
+    const existingTenant = await tenantService.getTenantById(id);
 
     if (!existingTenant) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Tenant does not exist");
     }
-    const Tenant = await UpdateTenantService(
+    const Tenant = await tenantService.updateTenant(
       id,
       req.body as Partial<ITenant>
     );
@@ -95,13 +90,13 @@ const UpdateTenantHandler = asyncHandler(
 const DeleteTenantHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingTenant = await GetASingleTenantService(id);
+    const existingTenant = await tenantService.getTenantById(id);
 
     if (!existingTenant) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Tenant does not exist");
     }
-    const message = await DeleteTenantService(id);
+    const message = await tenantService.deleteTenant(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
   }
 );

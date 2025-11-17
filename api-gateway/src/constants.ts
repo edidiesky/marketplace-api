@@ -15,7 +15,7 @@ export const services: Services = {
   categories: process.env.CATEGORIES_SERVICE_URL || "http://categories:4005",
   notification:
     process.env.NOTIFICATION_SERVICE_URL || "http://notification:4006",
-  stores: process.env.STORES_SERVICE_URL || "http://stores:4007", //inventory
+  stores: process.env.STORES_SERVICE_URL || "http://stores:4007",
   inventory: process.env.STORES_SERVICE_URL || "http://inventory:4008", //inventory
   cart: process.env.CART_SERVICE_URL || "http://cart:4009",
   tenant: process.env.TENANT_SERVICE_URL || "http://tenant:4010",
@@ -23,6 +23,7 @@ export const services: Services = {
   orders: process.env.ORDERS_SERVICE_URL || "http://orders:4012",
   color: process.env.COLOR_SERVICE_URL || "http://color:4013",
   view: process.env.VIEW_SERVICE_URL || "http://view:4014",
+  size: process.env.VIEW_SERVICE_URL || "http://size:4015",
 };
 
 /**
@@ -43,4 +44,5 @@ export interface Services {
   orders: string;
   color: string;
   view: string;
+  size:string;
 }

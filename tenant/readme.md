@@ -4,10 +4,8 @@ This service is totally isolated from the other service within Selleasi. I built
 The tenant service owns feature like tenant lifecycle, plan enforcement, quota limits, and data isolation.
 
 ![Project Screenshot](/architecture/Onboarding%20Process%201.png)
-![Project Screenshot](/architecture/Payment%20Workflow.png)
-![Audit Workflow](/architecture/Payment_Audit_Workflow.png)
 
-# Repo Location
+## Repo Location
 ```bash
 SELLEASI-ARCHITECTURE/
 └── tenant/
@@ -17,11 +15,12 @@ SELLEASI-ARCHITECTURE/
     │       │─────── unit/
     │       │─────── integration/
     │   ├── services/
+    │   ├── repository/
     │   ├── models/
     │   ├── types/
     │   ├── config/
     │   ├── validators/
-    │   ├── routes/
+    │   ├── route/
     │   └── middleware/
     ├── tests/
     ├── Dockerfile
@@ -31,7 +30,7 @@ SELLEASI-ARCHITECTURE/
 
 
 
-### Core Responsibilities
+## Core Responsibilities
 1. Async creation of tenants via User onboarding
 2. Diverse Plan & Quota Enforcement (FREE, PRO, ENTERPRISE limits)
 3. Every record ahs a unique data isolation (tenantId)
@@ -39,8 +38,7 @@ SELLEASI-ARCHITECTURE/
 5. Role based access control and Permissions by Tenant Type
 
 
-## Models
-### Tenant Model
+## Model
 ```javascript
 export interface ITenant extends Document {
   tenantId: string;          
@@ -64,19 +62,34 @@ export interface ITenant extends Document {
 
 
 ### ROUTES
-```javascript
-router
-  .route("/")
-  .post(
-    authenticate,
-    validateRequest(tenantSchema),
-    CreateTenantHandler
-  )
-  .get(authenticate, GetAllTenantHandler);
 
-router
-  .route("/:id")
-  .get(authenticate, GetSingleTenantHandler)
-  .put(authenticate, UpdateTenantHandler)
-  .delete(authenticate, DeleteTenantHandler);
-```
+| Method | Endpoint                                        | Description                  |
+| ------ | ---------------------------------------         | -------------------------    | 
+| POST   | `/api/v1/tenants`                               | Create Tenant                |
+| GET    | `/api/v1/tenants?page=""&limit=""&search=""`    | Get Tenants                  |
+| POST   | `/api/v1/tenants/:tenantId/ban`                 | Ban Single Tenant            |
+| POST   | `/api/v1/tenants/:tenantId/unban`               | Unban Single Tenant          |
+| GET    | `/api/v1/tenants/:tenantId`                     | Get Single Tenant            |
+| DELETE | `/api/v1/tenants/:tenantId`                     | Delete Single Tenant         |
+
+## Environment Variables
+
+The service requires the following environment variables:
+
+### Required Variables
+
+- `DATABASE_URL`: MongoDB connection string
+- `JWT_SECRET`: JWT signing secret
+- `IO_REDIS_URL`: Redis connection URL (e.g., you can use redis://localhost:6379)
+- `PORT`: Service port (default: 4001)
+- `FRONTEND_URl`: Frontend application URL for CORS configuration
+- `KAFKA_BROKER`: Kafka broker URL
+- `KAFKA_GROUP_ID`: Kafka consumer group ID
+- `KAFKA_TOPIC_USER`: Kafka topic for user events
+
+### Optional Variables
+
+- `NODE_ENV`: Environment (development/production)
+- `LOG_LEVEL`: Logging level (debug/info/warn/error)
+- `JWT_EXPIRES_IN`: JWT token expiration time
+- `REFRESH_TOKEN_EXPIRES_IN`: Refresh token expiration time

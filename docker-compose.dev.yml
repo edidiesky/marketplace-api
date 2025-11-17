@@ -14,7 +14,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD SHELL", "redis-cli ping | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -27,7 +27,7 @@ services:
       - app-tier
     ports:
       - "9092:9092"
-      - "19092:19092" # Controller port
+      - "19092:19092"
     environment:
       # KRaft mode configuration
       KAFKA_NODE_ID: 1
@@ -42,7 +42,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
       # Cluster configuration
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk # Generate with: kafka-storage random-uuid
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
 
       # Replication settings
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -68,7 +68,7 @@ services:
       KAFKA_HEAP_OPTS: -Xmx2G -Xms1G
 
       # Auto-create topics configuration
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false # Disable for production
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: false
     volumes:
       - kafka1_data:/var/lib/kafka/data
     healthcheck:
@@ -653,3 +653,4 @@ volumes:
   kafka1_data:
   kafka2_data:
   kafka3_data:
+  tempo-data:

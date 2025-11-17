@@ -14,6 +14,7 @@ SELLEASI-ARCHITECTURE/
 ├── api_gateway # Central entry point for all requests in Selleasi, handles routing, rate limiting, and security.
 ├── audit # Basic Service that logs activities for compliance and debugging.
 ├── authentication # Manages user login, JWT tokens, and role-based access.
+├── user # Service that helps me to fetch all user's information.
 ├── product # Simple CRUD operations for products, including attributes like categories, colors, sizes.
 ├── cart # Manages user shopping carts.
 ├── categories # Manages user login, JWT tokens, and role-based access.
