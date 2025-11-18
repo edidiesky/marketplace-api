@@ -92,7 +92,6 @@ export class ReviewRepository implements IReviewRepository {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("-__v")
         .lean()
     );
 
@@ -115,7 +114,6 @@ export class ReviewRepository implements IReviewRepository {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate("userId", "name image")
       .lean();
   }
 

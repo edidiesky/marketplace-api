@@ -12,11 +12,12 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
-import { IProduct } from "../models/Product";
+import { IProduct } from "../models/Inventory";
 import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 
-// @description: Create Product handler
+
+// @description: Create Inventory handler
 // @route  POST /products/:storeid
 // @access  Private
 const CreateProductHandler = asyncHandler(
@@ -58,7 +59,7 @@ const GetAllStoreProductHandler = asyncHandler(
   }
 );
 
-// @description: Get A Single Product Handler
+// @description: Get A Single Inventory Handler
 // @route  GET /products/:id
 // @access  Public
 const GetSingleStoreProductHandler = asyncHandler(
@@ -69,7 +70,7 @@ const GetSingleStoreProductHandler = asyncHandler(
   }
 );
 
-// @description: Update A Single Product Handler
+// @description: Update A Single Inventory Handler
 // @route  PUT /products/:id
 // @access  Private
 const UpdateProductHandler = asyncHandler(
@@ -89,7 +90,7 @@ const UpdateProductHandler = asyncHandler(
   }
 );
 
-// @description: Delete A Single Product Handler
+// @description: Delete A Single Inventory Handler
 // @route  DELETE /products/:id
 // @access  Private
 const DeleteProductHandler = asyncHandler(

@@ -28,7 +28,6 @@ redisClient.on("error", (err) => {
   logger.error("Redis Client Error:", err.message);
 });
 
-// Log successful connection
 redisClient.on("connect", () => {
   logger.info("Successfully connected to Redis at", IO_REDIS_URL);
 });

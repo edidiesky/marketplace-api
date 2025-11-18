@@ -29,17 +29,12 @@ export enum Gender {
   Female = "Female",
 }
 
-/** ENUM FOR TWO-FACTOR AUTHENTICATION */
 export enum TWOFA {
   MAIL = "MAIL",
   SMS = "SMS",
   APP = "APP",
 }
 
-export enum NationalType {
-  NIGERIAN = "NIGERIAN",
-  FOREIGN = "FOREIGN",
-}
 export interface IUser extends Document {
   userType: UserType;
   email: string;
@@ -114,7 +109,7 @@ const UserSchema = new Schema<IUser>(
       type: Date,
     },
     falseIdentificationFlag: Boolean,
-    isEmailVerified: Boolean, //isEmailVerified
+    isEmailVerified: Boolean,
   },
   { timestamps: true }
 );

@@ -3,7 +3,7 @@ import logger from "./logger";
 import { serverHealthGauge } from "./metrics";
 
 import client from "prom-client";
-import { IStore } from "../models/Review";
+import { IReview } from "../models/Review";
 
 export const databaseConnectionAttempts = new client.Counter({
   name: "user_database_connection_attempts_total",
@@ -110,8 +110,8 @@ export const connectMongoDB = async (
 };
 
 export const withTransaction = async (
-  fn: (session: mongoose.ClientSession) => Promise<IStore>
-):Promise<IStore> => {
+  fn: (session: mongoose.ClientSession) => Promise<IReview>
+):Promise<IReview> => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

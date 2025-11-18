@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import sanitizeHtml from "sanitize-html";
 import {
   CreateProductService,
   GetAllStoreProductService,
@@ -24,14 +23,8 @@ const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const storeId = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user
-    const description = sanitizeHtml(req.body.description || "", {
-      allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
-      allowedAttributes: { a: ["href"] },
-      disallowedTagsMode: "discard",
-    });
     const product = await CreateProductService(userId, storeId, {
       ...req.body,
-      description,
     });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(product);
   }

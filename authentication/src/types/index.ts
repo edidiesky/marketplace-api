@@ -1,16 +1,6 @@
 import { Permission, RoleLevel } from "../models/User";
 import { Response, Request } from "express";
 
-export type AuthenticatedRequest = Request & {
-  user: {
-    role: string;
-    userId: string;
-    name: string;
-    permissions: Permission[];
-    roleLevel?: RoleLevel;
-  };
-};
-
 
 export interface IOnboarding {
   email: string;
@@ -21,5 +11,16 @@ export interface IOnboarding {
   tokenObject?: {
     token: string;
     expiresAt: number;
+  };
+}
+
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    userId: string;
+    role: string;
+    name: string;
+    permissions: Permission[];
+    roleLevel?: RoleLevel;
   };
 }

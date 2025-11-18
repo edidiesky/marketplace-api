@@ -44,7 +44,7 @@ app.get("/health", (_req, res) => {
 });
 
 /** ROUTES */
-app.use("/api/v1/products", productRoute);
+app.use("/api/v1/audits", productRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server

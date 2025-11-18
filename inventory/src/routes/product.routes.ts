@@ -5,7 +5,7 @@ import {
   GetSingleStoreProductHandler,
   UpdateProductHandler,
   DeleteProductHandler,
-} from "../controllers/product.controller";
+} from "../controllers/inventory.controller";
 import {
   authenticate,
 } from "../middleware/auth.middleware";

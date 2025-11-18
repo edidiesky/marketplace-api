@@ -2,19 +2,14 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
-import usersRoutes from "./routes/users.routes";
-import roleRoutes from "./routes/role.routes";
-import { setupSwagger } from "./swagger";
 import cookieParser from "cookie-parser";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, userRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
-import createLimiter from "./utils/customRateLimiter";
-// import { sendUserMessage } from "./messaging/producer";
+import { SERVER_ERROR_STATUS_CODE } from "./constants";
 
 const app = express();
 /** MIDDLEWARE */
@@ -42,7 +37,6 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// METRICS MIDDLEWARE - MOVED HERE (before routes)
 app.use((req, res, next) => {
   const startTime = process.hrtime();
   res.on("finish", () => reqReplyTime(req, res, startTime));
@@ -51,14 +45,12 @@ app.use((req, res, next) => {
 
 /** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "✅ " });
+  res.json({ status: "Good" });
 });
 
 /** ROUTES */
 app.use("/api/v1/auth", authRoutes);
-setupSwagger(app);
 
-// /metrics endpoint (after routes but before error handlers)
 app.get("/metrics", async (req, res) => {
   try {
     res.set("Content-Type", userRegistry.contentType);
@@ -66,7 +58,7 @@ app.get("/metrics", async (req, res) => {
     logger.info("User Metrics has been scraped successfully!");
   } catch (error) {
     logger.error("User Metrics scraping error:", { error });
-    res.status(500).end();
+    res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
 

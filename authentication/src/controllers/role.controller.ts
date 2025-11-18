@@ -2,18 +2,15 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { Role, UserRole, IRole, IUserRole } from "../models/Role";
-import User, { Permission, RoleLevel, UserType } from "../models/User";
+import User, { Permission, RoleLevel } from "../models/User";
 import logger from "../utils/logger";
 import {
   BAD_REQUEST_STATUS_CODE,
   NOT_FOUND_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   UNAUTHORIZED_STATUS_CODE,
-  USER_PROFILE_UPDATE,
 } from "../constants";
 import { AuthenticatedRequest } from "../types";
-import { getSingleTINFromPool } from "../utils/generateTIN";
-import bcrypt from "bcryptjs";
 import redisClient from "../config/redis";
 
 /**
@@ -50,14 +47,11 @@ export const CreateRole = asyncHandler(
       const roleData: Partial<IRole> = {
         roleCode: roleCode.toUpperCase(),
         roleName,
-        directorate,
         level,
         permissions: permissions,
         description,
         parentRole: parentRole || undefined,
         childRoles: [],
-        createdBy: req.user!.userId,
-        updatedBy: req.user!.userId,
         isActive: true,
       };
 
@@ -76,7 +70,7 @@ export const CreateRole = asyncHandler(
 
       logger.info("Role created successfully", {
         roleCode,
-        createdBy: req.user!.userId,
+        createdBy: (req as AuthenticatedRequest).user!.userId,
         directorate,
         level,
       });
@@ -154,7 +148,7 @@ export const AssignRoleToUser = asyncHandler(
       const userRoleData: Partial<IUserRole> = {
         userId,
         roleId: role._id,
-        assignedBy: req.user?.userId || "SYSTEM",
+        assignedBy: (req as AuthenticatedRequest).user?.userId || "SYSTEM",
         assignedAt: new Date(),
         isActive: true,
         effectiveFrom: effectiveFrom ? new Date(effectiveFrom) : new Date(),
@@ -179,7 +173,6 @@ export const AssignRoleToUser = asyncHandler(
         data: {
           userId,
           roleCode,
-          directorate: role.directorate,
           scope,
         },
         status: "success",
@@ -440,7 +433,6 @@ export const GetUserRoles = asyncHandler(
       const roles = userRoles.map((ur) => ({
         roleCode: ur.roleId.roleCode,
         roleName: ur.roleId.roleName,
-        directorate: ur.roleId.directorate,
         level: ur.roleId.level,
         permissions: ur.roleId.permissions,
         scope: ur.scope,
@@ -494,115 +486,3 @@ export const GetAvailableRoles = asyncHandler(
     }
   }
 );
-
-export const seedSuperAdmin = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-      // Check if super admin exists
-
-      // Check if SUPER_ADMIN role exists
-      let superAdminRole = await Role.findOne({
-        roleCode: "SUPER_ADMIN",
-      }).session(session);
-      const salt = await bcrypt.genSalt(12);
-      const passwordHash = await bcrypt.hash("Mcgarvey1000@", salt);
-      if (!superAdminRole) {
-        const [newsuperAdminRole] = await Role.create(
-          [
-            {
-              roleCode: "SUPER_ADMIN",
-              roleName: "Super Administrator",
-              level: RoleLevel.SUPER_ADMIN,
-              permissions: [Permission.CREATE_USER],
-              description: "Full system access",
-              createdBy: "SYSTEM",
-              updatedBy: "SYSTEM",
-              isActive: true,
-            },
-          ],
-          { session }
-        );
-        superAdminRole = newsuperAdminRole;
-      }
-
-      // Generate TIN
-      const tin = await getSingleTINFromPool("SUPERADMIN");
-
-      // Create super admin user
-      const [superAdmin] = await User.create(
-        [
-          {
-            tin,
-            userType: UserType.SUPERADMIN,
-            email: "superadmin@ibomtax.net",
-            nin: "12345678901",
-            phone: "+2348031234567",
-            firstName: "System",
-            lastName: "Admin",
-            middleName: "Super",
-
-            address: "123 Admin Street, Uyo, Akwa Ibom",
-            lga: "Uyo",
-            state: "Akwa Ibom",
-            passwordHash,
-            profileImage: "https://example.com/images/superadmin.jpg",
-            complianceScore: 100,
-            verificationStatus: "VERIFIED",
-            isActive: true,
-          },
-        ],
-        { session }
-      );
-
-      // Assign role to user
-      await UserRole.create(
-        [
-          {
-            userId: superAdmin._id.toString(),
-            roleId: superAdminRole?._id,
-            assignedBy: "SYSTEM",
-            assignedAt: new Date(),
-            isActive: true,
-            effectiveFrom: new Date(),
-            scope: {
-              states: ["Akwa Ibom"],
-              lgas: ["Uyo"],
-              taxStations: [],
-              permissions: superAdminRole?.permissions,
-            },
-          },
-        ],
-        { session }
-      );
-
-      await session.commitTransaction();
-      logger.info("Super admin seeded successfully", {
-        roleCode: superAdminRole.roleCode,
-        service: "auth_service",
-        timestamp: new Date().toISOString(),
-      });
-      res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
-        data: superAdmin,
-        message: "Super admin seeded successfully",
-        success: true,
-      });
-    } catch (error: any) {
-      await session.abortTransaction();
-      logger.error("Failed to seed super admin", {
-        message: error.message,
-        details: error.errors || error.details,
-        stack: error.stack,
-        service: "auth_service",
-        timestamp: new Date().toISOString(),
-      });
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-);
-
-

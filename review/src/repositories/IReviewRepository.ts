@@ -25,18 +25,14 @@ export interface IReviewRepository {
   ): Promise<IReview[]>;
 
   findReviewById(reviewId: string): Promise<IReview | null>;
-
   approveReview(reviewId: string, adminId: string): Promise<IReview | null>;
   rejectReview(reviewId: string, adminId: string): Promise<IReview | null>;
-
   addResponse(
     reviewId: string,
     text: string,
     respondedBy: string
   ): Promise<IReview | null>;
-
   markHelpful(reviewId: string, userId: string, vote: 1 | -1): Promise<IReview | null>;
-
   getReviewStats(productId: string): Promise<{
     averageRating: number;
     totalReviews: number;

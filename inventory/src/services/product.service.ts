@@ -1,7 +1,7 @@
 import { measureDatabaseQuery } from "../utils/metrics";
 import redisClient from "../config/redis";
 // import { sendMessage } from "../kafka/producer";
-import Product, { IProduct } from "../models/Product";
+import Product, { IProduct } from "../models/Inventory";
 import { FilterQuery, Types } from "mongoose";
 
 // @description Create a Product

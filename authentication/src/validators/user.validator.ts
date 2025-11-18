@@ -1,17 +1,10 @@
-import { VerificationStatus } from "../models/User";
 import Joi from "joi";
-
-// Update user schema
 export const userUpdateSchema = Joi.object({
   phone: Joi.string().allow("").optional(),
   currentPassword: Joi.string().optional(),
   confirmPassword: Joi.string().optional(),
   newPassword: Joi.string().optional(),
   email: Joi.string().allow("").optional(),
-  verificationStatus: Joi.string()
-    .valid(...Object.values(VerificationStatus))
-    .allow("")
-    .optional(),
 });
 
 /**
