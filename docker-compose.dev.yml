@@ -153,10 +153,6 @@ services:
         condition: service_healthy
       kafka-1:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
 
   api-gateway:
     depends_on:

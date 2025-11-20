@@ -470,6 +470,7 @@ const LoginUser = asyncHandler(
   }
 );
 
+
 /**
  * @description Verifies the 2FA token and issues JWT.
  * @route POST /api/v1/auth/verify-2fa
