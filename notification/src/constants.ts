@@ -11,7 +11,6 @@ export const BASE_EXPIRATION_SEC = 60 * 60 * 2;
 export const MAX_RETRIES = 7;
 export const JITTER = Math.random() * 10000;
 
-
 /**
  * @description TOPICS
  */
@@ -31,17 +30,11 @@ export const NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC =
 /**
  * @description QUEUES
  */
-export const QUEUES = {
-  [NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC]:
-    "notification.onboarding.email.confirmation.queue",
-  [NOTIFICATION_ONBOARDING_PHONE_CONFIRMATION_TOPIC]:
-    "notification.onboarding.phone.confirmation.queue",
-  [NOTIFICATION_ONBOARDING_USER_COMPLETED_TOPIC]:
-    "notification.onboarding.user.completed.queue",
-  [NOTIFICATION_AUTHENTICATION_2FA_TOPIC]:
-    "notification.authentication.2fa.queue",
-  [NOTIFICATION_AUTHENTICATION_RESET_PASSWORD_TOPIC]:
-    "notification.authentication.reset.password.queue",
-  [NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC]:
-    "notification.tenant.onboarding.confirmation.queue",
-};
+export const NOTIFICATION_TOPICS = [
+  NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
+  NOTIFICATION_ONBOARDING_PHONE_CONFIRMATION_TOPIC,
+  NOTIFICATION_ONBOARDING_USER_COMPLETED_TOPIC,
+  NOTIFICATION_AUTHENTICATION_2FA_TOPIC,
+  NOTIFICATION_AUTHENTICATION_RESET_PASSWORD_TOPIC,
+  NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC,
+]

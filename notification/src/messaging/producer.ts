@@ -3,7 +3,7 @@ import logger from "../utils/logger";
 
 const kafka = new Kafka({
   clientId: "Notification_Service",
-  brokers: ["kafka:9092"],
+   brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   logLevel: logLevel.ERROR,
   retry: {
     initialRetryTime: 2000,

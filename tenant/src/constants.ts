@@ -12,7 +12,6 @@ export const ONBOARDING_EXPIRATION_SEC = 60 * 15;
 export const MAX_RETRIES = 7;
 export const JITTER = Math.random() * 10000;
 
-
 /**
  * @description NOTIFICATION TOPICS
  */
@@ -38,8 +37,7 @@ export const USER_ROLLBACK_TOPIC = "authentication.user.rollback.topic";
 export const USER_ONBOARDING_COMPLETED_TOPIC =
   "user.onboarding.completed.topic";
 
-export const QUEUES = {
-  [USER_ONBOARDING_COMPLETED_TOPIC]: "user.onboarding.completed.queue",
-  [TENANT_CREATION_FAILED_TOPIC]: "tenant.onboarding.failed.queue",
-};
-
+export const TENANT_CONSUMER_TOPICS = [
+  USER_ONBOARDING_COMPLETED_TOPIC,
+  TENANT_CREATION_FAILED_TOPIC,
+];

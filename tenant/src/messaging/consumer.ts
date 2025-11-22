@@ -2,7 +2,7 @@ import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 import logger from "../utils/logger";
 import { TenantTopic } from "./topics";
 import { sendTenantMessage } from "./producer";
-import { QUEUES } from "../constants";
+import { TENANT_CONSUMER_TOPICS } from "../constants";
 
 const kafka = new Kafka({
   clientId: "Tenant_Service",
@@ -32,7 +32,7 @@ export async function connectConsumer() {
     try {
       await consumer.connect();
       await consumer.subscribe({
-        topics: Object.values(QUEUES),
+        topics: TENANT_CONSUMER_TOPICS,
         fromBeginning: false,
       });
       logger.info("Tenant consumer connected");
@@ -86,14 +86,12 @@ async function startConsuming() {
           key: message.key?.toString(),
         });
 
-        const handler =
-          TenantTopic[topic as keyof typeof TenantTopic];
+        const handler = TenantTopic[topic as keyof typeof TenantTopic];
         if (!handler) {
           logger.warn("No handler for topic", { topic });
           await commitOffset(topic, partition, message.offset);
           return;
         }
-        
 
         await handler(data);
         await commitOffset(topic, partition, message.offset);

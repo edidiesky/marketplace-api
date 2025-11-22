@@ -2,30 +2,28 @@ import mongoose from "mongoose";
 import { app } from "./app";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 const PORT = process.env.PORT || 4001;
-// import { connectConsumer, disconnectConsumer } from "./messaging/consumer";
-// import { connectProducer, disconnectUserProducer } from "./messaging/producer";
+import { connectConsumer, disconnectConsumer } from "./messaging/consumer";
+import { connectProducer, disconnectProducer } from "./messaging/producer";
 import logger from "./utils/logger";
 import redisClient from "./config/redis";
 import { connectMongoDB } from "./utils/connectDB";
-import { UserType } from "./models/User";
 import {
   trackError,
   serverHealthGauge,
   databaseConnectionsGauge,
   businessOperationCounter,
 } from "./utils/metrics";
-import client from "prom-client";
-
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
-  serverHealthGauge.set(0); // Mark as unhealthy
-  databaseConnectionsGauge.set(0); // No connections
+  serverHealthGauge.set(0);
+  databaseConnectionsGauge.set(0);
 
   try {
     await mongoose.connection.close();
     await redisClient.quit();
-    logger.info("Mongoose, RabbitMQ, and Redis have been disconnected!", {
-    });
+    await disconnectConsumer();
+    await disconnectProducer();
+    logger.info("Mongoose, RabbitMQ, and Redis have been disconnected!", {});
     process.exit(0);
   } catch (err) {
     trackError("graceful_shutdown_failed", "system", "critical");
@@ -49,23 +47,26 @@ app.listen(PORT, async () => {
   }
 
   try {
-    // Track each initialization component
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
       { name: "redis", fn: () => redisClient.ping() },
-      // { name: "rabbitmq_consumer", fn: connectConsumer },
-      // { name: "rabbitmq_producer", fn: connectProducer },
+      { name: "kafka_consumer", fn: connectConsumer },
+      { name: "kafka_producer", fn: connectProducer },
     ];
 
     for (const step of initSteps) {
       const stepStart = process.hrtime();
 
       try {
-       
-
         if (step.name === "redis") {
           await step.fn();
           logger.info(`Successfully connected to Redis at`);
+        } else if (step.name === "kafka_consumer") {
+          await step.fn();
+          logger.info(`Kakfa Consumer Successfully connected `);
+        } else if (step.name === "kafka_producer") {
+          await step.fn();
+          logger.info(`Kakfa Producer Successfully connected `);
         } else {
           await step.fn();
         }

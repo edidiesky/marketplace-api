@@ -6,8 +6,6 @@ import {
   MAX_RETRIES,
   TENANT_ONBOARDING_COMPLETED_TOPIC,
 } from "../constants";
-import redisClient from "../config/redis";
-
 export const AuthenticationTopic = {
   [TENANT_ONBOARDING_COMPLETED_TOPIC]: async (data: any) => {
     const { email, firstName, lastName, notificationId, verification_url } =

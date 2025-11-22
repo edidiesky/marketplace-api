@@ -2,7 +2,7 @@ import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 import logger from "../utils/logger";
 import { AuthenticationTopic } from "./topics";
 import { sendAuthenticationMessage } from "./producer";
-import { QUEUES } from "../constants";
+import { AUTH_CONSUMER_TOPICS } from "../constants";
 
 const kafka = new Kafka({
   clientId: "Authentication_Service",
@@ -32,7 +32,7 @@ export async function connectConsumer() {
     try {
       await consumer.connect();
       await consumer.subscribe({
-        topics: Object.values(QUEUES),
+        topics: AUTH_CONSUMER_TOPICS,
         fromBeginning: false,
       });
       logger.info("Authentication consumer connected");

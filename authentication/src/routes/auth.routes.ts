@@ -17,18 +17,50 @@ import {
   RefreshToken,
   ChangePasswordHandler,
 } from "../controllers/auth.controller";
+
+
 import {
-  authenticate,
-} from "../middleware/auth.middleware";
+  emailOnboardingSchema,
+  confirmEmailTokenSchema,
+  passwordOnboardingSchema,
+  finalSignupOnboardingSchema,
+} from "../validators/onboarding.validator";
+
+import {
+  HandleEmailOnboardingStep,
+  HandleConfirmEmailToken,
+  HandlePasswordOnboardingStep,
+} from "../controllers/auth.controller";
 const router = Router();
 
 
+
+// Email step
+router.post(
+  "/email/confirmation",
+  validateRequest(emailOnboardingSchema),
+  HandleEmailOnboardingStep
+);
+
+// Verify email token
+router.get(
+  "/email/confirmation",
+  validateRequest(confirmEmailTokenSchema),
+  HandleConfirmEmailToken
+);
+
+// Password step
+router.post(
+  "/password/confirmation",
+  validateRequest(passwordOnboardingSchema),
+  HandlePasswordOnboardingStep
+);
+
+// Final signup
 router.post(
   "/signup",
-  validateRequest(signupSchema),
-  (req: Request, res: Response, next: NextFunction): void => {
-    void RegisterUser(req, res, next);
-  }
+  validateRequest(finalSignupOnboardingSchema),
+  RegisterUser
 );
 
 router.post(

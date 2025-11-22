@@ -41,6 +41,11 @@ export const TENANT_CREATION_FAILED_TOPIC = "tenant.onboarding.failed.topic";
 export const TENANT_ONBOARDING_COMPLETED_TOPIC =
   "tenant.onboarding.completed.topic";
 
-export const QUEUES = {
-  [TENANT_ONBOARDING_COMPLETED_TOPIC]: "tenant.onboarding.completed.queue",
-};
+// export const QUEUES = {
+//   [TENANT_ONBOARDING_COMPLETED_TOPIC]: "tenant.onboarding.completed.queue",
+
+// };
+
+export const AUTH_CONSUMER_TOPICS = [
+  TENANT_ONBOARDING_COMPLETED_TOPIC,
+];

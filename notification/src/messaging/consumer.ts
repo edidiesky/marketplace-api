@@ -2,7 +2,7 @@ import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 import logger from "../utils/logger";
 import { NotificationTopic } from "./topics";
 import { sendNotificationMessage } from "./producer";
-import { QUEUES } from "../constants";
+import { NOTIFICATION_TOPICS } from "../constants";
 
 const kafka = new Kafka({
   clientId: "Notification_Service",
@@ -32,7 +32,7 @@ export async function connectConsumer() {
     try {
       await consumer.connect();
       await consumer.subscribe({
-        topics: Object.values(QUEUES),
+        topics: NOTIFICATION_TOPICS,
         fromBeginning: false,
       });
       logger.info("Notification consumer connected");

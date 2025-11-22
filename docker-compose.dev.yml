@@ -22,7 +22,7 @@ services:
 
   kafka-1:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka-1
+    # container_name: kafka-1
     hostname: kafka-1
     networks:
       - app-tier
@@ -61,16 +61,16 @@ services:
 
   kafka-2:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka-2
+    # container_name: kafka-2
     hostname: kafka-2
     networks:
       - app-tier
     ports:
-      - "9093:9092"
+      - "9093:9093"
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:19092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,CONTROLLER://0.0.0.0:19092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -89,7 +89,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1",
+          "kafka-broker-api-versions --bootstrap-server localhost:9093 || exit 1",
         ]
       interval: 10s
       timeout: 10s
@@ -100,16 +100,16 @@ services:
 
   kafka-3:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka-3
+    # container_name: kafka-3
     hostname: kafka-3
     networks:
       - app-tier
     ports:
-      - "9094:9092"
+      - "9094:9094"
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:19092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:19092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -128,7 +128,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1",
+          "kafka-broker-api-versions --bootstrap-server localhost:9094 || exit 1",
         ]
       interval: 10s
       timeout: 10s
@@ -139,13 +139,13 @@ services:
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
+    # container_name: kafka-ui
     networks:
       - app-tier
     ports:
       - "8080:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: payment-cluster
+      KAFKA_CLUSTERS_0_NAME: marketplace-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
       DYNAMIC_CONFIG_ENABLED: true
     depends_on:
@@ -164,9 +164,11 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: api-gateway
+    # container_name: api-gateway
     env_file:
       - ./api-gateway/.env
+    ports:
+      - "8000:8000"
     networks:
       - app-tier
     healthcheck:
@@ -189,13 +191,16 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: authentication
+    container_name: marketplace-authentication
     env_file:
       - ./authentication/.env
     networks:
       - app-tier
+    ports:
+      - "4001:4001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://auth:4001/health"]
+      test:
+        ["CMD", "curl", "-f", "http://localhost:4001/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -214,13 +219,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: audit
+    container_name: marketplace-audit
+    ports:
+      - "4002:4002"
     env_file:
       - ./audit/.env
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://audit:4003/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -239,13 +246,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: products
+    container_name: marketplace-products
+    ports:
+      - "4003:4003"
     env_file:
       - ./products/.env
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://products:4003/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -265,7 +274,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: payment
+  # container_name: payment
   #   env_file:
   #     - ./payment/.env
   #   networks:
@@ -290,7 +299,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: categories
+  # container_name: categories
   #   env_file:
   #     - ./categories/.env
   #   networks:
@@ -315,13 +324,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: notification
+    container_name: marketplace-notification
     env_file:
       - ./notification/.env
+    ports:
+      - "4006:4006"
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://notification:4006/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4006/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -340,13 +351,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: stores
+    container_name: marketplace-stores
     env_file:
       - ./stores/.env
+    ports:
+      - "4007:4007"
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://stores:4007/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4007/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -364,7 +377,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: inventory
+  # container_name: inventory
   #   env_file:
   #     - ./inventory/.env
   #   networks:
@@ -389,7 +402,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: cart
+  # container_name: cart
   #   env_file:
   #     - ./cart/.env
   #   networks:
@@ -413,13 +426,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: tenant
+    container_name: marketplace-tenant
+    ports:
+      - "4010:4010"
     env_file:
       - ./tenant/.env
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://tenant:4010/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -438,13 +453,15 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: review
+    container_name: marketplace-review
     env_file:
       - ./review/.env
+    ports:
+      - "4011:4011"
     networks:
       - app-tier
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://review:4011/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4011/health"]
       interval: 1m30s
       timeout: 30s
       retries: 5
@@ -463,7 +480,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: orders
+  # container_name: orders
   #   env_file:
   #     - ./orders/.env
   #   networks:
@@ -487,7 +504,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: color
+  # container_name: color
   #   env_file:
   #     - ./color/.env
   #   networks:
@@ -511,7 +528,7 @@ services:
   #       condition: service_healthy
   #     kafka-3:
   #       condition: service_healthy
-  #   container_name: view
+  # container_name: view
   #   env_file:
   #     - ./view/.env
   #   networks:
@@ -526,18 +543,18 @@ services:
   #     context: ./view
   #     dockerfile: Dockerfile
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prom_data:/prometheus
-    networks:
-      - app-tier
+  # prometheus:
+  #   image: prom/prometheus:latest
+  # container_name: prometheus
+  #   command:
+  #     - "--config.file=/etc/prometheus/prometheus.yml"
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prom_data:/prometheus
+  #   networks:
+  #     - app-tier
   # tempo:
   #   image: grafana/tempo:latest
   #   command: ["-config.file=/etc/tempo/tempo.yaml"]
@@ -548,44 +565,44 @@ services:
   #     - "3200:3200" # HTTP API
   #     - "4318:4318" # OTLP gRPC
   #     - "4317:4317" # OTLP HTTP
-  loki:
-    image: grafana/loki:latest
-    ports:
-      - "3100:3100"
-    volumes:
-      - loki_data:/loki
-      - ./etc/loki/loki-config.yml:/etc/loki/loki-config.yml
-    command: -config.file=/etc/loki/loki-config.yml -config.expand-env=true
-    networks:
-      - app-tier
-  promtail:
-    image: grafana/promtail:latest
-    command: -config.file=/etc/promtail/promtail-config.yml
-    networks:
-      - app-tier
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./etc/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # - ./audit:/app/audit
-      - ./products:/app/products
-      # - ./inventory:/app/inventory
-      - ./auth:/app/auth
-      - ./payment:/app/payment
-      # - ./categories:/app/categories
-      - ./stores:/app/stores
-      - ./cart:/app/cart
-      - ./tenant:/app/tenant
-      - ./review:/app/review
-      # - ./orders:/app/orders
-      # - ./color:/app/color
-      # - ./view:/app/view
-      - ./notification:/app/notification
-      - ./api-gateway:/app/api-gateway
+  # loki:
+  #   image: grafana/loki:latest
+  #   ports:
+  #     - "3100:3100"
+  #   volumes:
+  #     - loki_data:/loki
+  #     - ./etc/loki/loki-config.yml:/etc/loki/loki-config.yml
+  #   command: -config.file=/etc/loki/loki-config.yml -config.expand-env=true
+  #   networks:
+  #     - app-tier
+  # promtail:
+  #   image: grafana/promtail:latest
+  #   command: -config.file=/etc/promtail/promtail-config.yml
+  #   networks:
+  #     - app-tier
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./etc/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #     # - ./audit:/app/audit
+  #     - ./products:/app/products
+  #     # - ./inventory:/app/inventory
+  #     - ./auth:/app/auth
+  #     - ./payment:/app/payment
+  #     # - ./categories:/app/categories
+  #     - ./stores:/app/stores
+  #     - ./cart:/app/cart
+  #     - ./tenant:/app/tenant
+  #     - ./review:/app/review
+  #     # - ./orders:/app/orders
+  #     # - ./color:/app/color
+  #     # - ./view:/app/view
+  #     - ./notification:/app/notification
+  #     - ./api-gateway:/app/api-gateway
 
   # grafana:
   #   image: grafana/grafana:latest
-  #   container_name: grafana
+  # container_name: grafana
   #   environment:
   #     - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
   #     - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -619,10 +636,10 @@ services:
   #   networks:
   #     - app-tier
 volumes:
-  prom_data:
+  # prom_data:
   redis-data:
   # grafana_data:
-  loki_data:
+  # loki_data:
   kafka1_data:
   kafka2_data:
   kafka3_data:
