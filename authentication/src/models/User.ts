@@ -7,6 +7,36 @@ export enum UserType {
   CUSTOMER = "CUSTOMER",
 }
 
+export enum TenantType {
+  SELLER_INDIVIDUAL = "SELLER_INDIVIDUAL",
+  SELLER_BUSINESS = "SELLER_BUSINESS",
+  MARKETPLACE = "MARKETPLACE",
+  FRANCHISE = "FRANCHISE",
+  ADMIN_PLATFORM = "ADMIN_PLATFORM",
+  ADMIN_PARTNER = "ADMIN_PARTNER",
+  CUSTOMER_B2C = "CUSTOMER_B2C",
+  CUSTOMER_B2B = "CUSTOMER_B2B",
+  INVESTOR_ANGEL = "INVESTOR_ANGEL",
+  INVESTOR_VC = "INVESTOR_VC",
+  ADVISOR = "ADVISOR",
+  SYSTEM_INTERNAL = "SYSTEM_INTERNAL",
+  DEMO = "DEMO",
+  TEST = "TEST",
+}
+
+export enum BillingPlan {
+  FREE = "FREE",
+  PRO = "PRO",
+  ENTERPRISE = "ENTERPRISE",
+}
+
+export enum TenantStatus {
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED",
+  DELETED = "DELETED",
+}
+
 export enum RoleLevel {
   SUPER_ADMIN = 1,
   EXECUTIVE = 2,
@@ -42,7 +72,6 @@ export interface IUser extends Document {
   passwordHash: string;
   createdAt: Date;
   updatedAt: Date;
-  authOptions: TWOFA;
   password: string;
   /** Common Contact Information */
   address?: string;
@@ -52,13 +81,24 @@ export interface IUser extends Document {
   gender?: Gender;
   nationality?: string;
   lastActiveAt?: Date;
-  isEmailVerified:boolean;
+  isEmailVerified: boolean;
   falseIdentificationFlag: boolean;
 
   // tenant metadata
-  tenantId:string;
-  tenantType:string;
-  tenantPlan:string;
+  tenantId: string;
+  tenantType: TenantType;
+  tenantStatus: TenantStatus;
+  tenantPlan: BillingPlan;
+  trialEndsAt?: Date;
+  currentPeriodEndsAt?: Date;
+  cancelAtPeriodEnd: boolean;
+
+  limits: {
+    stores: number;
+    products: number;
+    teamMembers: number;
+    apiCallsPerMonth: number;
+  };
 }
 
 const UserSchema = new Schema<IUser>(
@@ -101,6 +141,33 @@ const UserSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+
+    tenantType: {
+      type: String,
+      enum: Object.values(TenantType),
+    },
+    tenantStatus: {
+      type: String,
+      enum: Object.values(TenantStatus),
+      default: TenantStatus.DRAFT,
+    },
+    tenantPlan: {
+      type: String,
+      enum: Object.values(BillingPlan),
+      default: BillingPlan.FREE,
+    },
+    trialEndsAt: { type: Date },
+    currentPeriodEndsAt: { type: Date },
+    cancelAtPeriodEnd: { type: Boolean, default: false },
+
+    // Quotas
+    limits: {
+      stores: { type: Number, default: 1 },
+      products: { type: Number, default: 100 },
+      teamMembers: { type: Number, default: 3 },
+      apiCallsPerMonth: { type: Number, default: 10_000 },
+    },
+
     gender: {
       type: String,
       enum: Object.values(Gender),
@@ -118,9 +185,9 @@ UserSchema.index({
   userType: 1,
   institutionType: 1,
 });
-UserSchema.index({createdAt: -1, firstName: 1 });
-UserSchema.index({createdAt: -1, email: 1 });
-UserSchema.index({createdAt: -1, role: 1 });
+UserSchema.index({ createdAt: -1, firstName: 1 });
+UserSchema.index({ createdAt: -1, email: 1 });
+UserSchema.index({ createdAt: -1, role: 1 });
 
 UserSchema.pre<IUser>("save", function (next) {
   if (this.isModified() || this.isNew) {

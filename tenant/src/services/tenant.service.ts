@@ -1,9 +1,13 @@
 import { ITenantRepository } from "../repository/ITenantRepository";
 import { ITenant } from "../models/Tenant";
 import { FilterQuery, Types } from "mongoose";
+import { TenantRepository } from "../repository/TenantRepository";
 
 export class TenantService {
-  constructor(private tenantRepo: ITenantRepository) {}
+  private tenantRepo: ITenantRepository
+  constructor() {
+    this.tenantRepo = new TenantRepository()
+  }
    /**
    * @description Create Tenant method
    * @param userId 
@@ -12,7 +16,7 @@ export class TenantService {
    */
   async createTenant(userId: string, body: Partial<ITenant>): Promise<ITenant> {
     return this.tenantRepo.create({
-      user: new Types.ObjectId(userId),
+      ownerId: new Types.ObjectId(userId),
       ...body,
     });
   }

@@ -1,6 +1,5 @@
-// validators/onboarding.validator.ts
 import Joi from "joi";
-import { UserType } from "../models/User";
+import { BillingPlan, Gender, TenantType, UserType } from "../models/User";
 
 /**
  * POST /api/v1/auth/email/confirmation
@@ -91,7 +90,8 @@ export const finalSignupOnboardingSchema = Joi.object({
     .valid(UserType.SELLERS, UserType.INVESTORS)
     .required()
     .messages({
-      "any.only": "userType must be SELLERS or INVESTORS",
+      "any.only":
+        "Pleasse kindly provide the right userType. User type must be SELLERS or INVESTORS",
       "any.required": "userType is required",
     }),
 
@@ -107,12 +107,16 @@ export const finalSignupOnboardingSchema = Joi.object({
   address: Joi.string().trim().min(5).max(200).required().messages({
     "any.required": "Address is required",
   }),
-
   gender: Joi.string()
-    .valid("male", "female", "other", "prefer_not_to_say")
+    .valid(...Object.values(Gender))
     .required(),
-
   plan: Joi.string()
-    .valid("free", "starter", "pro", "enterprise")
-    .default("free"),
+    .valid(...Object.values(BillingPlan))
+    .messages({
+      "any.only":
+        "Pleasse kindly provide the right billing plan. Plan must be FREE or PRO",
+      "any.required": "billing plan is required",
+    }),
+
+  tenantType: Joi.string().valid(...Object.values(TenantType)),
 });

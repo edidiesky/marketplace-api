@@ -30,7 +30,8 @@ export const NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC =
 
 export const TENANT_CREATION_FAILED_TOPIC = "tenant.onboarding.failed.topic";
 export const USER_ROLLBACK_TOPIC = "authentication.user.rollback.topic";
-
+export const TENANT_ONBOARDING_COMPLETED_TOPIC =
+  "tenant.onboarding.completed.topic";
 /**
  * @description TENANT TOPICS
  */

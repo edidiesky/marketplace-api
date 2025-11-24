@@ -2,7 +2,7 @@ import { FilterQuery, Types } from "mongoose";
 import { ITenant } from "../models/Tenant";
 
 export interface ITenantRepository {
-  create(data: Partial<ITenant> & { user: Types.ObjectId }): Promise<ITenant>;
+  create(data: Partial<ITenant> & { ownerId: Types.ObjectId }): Promise<ITenant>;
   findAll(
     query: FilterQuery<ITenant>,
     skip: number,

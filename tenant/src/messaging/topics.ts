@@ -3,12 +3,14 @@ import {
   BASE_DELAY_MS,
   JITTER,
   MAX_RETRIES,
+  TENANT_ONBOARDING_COMPLETED_TOPIC,
   TENANT_CREATION_FAILED_TOPIC,
   USER_ONBOARDING_COMPLETED_TOPIC,
   USER_ROLLBACK_TOPIC,
 } from "../constants";
 import { sendTenantMessage } from "./producer";
 import { tenantService } from "../services";
+
 export const TenantTopic = {
   [USER_ONBOARDING_COMPLETED_TOPIC]: async (data: any) => {
     const { ownerId, ownerEmail, ownerName, type, billingPlan } = data;
@@ -23,25 +25,38 @@ export const TenantTopic = {
           billingPlan,
           trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         });
+
+        await sendTenantMessage(
+          TENANT_ONBOARDING_COMPLETED_TOPIC,
+          {
+            ownerId,
+            tenantId: tenant._id?.toString() || tenant.tenantId,
+            tenantType: type,
+            tenantPlan: billingPlan || "free",
+            trialEndsAt: tenant.trialEndsAt,
+          }
+        );
         logger.info("Tenant created successfully", {
           tenantId: tenant.tenantId,
         });
         return;
       } catch (error) {
-        if (attempt === MAX_RETRIES) {
-          logger.error(`[USER_ONBOARDING_COMPLETED_TOPIC] error`, {
-            message:
-              error instanceof Error
-                ? error.message
-                : "An unknown error did occurred",
+        if (error instanceof Error) {
+          logger.error(`Tenant creation failed (attempt ${attempt + 1})`, {
+            ownerId,
+            ownerEmail,
+            error: error.message,
+            stack: error.stack,
           });
-          await sendTenantMessage(TENANT_CREATION_FAILED_TOPIC, {
-            data,
-          });
-          break;
         }
-        const delay = Math.pow(2, attempt) * BASE_DELAY_MS;
-        await new Promise((resolve) => setTimeout(resolve, delay + JITTER));
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("ALL RETRIES FAILED, Sending rollback", { ownerId });
+          await sendTenantMessage(TENANT_CREATION_FAILED_TOPIC, data);
+        } else {
+          const delay =
+            Math.pow(2, attempt) * BASE_DELAY_MS + Math.random() * 1000;
+          await new Promise((r) => setTimeout(r, delay));
+        }
       }
     }
   },

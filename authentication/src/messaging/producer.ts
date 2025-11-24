@@ -46,24 +46,29 @@ export async function connectProducer() {
 export async function sendAuthenticationMessage(
   topic: string,
   data: any,
-  key?: string // Partition key (transactionID)
+  key?: string
 ) {
   try {
-    const partitionKey =
-      key || data.transactionId || data.userId || data.sagaId;
+    const partitionKey = 
+      key || 
+      data.transactionId || 
+      data.userId || 
+      data.sagaId || 
+      data.email || 
+      data.notificationId || 
+      null; // ← never undefined
+
     const result = await producer.send({
       topic,
       messages: [
         {
-          key: partitionKey,
+          key: partitionKey ? String(partitionKey) : null,
           value: JSON.stringify(data),
           headers: {
             service: "Authentication-service",
             timestamp: Date.now().toString(),
-            "correlation-id": data.sagaId || data.transactionId,
+            "correlation-id": data.sagaId || data.transactionId || data.notificationId || "none",
           },
-          // Optional: explicit partition assignment
-          // partition: customPartitionLogic(partitionKey),
         },
       ],
       acks: -1,
@@ -72,18 +77,17 @@ export async function sendAuthenticationMessage(
 
     logger.info("Message sent to Kafka", {
       topic,
-      partition: result[0].partition,
-      offset: result[0].offset,
       key: partitionKey,
+      partition: result[0]?.partition,
+      offset: result[0]?.offset,
     });
 
     return result;
   } catch (error: any) {
-    logger.error("Error sending message to Kafka", { topic, error });
+    logger.error("Error sending message to Kafka", { topic, error: error.message });
     throw error;
   }
 }
-
 /**
  * Batch send for high throughput scenarios
  */

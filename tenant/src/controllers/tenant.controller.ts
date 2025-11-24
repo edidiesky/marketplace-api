@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-
 import {
   BAD_REQUEST_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
@@ -16,7 +15,6 @@ import { tenantService } from "../services";
 // @access  Private
 const CreateTenantHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const storeId = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
     const tenant = await tenantService.createTenant(userId, {
       ...req.body,

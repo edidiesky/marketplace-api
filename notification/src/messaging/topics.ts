@@ -26,6 +26,7 @@ export const NotificationTopic = {
         notification_lock_key,
         "locked"
       );
+      logger.info("verification_url:", verification_url)
       if (!IS_LOCKED_ACK) {
         logger.info("Notification has already been processed", {
           notification_lock_key,
@@ -39,12 +40,12 @@ export const NotificationTopic = {
         for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
           try {
             let emailService = new EmailService();
-            await emailService.sendUserOnboardingConfirmationEmail(email, {
-              verification_url,
-              email,
-              firstName,
-              lastName,
-            });
+            let name = `${firstName} ${lastName}`
+            // await emailService.sendUserOnboardingConfirmationEmail(email, {
+            //   verification_url,
+            //   email,
+            //   name,
+            // });
             await redisClient.setex(
               notification_email_key,
               BASE_EXPIRATION_SEC,

@@ -23,7 +23,7 @@ export class TenantRepository implements ITenantRepository {
   }
 
   async create(
-    data: Partial<ITenant> & { user: Types.ObjectId }
+    data: Partial<ITenant> & { ownerId: Types.ObjectId }
   ): Promise<ITenant> {
     const tenant = await measureDatabaseQuery("create_Tenant", () =>
       Tenant.create(data)

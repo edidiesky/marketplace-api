@@ -46,11 +46,11 @@ export async function connectProducer() {
 export async function sendTenantMessage(
   topic: string,
   data: any,
-  key?: string // Partition key (transactionID)
+  key?: string
 ) {
   try {
     const partitionKey =
-      key || data.transactionId || data.userId || data.sagaId;
+      key || data.transactionId || data.userId || data.ownerEmail || null;
     const result = await producer.send({
       topic,
       messages: [
@@ -60,7 +60,7 @@ export async function sendTenantMessage(
           headers: {
             service: "Tenant-service",
             timestamp: Date.now().toString(),
-            "correlation-id": data.sagaId || data.transactionId,
+            "correlation-id": data.sagaId || data.transactionId || "null",
           },
           // Optional: explicit partition assignment
           // partition: customPartitionLogic(partitionKey),

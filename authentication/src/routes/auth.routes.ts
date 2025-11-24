@@ -37,7 +37,7 @@ const router = Router();
 
 // Email step
 router.post(
-  "/email/confirmation",
+  "/verify-email",
   validateRequest(emailOnboardingSchema),
   HandleEmailOnboardingStep
 );
@@ -45,13 +45,12 @@ router.post(
 // Verify email token
 router.get(
   "/email/confirmation",
-  validateRequest(confirmEmailTokenSchema),
   HandleConfirmEmailToken
 );
 
 // Password step
 router.post(
-  "/password/confirmation",
+  "/verify-password",
   validateRequest(passwordOnboardingSchema),
   HandlePasswordOnboardingStep
 );
@@ -162,11 +161,11 @@ export default router;
  *       Creates new user and sends credentials via email.
  *
  *       Email Template:
- *       Subject: "Your AKIRS-BACKEND Backend Test Account Credentials"
+ *       Subject: "Your Selleasy Backend Test Account Credentials"
  *
  *       Format:
  *
- *       Welcome to AKIRS-BACKEND Backend Test!
+ *       Welcome to Selleasy Backend Test!
  *
  *       Your account has been created successfully.
  *
@@ -178,7 +177,7 @@ export default router;
  *
  *       Best regards,
  *
- *       AKIRS-BACKEND Backend Test Team
+ *       Selleasy Backend Test Team
  *
  *     requestBody:
  *       required: true

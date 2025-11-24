@@ -29,6 +29,9 @@ RUN npm ci --only=production && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
 
+COPY src/providers/email/templates/ ./dist/providers/email/templates/
+
+
 # Expose port
 EXPOSE 4006
 

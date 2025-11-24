@@ -44,16 +44,12 @@ export interface ITenant extends Document {
   trialEndsAt?: Date;
   currentPeriodEndsAt?: Date;
   cancelAtPeriodEnd: boolean;
-
-  // Limits & Quotas
   limits: {
     stores: number;
     products: number;
     teamMembers: number;
     apiCallsPerMonth: number;
   };
-
-  // Metadata
   metadata: {
     [key: string]: any;
   };
@@ -76,8 +72,6 @@ const TenantSchema = new Schema<ITenant>(
     ownerId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "User",
-      index: true,
     },
     ownerEmail: {
       type: String,
@@ -102,8 +96,6 @@ const TenantSchema = new Schema<ITenant>(
       enum: Object.values(BillingPlan),
       default: BillingPlan.FREE,
     },
-
-    // Subscription
     trialEndsAt: { type: Date },
     currentPeriodEndsAt: { type: Date },
     cancelAtPeriodEnd: { type: Boolean, default: false },
@@ -117,7 +109,6 @@ const TenantSchema = new Schema<ITenant>(
     },
 
     metadata: { type: Schema.Types.Mixed, default: {} },
-
     deletedAt: { type: Date },
   },
   {

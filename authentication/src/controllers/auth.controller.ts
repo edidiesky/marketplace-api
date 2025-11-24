@@ -16,6 +16,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
   NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
   USER_ONBOARDING_COMPLETED_TOPIC,
+  ONBOARDING_EXPIRATION_SEC,
 } from "../constants";
 import redisClient from "../config/redis";
 import {
@@ -61,7 +62,7 @@ export const HandleEmailOnboardingStep = asyncHandler(
         normalizedEmail
       )}`;
 
-      const expiresAt = Date.now() + 60 * 15;
+      const expiresAt = Date.now() + ONBOARDING_EXPIRATION_SEC;
       // Saving to Redis
       await setOnboardingData({
         email: normalizedEmail,
@@ -127,6 +128,10 @@ export const HandleConfirmEmailToken = asyncHandler(
       const key = getRedisOnboardingKey(email);
       const state = await redisClient.get(key);
       if (!state) {
+        logger.error("No onboardign session found for the user:", {
+          key,
+          state,
+        });
         throw new Error(
           "No onboarding session found for this process. Please kindly restart"
         );
@@ -139,11 +144,12 @@ export const HandleConfirmEmailToken = asyncHandler(
 
       if (
         existingOnboardingData.tokenObject?.expiresAt &&
-        new Date(existingOnboardingData.tokenObject?.expiresAt) < new Date()
+        Date.now() > (existingOnboardingData.tokenObject?.expiresAt ?? 0)
       ) {
-        logger.error(
-          "The token provided has already expired please can u retry the onboarding flow again"
-        );
+        logger.error("Token has expired", {
+          email,
+          expiresAt: existingOnboardingData.tokenObject.expiresAt,
+        });
         throw new Error(
           "The token provided has already expired please can u retry the onboarding flow again"
         );
@@ -152,8 +158,8 @@ export const HandleConfirmEmailToken = asyncHandler(
       res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
         data: null,
         success: true,
-        message: "Email verified! Proceed to phone verification.",
-        nextStep: "phone",
+        message: "Email verified! Proceed to password verification.",
+        nextStep: "password",
       });
     } catch (error) {
       logger.error("Email onboarding error:", {
@@ -189,7 +195,17 @@ export const HandlePasswordOnboardingStep = asyncHandler(
     try {
       const { password, email } = req.body;
       const normalizedPassword = password.toLowerCase().trim();
-
+      const key = getRedisOnboardingKey(email);
+      const state = await redisClient.get(key);
+      if (!state) {
+        logger.error("No onboardign session found for the user:", {
+          key,
+          state,
+        });
+        throw new Error(
+          "No onboarding session found for this process. Please kindly restart"
+        );
+      }
       let salt = await bcrypt.genSalt(12);
       let hashedPassword = await bcrypt.hash(normalizedPassword, salt);
 
@@ -242,13 +258,16 @@ const RegisterUser = asyncHandler(
     session.startTransaction();
 
     try {
-      const { email, userType, phone, address, gender, plan } = req.body;
+      const { email, userType, phone, address, gender, plan, tenantType } =
+        req.body;
       const normalizedEmail = email.toLowerCase().trim();
 
       // Get onboarding data
       const onboardingData = await getOnboardingState(normalizedEmail);
       if (!onboardingData || onboardingData.step !== "password") {
-        logger.error("The user has not completed the onboarding steps")
+        logger.error("The user has not completed the onboarding steps", {
+          step: onboardingData?.step,
+        });
         throw new Error("Please kindly Complete all onboarding steps first");
       }
 
@@ -286,12 +305,12 @@ const RegisterUser = asyncHandler(
         { session }
       );
 
-      if (userType !== UserType.CUSTOMER) {
+      if (user && user.userType !== UserType.CUSTOMER) {
         await sendAuthenticationMessage(USER_ONBOARDING_COMPLETED_TOPIC, {
           ownerId: user?._id,
           ownerEmail: user?.email,
           ownerName: user?.firstName,
-          type: userType,
+          type: tenantType,
           billingPlan: plan,
         });
       }
@@ -470,7 +489,6 @@ const LoginUser = asyncHandler(
   }
 );
 
-
 /**
  * @description Verifies the 2FA token and issues JWT.
  * @route POST /api/v1/auth/verify-2fa
@@ -541,7 +559,6 @@ const Verify2FA = asyncHandler(
     });
   }
 );
-
 
 /**
  * @description It reset the password of a user

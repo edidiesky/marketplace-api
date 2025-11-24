@@ -8,7 +8,7 @@ export const SERVER_ERROR_STATUS_CODE = 500;
 
 export const BASE_DELAY_MS = 4000;
 export const BASE_EXPIRATION_SEC = 60 * 60 * 2;
-export const ONBOARDING_EXPIRATION_SEC = 60 * 15;
+export const ONBOARDING_EXPIRATION_SEC = 60 * 15 * 1000;
 export const MAX_RETRIES = 7;
 export const JITTER = Math.random() * 10000;
 
@@ -40,6 +40,8 @@ export const TENANT_CREATION_FAILED_TOPIC = "tenant.onboarding.failed.topic";
  */
 export const TENANT_ONBOARDING_COMPLETED_TOPIC =
   "tenant.onboarding.completed.topic";
+export const USER_ROLLBACK_TOPIC = "authentication.user.rollback.topic";
+
 
 // export const QUEUES = {
 //   [TENANT_ONBOARDING_COMPLETED_TOPIC]: "tenant.onboarding.completed.queue",
@@ -48,4 +50,5 @@ export const TENANT_ONBOARDING_COMPLETED_TOPIC =
 
 export const AUTH_CONSUMER_TOPICS = [
   TENANT_ONBOARDING_COMPLETED_TOPIC,
+  USER_ROLLBACK_TOPIC
 ];

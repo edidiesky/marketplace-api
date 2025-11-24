@@ -12,7 +12,7 @@ export const setOnboardingData = async (data: IOnboarding) => {
   try {
     // check if data exists in the cache, and mutate the existing one
 
-    let existingKey = await getRedisOnboardingKey(data.email);
+    let existingKey = getRedisOnboardingKey(data.email);
     let existing = await redisClient.get(existingKey);
     let onboardingData: IOnboarding = existing
       ? JSON.parse(existing)
