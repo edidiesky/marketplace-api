@@ -177,10 +177,6 @@ export const DeleteUserService = async (id: string): Promise<string> => {
  * 
  * @param userId 
  * @param role 
- * @param timeFrameDays 
- * @param activeTimeFrameDays 
- * @param corporateTimeFrameDays 
- * @param individualFrameDays 
  * @returns 
  */
 export const getAggregatedUserService = async (

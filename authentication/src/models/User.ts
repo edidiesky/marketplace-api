@@ -45,12 +45,49 @@ export enum RoleLevel {
 }
 
 export enum Permission {
-  CREATE_USER = "CREATE_USER",
+
   MANAGE_ROLES = "MANAGE_ROLES",
   READ_USER = "READ_USER",
   UPDATE_USER = "UPDATE_USER",
   DELETE_USER = "DELETE_USER",
   VIEW_REPORTS = "VIEW_REPORTS",
+  // Platform-level
+  PLATFORM_ADMIN = "PLATFORM_ADMIN",
+  MANAGE_TENANTS = "MANAGE_TENANTS",
+  
+  // Tenant-level
+  TENANT_OWNER = "TENANT_OWNER",
+  MANAGE_TEAM = "MANAGE_TEAM",
+  
+  // Store-level
+  STORE_CREATE = "STORE_CREATE",
+  STORE_UPDATE = "STORE_UPDATE",
+  STORE_DELETE = "STORE_DELETE",
+  STORE_SETTINGS = "STORE_SETTINGS",
+  
+  // Product management
+  PRODUCT_CREATE = "PRODUCT_CREATE",
+  PRODUCT_UPDATE = "PRODUCT_UPDATE",
+  PRODUCT_DELETE = "PRODUCT_DELETE",
+  PRODUCT_VIEW = "PRODUCT_VIEW",
+  
+  // Inventory
+  INVENTORY_MANAGE = "INVENTORY_MANAGE",
+  INVENTORY_VIEW = "INVENTORY_VIEW",
+  
+  // Orders
+  ORDER_VIEW = "ORDER_VIEW",
+  ORDER_FULFILL = "ORDER_FULFILL",
+  ORDER_REFUND = "ORDER_REFUND",
+  
+  // Analytics
+  ANALYTICS_VIEW = "ANALYTICS_VIEW",
+  FINANCIAL_VIEW = "FINANCIAL_VIEW",
+  
+  // Customer-facing
+  CUSTOMER_BROWSE = "CUSTOMER_BROWSE",
+  CUSTOMER_PURCHASE = "CUSTOMER_PURCHASE",
+  CUSTOMER_REVIEW = "CUSTOMER_REVIEW",
 }
 
 /** ENUM FOR GENDER */
@@ -146,6 +183,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(TenantType),
     },
+    tenantId:String,
     tenantStatus: {
       type: String,
       enum: Object.values(TenantStatus),

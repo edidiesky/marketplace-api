@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   BAD_REQUEST_STATUS_CODE,
   SERVER_ERROR_STATUS_CODE,
+  NOTIFICATION_STORE_ONBOARDING_COMPLETED_TOPIC,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
@@ -11,6 +12,7 @@ import { AuthenticatedRequest } from "../types";
 import { storeService } from "../services";
 import { IStore } from "../models/Store";
 import logger from "../utils/logger";
+import { sendStoreMessage } from "../messaging/producer";
 
 // @description: Create Store handler
 // @route  POST /api/v1/stores/
@@ -22,6 +24,20 @@ const CreateStoreHandler = asyncHandler(
 
     try {
       const store = await storeService.createStore(userId, storeData);
+      sendStoreMessage(NOTIFICATION_STORE_ONBOARDING_COMPLETED_TOPIC, {
+        notificationId: storeData.notificationId!,
+        email: storeData.ownerEmail!,
+        name: storeData.ownerName!,
+        store: storeData.name!,
+        plan: storeData.plan!,
+        store_url: `${process.env.WEB_ORIGIN}`,
+      }).catch((error) => {
+        logger.error("Failed to send store creation notification", {
+          error,
+          storeId: store._id,
+          email: storeData.ownerEmail,
+        });
+      });
       res
         .status(SUCCESSFULLY_CREATED_STATUS_CODE)
         .json({ success: true, data: store });

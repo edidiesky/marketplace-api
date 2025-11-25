@@ -10,6 +10,7 @@ import {
 } from "../constants";
 import { sendTenantMessage } from "./producer";
 import { tenantService } from "../services";
+import { TenantStatus } from "../models/Tenant";
 
 export const TenantTopic = {
   [USER_ONBOARDING_COMPLETED_TOPIC]: async (data: any) => {
@@ -24,18 +25,18 @@ export const TenantTopic = {
           type,
           billingPlan,
           trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: TenantStatus.ACTIVE,
         });
 
-        await sendTenantMessage(
-          TENANT_ONBOARDING_COMPLETED_TOPIC,
-          {
-            ownerId,
-            tenantId: tenant._id?.toString() || tenant.tenantId,
-            tenantType: type,
-            tenantPlan: billingPlan || "free",
-            trialEndsAt: tenant.trialEndsAt,
-          }
-        );
+        // send another message to auth service to update the user model
+        // aim to reflect tenant id, type, plans
+        await sendTenantMessage(TENANT_ONBOARDING_COMPLETED_TOPIC, {
+          ownerId,
+          tenantId: tenant.tenantId,
+          tenantType: type,
+          tenantPlan: billingPlan || "free",
+          trialEndsAt: tenant.trialEndsAt,
+        });
         logger.info("Tenant created successfully", {
           tenantId: tenant.tenantId,
         });

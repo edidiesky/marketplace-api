@@ -17,6 +17,8 @@ import {
   NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC,
   USER_ONBOARDING_COMPLETED_TOPIC,
   ONBOARDING_EXPIRATION_SEC,
+  NOTIFICATION_AUTHENTICATION_2FA_TOPIC,
+  REDIS_EXPIRATION_MIN,
 } from "../constants";
 import redisClient from "../config/redis";
 import {
@@ -382,16 +384,11 @@ const RegisterUser = asyncHandler(
  * @access Public
  * @param {object} req.body - { email, password }
  */
+
 const LoginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { email, password, idempotencyKey } = req.body;
     const notificationId = idempotencyKey ? idempotencyKey : uuidv4();
-
-    // Validate input
-    if (!email || !password) {
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("email and password are required");
-    }
 
     const cacheKey = `user:${email}`;
     let cachedUser = await redisClient.get(cacheKey);
@@ -441,6 +438,9 @@ const LoginUser = asyncHandler(
     }
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
+      logger.error("Please provide a valid password!", {
+        password,
+      });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("Please provide a valid password!");
     }
@@ -454,7 +454,7 @@ const LoginUser = asyncHandler(
 
     await redisClient.setex(
       `2fa:${user.email}`,
-      15 * 60,
+      REDIS_EXPIRATION_MIN,
       JSON.stringify({
         token: twoFAToken,
         expiresAt: new Date(Date.now() + 900000).toISOString(),
@@ -462,7 +462,7 @@ const LoginUser = asyncHandler(
     );
 
     // // REPORTING EVENT
-    // await sendUserMessage(USER_LOGIN_TOPIC, {
+    // await sendAuthenticationMessage(USER_LOGIN_TOPIC, {
     //   user: {
     //     userId: user._id,
     //     email: user.email,
@@ -473,15 +473,15 @@ const LoginUser = asyncHandler(
     //     twoFATokenSent: true,
     //   },
     // });
-    // // Send 2FA code via SMS and email
-    // await sendUserMessage(LOGIN_2FA_TOPIC, {
-    //   token: twoFAToken,
-    //   phone: normalizedPhone,
-    //   notificationId,
-    //   email: user?.email,
-    //   fullName,
-    //   message: `Hi, ${fullName}, Your 2FA code for AKIRS signin is ${twoFAToken}. It expires in 5 minutes.`,
-    // });
+
+    await sendAuthenticationMessage(NOTIFICATION_AUTHENTICATION_2FA_TOPIC, {
+      token: twoFAToken,
+      phone: normalizedPhone,
+      notificationId,
+      email: user?.email,
+      fullName,
+      message: `Hi, ${fullName}, Your 2FA code for AKIRS signin is ${twoFAToken}. It expires in 5 minutes.`,
+    });
     res.status(200).json({
       message: "2FA code has been sent to your phone and email. Please verify.",
       userId: user.email,
@@ -527,7 +527,7 @@ const Verify2FA = asyncHandler(
     const cachedToken = JSON.parse(cachedTokenStr);
     if (
       cachedToken.token !== twoFAToken ||
-      new Date(cachedToken.expiresAt) < new Date()
+      Date.now() > Number(cachedToken.expiresAt)
     ) {
       logger.error("Invalid or expired 2FA token", { userId });
       res.status(BAD_REQUEST_STATUS_CODE);

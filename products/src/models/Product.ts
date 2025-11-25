@@ -1,8 +1,12 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 export interface IProduct {
-  user: Types.ObjectId;
+  ownerId: Types.ObjectId;
   store: Types.ObjectId;
+  ownerName: string;
+  storeName: string;
+  ownerImage: string;
+  tenantId: string;
   name: string;
   isArchive?: boolean;
   images: string[];
@@ -12,10 +16,14 @@ export interface IProduct {
 
 const ProductSchema = new Schema<IProduct>(
   {
-    user: {
+    ownerId: {
       type: Schema.Types.ObjectId,
       required: true,
     },
+    ownerName: String,
+    ownerImage: String,
+    tenantId: String,
+    storeName:String,
     store: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -48,7 +56,8 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-ProductSchema.index({ store: 1, _id: 1 });
+ProductSchema.index({ store: 1 });
+ProductSchema.index({ ownerId: 1 });
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ size: 1 });
 ProductSchema.index({ createdAt: -1 });

@@ -133,7 +133,7 @@ export class EmailService {
     }
   }
 
-   /**
+  /**
    * @description Send User Store Created Email
    * @param recipientEmail
    * @param data
@@ -143,14 +143,8 @@ export class EmailService {
     data: any
   ): Promise<void> {
     try {
-      const {
-        subject,
-        verification_url,
-        email,
-        firstName,
-        lastName,
-        unsubscribeLink,
-      } = data;
+      const { subject, email, name, unsubscribeLink, store, plan, store_url } =
+        data;
       const templatePath = path.join(
         __dirname,
         "../providers/email/templates/onboardingStoreCreated.html"
@@ -159,20 +153,20 @@ export class EmailService {
       const template = handlebars.compile(source);
       const html = template({
         subject,
-        verification_url,
         email,
-        firstName,
-        lastName,
+        name,
+        store,
+        plan,
+        store_url,
         from_name: "SellEasi",
-        action_url: `${process.env.WEB_ORIGIN}/auth/signin`,
-        unsubscribeLink: unsubscribeLink || "https://SellEasi.com/unsubscribe",
+        unsubscribeLink: unsubscribeLink || "https://sellEasi.com/unsubscribe",
       });
       await axios.post(
         "https://api.mailersend.com/v1/email",
         {
           from: { email: process.env.EMAIL_FROM! },
           to: [{ email: recipientEmail }],
-          subject: subject || "Welcome to SellEasi World",
+          subject: "Store Created",
           html,
         },
         {
@@ -199,6 +193,7 @@ export class EmailService {
       throw error;
     }
   }
+
   /**
    * @description Send Verification Code Email
    * @param recipientEmail

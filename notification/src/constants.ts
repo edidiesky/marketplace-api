@@ -26,7 +26,8 @@ export const NOTIFICATION_AUTHENTICATION_RESET_PASSWORD_TOPIC =
   "notification.authentication.reset.password.topic";
 export const NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC =
   "notification.tenant.onboarding.confirmation.topic";
-
+export const NOTIFICATION_STORE_ONBOARDING_COMPLETED_TOPIC =
+  "notification.store.onboarding.completed.topic";
 /**
  * @description QUEUES
  */
@@ -37,4 +38,5 @@ export const NOTIFICATION_TOPICS = [
   NOTIFICATION_AUTHENTICATION_2FA_TOPIC,
   NOTIFICATION_AUTHENTICATION_RESET_PASSWORD_TOPIC,
   NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC,
-]
+  NOTIFICATION_STORE_ONBOARDING_COMPLETED_TOPIC,
+];

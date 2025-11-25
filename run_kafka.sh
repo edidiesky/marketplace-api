@@ -10,5 +10,8 @@ docker exec marketplaceapi-kafka-1-1 bash -c "
   kafka-topics --create --if-not-exists --topic tenant.onboarding.failed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic tenant.onboarding.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic authentication.user.rollback.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
-  echo 'All 10 topics created successfully!'
+  kafka-topics --create --if-not-exists --topic notification.store.onboarding.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
+  echo 'All 11 topics created successfully!'
 "
+
+# store.onboarding.completed.topic

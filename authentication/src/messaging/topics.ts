@@ -7,7 +7,7 @@ import {
   TENANT_ONBOARDING_COMPLETED_TOPIC,
   USER_ROLLBACK_TOPIC,
 } from "../constants";
-import User from "../models/User";
+import User, { TenantStatus } from "../models/User";
 import { sendAuthenticationMessage } from "./producer";
 export const AuthenticationTopic = {
   [TENANT_ONBOARDING_COMPLETED_TOPIC]: async (data: any) => {
@@ -24,7 +24,7 @@ export const AuthenticationTopic = {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         const updatedUser = await User.findOneAndUpdate(
-          { tenantId: ownerId },
+          { _id: ownerId },
           {
             $set: {
               tenantId,
@@ -32,6 +32,7 @@ export const AuthenticationTopic = {
               tenantPlan: tenantPlan,
               tenantType,
               trialEndsAt,
+              tenantStatus: TenantStatus.ACTIVE,
             },
           },
           { new: true }
@@ -43,15 +44,20 @@ export const AuthenticationTopic = {
             {
               tenantId,
               ownerId,
-              email,
               tenantPlan,
               tenantType,
+              limits,
+              name: `${updatedUser?.firstName} ${updatedUser?.lastName}`,
+              email: updatedUser?.email,
             }
           );
         }
-        logger.info("TENANT_ONBOARDING_COMPLETED_TOPIC completed:", {
-          data,
-        });
+        logger.info(
+          "TENANT_ONBOARDING_COMPLETED_TOPIC action completed succesfully:",
+          {
+            data,
+          }
+        );
 
         break;
       } catch (error) {

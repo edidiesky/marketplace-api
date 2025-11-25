@@ -7,6 +7,7 @@ export enum StorePlanEnum {
   enterprise = "enterprise",
 }
 
+
 export interface IStore {
   _id: Types.ObjectId;
   ownerId: Types.ObjectId;
@@ -54,6 +55,7 @@ export interface IStore {
   };
   createdAt: Date;
   updatedAt: Date;
+  notificationId:string;
 }
 
 const StoreSchema = new Schema<IStore>(
