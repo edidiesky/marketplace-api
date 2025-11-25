@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { Role, UserRole, IRole, IUserRole } from "../models/Role";
-import User, { Permission, RoleLevel } from "../models/User";
+import User, {  RoleLevel } from "../models/User";
 import logger from "../utils/logger";
 import {
   BAD_REQUEST_STATUS_CODE,
@@ -95,10 +95,10 @@ export const CreateRole = asyncHandler(
   }
 );
 
+
 /**
  * @description Assign role to user
  * @route POST /api/v1/roles/assign-role
- * @access Protected (MANAGE_ROLES permission, DEPUTY_DIRECTOR level)
  */
 export const AssignRoleToUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -195,7 +195,6 @@ export const AssignRoleToUser = asyncHandler(
 /**
  * @description Revoke user role
  * @route DELETE /api/v1/roles/revoke-role/:userId/:roleId
- * @access Protected (MANAGE_ROLES permission, DEPUTY_DIRECTOR level)
  */
 export const RevokeUserRole = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -277,7 +276,6 @@ export const RevokeUserRole = asyncHandler(
 /**
  * @description Update user role (scope, effective dates, etc.)
  * @route PUT /api/v1/roles/update-role
- * @access Protected (MANAGE_ROLES permission, DEPUTY_DIRECTOR level)
  */
 export const UpdateUserRole = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {

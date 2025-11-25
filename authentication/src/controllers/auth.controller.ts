@@ -196,7 +196,6 @@ export const HandlePasswordOnboardingStep = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { password, email } = req.body;
-      const normalizedPassword = password.toLowerCase().trim();
       const key = getRedisOnboardingKey(email);
       const state = await redisClient.get(key);
       if (!state) {
@@ -209,7 +208,7 @@ export const HandlePasswordOnboardingStep = asyncHandler(
         );
       }
       let salt = await bcrypt.genSalt(12);
-      let hashedPassword = await bcrypt.hash(normalizedPassword, salt);
+      let hashedPassword = await bcrypt.hash(password, salt);
 
       await setOnboardingData({
         email,
