@@ -110,9 +110,6 @@ async function startConsuming() {
         });
         await sendToDLQ(topic, partition, message, data, procErr as Error);
         await commitOffset(topic, partition, message.offset);
-        // // Optional backpressure
-        // const p = pause();
-        // setTimeout(() => p.resume(), 5000);
       }
     },
   });
@@ -163,11 +160,12 @@ export async function disconnectConsumer() {
     await consumer.disconnect();
     logger.info("Consumer disconnected");
   } catch (error) {
-    logger.error("Error in connecting to the Kafka comsumer", {
-      message:
-        error instanceof Error ? error.message : "unknown error has occurred",
-      stack:
-        error instanceof Error ? error.stack : "unknown error has occurred",
-    });
+    if (error instanceof Error) {
+      logger.error("Error in connecting to the Kafka comsumer", {
+        message: error.message,
+        stack: error.stack,
+      });
+      
+    }
   }
 }

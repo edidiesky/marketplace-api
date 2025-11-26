@@ -40,8 +40,6 @@ export async function connectProducer() {
 
 /**
  * Send Authentication message with proper partitioning
- * Messages with same transactionId/userId will always go to same partition
- * Handler created here guarantees ordering for that customer's transactions
  */
 export async function sendAuthenticationMessage(
   topic: string,
@@ -56,7 +54,7 @@ export async function sendAuthenticationMessage(
       data.sagaId || 
       data.email || 
       data.notificationId || 
-      null; // ← never undefined
+      null;
 
     const result = await producer.send({
       topic,

@@ -7,12 +7,12 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
-import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import { storeService } from "../services";
 import { IStore } from "../models/Store";
 import logger from "../utils/logger";
 import { sendStoreMessage } from "../messaging/producer";
+import { buildQuery } from "../utils/buildQuery";
 
 // @description: Create Store handler
 // @route  POST /api/v1/stores/
@@ -51,26 +51,19 @@ const CreateStoreHandler = asyncHandler(
 );
 
 // @description: Get All Stores Handler
-// @route  GET /api/v1/stores/:storeid
+// @route  GET /api/v1/stores?search=""&name=""
 // @access  Private
 const GetAllStoreHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const { page = 1, limit = 10, name, size, category, price } = req.query;
-    const storeId = req.params.storeid;
-
-    const query: FilterQuery<IStore> = {
-      storeId,
-    };
-    if (size) query.size = size;
-    if (userId) query.userId = userId;
-    if (category) query.category = category;
-    if (name) query.name = name;
-    if (price) query.price = price;
+    const { page = 1, limit = 10 } = req.query;
+    let queryFilter = await buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
-
-    const Stores = await storeService.getAllStores(query, skip, Number(limit));
-    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(Stores);
+    const stores = await storeService.getAllStores(
+      queryFilter,
+      skip,
+      Number(limit)
+    );
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(stores);
   }
 );
 

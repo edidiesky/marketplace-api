@@ -35,6 +35,7 @@ export class StoreRepository implements IStoreRepository {
     }
   }
 
+  
   async createStore(
     data: Partial<IStore>,
     session?: mongoose.ClientSession

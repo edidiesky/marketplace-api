@@ -492,43 +492,37 @@ const LoginUser = asyncHandler(
  * @description Verifies the 2FA token and issues JWT.
  * @route POST /api/v1/auth/verify-2fa
  * @access Public
- * @param {object} req.body - { userId, twoFAToken }
+ * @param {object} req.body - { userId, otp }
  */
 const Verify2FA = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId, twoFAToken } = req.body;
-    // Validate input
-    if (!userId || !twoFAToken) {
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("userId and 2FA token are required");
-    }
-
+    const { email, otp } = req.body;
     // Find user
     const user = await measureDatabaseQuery(
       "2FA",
-      async () => await User.findOne({ email: userId }).select("-passwordHash")
+      async () => await User.findOne({ email }).select("-passwordHash")
     );
 
     if (!user) {
-      logger.error("This user does not exists", { userId });
+      logger.error("This user does not exists", { email });
       res.status(NOT_FOUND_STATUS_CODE);
       throw new Error("This user does not exists in AKIRS database");
     }
 
     // Retrieve 2FA token from Redis
-    const cachedTokenStr = await redisClient.get(`2fa:${userId}`);
+    const cachedTokenStr = await redisClient.get(`2fa:${email}`);
     if (!cachedTokenStr) {
-      logger.error("No 2FA token found in cache", { userId });
+      logger.error("No 2FA token found in cache", { email });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("Invalid or expired 2FA token");
     }
 
     const cachedToken = JSON.parse(cachedTokenStr);
     if (
-      cachedToken.token !== twoFAToken ||
+      cachedToken.token !== otp ||
       Date.now() > Number(cachedToken.expiresAt)
     ) {
-      logger.error("Invalid or expired 2FA token", { userId });
+      logger.error("Invalid or expired 2FA token", { email });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("Invalid or expired 2FA token");
     }
@@ -541,15 +535,12 @@ const Verify2FA = asyncHandler(
       fullName
     );
 
-    await User.updateOne(
-      { email: userId },
-      { $set: { lastActiveAt: new Date() } }
-    );
+    await User.updateOne({ email }, { $set: { lastActiveAt: new Date() } });
     logger.info("User signned in succesfully using 2FA", {
-      userId,
+      email,
       service: "auth_service",
     });
-    await redisClient.del(`2fa:${userId}`);
+    await redisClient.del(`2fa:${email}`);
 
     res.status(200).json({
       accessToken,

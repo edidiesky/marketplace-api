@@ -2,13 +2,6 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import sanitizeHtml from "sanitize-html";
 import {
-  CreateProductService,
-  GetAllStoreProductService,
-  GetASingleProductService,
-  UpdateProductService,
-  DeleteProductService,
-} from "../services/product.service";
-import {
   BAD_REQUEST_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
@@ -16,33 +9,34 @@ import {
 import { IProduct } from "../models/Product";
 import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
+import productService from "../services/product.service";
 
 // @description: Create Product handler
-// @route  POST /products/:storeid
+// @route  POST /api/v1/products
 // @access  Private
 const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const storeId = req.params.storeid;
-    const { userId } = (req as AuthenticatedRequest).user
+    const { userId } = (req as AuthenticatedRequest).user;
+    const productBody = req.body as IProduct;
     const description = sanitizeHtml(req.body.description || "", {
       allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
       allowedAttributes: { a: ["href"] },
       disallowedTagsMode: "discard",
     });
-    const product = await CreateProductService(userId, storeId, {
-      ...req.body,
+    const product = await productService.CreateProductService(userId, {
       description,
+      ...productBody,
     });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(product);
   }
 );
 
 // @description: Get All Products Handler
-// @route  GET /products/:storeid
+// @route  GET /api/v1/products
 // @access  Private
 const GetAllStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-     const { userId } = (req as AuthenticatedRequest).user
+    const { userId } = (req as AuthenticatedRequest).user;
     const { page = 1, limit = 10, name, size, category, price } = req.query;
     const storeId = req.params.storeid;
 
@@ -56,7 +50,7 @@ const GetAllStoreProductHandler = asyncHandler(
     if (price) query.price = price;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const products = await GetAllStoreProductService(
+    const products = await productService.getAllProducts(
       query,
       skip,
       Number(limit)
@@ -66,29 +60,29 @@ const GetAllStoreProductHandler = asyncHandler(
 );
 
 // @description: Get A Single Product Handler
-// @route  GET /products/:id
+// @route  GET /api/v1/products/:id
 // @access  Public
 const GetSingleStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const product = await GetASingleProductService(id);
+    const product = await productService.getProductById(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(product);
   }
 );
 
 // @description: Update A Single Product Handler
-// @route  PUT /products/:id
+// @route  PUT /api/v1/products/:id
 // @access  Private
 const UpdateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingProduct = await GetASingleProductService(id);
+    const existingProduct = await productService.getProductById(id);
 
     if (!existingProduct) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This product does not exist");
     }
-    const product = await UpdateProductService(
+    const product = await productService.updateProduct(
       id,
       req.body as Partial<IProduct>
     );
@@ -97,18 +91,18 @@ const UpdateProductHandler = asyncHandler(
 );
 
 // @description: Delete A Single Product Handler
-// @route  DELETE /products/:id
+// @route  DELETE /api/v1/products/:id
 // @access  Private
 const DeleteProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingProduct = await GetASingleProductService(id);
+    const existingProduct = await productService.getProductById(id);
 
     if (!existingProduct) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This product does not exist");
     }
-    const message = await DeleteProductService(id);
+    const message = await productService.deleteProduct(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
   }
 );
