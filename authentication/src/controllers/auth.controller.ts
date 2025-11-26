@@ -419,7 +419,9 @@ const LoginUser = asyncHandler(
         userAgent: req.headers["user-agent"],
       });
       res.status(NOT_FOUND_STATUS_CODE);
-      throw new Error("You do not have any record with us!!");
+      throw new Error(
+        "This user does not have any record with us. Please sign up."
+      );
     }
 
     // Check for false identification flag
@@ -441,7 +443,9 @@ const LoginUser = asyncHandler(
         password,
       });
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("Please provide a valid password!");
+      throw new Error(
+        "Invalid password credentials provided. Please kindly try again."
+      );
     }
     const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
     // Generate 2FA token
@@ -479,10 +483,11 @@ const LoginUser = asyncHandler(
       notificationId,
       email: user?.email,
       fullName,
-      message: `Hi, ${fullName}, Your 2FA code for AKIRS signin is ${twoFAToken}. It expires in 5 minutes.`,
+      message: `Hi, ${fullName}, Your 2FA code for SelleaSY signin is ${twoFAToken}. It expires in 5 minutes.`,
     });
     res.status(200).json({
-      message: "2FA code has been sent to your phone and email. Please verify.",
+      message:
+        "A 2FA token has been sent to your registered email. Please verify to complete login.",
       userId: user.email,
     });
   }
@@ -506,7 +511,7 @@ const Verify2FA = asyncHandler(
     if (!user) {
       logger.error("This user does not exists", { email });
       res.status(NOT_FOUND_STATUS_CODE);
-      throw new Error("This user does not exists in AKIRS database");
+      throw new Error("This user does not have any record with us");
     }
 
     // Retrieve 2FA token from Redis
@@ -514,7 +519,7 @@ const Verify2FA = asyncHandler(
     if (!cachedTokenStr) {
       logger.error("No 2FA token found in cache", { email });
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("Invalid or expired 2FA token");
+      throw new Error("You provided an invalid or expired 2FA token");
     }
 
     const cachedToken = JSON.parse(cachedTokenStr);
@@ -524,19 +529,19 @@ const Verify2FA = asyncHandler(
     ) {
       logger.error("Invalid or expired 2FA token", { email });
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("Invalid or expired 2FA token");
+      throw new Error("You provided an invalid or expired 2FA token");
     }
 
     const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
     const { accessToken, refreshToken } = await generateToken(
       res,
-      user.email,
+      user._id.toString(),
       user.userType,
       fullName
     );
 
     await User.updateOne({ email }, { $set: { lastActiveAt: new Date() } });
-    logger.info("User signned in succesfully using 2FA", {
+    logger.info("User signed in succesfully using 2FA", {
       email,
       service: "auth_service",
     });

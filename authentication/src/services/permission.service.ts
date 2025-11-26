@@ -34,16 +34,7 @@ export class PermissionService {
     const permissionArray = Array.from(permissions);
     logger.info("userRoles & permissions:", {
       userId,
-      userRoles: userRoles.map(ur => ({
-        userId: ur.userId,
-        roleId: ur.roleId?._id?.toString(),
-        roleCode: ur.roleId?.roleCode,
-        isActive: ur.isActive,
-        effectiveFrom: ur.effectiveFrom,
-        effectiveTo: ur.effectiveTo,
-        rolePermissions: ur.roleId?.permissions || [],
-        scopePermissions: ur.scope?.permissions || [],
-      })),
+      userRoles,
       permissions: permissionArray,
       service: "auth_service",
       timestamp: new Date().toISOString(),

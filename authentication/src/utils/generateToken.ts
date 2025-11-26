@@ -4,14 +4,14 @@ import logger from "./logger";
 import redisClient from "../config/redis";
 import { nanoid } from "nanoid";
 import { PermissionService } from "../services/permission.service";
-export const signJwt = async (tin: string, role: string, name: string) => {
+export const signJwt = async (userId: string, role: string, name: string) => {
   try {
-    const permissions = await PermissionService.getUserPermissions(tin);
+    const permissions = await PermissionService.getUserPermissions(userId);
     const roleLevel = await PermissionService.getUserRoleLevel(
-      tin,
+      userId,
     );
     const payload = {
-      userId: tin,
+      userId,
       name,
       permissions,
       roleLevel,
@@ -28,7 +28,7 @@ export const signJwt = async (tin: string, role: string, name: string) => {
     });
   } catch (error) {
     logger.error("Error generating JWT", {
-      tin,
+      userId,
       error: error instanceof Error ? error.message : "Unknown error",
     });
     throw error;
@@ -37,18 +37,16 @@ export const signJwt = async (tin: string, role: string, name: string) => {
 
 export const generateToken = async (
   res: import("express").Response,
-  tin: string,
+  userId: string,
   role: string,
   name: string
 ) => {
   try {
-    const accessToken = await signJwt(tin, role, name);
+    const accessToken = await signJwt(userId, role, name);
     const refreshToken = nanoid(32);
-
-    // 7-day expiration
     await redisClient.set(
       `refresh:${refreshToken}`,
-      JSON.stringify({ tin, role, name }),
+      JSON.stringify({ userId, role, name }),
       "EX",
       7 * 24 * 60 * 60
     );
@@ -62,7 +60,7 @@ export const generateToken = async (
     return { accessToken, refreshToken };
   } catch (error) {
     logger.error("Error generating token", {
-      tin,
+      userId,
       error: error instanceof Error ? error.message : "Unknown error",
     });
     throw error;
