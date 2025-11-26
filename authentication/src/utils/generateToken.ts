@@ -7,21 +7,16 @@ import { PermissionService } from "../services/permission.service";
 export const signJwt = async (userId: string, role: string, name: string) => {
   try {
     const permissions = await PermissionService.getUserPermissions(userId);
-    const roleLevel = await PermissionService.getUserRoleLevel(
-      userId,
-    );
+    const roleLevel = await PermissionService.getUserRoleLevel(userId);
     const payload = {
-      userId,
-      name,
-      permissions,
-      roleLevel,
-      userType: role,
+      user: {
+        userId,
+        role,
+        name,
+        permissions,
+        roleLevel,
+      },
     };
-
-    // logger.info("user payload:", {
-    //   permissions,
-    //   payload,
-    // });
 
     return jwt.sign(payload, process.env.JWT_CODE!, {
       expiresIn: "7d",

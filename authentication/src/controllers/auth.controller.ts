@@ -488,7 +488,7 @@ const LoginUser = asyncHandler(
     res.status(200).json({
       message:
         "A 2FA token has been sent to your registered email. Please verify to complete login.",
-      userId: user.email,
+      email: user.email,
     });
   }
 );
@@ -497,7 +497,7 @@ const LoginUser = asyncHandler(
  * @description Verifies the 2FA token and issues JWT.
  * @route POST /api/v1/auth/verify-2fa
  * @access Public
- * @param {object} req.body - { userId, otp }
+ * @param {object} req.body - { email, otp }
  */
 const Verify2FA = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {

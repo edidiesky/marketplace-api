@@ -3,9 +3,8 @@
 import mongoose from "mongoose";
 import logger from "./logger";
 import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
-
-// Add new metrics for connection monitoring
 import client from "prom-client";
+import { IInventory } from "../models/Inventory";
 
 export const databaseConnectionAttempts = new client.Counter({
   name: "user_database_connection_attempts_total",
@@ -110,5 +109,25 @@ export const connectMongoDB = async (
       });
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
     }
+  }
+};
+
+
+export const withTransaction = async (
+  fn: (session: mongoose.ClientSession) => Promise<IInventory>
+):Promise<IInventory> => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const result = await fn(session);
+    await session.commitTransaction();
+    return result;
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
+    await session.endSession();
   }
 };

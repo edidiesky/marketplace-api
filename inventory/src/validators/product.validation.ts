@@ -1,5 +1,5 @@
 import Joi from "joi";
-export const productSchema = Joi.object({
+export const inventorySchema = Joi.object({
   name: Joi.string().min(4).max(30).required(),
   price: Joi.number().required(),
   availableStock: Joi.number().min(1).required(),
