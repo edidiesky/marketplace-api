@@ -2,7 +2,7 @@ import Product, { IProduct } from "../models/Product";
 import { IProductRepository } from "./IProductRepository";
 import logger from "../utils/logger";
 import redisClient from "../config/redis";
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery, mongo, Types } from "mongoose";
 import { measureDatabaseQuery } from "../utils/metrics";
 
 export class ProductRepository implements IProductRepository {
@@ -214,5 +214,36 @@ export class ProductRepository implements IProductRepository {
         productId: id,
       });
     }
+  }
+
+  async softDeleteProduct(
+    id: string,
+    deletedBy: string,
+    session?: mongoose.ClientSession
+  ): Promise<void> {
+    await Product.findByIdAndUpdate(
+      id,
+      {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: new Types.ObjectId(deletedBy),
+      },
+      { session }
+    );
+  }
+
+  async restoreProduct(
+    id: string,
+    session?: mongoose.ClientSession
+  ): Promise<IProduct | null> {
+    return Product.findByIdAndUpdate(
+      id,
+      {
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null,
+      },
+      { new: true, session }
+    );
   }
 }

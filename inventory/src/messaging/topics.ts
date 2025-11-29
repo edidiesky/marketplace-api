@@ -8,6 +8,7 @@ import {
 } from "../constants";
 import { inventoryService } from "../services/inventory.service";
 import redisClient from "../config/redis";
+import { Types } from "mongoose";
 
 export const InventoryTopic = {
   [PRODUCT_ONBOARDING_COMPLETED_TOPIC]: async (data: any) => {
@@ -41,9 +42,10 @@ export const InventoryTopic = {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         const inventory = await inventoryService.createInventory(ownerId, {
-          ownerId,
-          storeId,
+          ownerId: new Types.ObjectId(ownerId),
+          storeId: new Types.ObjectId(storeId),
           ownerName,
+          ownerEmail: data.ownerEmail,
           productId,
           productTitle: title,
           productImage: image,
@@ -52,6 +54,8 @@ export const InventoryTopic = {
           quantityReserved: 0,
           sku,
           reorderPoint: thresholdStock,
+          storeName: data.storeName,
+          storeDomain: data.storeDomain,
         });
         logger.info("Inventory created successfully", {
           ownerId,

@@ -5,6 +5,7 @@ import {
   GetSingleStoreProductHandler,
   UpdateProductHandler,
   DeleteProductHandler,
+  RestoreProductHandler
 } from "../controllers/product.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import { productSchema } from "../validators/product.validation";
@@ -21,4 +22,7 @@ router
   .get(authenticate, GetSingleStoreProductHandler)
   .put(authenticate, UpdateProductHandler)
   .delete(authenticate, DeleteProductHandler);
+
+router
+  .route("/:id/restore").post(authenticate, RestoreProductHandler);
 export default router;

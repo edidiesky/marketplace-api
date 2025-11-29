@@ -1,13 +1,12 @@
-import redisClient from "@/config/redis";
+import redisClient from "../config/redis";
 import Inventory, { IInventory } from "../models/Inventory";
 import { IInventoryRepository } from "./IInventoryRepository";
-import logger from "@/utils/logger";
+import logger from "../utils/logger";
 import mongoose, { FilterQuery } from "mongoose";
-import { measureDatabaseQuery } from "@/utils/metrics";
+import { measureDatabaseQuery } from "../utils/metrics";
 
 export class InventoryRepository implements IInventoryRepository {
   private readonly CACHE_TTL = 300;
-  private readonly MAX_CACHE_SIZE = 1000;
   private readonly CACHE_PREFIX = "inventory:";
 
   private getCacheKey(id: string): string {

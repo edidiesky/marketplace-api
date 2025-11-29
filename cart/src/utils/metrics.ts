@@ -3,22 +3,22 @@ import client from "prom-client";
 
 const register = new client.Registry();
 client.collectDefaultMetrics({
-  prefix: "product_service_",
+  prefix: "Cart_service_",
   register,
 });
 
 // Existing metrics (improved)
 export const requestResponseTimeHistogram = new client.Histogram({
-  name: "product_http_request_duration_seconds",
-  help: "Product API duration in seconds",
+  name: "Cart_http_request_duration_seconds",
+  help: "Cart API duration in seconds",
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
   registers: [register],
   labelNames: ["method", "route", "status_code", "success"],
 });
 
 export const httpRequestCounter = new client.Counter({
-  name: "product_http_request_total",
-  help: "The total number of Product API requests",
+  name: "Cart_http_request_total",
+  help: "The total number of Cart API requests",
   labelNames: ["method", "route", "status_code", "success"],
   registers: [register],
 });
@@ -28,14 +28,14 @@ export const httpRequestCounter = new client.Counter({
  */
 
 export const httpErrorsByRoute = new client.Counter({
-  name: "product_http_errors_total",
+  name: "Cart_http_errors_total",
   help: "HTTP errors by route and status code",
   labelNames: ["method", "route", "status_code", "error_type"],
   registers: [register],
 });
 
 export const httpErrorRate = new client.Gauge({
-  name: "product_http_error_rate",
+  name: "Cart_http_error_rate",
   help: "Current HTTP error rate (errors/sec)",
   labelNames: ["route"],
   registers: [register],
@@ -45,20 +45,20 @@ export const httpErrorRate = new client.Gauge({
  * @description  Resource Metrics (USE)
  */
 export const cpuUsageGauge = new client.Gauge({
-  name: "product_service_cpu_usage_percent",
+  name: "Cart_service_cpu_usage_percent",
   help: "CPU usage percentage",
   registers: [register],
 });
 
 export const memoryUsageGauge = new client.Gauge({
-  name: "product_service_memory_usage_bytes",
+  name: "Cart_service_memory_usage_bytes",
   help: "Memory usage in bytes",
   labelNames: ["type"],
   registers: [register],
 });
 
 export const eventLoopLagGauge = new client.Gauge({
-  name: "product_service_eventloop_lag_seconds",
+  name: "Cart_service_eventloop_lag_seconds",
   help: "Event loop lag in seconds",
   registers: [register],
 });
@@ -66,30 +66,30 @@ export const eventLoopLagGauge = new client.Gauge({
 /**
  * @description Workers Metrics
  */
-export const productWorkerTasksProcesses = new client.Counter({
-  name: "product_service_worker_tasks_processed",
-  help: "Number of tasks processed by the Product service upload worker",
+export const CartWorkerTasksProcesses = new client.Counter({
+  name: "Cart_service_worker_tasks_processed",
+  help: "Number of tasks processed by the Cart service upload worker",
   registers: [register],
   labelNames: ["topic"],
 });
 
-export const productWorkerQueueDepth = new client.Gauge({
-  name: "product_service_worker_queue_depth",
+export const CartWorkerQueueDepth = new client.Gauge({
+  name: "Cart_service_worker_queue_depth",
   help: "Current depth of worker queue",
   registers: [register],
   labelNames: ["topic"],
 });
 
-export const productWorkerErrors = new client.Counter({
-  name: "product_service_worker_errors_total",
+export const CartWorkerErrors = new client.Counter({
+  name: "Cart_service_worker_errors_total",
   help: "Total number of errors in worker",
   registers: [register],
   labelNames: ["topic"],
 });
 
 export const databaseQueryTimeHistogram = new client.Histogram({
-  name: "product_database_query_duration_seconds",
-  help: "Product Database query duration in seconds",
+  name: "Cart_database_query_duration_seconds",
+  help: "Cart Database query duration in seconds",
   buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30],
   registers: [register],
   labelNames: ["operation", "success", "table"],
@@ -97,21 +97,21 @@ export const databaseQueryTimeHistogram = new client.Histogram({
 
 // Error tracking metrics
 export const errorCounter = new client.Counter({
-  name: "product_service_errors_total",
-  help: "Total number of errors in Product service",
+  name: "Cart_service_errors_total",
+  help: "Total number of errors in Cart service",
   labelNames: ["error_type", "operation", "severity"],
   registers: [register],
 });
 
 // Database connection metrics
 export const databaseConnectionsGauge = new client.Gauge({
-  name: "product_database_connections_active",
+  name: "Cart_database_connections_active",
   help: "Number of active database connections",
   registers: [register],
 });
 
 export const databaseConnectionPoolGauge = new client.Gauge({
-  name: "product_database_connection_pool_size",
+  name: "Cart_database_connection_pool_size",
   help: "Database connection pool size",
   labelNames: ["state"], // idle, used, pending
   registers: [register],
@@ -119,38 +119,38 @@ export const databaseConnectionPoolGauge = new client.Gauge({
 
 // Cache metrics
 export const cacheHitCounter = new client.Counter({
-  name: "product_cache_hits_total",
-  help: "Total Product cache hits",
+  name: "Cart_cache_hits_total",
+  help: "Total Cart cache hits",
   labelNames: ["cache_type", "operation"],
   registers: [register],
 });
 
 export const cacheMissCounter = new client.Counter({
-  name: "product_cache_misses_total",
-  help: "Total Product cache misses",
+  name: "Cart_cache_misses_total",
+  help: "Total Cart cache misses",
   labelNames: ["cache_type", "operation"],
   registers: [register],
 });
 
 // Business metrics
 export const businessOperationCounter = new client.Counter({
-  name: "product_business_operations_total",
-  help: "Total Product business operations",
-  labelNames: ["operation_type", "product_type", "status"],
+  name: "Cart_business_operations_total",
+  help: "Total Cart business operations",
+  labelNames: ["operation_type", "Cart_type", "status"],
   registers: [register],
 });
 
 export const businessOperationDuration = new client.Histogram({
-  name: "product_business_operation_duration_seconds",
+  name: "Cart_business_operation_duration_seconds",
   help: "Business operation duration in seconds",
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["operation_type", "product_type"],
+  labelNames: ["operation_type", "Cart_type"],
   registers: [register],
 });
 
 // Queue/async operation metrics
 export const queueDepthGauge = new client.Gauge({
-  name: "product_service_queue_depth",
+  name: "Cart_service_queue_depth",
   help: "Current queue depth",
   labelNames: ["queue_name"],
   registers: [register],
@@ -177,7 +177,7 @@ export const trackCacheMiss = (cacheType: string, operation: string) => {
 export async function measureDatabaseQuery<T>(
   operation: string,
   query: () => Promise<T>,
-  table: string = "products"
+  table: string = "Carts"
 ): Promise<T> {
   const startTime = process.hrtime();
   const labels = { operation, success: "true", table };
@@ -223,7 +223,7 @@ export async function measureDatabaseQuery<T>(
 }
 
 export const serverHealthGauge = new client.Gauge({
-  name: "product_service_health_status",
+  name: "Cart_service_health_status",
   help: "Overall service health status (1=healthy, 0=unhealthy)",
 });
 
@@ -277,7 +277,7 @@ export async function reqReplyTime(
 // Business operation tracker
 export async function measureBusinessOperation<T>(
   operationType: string,
-  productType: string,
+  CartType: string,
   operation: () => Promise<T>
 ): Promise<T> {
   const startTime = process.hrtime();
@@ -289,12 +289,12 @@ export async function measureBusinessOperation<T>(
 
     businessOperationCounter.inc({
       operation_type: operationType,
-      product_type: productType,
+      Cart_type: CartType,
       status: "success",
     });
 
     businessOperationDuration.observe(
-      { operation_type: operationType, product_type: productType },
+      { operation_type: operationType, Cart_type: CartType },
       durationSeconds
     );
 
@@ -302,7 +302,7 @@ export async function measureBusinessOperation<T>(
   } catch (error) {
     businessOperationCounter.inc({
       operation_type: operationType,
-      product_type: productType,
+      Cart_type: CartType,
       status: "error",
     });
 
@@ -341,4 +341,4 @@ export const updateDatabaseMetrics = (connectionStats: {
   );
 };
 
-export const productRegistry = register;
+export const CartRegistry = register;

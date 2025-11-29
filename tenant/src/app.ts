@@ -2,12 +2,12 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/tenant.routes"
+import tenantRoute from "./routes/tenant.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, productRegistry } from "./utils/metrics";
+import { reqReplyTime, tenantRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
 
@@ -48,15 +48,15 @@ app.get("/health", (_req, res) => {
 });
 
 /** ROUTES */
-app.use("/api/v1/products", productRoute);
+app.use("/api/v1/tenants", tenantRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server
  */
 app.get("/metrics", async (req, res) => {
   try {
-    res.set("Content-Type", productRegistry.contentType);
-    res.end(await productRegistry.metrics());
+    res.set("Content-Type", tenantRegistry.contentType);
+    res.end(await tenantRegistry.metrics());
     logger.info("Order Metrics has been scraped successfully!");
   } catch (error) {
     logger.error("Order Metrics scraping error:", { error });

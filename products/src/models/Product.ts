@@ -1,3 +1,4 @@
+import { ProductService } from "@/services/product.service";
 import mongoose, { Schema, Types } from "mongoose";
 
 export interface IProduct {
@@ -18,6 +19,12 @@ export interface IProduct {
   images: string[];
   description?: string;
   price: number;
+  storeDomain?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isDeleted?: boolean;
+  deletedBy?: Types.ObjectId;
+  deletedAt?: Date;
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -29,7 +36,7 @@ const ProductSchema = new Schema<IProduct>(
     ownerName: String,
     ownerImage: String,
     tenantId: String,
-    storeName:String,
+    storeName: String,
     store: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -41,6 +48,10 @@ const ProductSchema = new Schema<IProduct>(
     },
     isArchive: {
       type: Boolean,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
     images: {
       type: [String],
@@ -58,6 +69,11 @@ const ProductSchema = new Schema<IProduct>(
       min: 0,
       required: true,
     },
+    deletedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",  
+    },
+    deletedAt: Date,
   },
   { timestamps: true }
 );
@@ -67,5 +83,7 @@ ProductSchema.index({ ownerId: 1 });
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ size: 1 });
 ProductSchema.index({ createdAt: -1 });
+ProductSchema.index({ name: "text", description: "text" });
+ProductSchema.index({ isDeleted: 1 });
 
 export default mongoose.model<IProduct>("Product", ProductSchema);

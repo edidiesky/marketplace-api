@@ -23,6 +23,7 @@ export interface IInventory {
   updatedAt: Date;
 }
 
+
 const InventorySchema = new Schema<IInventory>(
   {
     ownerId: {

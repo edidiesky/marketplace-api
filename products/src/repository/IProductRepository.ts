@@ -14,5 +14,14 @@ export interface IProductRepository {
     skip: number,
     limit: number
   ) => Promise<IProduct[]>;
+  softDeleteProduct: (
+    id: string,
+    deletedBy: string,
+    session?: mongoose.ClientSession
+  ) => Promise<void>;
+  restoreProduct: (
+    id: string,
+    session?: mongoose.ClientSession
+  ) => Promise<IProduct | null>;
 }
 

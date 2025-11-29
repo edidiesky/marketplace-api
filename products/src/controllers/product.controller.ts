@@ -8,14 +8,15 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { IProduct } from "../models/Product";
-import { FilterQuery, Types } from "mongoose";
+import { Types } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import productService from "../services/product.service";
 import { sendProductMessage } from "../messaging/producer";
 import logger from "../utils/logger";
+import { buildQuery } from "../utils/buildQuery";
 
 // @description: Create Product handler
-// @route  POST /api/v1/products
+// @route  POST /api/v1/products/:storeId/store
 // @access  Private
 const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -28,14 +29,14 @@ const CreateProductHandler = asyncHandler(
     });
     const product = await productService.CreateProductService(userId, {
       description,
-       ...productBody,
+      ...productBody,
       store: new Types.ObjectId(req.params.storeid),
     });
 
     if (product) {
       await sendProductMessage(PRODUCT_ONBOARDING_COMPLETED_TOPIC, {
         productId: product._id,
-        storeId: productBody.store,
+        storeId: req.params.storeid,
         ownerId: userId,
         sku:
           productBody.sku ||
@@ -47,6 +48,9 @@ const CreateProductHandler = asyncHandler(
         trackInventory: productBody.trackInventory ?? true,
         createdAt: new Date(),
         idempotencyId: productBody.idempotencyId || `${userId}-${product._id}`,
+        storeName: productBody.storeName,
+        storeDomain: product.storeDomain,
+        ownerName: `${(req as AuthenticatedRequest).user.name}`,
       }).catch((error) => {
         logger.error("Failed to send product onboarding completed message:", {
           error: error.message,
@@ -59,26 +63,17 @@ const CreateProductHandler = asyncHandler(
 );
 
 // @description: Get All Products Handler
-// @route  GET /api/v1/products
+// @route  GET /api/v1/products/:storeId/store
 // @access  Private
 const GetAllStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const { page = 1, limit = 10, name, size, category, price } = req.query;
-    const storeId = req.params.storeid;
+    const { page = 1, limit = 10 } = req.query;
 
-    const query: FilterQuery<IProduct> = {
-      storeId,
-    };
-    if (size) query.size = size;
-    if (userId) query.userId = userId;
-    if (category) query.category = category;
-    if (name) query.name = name;
-    if (price) query.price = price;
+    const queryFilter = await buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
 
     const products = await productService.getAllProducts(
-      query,
+      queryFilter,
       skip,
       Number(limit)
     );
@@ -106,8 +101,9 @@ const UpdateProductHandler = asyncHandler(
     const existingProduct = await productService.getProductById(id);
 
     if (!existingProduct) {
+      logger.error(`Product with id ${id} not found for update`);
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("This product does not exist");
+      throw new Error(`This product with id, ${id} does not exist`);
     }
     const product = await productService.updateProduct(
       id,
@@ -123,13 +119,34 @@ const UpdateProductHandler = asyncHandler(
 const DeleteProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
+
     const existingProduct = await productService.getProductById(id);
 
     if (!existingProduct) {
+      logger.error(`Product with id ${id} not found for update`);
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("This product does not exist");
+      throw new Error(`This product with id, ${id} does not exist`);
     }
-    const message = await productService.deleteProduct(id);
+    const message = await productService.softDeleteProduct(
+      id,
+      (req as AuthenticatedRequest).user.userId
+    );
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
+  }
+);
+
+const RestoreProductHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+
+    const existingProduct = await productService.getProductById(id);
+
+    if (!existingProduct) {
+      logger.error(`Product with id ${id} not found for update`);
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error(`This product with id, ${id} does not exist`);
+    }
+    const message = await productService.restoreProduct(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
   }
 );
@@ -140,4 +157,5 @@ export {
   GetSingleStoreProductHandler,
   UpdateProductHandler,
   DeleteProductHandler,
+  RestoreProductHandler
 };

@@ -6,7 +6,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { IInventory } from "../models/Inventory";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import { inventoryService } from "../services/inventory.service";
 
@@ -36,7 +36,7 @@ const GetAllStoreInventoryHandler = asyncHandler(
       storeId,
     };
     if (size) query.size = size;
-    if (userId) query.userId = userId;
+    if (userId) query.ownerId = new Types.ObjectId(userId);
     if (category) query.category = category;
     if (name) query.name = name;
     if (price) query.price = price;

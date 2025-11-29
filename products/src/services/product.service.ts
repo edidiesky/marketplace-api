@@ -1,5 +1,5 @@
 import Product, { IProduct } from "../models/Product";
-import { FilterQuery, Types } from "mongoose";
+import mongoose, { FilterQuery, Types } from "mongoose";
 import { withTransaction } from "../utils/withTransaction";
 import { ProductRepository } from "../repository/ProductRepository";
 import { IProductRepository } from "../repository/IProductRepository";
@@ -44,16 +44,16 @@ export class ProductService {
     skip: number,
     limit: number
   ): Promise<{
-    stores: Promise<IProduct[]>;
+    products: Promise<IProduct[]>;
     totalCount: number;
     totalPages: number;
   }> {
-    const stores = this.productRepo.findAllProduct(query, skip, limit);
+    const products = this.productRepo.findAllProduct(query, skip, limit);
     const totalCount = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      stores,
+      products,
       totalCount,
       totalPages,
     };
@@ -83,6 +83,30 @@ export class ProductService {
 
   async deleteProduct(id: string): Promise<void> {
     return this.productRepo.deleteproductById(id);
+  }
+
+  async softDeleteProduct(id: string, deletedBy: string): Promise<IProduct> {
+    const product = await withTransaction(async (session) => {
+      await this.productRepo.softDeleteProduct(id, deletedBy, session);
+      const prod = await this.productRepo.findProductById(id);
+      if (!prod) {
+        throw new Error(`Product with id ${id} not found after soft delete`);
+      }
+      return prod;
+    });
+    return product;
+  }
+  async restoreProduct(id: string): Promise<IProduct> {
+    return withTransaction(async (session) => {
+      const restoredProduct = await this.productRepo.restoreProduct(
+        id,
+        session
+      );
+      if (!restoredProduct) {
+        throw new Error(`Product with id ${id} not found`);
+      }
+      return restoredProduct as IProduct;
+    });
   }
 }
 

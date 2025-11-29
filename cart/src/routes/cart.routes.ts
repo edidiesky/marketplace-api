@@ -14,7 +14,7 @@ import { validateRequest } from "../middleware/validate.middleware";
 const router = express.Router();
 
 router
-  .route("/store/:storeid")
+  .route("/")
   .post(
     authenticate,
     validateRequest(productSchema),
