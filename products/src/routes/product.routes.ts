@@ -6,20 +6,14 @@ import {
   UpdateProductHandler,
   DeleteProductHandler,
 } from "../controllers/product.controller";
-import {
-  authenticate,
-} from "../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 import { productSchema } from "../validators/product.validation";
 import { validateRequest } from "../middleware/validate.middleware";
 const router = express.Router();
 
 router
-  .route("/store/:storeid")
-  .post(
-    authenticate,
-    validateRequest(productSchema),
-    CreateProductHandler
-  )
+  .route("/:storeid/store")
+  .post(authenticate, validateRequest(productSchema), CreateProductHandler)
   .get(authenticate, GetAllStoreProductHandler);
 
 router

@@ -195,7 +195,6 @@ app.use(
       response.data.pipe(res);
 
       logger.info(`Successfully streamed response from ${service}`, {
-        // status: response.status,
         service,
         requestPath,
       });

@@ -8,7 +8,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { IProduct } from "../models/Product";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import productService from "../services/product.service";
 import { sendProductMessage } from "../messaging/producer";
@@ -28,7 +28,8 @@ const CreateProductHandler = asyncHandler(
     });
     const product = await productService.CreateProductService(userId, {
       description,
-      ...productBody,
+       ...productBody,
+      store: new Types.ObjectId(req.params.storeid),
     });
 
     if (product) {

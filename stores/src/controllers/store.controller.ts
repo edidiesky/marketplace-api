@@ -13,6 +13,7 @@ import { IStore } from "../models/Store";
 import logger from "../utils/logger";
 import { sendStoreMessage } from "../messaging/producer";
 import { buildQuery } from "../utils/buildQuery";
+import { stat } from "fs";
 
 // @description: Create Store handler
 // @route  POST /api/v1/stores/
@@ -45,7 +46,14 @@ const CreateStoreHandler = asyncHandler(
       logger.error("Store creation failed", { error, userId });
       res
         .status(SERVER_ERROR_STATUS_CODE)
-        .json({ success: false, message: "Failed to create store" });
+        .json({
+          success: false,
+          status: SERVER_ERROR_STATUS_CODE,
+          message:
+            error instanceof Error
+              ? error.message
+              : " An unknown error occurred",
+        });
     }
   }
 );

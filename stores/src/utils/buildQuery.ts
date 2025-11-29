@@ -2,6 +2,7 @@ import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import { Request } from "express";
 import { IStore } from "../models/Store";
+import logger from "./logger";
 
 export const buildQuery = async (
   req: Request
@@ -31,5 +32,6 @@ export const buildQuery = async (
       },
     ];
   }
+  logger.info("Built query filter", { queryFilter, role, userId });
   return queryFilter;
 };
