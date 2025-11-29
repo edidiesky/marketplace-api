@@ -1,6 +1,12 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 export interface IProduct {
+  sku: string;
+  availableStock: any;
+  thresholdStock: number;
+  trackInventory: boolean;
+  idempotencyId?: string;
+  _id: any;
   ownerId: Types.ObjectId;
   store: Types.ObjectId;
   ownerName: string;

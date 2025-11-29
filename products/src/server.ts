@@ -9,6 +9,7 @@ import {
   trackError,
   serverHealthGauge,
 } from "./utils/metrics";
+import { connectProducer, disconnectProducer } from "./messaging/producer";
 
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
@@ -18,7 +19,7 @@ async function GracefulShutdown() {
 
     await mongoose.connection.close();
     // await disconnectConsumer();
-    // await disconnectUserProducer();
+    await disconnectProducer();
     await redisClient.quit();
 
     const shutdownDuration = process.hrtime(shutdownStart);
@@ -55,8 +56,7 @@ app.listen(PORT, async () => {
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
       { name: "redis", fn: () => redisClient.ping() },
-      // { name: "kakfa_consumer", fn: connectConsumer },
-      // { name: "kakfa_producer", fn: connectProducer },
+      { name: "kakfa_producer", fn: connectProducer },
     ];
 
     for (const step of initSteps) {

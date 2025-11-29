@@ -2,7 +2,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/product.routes"
+import productRoute from "./routes/inventory.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -48,7 +48,7 @@ app.get("/health", (_req, res) => {
 });
 
 /** ROUTES */
-app.use("/api/v1/products", productRoute);
+app.use("/api/v1/inventories", productRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import sanitizeHtml from "sanitize-html";
 import {
   BAD_REQUEST_STATUS_CODE,
+  PRODUCT_ONBOARDING_COMPLETED_TOPIC,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
@@ -10,6 +11,8 @@ import { IProduct } from "../models/Product";
 import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import productService from "../services/product.service";
+import { sendProductMessage } from "../messaging/producer";
+import logger from "../utils/logger";
 
 // @description: Create Product handler
 // @route  POST /api/v1/products
@@ -27,6 +30,29 @@ const CreateProductHandler = asyncHandler(
       description,
       ...productBody,
     });
+
+    if (product) {
+      await sendProductMessage(PRODUCT_ONBOARDING_COMPLETED_TOPIC, {
+        productId: product._id,
+        storeId: productBody.store,
+        ownerId: userId,
+        sku:
+          productBody.sku ||
+          `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: productBody.name,
+        image: productBody.images[0],
+        availableStock: productBody.availableStock,
+        thresholdStock: productBody.thresholdStock || 10,
+        trackInventory: productBody.trackInventory ?? true,
+        createdAt: new Date(),
+        idempotencyId: productBody.idempotencyId || `${userId}-${product._id}`,
+      }).catch((error) => {
+        logger.error("Failed to send product onboarding completed message:", {
+          error: error.message,
+          productId: product._id,
+        });
+      });
+    }
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(product);
   }
 );

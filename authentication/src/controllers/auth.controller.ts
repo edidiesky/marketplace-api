@@ -49,7 +49,7 @@ export const HandleEmailOnboardingStep = asyncHandler(
       const { email, firstName, lastName, notificationId } = req.body;
       const normalizedEmail = email.toLowerCase().trim();
 
-      // Prevent duplicate
+      // Preventing duplicate
       const existingUser = await User.findOne({ email: normalizedEmail });
       if (existingUser) {
         logger.error("Email already exists in the system:", email);
@@ -779,6 +779,8 @@ const LogoutUserHandler = asyncHandler(
     res.status(200).json({ message: "Logged out succesfully!!" });
   }
 );
+
+
 
 export {
   RegisterUser,

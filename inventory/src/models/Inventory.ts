@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IInventory {
+  _id: any;
   ownerId: Types.ObjectId;
   productId: Types.ObjectId;
   warehouseId: Types.ObjectId;

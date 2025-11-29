@@ -15,12 +15,13 @@ export class InventoryService {
     body: Partial<IInventory>
   ): Promise<IInventory> {
     return withTransaction(async (session) => {
-      const InventoryData = {
+      const inventoryData = {
         ...body,
+        userId: new Types.ObjectId(userId),
       };
 
       const Inventory = await this.InventoryRepo.createInventory(
-        InventoryData,
+        inventoryData,
         session
       );
       return Inventory;
