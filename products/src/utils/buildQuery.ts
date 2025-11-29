@@ -8,44 +8,30 @@ export const buildQuery = async (
   req: Request
 ): Promise<FilterQuery<Partial<IProduct>>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
-  const {
-    name,
-    size,
-    isArchive,
-    category,
-    price,
-    search,
-    storeDomain,
-    storeName,
-    isDeleted
-  } = req.query;
+  const { name, size, isArchive, category, price, search, isDeleted } = req.query;
 
   let queryFilter: FilterQuery<Partial<IProduct>> = {
-    storeId: new Types.ObjectId(req.params.storeid),
+    store: new Types.ObjectId(req.params.storeid),
   };
+
   if (role !== "ADMIN") {
     queryFilter.ownerId = new Types.ObjectId(userId);
-    isDeleted !== "true" ? queryFilter.isDeleted = false : queryFilter.isDeleted = true;
+    queryFilter.isDeleted = isDeleted === "true" ? true : false;
   }
 
-  if (size) queryFilter.size = size;
-  if (userId) queryFilter.ownerId = new Types.ObjectId(userId);
-  if (category) queryFilter.category = category;
-  if (name) queryFilter.name = name;
+  if (size) queryFilter.size = size as string;
+  if (category) queryFilter.category = category as string;
+  if (name) queryFilter.name = { $regex: name as string, $options: "i" };
   if (isArchive) queryFilter.isArchive = isArchive === "true";
-  if (price) queryFilter.price = price;
-  if (storeDomain) queryFilter.storeDomain = storeDomain;
-  if (storeName) queryFilter.storeName = storeName;
+  if (price) queryFilter.price = Number(price);
   if (search) {
     queryFilter.$or = [
-      {
-        ownerName: { $regex: search, $option: "i" },
-        ownerEmail: { $regex: search, $option: "i" },
-        storeDomain: { $regex: search, $option: "i" },
-        storeName: { $regex: search, $option: "i" },
-      },
+      { name: { $regex: search as string, $options: "i" } },
+      { ownerName: { $regex: search as string, $options: "i" } },
+      { storeName: { $regex: search as string, $options: "i" } },
     ];
   }
+
   logger.info("product query filter", { queryFilter, role, userId });
   return queryFilter;
 };

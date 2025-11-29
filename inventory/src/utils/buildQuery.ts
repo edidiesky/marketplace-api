@@ -23,13 +23,13 @@ export const buildQuery = async (
     storeId: new Types.ObjectId(req.params.storeid),
   };
   if (role !== "ADMIN") {
-    queryFilter.ownerId = new Types.ObjectId(userId);
+    queryFilter.ownerId = userId;
   }
 
   if (productTitle) queryFilter.productTitle = productTitle;
   if (userId) queryFilter.ownerId = new Types.ObjectId(userId);
-  if (quantityAvailable) queryFilter.quantityAvailable = Number(quantityAvailable);
-  if (quantityReserved) queryFilter.quantityReserved = Number(quantityReserved);
+  if (quantityAvailable) queryFilter.quantityAvailable = quantityAvailable;
+  if (quantityReserved) queryFilter.quantityReserved = quantityReserved;
   if (name) queryFilter.name = name;
   if (price) queryFilter.price = price;
   if (subdomain) queryFilter.subdomain = subdomain;

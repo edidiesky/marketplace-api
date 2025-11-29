@@ -6,9 +6,9 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import { IInventory } from "../models/Inventory";
-import { FilterQuery, Types } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import { inventoryService } from "../services/inventory.service";
+import { buildQuery } from "../utils/buildQuery";
 
 // @description: Create Inventory handler
 // @route  POST /api/v1/inventories
@@ -32,18 +32,11 @@ const GetAllStoreInventoryHandler = asyncHandler(
     const { page = 1, limit = 10, name, size, category, price } = req.query;
     const storeId = req.params.storeid;
 
-    const query: FilterQuery<IInventory> = {
-      storeId,
-    };
-    if (size) query.size = size;
-    if (userId) query.ownerId = new Types.ObjectId(userId);
-    if (category) query.category = category;
-    if (name) query.name = name;
-    if (price) query.price = price;
+    const queryFilter  = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
 
     const inventories = await inventoryService.getAllInventorys(
-      query,
+      queryFilter,
       skip,
       Number(limit)
     );
