@@ -52,5 +52,16 @@
   ]
 }
 
+{
+  "name": "Oud Majesty - 100ml EDP",
+  "price": 32500,
+  "availableStock": 40,
+  "thresholdStock": 10,
+  "description": "Luxury oud-based perfume. Long-lasting. Unisex. Made in Dubai.",
+  "images": ["https://res.cloudinary.com/selleasi/image/upload/v1738001000/oud-majesty.jpg"],
+  "sku": "PERF-OUD-100",
+  "category": ["Beauty", "Fragrances", "Luxury"]
+}
+
 ```
 

@@ -2,8 +2,12 @@ import mongoose, { FilterQuery, Types } from "mongoose";
 import Inventory, { IInventory } from "../models/Inventory";
 import { withTransaction } from "../utils/connectDB";
 import { IInventoryRepository } from "../repository/IInventoryRepository";
+import { InventoryRepository } from "../repository/InventoryRepository";
 export class InventoryService {
-  constructor(private InventoryRepo: IInventoryRepository) {}
+  private InventoryRepo: IInventoryRepository;
+  constructor() {
+    this.InventoryRepo = new InventoryRepository();
+  }
   /**
    * @description Create Inventory method
    * @param userId
@@ -17,7 +21,7 @@ export class InventoryService {
     return withTransaction(async (session) => {
       const inventoryData = {
         ...body,
-        userId: new Types.ObjectId(userId),
+        ownerId: new Types.ObjectId(userId),
       };
 
       const Inventory = await this.InventoryRepo.createInventory(
@@ -82,6 +86,4 @@ export class InventoryService {
   }
 }
 
-export const inventoryService = new InventoryService(
-  {} as IInventoryRepository
-);
+export const inventoryService = new InventoryService();
