@@ -16,7 +16,7 @@ export const services: Services = {
   notification:
     process.env.NOTIFICATION_SERVICE_URL || "http://notification:4006",
   stores: process.env.STORES_SERVICE_URL || "http://stores:4007",
-  inventory: process.env.STORES_SERVICE_URL || "http://inventory:4008", //inventory
+  inventory: process.env.STORES_SERVICE_URL || "http://inventory:4008",
   cart: process.env.CART_SERVICE_URL || "http://cart:4009",
   tenant: process.env.TENANT_SERVICE_URL || "http://tenant:4010",
   review: process.env.REVIEW_SERVICE_URL || "http://review:4011",

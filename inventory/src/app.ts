@@ -2,12 +2,12 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/inventory.routes"
+import inventoryRoute from "./routes/inventory.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, productRegistry } from "./utils/metrics";
+import { reqReplyTime, InventoryRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
 
@@ -21,9 +21,7 @@ app.use(helmet());
 app.use(
   cors({
     origin: [
-      process.env.WEB_ORIGIN!,
-      process.env.WEB_ORIGIN2!,
-      process.env.WEB_ORIGIN3!,
+      process.env.WEB_ORIGIN!
     ],
     credentials: true,
   })
@@ -48,15 +46,15 @@ app.get("/health", (_req, res) => {
 });
 
 /** ROUTES */
-app.use("/api/v1/inventories", productRoute);
+app.use("/api/v1/inventories", inventoryRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server
  */
 app.get("/metrics", async (req, res) => {
   try {
-    res.set("Content-Type", productRegistry.contentType);
-    res.end(await productRegistry.metrics());
+    res.set("Content-Type", InventoryRegistry.contentType);
+    res.end(await InventoryRegistry.metrics());
     logger.info("Inventory Metrics has been scraped successfully!");
   } catch (error) {
     logger.error("Inventory Metrics scraping error:", { error });
