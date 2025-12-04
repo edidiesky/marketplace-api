@@ -9,7 +9,7 @@ import {
 import {
   authenticate,
 } from "../middleware/auth.middleware";
-import { cartSchema } from "../validators/cart.validation";
+import { addToCartSchema } from "../validators/cart.validation";
 import { validateRequest } from "../middleware/validate.middleware";
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router
   .route("/")
   .post(
     authenticate,
-    validateRequest(cartSchema),
+    validateRequest(addToCartSchema),
     CreateCartHandler
   )
   .get(authenticate, GetAllStoreCartHandler);

@@ -16,9 +16,14 @@ import { buildQuery } from "../utils/buildQuery";
 const CreateCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const cart = await cartService.createCart(userId, {
-      ...req.body,
-    });
+    const cart = await cartService.createCart(
+      userId,
+      req.body.productId,
+      req.body.quantity,
+      {
+        ...req.body,
+      }
+    );
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(cart);
   }
 );
@@ -32,7 +37,7 @@ const GetAllStoreCartHandler = asyncHandler(
     const { page = 1, limit = 10, name, size, category, price } = req.query;
     const storeId = req.params.storeid;
 
-    const queryFilter  = buildQuery(req);
+    const queryFilter = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
 
     const carts = await cartService.getAllCarts(
@@ -60,6 +65,7 @@ const GetSingleStoreCartHandler = asyncHandler(
 // @access  Private
 const UpdateCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
+    const { userId } = (req as AuthenticatedRequest).user;
     const { id } = req.params;
     const existingCart = await cartService.getCartById(id);
 
@@ -67,10 +73,7 @@ const UpdateCartHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This cart does not exist");
     }
-    const cart = await cartService.updateCart(
-      id,
-      req.body as Partial<ICart>
-    );
+    const cart = await cartService.updateCart(userId, req.body.productId, req.body.quantity);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(cart);
   }
 );
@@ -87,7 +90,8 @@ const DeleteCartHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Cart does not exist");
     }
-    const message = await cartService.deleteCart(id);
+    const { userId } = (req as AuthenticatedRequest).user;
+    const message = await cartService.deleteCart(userId, id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
   }
 );

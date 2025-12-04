@@ -2,15 +2,15 @@ import redisClient from "../config/redis";
 import Cart, { ICart } from "../models/Cart";
 import { ICartRepository } from "./ICartRepository";
 import logger from "../utils/logger";
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery, Types } from "mongoose";
 import { measureDatabaseQuery } from "../utils/metrics";
 
 export class CartRepository implements ICartRepository {
   private readonly CACHE_TTL = 300;
   private readonly CACHE_PREFIX = "Cart:";
 
-  private getCacheKey(id: string): string {
-    return `${this.CACHE_PREFIX}:${id}`;
+  private getCacheKey(userId: string): string {
+    return `${this.CACHE_PREFIX}:${userId}`;
   }
 
   private getSearchCacheKey(query: any, skip: number, limit: number): string {
@@ -36,6 +36,31 @@ export class CartRepository implements ICartRepository {
       logger.error("Failed to invalidate search caches", { error });
     }
   }
+
+  /**
+   * @description Add Cart to cache method
+   * @param userId
+   * @param data
+   */
+  private async addToCache(userId: string, data: any): Promise<void> {
+    try {
+      await redisClient.set(
+        this.getCacheKey(userId),
+        JSON.stringify(data),
+        "EX",
+        this.CACHE_TTL
+      );
+      logger.info("Added Cart to cache", { key: this.getCacheKey(userId) });
+    } catch (error) {
+      logger.warn("Cache write failed", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : "Unknown error",
+        key: this.getCacheKey(userId),
+      });
+    }
+  }
+
+  
 
   async getStoreCart(
     query: FilterQuery<ICart>,
@@ -102,6 +127,47 @@ export class CartRepository implements ICartRepository {
 
     const cart = await measureDatabaseQuery("fetch_single_Cart", () =>
       Cart.findById(CartId).lean().exec()
+    );
+
+    if (cart) {
+      try {
+        await redisClient.set(
+          cacheKey,
+          JSON.stringify(cart),
+          "EX",
+          this.CACHE_TTL
+        );
+      } catch (error) {
+        logger.warn("Cache write failed", { error, cacheKey });
+      }
+    }
+
+    return cart;
+  }
+
+  async cartExists(productId: string, userId: string): Promise<ICart | null> {
+    const cacheKey = this.getCacheKey(userId);
+
+    try {
+      const cached = await redisClient.get(cacheKey);
+
+      if (cached) {
+        logger.debug("Cart cache hit", { cacheKey });
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      logger.warn("Cache read failed, proceeding with database query", {
+        error,
+      });
+    }
+
+    const cart = await measureDatabaseQuery("fetch_single_Cart", () =>
+      Cart.findOne({
+        productId: new Types.ObjectId(productId),
+        userId: new Types.ObjectId(userId),
+      })
+        .lean()
+        .exec()
     );
 
     if (cart) {
@@ -194,9 +260,8 @@ export class CartRepository implements ICartRepository {
       logger.info("cart created successfully", {
         storeId: cart._id,
       });
-
       await this.invalidateSearchCaches();
-
+      await this.addToCache(cart.userId.toString(), cart);
       return cart;
     } catch (error) {
       const errorMessage =
@@ -207,9 +272,7 @@ export class CartRepository implements ICartRepository {
         data: { name: data.userId },
       });
 
-      throw error instanceof Error
-        ? error
-        : new Error("Failed to create Cart");
+      throw error instanceof Error ? error : new Error("Failed to create Cart");
     }
   }
 }

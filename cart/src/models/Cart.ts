@@ -10,13 +10,14 @@ export interface ICartItems {
   productImage: string[];
 }
 
-export interface ICart {
+export interface ICart extends Document {
+  _id: any;
   userId: Types.ObjectId;
   fullName: string;
   email: string;
   quantity: number;
   totalPrice: number;
-  cartItems: [ICartItems];
+  cartItems: ICartItems[];
   createdAt: Date;
   updatedAt: Date;
   expireAt: Date;
