@@ -1,10 +1,6 @@
-
-
 import mongoose from "mongoose";
 import logger from "./logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
-
-// Add new metrics for connection monitoring
+import { serverHealthGauge } from "./metrics";
 import client from "prom-client";
 
 export const databaseConnectionAttempts = new client.Counter({
@@ -19,7 +15,6 @@ export const databaseConnectionDuration = new client.Histogram({
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
   labelNames: ["status", "attempt"],
 });
-
 
 export const connectMongoDB = async (
   mongoUrl: string,
@@ -38,8 +33,8 @@ export const connectMongoDB = async (
         connectTimeoutMS: 30000,
         retryWrites: true,
         retryReads: true,
-        minPoolSize:10,
-        maxPoolSize:50,
+        minPoolSize: 10,
+        maxPoolSize: 50,
       });
 
       logger.info("MongoDB connected successfully", {
@@ -51,7 +46,6 @@ export const connectMongoDB = async (
       const duration = process.hrtime(startTime);
       const durationSeconds = duration[0] + duration[1] / 1e9;
 
-    
       let errorType = "unknown";
       let severity: "low" | "medium" | "high" | "critical" = "high";
 
@@ -110,5 +104,22 @@ export const connectMongoDB = async (
       });
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
     }
+  }
+};
+
+export const withTransaction = async (
+  fn: (session: mongoose.ClientSession) => Promise<any>
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const result = await fn(session);
+    await session.commitTransaction();
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
 };

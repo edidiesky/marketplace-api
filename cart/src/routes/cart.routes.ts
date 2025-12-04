@@ -1,15 +1,15 @@
 import express from "express";
 import {
-  CreateProductHandler,
-  GetAllStoreProductHandler,
-  GetSingleStoreProductHandler,
-  UpdateProductHandler,
-  DeleteProductHandler,
-} from "../controllers/product.controller";
+  CreateCartHandler,
+  GetAllStoreCartHandler,
+  GetSingleStoreCartHandler,
+  UpdateCartHandler,
+  DeleteCartHandler,
+} from "../controllers/cart.controller";
 import {
   authenticate,
 } from "../middleware/auth.middleware";
-import { productSchema } from "../validators/product.validation";
+import { cartSchema } from "../validators/cart.validation";
 import { validateRequest } from "../middleware/validate.middleware";
 const router = express.Router();
 
@@ -17,14 +17,14 @@ router
   .route("/")
   .post(
     authenticate,
-    validateRequest(productSchema),
-    CreateProductHandler
+    validateRequest(cartSchema),
+    CreateCartHandler
   )
-  .get(authenticate, GetAllStoreProductHandler);
+  .get(authenticate, GetAllStoreCartHandler);
 
 router
   .route("/:id")
-  .get(authenticate, GetSingleStoreProductHandler)
-  .put(authenticate, UpdateProductHandler)
-  .delete(authenticate, DeleteProductHandler);
+  .get(authenticate, GetSingleStoreCartHandler)
+  .put(authenticate, UpdateCartHandler)
+  .delete(authenticate, DeleteCartHandler);
 export default router;
