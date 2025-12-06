@@ -1,58 +1,67 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-export interface IProduct {
-  user: Types.ObjectId;
-  store: Types.ObjectId;
-  name: string;
-  isArchive?: boolean;
-  images: string[];
-  description?: string;
-  price: number;
-  createdAt: Date;
-  updatedAt: Date;
+export enum ProductCategory {
+  ELECTRONICS = "electronics",
+  FASHION = "fashion",
+  HOME_APPLIANCES = "home_appliances",
+  BOOKS = "books",
+  GROCERIES = "groceries",
+  TOYS = "toys",
+  SPORTS = "sports",
+  BEAUTY = "beauty",
+  AUTOMOTIVE = "automotive",
+  HEALTH = "health",
 }
 
-const ProductSchema = new Schema<IProduct>(
+export enum PaymentStatus {
+  PENDING = "pending",
+  SUCCESS = "success",
+  FAILED = "failed",
+  REFUNDED = "refunded",
+}
+
+export enum PaymentMethod {
+  CARD = "card",
+  BANK_TRANSFER = "bank_transfer",
+  USSD = "ussd",
+}
+export interface IPayment extends Document {
+  orderId: Types.ObjectId;
+  paymentId: string; 
+  amount: number; 
+  currency: string;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  customerEmail: string;
+  customerName: string;
+  metadata: any;
+  paidAt?: Date;
+  refundedAt?: Date;
+}
+
+const PaymentSchema = new Schema<IPayment>(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
-    store: {
-      type: Schema.Types.ObjectId,
-      required: true,
-    },
-    name: {
+    orderId: { type: Schema.Types.ObjectId, ref: "Order", required: true },
+    paymentId: { type: String, required: true, unique: true },
+    amount: { type: Number, required: true },
+    currency: { type: String, default: "NGN" },
+    status: {
       type: String,
-      unique: true,
-      required: true,
+      enum: Object.values(PaymentStatus),
+      default:PaymentStatus.PENDING,
     },
-    isArchive: {
-      type: Boolean,
-    },
-    images: {
-      type: [String],
-      match: [
-        /^(https?:\/\/.*\.(jpg|jpeg|png|gif))|(^\/.*\.(jpg|jpeg|png|gif))$/i,
-        "Must be a valid URL or relative path",
-      ],
-    },
-    description: {
+    method: {
       type: String,
-      maxlength: 500,
+      enum: Object.values(PaymentMethod),
+      default:PaymentMethod.CARD,
     },
-    price: {
-      type: Number,
-      min: 0,
-      required: true,
-    },
+    customerEmail: String,
+    customerName: String,
+    metadata: Schema.Types.Mixed,
+    paidAt: Date,
+    refundedAt: Date,
   },
   { timestamps: true }
 );
 
-ProductSchema.index({ store: 1, _id: 1 });
-ProductSchema.index({ category: 1 });
-ProductSchema.index({ size: 1 });
-ProductSchema.index({ createdAt: -1 });
-
-export default mongoose.model<IProduct>("Product", ProductSchema);
+export default mongoose.model("Payment", PaymentSchema);

@@ -18,30 +18,6 @@ export class CartService {
     return `${this.CACHE_PREFIX}:${userId}`;
   }
 
-  private getSearchCacheKey(query: any, skip: number, limit: number): string {
-    return `${this.CACHE_PREFIX}:search:${JSON.stringify({
-      query,
-      skip,
-      limit,
-    })}`;
-  }
-
-  private async invalidateSearchCaches(): Promise<void> {
-    try {
-      const pattern = `${this.CACHE_PREFIX}:search:*`;
-      const keys = await redisClient.keys(pattern);
-
-      if (keys.length > 0) {
-        await redisClient.del(...keys);
-        logger.info("Invalidated Cart search caches", {
-          count: keys.length,
-        });
-      }
-    } catch (error) {
-      logger.error("Failed to invalidate search caches", { error });
-    }
-  }
-
   /**
    * @description Add Cart to cache method
    * @param userId

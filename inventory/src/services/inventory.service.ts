@@ -3,6 +3,7 @@ import Inventory, { IInventory } from "../models/Inventory";
 import { withTransaction } from "../utils/connectDB";
 import { IInventoryRepository } from "../repository/IInventoryRepository";
 import { InventoryRepository } from "../repository/InventoryRepository";
+import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 export class InventoryService {
   private InventoryRepo: IInventoryRepository;
   constructor() {
@@ -44,18 +45,26 @@ export class InventoryService {
     skip: number,
     limit: number
   ): Promise<{
-    inventorys: Promise<IInventory[] | null>;
-    totalCount: number;
-    totalPages: number;
+    data: {
+      inventorys: IInventory[] | null;
+      totalCount: number;
+      totalPages: number;
+    },
+    success:boolean,
+    statusCode:number
   }> {
-    const inventorys = this.InventoryRepo.getStoreInventory(query, skip, limit);
+    const inventorys = await this.InventoryRepo.getStoreInventory(query, skip, limit);
     const totalCount = await Inventory.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      inventorys,
-      totalCount,
-      totalPages,
+      data: {
+        inventorys,
+        totalCount,
+        totalPages,
+      },
+      success:true,
+      statusCode:SUCCESSFULLY_FETCHED_STATUS_CODE
     };
   }
 

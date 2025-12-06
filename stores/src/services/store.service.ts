@@ -4,6 +4,7 @@ import Store, { IStore } from "../models/Store";
 import { withTransaction } from "../utils/connectDB";
 import logger from "../utils/logger";
 import { generateUniqueSubdomain } from "../utils/generateUniqueSubdomain";
+import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 
 export class StoreService {
   constructor(private storeRepo: IStoreRepository) {}
@@ -36,9 +37,9 @@ export class StoreService {
       );
 
       if (existingStore.length > 0) {
-        logger.error(`Subdomain "${subdomain}" is already taken`,{
-          subdomain
-        })
+        logger.error(`Subdomain "${subdomain}" is already taken`, {
+          subdomain,
+        });
         throw new Error(`Subdomain "${subdomain}" is already taken`);
       }
 
@@ -68,18 +69,26 @@ export class StoreService {
     skip: number,
     limit: number
   ): Promise<{
-    stores: Promise<IStore[]>;
-    totalCount: number;
-    totalPages: number;
+    data: {
+      stores: IStore[];
+      totalCount: number;
+      totalPages: number;
+    };
+    statusCode: number;
+    success: boolean;
   }> {
-    const stores = this.storeRepo.findAllStore(query, skip, limit);
+    const stores = await this.storeRepo.findAllStore(query, skip, limit);
     const totalCount = await Store.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      stores,
-      totalCount,
-      totalPages,
+      data: {
+        stores,
+        totalCount,
+        totalPages,
+      },
+      statusCode: SUCCESSFULLY_FETCHED_STATUS_CODE,
+      success: true,
     };
   }
 
@@ -119,4 +128,3 @@ export class StoreService {
     return this.storeRepo.deleteStoreById(id);
   }
 }
-

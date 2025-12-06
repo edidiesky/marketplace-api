@@ -3,6 +3,7 @@ import mongoose, { FilterQuery, Types } from "mongoose";
 import { withTransaction } from "../utils/withTransaction";
 import { ProductRepository } from "../repository/ProductRepository";
 import { IProductRepository } from "../repository/IProductRepository";
+import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 
 export class ProductService {
   private productRepo: IProductRepository;
@@ -44,18 +45,26 @@ export class ProductService {
     skip: number,
     limit: number
   ): Promise<{
-    products: Promise<IProduct[]>;
-    totalCount: number;
-    totalPages: number;
+    data: {
+      products: IProduct[];
+      totalCount: number;
+      totalPages: number;
+    };
+    success: boolean;
+    statusCode: number;
   }> {
-    const products = this.productRepo.findAllProduct(query, skip, limit);
+    const products = await this.productRepo.findAllProduct(query, skip, limit);
     const totalCount = await Product.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      products,
-      totalCount,
-      totalPages,
+      data: {
+        products,
+        totalCount,
+        totalPages,
+      },
+      success: true,
+      statusCode: SUCCESSFULLY_FETCHED_STATUS_CODE,
     };
   }
 
