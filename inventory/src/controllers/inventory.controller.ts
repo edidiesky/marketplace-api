@@ -18,6 +18,7 @@ const CreateInventoryHandler = asyncHandler(
     const { userId } = (req as AuthenticatedRequest).user;
     const inventory = await inventoryService.createInventory(userId, {
       ...req.body,
+      storeId: req.params.storeId,
     });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(inventory);
   }
@@ -28,11 +29,9 @@ const CreateInventoryHandler = asyncHandler(
 // @access  Private
 const GetAllStoreInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const { page = 1, limit = 10, name, size, category, price } = req.query;
-    const storeId = req.params.storeid;
+    const { page = 1, limit = 10 } = req.query;
 
-    const queryFilter  = buildQuery(req);
+    const queryFilter = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
 
     const inventories = await inventoryService.getAllInventorys(

@@ -1,6 +1,11 @@
 import Store from "../models/Store";
 import logger from "./logger";
 
+/**
+ * @description handler to create a unique store
+ * @param base 
+ * @returns 
+ */
 export const generateUniqueSubdomain = async (base: string) => {
   try {
     let cleanedBaseName = base

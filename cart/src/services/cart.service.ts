@@ -6,6 +6,7 @@ import { CartRepository } from "../repository/CartRepository";
 import { ProductReadService } from "./product.service";
 import logger from "../utils/logger";
 import redisClient from "../config/redis";
+import { AddToCartRequest } from "../types";
 export class CartService {
   private CartRepo: ICartRepository;
   private readonly CACHE_TTL = 300;
@@ -47,12 +48,8 @@ export class CartService {
    * @param body
    * @returns
    */
-  async createCart(
-    userId: string,
-    productId: string,
-    quantity: number,
-    body: Partial<ICart>
-  ): Promise<ICart> {
+  async createCart(userId: string, request: AddToCartRequest): Promise<ICart> {
+    const { productId, productMetadata, quantity, email, fullName } = request;
     return withTransaction(async (session) => {
       const product = await ProductReadService.getProductForCart(productId);
       if (!product) {
@@ -78,8 +75,8 @@ export class CartService {
             {
               cartItems: [],
               userId: new Types.ObjectId(userId),
-              fullName: body.fullName || "",
-              email: body.email || "",
+              fullName: fullName || "",
+              email: email || "",
               quantity: 0,
               totalPrice: 0,
             },
@@ -102,12 +99,12 @@ export class CartService {
 
       cartExists.cartItems.push({
         productId: new Types.ObjectId(productId),
-        productTitle: product.title,
-        productImage: product.images,
-        productPrice: product.price,
-        productQuantity: body.quantity || 0,
+        productTitle: productMetadata.title,
+        productImage: productMetadata.imageUrl,
+        productPrice: productMetadata.price,
+        productQuantity: quantity || 0,
         reservedAt: new Date(),
-        productDescription: product.description,
+        productDescription: productMetadata.description,
       });
 
       cartExists.quantity = cartExists.cartItems.reduce(

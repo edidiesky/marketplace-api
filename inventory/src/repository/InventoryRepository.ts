@@ -56,6 +56,7 @@ export class InventoryRepository implements IInventoryRepository {
         error,
       });
     }
+    
 
     const inventory = await measureDatabaseQuery("fetch_all_inventory", () =>
       Inventory.find(query)

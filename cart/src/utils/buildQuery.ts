@@ -20,14 +20,13 @@ export const buildQuery = async (
   } = req.query;
 
   let queryFilter: FilterQuery<Partial<ICart>> = {
-    storeId: new Types.ObjectId(req.params.storeid),
+    storeId: new Types.ObjectId(req.params.storeId),
   };
   if (role !== "ADMIN") {
-    queryFilter.ownerId = userId;
+    queryFilter.ownerId = new Types.ObjectId(userId);
   }
 
   if (productTitle) queryFilter.productTitle = productTitle;
-  if (userId) queryFilter.ownerId = new Types.ObjectId(userId);
   if (quantityAvailable) queryFilter.quantityAvailable = quantityAvailable;
   if (quantityReserved) queryFilter.quantityReserved = quantityReserved;
   if (name) queryFilter.name = name;

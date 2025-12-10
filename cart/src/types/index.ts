@@ -31,3 +31,17 @@ export interface CreateCategoryInput {
   name: string;
   value: string;
 }
+
+
+export interface AddToCartRequest {
+  productId: string;
+  quantity: number;
+  fullName:string;
+  email:string;
+  productMetadata: {
+    title: string;
+    price: number;
+    imageUrl: string[];
+    description: string;
+  };
+}

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 export interface IInventory {
   _id: any;

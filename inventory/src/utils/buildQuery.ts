@@ -4,34 +4,26 @@ import { Request } from "express";
 import { IInventory } from "../models/Inventory";
 import logger from "./logger";
 
-export const buildQuery = async (
-  req: Request
-): Promise<FilterQuery<Partial<IInventory>>> => {
+export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
   const {
-    name,
     productTitle,
     quantityAvailable,
     quantityReserved,
-    price,
     search,
     subdomain,
     domain,
   } = req.query;
 
   let queryFilter: FilterQuery<Partial<IInventory>> = {
-    storeId: new Types.ObjectId(req.params.storeid),
+    storeId: new Types.ObjectId(req.params.storeId),
   };
   if (role !== "ADMIN") {
-    queryFilter.ownerId = userId;
+    queryFilter.ownerId = new Types.ObjectId(userId);
   }
-
   if (productTitle) queryFilter.productTitle = productTitle;
-  if (userId) queryFilter.ownerId = new Types.ObjectId(userId);
   if (quantityAvailable) queryFilter.quantityAvailable = quantityAvailable;
   if (quantityReserved) queryFilter.quantityReserved = quantityReserved;
-  if (name) queryFilter.name = name;
-  if (price) queryFilter.price = price;
   if (subdomain) queryFilter.subdomain = subdomain;
   if (domain) queryFilter.domain = domain;
   if (search) {

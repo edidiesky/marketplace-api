@@ -49,12 +49,14 @@ export class InventoryService {
       inventorys: IInventory[] | null;
       totalCount: number;
       totalPages: number;
-    },
-    success:boolean,
-    statusCode:number
+    };
+    success: boolean;
+    statusCode: number;
   }> {
-    const inventorys = await this.InventoryRepo.getStoreInventory(query, skip, limit);
-    const totalCount = await Inventory.countDocuments(query);
+    const [inventorys, totalCount] = await Promise.all([
+      this.InventoryRepo.getStoreInventory(query, skip, limit),
+      Inventory.countDocuments(query),
+    ]);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
@@ -63,8 +65,8 @@ export class InventoryService {
         totalCount,
         totalPages,
       },
-      success:true,
-      statusCode:SUCCESSFULLY_FETCHED_STATUS_CODE
+      success: true,
+      statusCode: SUCCESSFULLY_FETCHED_STATUS_CODE,
     };
   }
 

@@ -53,8 +53,10 @@ export class ProductService {
     success: boolean;
     statusCode: number;
   }> {
-    const products = await this.productRepo.findAllProduct(query, skip, limit);
-    const totalCount = await Product.countDocuments(query);
+    const [products, totalCount] = await Promise.all([
+      this.productRepo.findAllProduct(query, skip, limit),
+      Product.countDocuments(query),
+    ]);
     const totalPages = Math.ceil(totalCount / limit);
 
     return {

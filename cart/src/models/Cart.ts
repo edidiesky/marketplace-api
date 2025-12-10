@@ -13,6 +13,7 @@ export interface ICartItems {
 export interface ICart extends Document {
   _id: any;
   userId: Types.ObjectId;
+  storeId: Types.ObjectId;
   fullName: string;
   email: string;
   quantity: number;
@@ -26,6 +27,10 @@ export interface ICart extends Document {
 const CartSchema = new Schema<ICart>(
   {
     userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    storeId: {
       type: Schema.Types.ObjectId,
       required: true,
     },

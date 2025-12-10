@@ -5,13 +5,12 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
-import { ICart } from "../models/Cart";
 import { AuthenticatedRequest } from "../types";
 import { cartService } from "../services/cart.service";
 import { buildQuery } from "../utils/buildQuery";
 
 // @description: Create Cart handler
-// @route  POST /api/v1/carts
+// @route  POST /api/v1/carts/:storeId/store
 // @access  Private
 const CreateCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -22,6 +21,7 @@ const CreateCartHandler = asyncHandler(
       req.body.quantity,
       {
         ...req.body,
+        storeId: req.params.storeId,
       }
     );
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(cart);
@@ -29,13 +29,11 @@ const CreateCartHandler = asyncHandler(
 );
 
 // @description: Get All Carts Handler
-// @route  GET /api/v1/carts
+// @route  GET /api/v1/carts/:storeId/store
 // @access  Private
 const GetAllStoreCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const { page = 1, limit = 10, name, size, category, price } = req.query;
-    const storeId = req.params.storeid;
+    const { page = 1, limit = 10, } = req.query;
 
     const queryFilter = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
