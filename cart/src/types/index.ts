@@ -4,12 +4,11 @@ export type AuthenticatedRequest = Request & {
   user: {
     role: string;
     userId: string;
-    name: string; 
+    name: string;
     permissions: Permission[];
     roleLevel?: RoleLevel;
   };
 };
-
 
 export enum RoleLevel {
   SUPER_ADMIN = 1,
@@ -32,16 +31,15 @@ export interface CreateCategoryInput {
   value: string;
 }
 
-
 export interface AddToCartRequest {
   productId: string;
   quantity: number;
-  fullName:string;
-  email:string;
-  productMetadata: {
-    title: string;
-    price: number;
-    imageUrl: string[];
-    description: string;
-  };
+  fullName: string;
+  email: string;
+  storeId: string;
+  idempotencyKey: string;
+  productTitle: string;
+  productImage: string[];
+  productPrice: number;
+  productDescription: string;
 }

@@ -4,9 +4,9 @@ import { Request } from "express";
 import { ICart } from "../models/Cart";
 import logger from "./logger";
 
-export const buildQuery = async (
+export const buildQuery = (
   req: Request
-): Promise<FilterQuery<Partial<ICart>>> => {
+): FilterQuery<Partial<ICart>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
   const {
     name,
@@ -23,7 +23,7 @@ export const buildQuery = async (
     storeId: new Types.ObjectId(req.params.storeId),
   };
   if (role !== "ADMIN") {
-    queryFilter.ownerId = new Types.ObjectId(userId);
+    queryFilter.userId = new Types.ObjectId(userId);
   }
 
   if (productTitle) queryFilter.productTitle = productTitle;

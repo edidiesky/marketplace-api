@@ -15,7 +15,6 @@ export interface ICart extends Document {
   userId: Types.ObjectId;
   storeId: Types.ObjectId;
   fullName: string;
-  email: string;
   quantity: number;
   totalPrice: number;
   cartItems: ICartItems[];
@@ -38,10 +37,6 @@ const CartSchema = new Schema<ICart>(
       type: String,
       required: true,
     },
-    email: {
-      type: String,
-      required: true,
-    },
     totalPrice: {
       type: Number,
       min: 0,
@@ -57,7 +52,7 @@ const CartSchema = new Schema<ICart>(
         productTitle: { type: String, required: true },
         productImage: { type: [String], required: true },
         productPrice: { type: Number, required: true },
-        quantity: { type: Number, required: true, min: 1 },
+        productQuantity: { type: Number, required: true, min: 1 },
         reservedAt: Date,
       },
     ],
@@ -74,8 +69,8 @@ const CartSchema = new Schema<ICart>(
   },
   { timestamps: true }
 );
-
-CartSchema.index({ store: 1, _id: 1 });
+CartSchema.index({ userId: 1, storeId: 1 }, { unique: true });
+CartSchema.index({ store: 1 });
 CartSchema.index({ category: 1 });
 CartSchema.index({ size: 1 });
 CartSchema.index({ createdAt: -1 });

@@ -11,7 +11,7 @@ import { inventoryService } from "../services/inventory.service";
 import { buildQuery } from "../utils/buildQuery";
 
 // @description: Create Inventory handler
-// @route  POST /api/v1/inventories
+// @route  POST /api/v1/inventories/:storeId/store
 // @access  Private
 const CreateInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -25,7 +25,7 @@ const CreateInventoryHandler = asyncHandler(
 );
 
 // @description: Get All Inventorys Handler
-// @route  GET /api/v1/inventories
+// @route  GET /api/v1/inventories/:storeId/store
 // @access  Private
 const GetAllStoreInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {

@@ -9,8 +9,8 @@ export class CartRepository implements ICartRepository {
   private readonly CACHE_TTL = 300;
   private readonly CACHE_PREFIX = "Cart:";
 
-  private getCacheKey(userId: string): string {
-    return `${this.CACHE_PREFIX}:${userId}`;
+  private getCacheKey(userId: string, storeId: string): string {
+    return `${this.CACHE_PREFIX}:${userId}:${storeId}`;
   }
 
   private getSearchCacheKey(query: any, skip: number, limit: number): string {
@@ -42,26 +42,26 @@ export class CartRepository implements ICartRepository {
    * @param userId
    * @param data
    */
-  private async addToCache(userId: string, data: any): Promise<void> {
+  private async addToCache(
+    userId: string,
+    storeId: string,
+    data: any
+  ): Promise<void> {
+    let key = this.getCacheKey(userId, storeId);
     try {
-      await redisClient.set(
-        this.getCacheKey(userId),
-        JSON.stringify(data),
-        "EX",
-        this.CACHE_TTL
-      );
-      logger.info("Added Cart to cache", { key: this.getCacheKey(userId) });
+      await redisClient.set(key, JSON.stringify(data), "EX", this.CACHE_TTL);
+      logger.info("Added Cart to cache", { key: key });
     } catch (error) {
       logger.warn("Cache write failed", {
         message: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : "Unknown error",
-        key: this.getCacheKey(userId),
+        key,
       });
     }
   }
 
-  
 
+  
   async getStoreCart(
     query: FilterQuery<ICart>,
     skip: number,
@@ -102,6 +102,10 @@ export class CartRepository implements ICartRepository {
       logger.warn("Cache write failed", { error, cacheKey });
     }
 
+    logger.info("User cart content found:", {
+      cart,
+    })
+
     return cart;
   }
   /**
@@ -110,43 +114,43 @@ export class CartRepository implements ICartRepository {
    * @returns
    */
   async getSingleCart(CartId: string): Promise<ICart | null> {
-    const cacheKey = this.getCacheKey(CartId);
+    // const cacheKey = this.getCacheKey(CartId);
 
-    try {
-      const cached = await redisClient.get(cacheKey);
+    // try {
+    //   const cached = await redisClient.get(cacheKey);
 
-      if (cached) {
-        logger.debug("Cart cache hit", { cacheKey });
-        return JSON.parse(cached);
-      }
-    } catch (error) {
-      logger.warn("Cache read failed, proceeding with database query", {
-        error,
-      });
-    }
+    //   if (cached) {
+    //     logger.debug("Cart cache hit", { cacheKey });
+    //     return JSON.parse(cached);
+    //   }
+    // } catch (error) {
+    //   logger.warn("Cache read failed, proceeding with database query", {
+    //     error,
+    //   });
+    // }
 
     const cart = await measureDatabaseQuery("fetch_single_Cart", () =>
       Cart.findById(CartId).lean().exec()
     );
 
-    if (cart) {
-      try {
-        await redisClient.set(
-          cacheKey,
-          JSON.stringify(cart),
-          "EX",
-          this.CACHE_TTL
-        );
-      } catch (error) {
-        logger.warn("Cache write failed", { error, cacheKey });
-      }
-    }
+    // if (cart) {
+    //   try {
+    //     await redisClient.set(
+    //       cacheKey,
+    //       JSON.stringify(cart),
+    //       "EX",
+    //       this.CACHE_TTL
+    //     );
+    //   } catch (error) {
+    //     logger.warn("Cache write failed", { error, cacheKey });
+    //   }
+    // }
 
     return cart;
   }
 
-  async cartExists(productId: string, userId: string): Promise<ICart | null> {
-    const cacheKey = this.getCacheKey(userId);
+  async cartExists(storeId: string, userId: string): Promise<ICart | null> {
+    const cacheKey = this.getCacheKey(userId, storeId);
 
     try {
       const cached = await redisClient.get(cacheKey);
@@ -163,7 +167,7 @@ export class CartRepository implements ICartRepository {
 
     const cart = await measureDatabaseQuery("fetch_single_Cart", () =>
       Cart.findOne({
-        productId: new Types.ObjectId(productId),
+        storeId: new Types.ObjectId(storeId),
         userId: new Types.ObjectId(userId),
       })
         .lean()
@@ -203,7 +207,7 @@ export class CartRepository implements ICartRepository {
     ).exec();
 
     if (cart) {
-      const cacheKey = this.getCacheKey(CartId);
+      const cacheKey = this.getCacheKey(cart.userId?.toString(), cart.storeId?.toString());
 
       try {
         await Promise.all([
@@ -224,9 +228,10 @@ export class CartRepository implements ICartRepository {
    * @param data
    */
   async deleteCart(data: string): Promise<void> {
+    const cart = await this.getSingleCart(data);
     await Cart.findByIdAndDelete(data).exec();
 
-    const cacheKey = this.getCacheKey(data);
+    const cacheKey = this.getCacheKey(cart?.userId?.toString()!, cart?.storeId?.toString()!);
 
     try {
       await Promise.all([
@@ -261,7 +266,11 @@ export class CartRepository implements ICartRepository {
         storeId: cart._id,
       });
       await this.invalidateSearchCaches();
-      await this.addToCache(cart.userId.toString(), cart);
+      await this.addToCache(
+        cart.userId.toString(),
+        cart.storeId.toString(),
+        cart
+      );
       return cart;
     } catch (error) {
       const errorMessage =

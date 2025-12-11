@@ -326,7 +326,6 @@ setInterval(() => {
   });
 }, 10000);
 
-// Database connection monitoring (call this periodically)
 export const updateDatabaseMetrics = (connectionStats: {
   active: number;
   idle: number;

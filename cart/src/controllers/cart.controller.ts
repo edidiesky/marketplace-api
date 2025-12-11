@@ -14,14 +14,14 @@ import { buildQuery } from "../utils/buildQuery";
 // @access  Private
 const CreateCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
+    const { userId, name} = (req as AuthenticatedRequest).user;
     const cart = await cartService.createCart(
       userId,
-      req.body.productId,
-      req.body.quantity,
       {
         ...req.body,
         storeId: req.params.storeId,
+        quantity: req.body.quantity,
+        fullName: name
       }
     );
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(cart);
@@ -33,7 +33,7 @@ const CreateCartHandler = asyncHandler(
 // @access  Private
 const GetAllStoreCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { page = 1, limit = 10, } = req.query;
+    const { page = 1, limit = 10 } = req.query;
 
     const queryFilter = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
@@ -71,7 +71,12 @@ const UpdateCartHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This cart does not exist");
     }
-    const cart = await cartService.updateCart(userId, req.body.productId, req.body.quantity);
+    const cart = await cartService.updateCart(
+      userId,
+      req.params.storeId,
+      req.body.productId,
+      req.body.quantity
+    );
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(cart);
   }
 );
