@@ -21,6 +21,7 @@ export interface ICart extends Document {
   createdAt: Date;
   updatedAt: Date;
   expireAt: Date;
+  version: number;
 }
 
 const CartSchema = new Schema<ICart>(
@@ -66,9 +67,21 @@ const CartSchema = new Schema<ICart>(
       required: true,
       min: 0,
     },
+    version: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
   },
   { timestamps: true }
 );
+
+CartSchema.pre("save", function(next){
+  if(this.isModified() || this.isNew) {
+    this.version = Number((this.version || 0)) + 1
+  }
+  next()
+})
 CartSchema.index({ userId: 1, storeId: 1 }, { unique: true });
 CartSchema.index({ store: 1 });
 CartSchema.index({ category: 1 });
