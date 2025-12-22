@@ -39,11 +39,11 @@ scrape_configs:
         labels:
           group: "products"
 
-  # - job_name: "payment"
-  #   static_configs:
-  #     - targets: ["payment:4004"]
-  #       labels:
-  #         group: "payment"
+  - job_name: "payment"
+    static_configs:
+      - targets: ["payment:4004"]
+        labels:
+          group: "payment"
 
   # - job_name: "categories"
   #   static_configs:
@@ -86,11 +86,11 @@ scrape_configs:
         labels:
           group: "review"
 
-  # - job_name: "orders"
-  #   static_configs:
-  #     - targets: ["orders:4012"]
-  #       labels:
-  #         group: "orders"
+  - job_name: "orders"
+    static_configs:
+      - targets: ["orders:4012"]
+        labels:
+          group: "orders"
 
   # - job_name: "color"
   #   static_configs:

@@ -4,9 +4,7 @@ import { Request } from "express";
 import { ICart } from "../models/Cart";
 import logger from "./logger";
 
-export const buildQuery = (
-  req: Request
-): FilterQuery<Partial<ICart>> => {
+export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
   const {
     name,
@@ -17,6 +15,8 @@ export const buildQuery = (
     search,
     subdomain,
     domain,
+    startDate,
+    endDate,
   } = req.query;
 
   let queryFilter: FilterQuery<Partial<ICart>> = {
@@ -43,6 +43,13 @@ export const buildQuery = (
         storeDomain: { $regex: search, $option: "i" },
       },
     ];
+  }
+
+  if (startDate && endDate) {
+    queryFilter.createdAt = {
+      $lte: new Date(startDate as string),
+      $gte: new Date(endDate as string),
+    };
   }
   logger.info("Built query filter", { queryFilter, role, userId });
   return queryFilter;

@@ -8,7 +8,17 @@ export const buildQuery = async (
   req: Request
 ): Promise<FilterQuery<Partial<IProduct>>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
-  const { name, size, isArchive, category, price, search, isDeleted } = req.query;
+  const {
+    name,
+    size,
+    isArchive,
+    category,
+    price,
+    search,
+    isDeleted,
+    startDate,
+    endDate,
+  } = req.query;
 
   let queryFilter: FilterQuery<Partial<IProduct>> = {
     store: new Types.ObjectId(req.params.storeid),
@@ -30,6 +40,13 @@ export const buildQuery = async (
       { ownerName: { $regex: search as string, $options: "i" } },
       { storeName: { $regex: search as string, $options: "i" } },
     ];
+  }
+
+  if (startDate && endDate) {
+    queryFilter.createdAt = {
+      $lte: new Date(startDate as string),
+      $gte: new Date(endDate as string),
+    };
   }
 
   logger.info("product query filter", { queryFilter, role, userId });

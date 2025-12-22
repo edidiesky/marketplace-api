@@ -264,32 +264,32 @@ services:
       dockerfile: Dockerfile
 
       # payment
-  # payment:
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     kafka-1:
-  #       condition: service_healthy
-  #     kafka-2:
-  #       condition: service_healthy
-  #     kafka-3:
-  #       condition: service_healthy
-  #   container_name: payment
-  #   env_file:
-  #     - ./payment/.env
-  #   networks:
-  #     - app-tier
-  #   ports:
-  #     - "4004:4004"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
-  #     interval: 1m30s
-  #     timeout: 30s
-  #     retries: 5
-  #     start_period: 30s
-  #   build:
-  #     context: ./payment
-  #     dockerfile: Dockerfile
+  payment:
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    container_name: payment
+    env_file:
+      - ./payment/.env
+    networks:
+      - app-tier
+    ports:
+      - "4004:4004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    build:
+      context: ./payment
+      dockerfile: Dockerfile
   # categories
   # categories:
   #   depends_on:
@@ -476,32 +476,32 @@ services:
       context: ./review
       dockerfile: Dockerfile
 
-  # orders:
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     kafka-1:
-  #       condition: service_healthy
-  #     kafka-2:
-  #       condition: service_healthy
-  #     kafka-3:
-  #       condition: service_healthy
-  #   container_name: orders
-  #   env_file:
-  #     - ./orders/.env
-  #   networks:
-  #     - app-tier
-  #   ports:
-  #     - "4012:4012"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:4012/health"]
-  #     interval: 1m30s
-  #     timeout: 30s
-  #     retries: 5
-  #     start_period: 30s
-  #   build:
-  #     context: ./orders
-  #     dockerfile: Dockerfile
+  orders:
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    container_name: orders
+    env_file:
+      - ./orders/.env
+    networks:
+      - app-tier
+    ports:
+      - "4012:4012"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4012/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    build:
+      context: ./orders
+      dockerfile: Dockerfile
   # color:
   #   depends_on:
   #     redis:

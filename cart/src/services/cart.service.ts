@@ -9,7 +9,7 @@ import { AddToCartRequest } from "../types";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 export class CartService {
   private CartRepo: ICartRepository;
-  private readonly CACHE_TTL = 300;
+  private readonly CACHE_TTL = 60 * 1;
   private readonly CACHE_PREFIX = "Cart:";
   constructor() {
     this.CartRepo = new CartRepository();
@@ -38,12 +38,12 @@ export class CartService {
     try {
       await Promise.all([
         redisClient.set(versionKey, JSON.stringify(cart), "EX", this.CACHE_TTL),
-        redisClient.set(latestKey, cart.version.toString(), "EX", 86400),
+        redisClient.set(latestKey, cart.version.toString(), "EX", this.CACHE_TTL),
       ]);
       logger.info("Cart cached (versioned)", {
         versionKey,
         version: cart.version,
-        latestKey
+        latestKey,
       });
     } catch (error) {
       logger.warn("Cache write failed", {
@@ -83,7 +83,6 @@ export class CartService {
     return cart;
   }
 
-  
   /**
    * @description Get single Cart method
    * @param query id
@@ -206,15 +205,38 @@ export class CartService {
     quantity: number
   ): Promise<ICart | null> {
     return withTransaction(async (session) => {
-      if (quantity <= 0) throw new Error("Quantity must be > 0");
+      if (quantity <= 0) {
+        logger.error("Quantity must be > 0", {
+          event: "lower_quantity",
+          userId,
+          storeId,
+          productId,
+        });
+        throw new Error("Quantity must be > 0");
+      }
 
       const cart = await this.getCart(userId, storeId);
-      if (!cart) throw new Error("Cart not found");
+      if (!cart) {
+        logger.error("Cart was not found", {
+          event: "cart_missing",
+          userId,
+          storeId,
+          productId,
+        });
+        throw new Error("Cart not found");
+      }
 
       const item = cart.cartItems.find((i) =>
         i.productId.equals(new Types.ObjectId(productId))
       );
-      if (!item) throw new Error("Item not in cart");
+      if (!item) {
+         logger.error("Cart was not found", {
+          event: "cart_missing",
+          userId,
+          storeId,
+          productId,
+        });
+        throw new Error("Item not in cart")};
 
       item.productQuantity = quantity;
 

@@ -2,9 +2,8 @@
 
 import mongoose from "mongoose";
 import logger from "./logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
+import { serverHealthGauge } from "./metrics";
 
-// Add new metrics for connection monitoring
 import client from "prom-client";
 
 export const databaseConnectionAttempts = new client.Counter({
@@ -110,5 +109,25 @@ export const connectMongoDB = async (
       });
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
     }
+  }
+};
+
+
+
+
+export const withTransaction = async (
+  fn: (session: mongoose.ClientSession) => Promise<any>
+) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const result = await fn(session);
+    await session.commitTransaction();
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
 };

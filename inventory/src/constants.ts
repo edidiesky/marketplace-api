@@ -17,7 +17,7 @@ export const JITTER = Math.random() * 10000;
 
 
 /**
- * @description PRODUCT TOPICS
+ * @description INVENTORY TOPICS
  */
 export const PRODUCT_ONBOARDING_COMPLETED_TOPIC =
   "product.onboarding.completed.topic";
@@ -25,3 +25,4 @@ export const PRODUCT_ONBOARDING_COMPLETED_TOPIC =
 export const INVENTORY_CONSUMER_TOPICS = [
   PRODUCT_ONBOARDING_COMPLETED_TOPIC,
 ];
+
