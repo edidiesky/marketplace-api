@@ -3,8 +3,8 @@ import logger from "./logger";
 
 /**
  * @description handler to create a unique store
- * @param base 
- * @returns 
+ * @param base
+ * @returns
  */
 export const generateUniqueSubdomain = async (base: string) => {
   try {
@@ -33,6 +33,7 @@ export const generateUniqueSubdomain = async (base: string) => {
     if (error instanceof Error) {
       logger.error("Failed to craete subdomain store:", {
         message: error.message,
+        event: "sub_domain_generation_error",
       });
     }
   }

@@ -3,21 +3,16 @@ import { Request, Response } from "express";
 import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
-  BAD_REQUEST_STATUS_CODE,
+  NOT_FOUND_STATUS_CODE,
 } from "../constants";
 import { AuthenticatedRequest } from "../types";
 import { orderService } from "../services/order.service";
+import { buildQuery } from "../utils/buildQuery";
 
 const CreateOrderHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const { storeId } = req.params;
-    const requestId = req.body.requestId || req.headers["idempotency-key"];
-
-    if (!requestId) {
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("requestId or idempotency-key required");
-    }
+    const { cart, requestId } = req.body;
 
     const order = await orderService.createOrderFromCart(
       userId,
@@ -31,17 +26,12 @@ const CreateOrderHandler = asyncHandler(
 
 const GetUserOrdersHandler = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = (req as AuthenticatedRequest).user;
-    const { storeId } = req.params;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const result = await orderService.getUserOrders(
-      userId,
-      storeId,
-      page,
-      limit
-    );
+    const query = buildQuery(req);
+
+    const result = await orderService.getUserOrders(query, skip, Number(limit));
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(result);
   }
 );
@@ -49,7 +39,7 @@ const GetUserOrdersHandler = asyncHandler(
 const GetOrderHandler = asyncHandler(async (req: Request, res: Response) => {
   const order = await orderService.getOrderById(req.params.id);
   if (!order) {
-    res.status(404);
+    res.status(NOT_FOUND_STATUS_CODE);
     throw new Error("Order not found");
   }
   res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(order);

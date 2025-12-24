@@ -8,8 +8,6 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IOrder>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
   const {
     cartId,
-    fullName,
-    totalPrice,
     search,
     orderStatus,
     paymentChannel,
@@ -17,17 +15,18 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IOrder>> => {
     paymentDate,
     startDate,
     endDate,
+    sellerId,
   } = req.query;
 
   let queryFilter: FilterQuery<Partial<IOrder>> = {
     storeId: new Types.ObjectId(req.params.storeId),
   };
-  if (role !== "ADMIN") {
+  if (role !== "ADMIN" && !sellerId) {
     queryFilter.userId = new Types.ObjectId(userId);
   }
+
+  if (sellerId) queryFilter.sellerId = sellerId;
   if (cartId) queryFilter.cartId = cartId;
-  if (fullName) queryFilter.fullName = fullName;
-  if (totalPrice) queryFilter.totalPrice = totalPrice;
   if (orderStatus) queryFilter.orderStatus = orderStatus;
   if (paymentChannel) queryFilter.paymentChannel = paymentChannel;
   if (transactionId) queryFilter.transactionId = transactionId;

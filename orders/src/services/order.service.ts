@@ -5,12 +5,13 @@ import { OrderRepository } from "../repository/OrderRepository";
 import redisClient from "../config/redis";
 import logger from "../utils/logger";
 import { withTransaction } from "../utils/connectDB";
-import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "@/constants";
+import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 
 export class OrderService {
   private repo: IOrderRepository;
   private readonly CACHE_PREFIX = "Order:";
   private readonly CACHE_TTL = 60;
+
 
   constructor() {
     this.repo = new OrderRepository();

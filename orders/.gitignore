@@ -10,6 +10,5 @@ combined.log
 npm-debug.log*
 # Add to existing .gitignore
 /backups
-*.json
 !package.json
 !package-lock.json

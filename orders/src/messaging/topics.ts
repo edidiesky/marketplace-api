@@ -1,83 +1,107 @@
 import logger from "../utils/logger";
+import { orderService } from "../services/order.service";
 import {
-  BASE_DELAY_MS,
-  EXPIRATION_SEC,
-  JITTER,
   MAX_RETRIES,
+  BASE_DELAY_MS,
+  JITTER,
   ORDER_PAYMENT_COMPLETED_TOPIC,
+  ORDER_COMPLETED_TOPIC,
+  ORDER_PAYMENT_FAILED_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
-import { Types } from "mongoose";
+import { sendOrderMessage } from "./producer";
 
 export const OrderTopic = {
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
-    const {
-      productId,
-      storeId,
-      ownerId,
-      sku,
-      title,
-      image,
-      availableStock,
-      thresholdStock,
-      ownerName,
-      idempotencyId,
-    } = data;
-    logger.info("order Onboarding data:", data);
-    const requestId = idempotencyId || `${ownerId}-${productId}`;
-    const idempKey = `order-onboard-${requestId}`;
-    const is_locked = await redisClient.setnx(idempKey, "locked");
-    if (!is_locked) {
-      logger.warn("Duplicate order onboarding request detected", {
-        requestId,
-        ownerId,
-        productId,
+    const { orderId, transactionId, paymentDate, sagaId } = data;
+
+    const idempotencyKey = `payment-success-${orderId}-${transactionId}`;
+    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!locked) {
+      logger.info("Duplicate payment success ignored", {
+        event: "duplicate_order_payment",
+        orderId,
+        transactionId,
+        paymentDate
       });
       return;
     }
 
-    await redisClient.expire(idempKey, EXPIRATION_SEC / 1000);
-
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        // const order = await orderService.(ownerId, {
-        //   ownerId: new Types.ObjectId(ownerId),
-        //   storeId: new Types.ObjectId(storeId),
-        //   ownerName,
-        //   ownerEmail: data.ownerEmail,
-        //   productId,
-        //   productTitle: title,
-        //   productImage: image,
-        //   quantityOnHand: availableStock,
-        //   quantityAvailable: availableStock,
-        //   quantityReserved: 0,
-        //   sku,
-        //   reorderPoint: thresholdStock,
-        //   storeName: data.storeName,
-        //   storeDomain: data.storeDomain,
-        // });
-        // logger.info("order created successfully", {
-        //   ownerId,
-        //   orderId: order._id,
-        //   requestId,
-        // });
+        const order = await orderService.confirmPaymentSuccess(
+          orderId,
+          transactionId,
+          new Date(paymentDate)
+        );
+
+        if (!order) {
+          logger.error("Order was not found:", {
+            orderId,
+            transactionId,
+            paymentDate,
+            event: "order_not_found_during_payment_completion",
+          });
+          throw new Error("Order not found");
+        }
+
+        await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
+          orderId: order._id,
+          userId: order.userId.toString(),
+          cartId: order.cartId.toString(),
+          storeId: order.storeId.toString(),
+          sagaId,
+          completedAt: new Date().toISOString(),
+        });
+
+        logger.info("Order completed and event emitted", {
+          orderId,
+          event: "order_completed_emitted",
+          paymentDate,
+          transactionId,
+        });
         return;
       } catch (error) {
-        if (error instanceof Error) {
-          logger.error(`order creation failed (attempt ${attempt + 1})`, {
-            ownerId,
-            error: error.message,
-            stack: error.stack,
-          });
-        }
+        logger.error(
+          `Payment success handling failed (attempt ${attempt + 1})`,
+          {
+            orderId,
+            error,
+          }
+        );
+
         if (attempt === MAX_RETRIES - 1) {
-          logger.error("ALL RETRIES FAILED, Sending rollback", { ownerId });
-          // await sendorderMessage(order_CREATION_FAILED_TOPIC, data);
+          // Optional: send to alert system
+          logger.error("Final failure processing payment success", { orderId });
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
           await new Promise((r) => setTimeout(r, delay));
         }
       }
+    }
+  },
+
+  [ORDER_PAYMENT_FAILED_TOPIC]: async (data: any) => {
+    const { orderId, reason, sagaId } = data;
+
+    const idempotencyKey = `payment-failed-${orderId}`;
+    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!locked) return;
+
+    try {
+      await orderService.markPaymentFailed(orderId);
+
+      // Optionally emit to inventory to release stock early
+      await sendOrderMessage(ORDER_PAYMENT_FAILED_TOPIC, {
+        orderId,
+        reason,
+        sagaId,
+        failedAt: new Date().toISOString(),
+      });
+
+      logger.info("Payment failed processed", { orderId, reason });
+    } catch (error) {
+      logger.error("Failed to handle payment failure", { orderId, error });
     }
   },
 };

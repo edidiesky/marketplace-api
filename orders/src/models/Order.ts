@@ -25,7 +25,9 @@ export interface CartItems {
 }
 
 export interface IOrder extends mongoose.Document {
+  _id: any;
   userId: Types.ObjectId;
+  sellerId: Types.ObjectId;
   storeId: Types.ObjectId;
   cartId: Types.ObjectId;
   fullName: string;
@@ -47,12 +49,15 @@ const OrderSchema = new Schema<IOrder>(
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
-      index: true,
+    },
+    sellerId: {
+      type: Schema.Types.ObjectId,
+      required: true,
     },
     storeId: {
       type: Schema.Types.ObjectId,
       required: true,
-    },
+    }, //
     cartId: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -106,7 +111,7 @@ const OrderSchema = new Schema<IOrder>(
     requestId: {
       type: String,
       required: true,
-      unique: true, 
+      unique: true,
     },
   },
   { timestamps: true }
@@ -119,8 +124,8 @@ OrderSchema.pre("save", function (next) {
   next();
 });
 
-
-OrderSchema.index({ userId: 1, createdAt: -1 });
+OrderSchema.index({ userId: 1, createdAt: -1 }); //sellerId
+OrderSchema.index({ sellerId: 1, createdAt: -1 });
 OrderSchema.index({ storeId: 1, orderStatus: 1 });
 OrderSchema.index({ storeId: 1, paymentChannel: 1 });
 OrderSchema.index({ requestId: 1 });

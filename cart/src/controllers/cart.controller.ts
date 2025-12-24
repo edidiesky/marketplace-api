@@ -1,4 +1,3 @@
-// controllers/cart.controller.ts
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import {
