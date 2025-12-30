@@ -5,13 +5,16 @@ import { OrderRepository } from "../repository/OrderRepository";
 import redisClient from "../config/redis";
 import logger from "../utils/logger";
 import { withTransaction } from "../utils/connectDB";
-import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+import {
+  ORDER_CHECKOUT_STARTED_TOPIC,
+  SUCCESSFULLY_FETCHED_STATUS_CODE,
+} from "../constants";
+import { sendOrderMessage } from "../messaging/producer";
 
 export class OrderService {
   private repo: IOrderRepository;
   private readonly CACHE_PREFIX = "Order:";
   private readonly CACHE_TTL = 60;
-
 
   constructor() {
     this.repo = new OrderRepository();
@@ -76,6 +79,11 @@ export class OrderService {
     return withTransaction(async (session) => {
       const existing = await this.repo.getOrderByRequestId(requestId);
       if (existing) {
+        logger.error("Order is existing:", {
+          event: "existing_order",
+          order: existing?._id,
+          userId,
+        });
         return existing;
       }
 
@@ -93,9 +101,35 @@ export class OrderService {
 
       const order = await this.repo.createOrder(orderData, session);
       await this.addToCache(userId, order);
+      try {
+        await sendOrderMessage(ORDER_CHECKOUT_STARTED_TOPIC, {
+          orderId: order._id.toString(),
+          userId: userId,
+          storeId: cart.storeId,
+          cartId: cart._id,
+          items: cart.cartItems.map((item: any) => ({
+            productId: item.productId.toString(),
+            quantity: item.productQuantity,
+            price: item.productPrice,
+          })),
+          totalPrice: cart.totalPrice,
+          requestId,
+          sagaId: requestId,
+          initiatedAt: new Date().toISOString(),
+        });
 
-      // logger.info("Order created - pending payment", { orderId: order._id, requestId });
-
+        logger.info("Emitted checkout started event", {
+          orderId: order._id,
+          sagaId: requestId,
+          userId,
+        });
+      } catch (emitError) {
+        logger.error("Failed to emit checkout started", {
+          orderId: order._id,
+          event: "order_emit_checkout_failed",
+          error: emitError,
+        });
+      }
       logger.info("Succesfully Created order - Order Service:", {
         event: "order_successfully_created",
         order_id: order?._id,

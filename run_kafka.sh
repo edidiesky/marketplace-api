@@ -24,3 +24,4 @@ docker exec marketplaceapi-kafka-1-1 bash -c "
 
 # store.onboarding.completed.topic
 # product.onboarding.completed.topic
+# order.reservation.failed.topic

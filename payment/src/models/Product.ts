@@ -22,11 +22,14 @@ export enum PaymentStatus {
 
 export enum PaymentMethod {
   CARD = "card",
-  BANK_TRANSFER = "bank_transfer",
+  BANK_TRANSFER = "bank transfer",
   USSD = "ussd",
 }
 export interface IPayment extends Document {
   orderId: Types.ObjectId;
+  customerId: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  storeId: Types.ObjectId;
   paymentId: string; 
   amount: number; 
   currency: string;

@@ -1,8 +1,11 @@
-
-
 import mongoose from "mongoose";
 import logger from "./logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
+import {
+  trackError,
+  errorCounter,
+  databaseConnectionsGauge,
+  serverHealthGauge,
+} from "./metrics";
 import client from "prom-client";
 import { IInventory } from "../models/Inventory";
 
@@ -18,7 +21,6 @@ export const databaseConnectionDuration = new client.Histogram({
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
   labelNames: ["status", "attempt"],
 });
-
 
 export const connectMongoDB = async (
   mongoUrl: string,
@@ -37,8 +39,8 @@ export const connectMongoDB = async (
         connectTimeoutMS: 30000,
         retryWrites: true,
         retryReads: true,
-        minPoolSize:10,
-        maxPoolSize:50,
+        minPoolSize: 10,
+        maxPoolSize: 50,
       });
 
       logger.info("MongoDB connected successfully", {
@@ -50,7 +52,6 @@ export const connectMongoDB = async (
       const duration = process.hrtime(startTime);
       const durationSeconds = duration[0] + duration[1] / 1e9;
 
-    
       let errorType = "unknown";
       let severity: "low" | "medium" | "high" | "critical" = "high";
 
@@ -112,22 +113,30 @@ export const connectMongoDB = async (
   }
 };
 
-
-export const withTransaction = async (
-  fn: (session: mongoose.ClientSession) => Promise<IInventory>
-):Promise<IInventory> => {
+export async function withTransaction<T>(
+  fn: (session: mongoose.mongo.ClientSession) => Promise<T>
+): Promise<T> {
   const session = await mongoose.startSession();
   session.startTransaction();
+
   try {
     const result = await fn(session);
     await session.commitTransaction();
     return result;
   } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
+    await session.abortTransaction();
+    logger.error("Transaction aborted", {
+      message:
+        error instanceof Error
+          ? error.message
+          : "An iunknown error did occurred during the transaction abortion",
+      stack:
+        error instanceof Error
+          ? error.stack
+          : "An iunknown error did occurred during the transaction abortion",
+    });
     throw error;
   } finally {
-    await session.endSession();
+    session.endSession();
   }
-};
+}

@@ -22,7 +22,7 @@ export const OrderTopic = {
         event: "duplicate_order_payment",
         orderId,
         transactionId,
-        paymentDate
+        paymentDate,
       });
       return;
     }
@@ -71,7 +71,6 @@ export const OrderTopic = {
         );
 
         if (attempt === MAX_RETRIES - 1) {
-          // Optional: send to alert system
           logger.error("Final failure processing payment success", { orderId });
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
@@ -90,8 +89,6 @@ export const OrderTopic = {
 
     try {
       await orderService.markPaymentFailed(orderId);
-
-      // Optionally emit to inventory to release stock early
       await sendOrderMessage(ORDER_PAYMENT_FAILED_TOPIC, {
         orderId,
         reason,

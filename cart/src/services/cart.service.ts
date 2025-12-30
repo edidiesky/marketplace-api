@@ -38,7 +38,12 @@ export class CartService {
     try {
       await Promise.all([
         redisClient.set(versionKey, JSON.stringify(cart), "EX", this.CACHE_TTL),
-        redisClient.set(latestKey, cart.version.toString(), "EX", this.CACHE_TTL),
+        redisClient.set(
+          latestKey,
+          cart.version.toString(),
+          "EX",
+          this.CACHE_TTL
+        ),
       ]);
       logger.info("Cart cached (versioned)", {
         versionKey,
@@ -230,13 +235,14 @@ export class CartService {
         i.productId.equals(new Types.ObjectId(productId))
       );
       if (!item) {
-         logger.error("Cart was not found", {
+        logger.error("Cart was not found", {
           event: "cart_missing",
           userId,
           storeId,
           productId,
         });
-        throw new Error("Item not in cart")};
+        throw new Error("Item not in cart");
+      }
 
       item.productQuantity = quantity;
 
@@ -275,6 +281,10 @@ export class CartService {
       await cart.save({ session });
       await this.addToCache(userId, storeId, cart);
     });
+  }
+
+  async clearCartById(cartId: string): Promise<void> {
+    await Cart.deleteOne({ _id: new Types.ObjectId(cartId) });
   }
 }
 
