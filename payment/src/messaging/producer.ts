@@ -3,7 +3,7 @@ import logger from "../utils/logger";
 
 const kafka = new Kafka({
   clientId: "Payment_Service",
-  brokers: ["kafka:9092"],
+  brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   logLevel: logLevel.ERROR,
   retry: {
     initialRetryTime: 2000,
@@ -30,7 +30,17 @@ export async function connectProducer() {
       return;
     } catch (error) {
       if (attempt === retries - 1) {
-        logger.error("Failed to connect producer", { error });
+        logger.error("Failed to connect producer", {
+          event: "kafka_producer_conenction_failed",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error has occurred",
+          stack:
+            error instanceof Error
+              ? error.stack
+              : "An unknown error has occurred",
+        });
         throw error;
       }
       await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 300));
@@ -39,18 +49,14 @@ export async function connectProducer() {
 }
 
 /**
- * Send payment message with proper partitioning
- * Messages with same transactionId/userId will always go to same partition
- * Handler created here guarantees ordering for that customer's transactions
+ * Send Payment message with proper partitioning
+ * I am paritioning by the PaymentId
+ * Handler created here guarantees Paymenting for that customer's transactions
  */
-export async function sendPaymentMessage(
-  topic: string,
-  data: any,
-  key?: string // Partition key (transactionID)
-) {
+export async function sendPaymentMessage(topic: string, data: any, key?: string) {
   try {
     const partitionKey =
-      key || data.transactionId || data.userId || data.sagaId;
+      key || data.transactionId || null;
     const result = await producer.send({
       topic,
       messages: [
@@ -58,12 +64,10 @@ export async function sendPaymentMessage(
           key: partitionKey,
           value: JSON.stringify(data),
           headers: {
-            service: "payment-service",
+            service: "Payment-service",
             timestamp: Date.now().toString(),
-            "correlation-id": data.sagaId || data.transactionId,
+            "correlation-id": data.sagaId || data.transactionId || "null",
           },
-          // Optional: explicit partition assignment
-          // partition: customPartitionLogic(partitionKey),
         },
       ],
       acks: -1,
@@ -79,7 +83,16 @@ export async function sendPaymentMessage(
 
     return result;
   } catch (error: any) {
-    logger.error("Error sending message to Kafka", { topic, error });
+    logger.error("Error sending message to Kafka", {
+      topic,
+      event: "kafka_producer_message_failed",
+      message:
+        error instanceof Error
+          ? error.message
+          : "An unknown error has occurred",
+      stack:
+        error instanceof Error ? error.stack : "An unknown error has occurred",
+    });
     throw error;
   }
 }
@@ -96,7 +109,7 @@ export async function sendPaymentMessageBatch(
       key: msg.key || msg.data.transactionId || msg.data.userId,
       value: JSON.stringify(msg.data),
       headers: {
-        service: "payment-service",
+        service: "Payment-service",
         timestamp: Date.now().toString(),
       },
     }));

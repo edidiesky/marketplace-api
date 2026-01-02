@@ -28,3 +28,5 @@ router
   .put(authenticate, UpdateInventoryHandler)
   .delete(authenticate, DeleteInventoryHandler);
 export default router;
+
+

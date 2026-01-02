@@ -1,11 +1,12 @@
-// consumer.ts
 import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 import logger from "../utils/logger";
 import { PaymentTopic } from "./topics";
 import { sendPaymentMessage } from "./producer";
+import { PAYMENT_CONSUMER_TOPICS } from "../constants";
+
 
 const kafka = new Kafka({
-  clientId: "Payment_Service",
+  clientId: "Inventory_Service",
   brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
 });
@@ -32,13 +33,7 @@ export async function connectConsumer() {
     try {
       await consumer.connect();
       await consumer.subscribe({
-        topics: [
-          "Payment.initiated",
-          "Payment.processed",
-          "Payment.recorded",
-          "Payment.failed",
-          "Payment.completed",
-        ],
+        topics: PAYMENT_CONSUMER_TOPICS,
         fromBeginning: false,
       });
       logger.info("Payment consumer connected");
@@ -56,10 +51,9 @@ async function startConsuming() {
     autoCommit: false,
     partitionsConsumedConcurrently: 3,
     eachMessage: async (payload: EachMessagePayload) => {
-      const { topic, partition, message, heartbeat, pause } = payload;
+      const { topic, partition, message, heartbeat } = payload;
       const start = Date.now();
 
-      // --- SAFE PARSING ---
       let data: any;
       try {
         if (!message.value) {
@@ -92,8 +86,7 @@ async function startConsuming() {
           key: message.key?.toString(),
         });
 
-        const handler =
-          PaymentTopic[topic as keyof typeof PaymentTopic];
+        const handler = PaymentTopic[topic as keyof typeof PaymentTopic];
         if (!handler) {
           logger.warn("No handler for topic", { topic });
           await commitOffset(topic, partition, message.offset);
@@ -125,7 +118,7 @@ async function startConsuming() {
   });
 }
 
-// --- COMMIT OFFSET ---
+//  COMMIT OFFSET
 async function commitOffset(topic: string, partition: number, offset: string) {
   try {
     await consumer.commitOffsets([
@@ -140,7 +133,7 @@ async function commitOffset(topic: string, partition: number, offset: string) {
   }
 }
 
-// --- DLQ ---
+//  DLQ
 async function sendToDLQ(
   origTopic: string,
   partition: number,

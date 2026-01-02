@@ -1,24 +1,23 @@
 import { Request, Response } from "express";
-import client from "prom-client";
+import client, { Counter } from "prom-client";
 
 const register = new client.Registry();
 client.collectDefaultMetrics({
-  prefix: "product_service_",
+  prefix: "payment_service_",
   register,
 });
 
-// Existing metrics (improved)
 export const requestResponseTimeHistogram = new client.Histogram({
-  name: "product_http_request_duration_seconds",
-  help: "Product API duration in seconds",
+  name: "payment_http_request_duration_seconds",
+  help: "payment API duration in seconds",
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
   registers: [register],
   labelNames: ["method", "route", "status_code", "success"],
 });
 
-export const httpRequestCounter = new client.Counter({
-  name: "product_http_request_total",
-  help: "The total number of Product API requests",
+export const httpRequestCounter = new Counter({
+  name: "payment_http_request_total",
+  help: "The total number of payment API requests",
   labelNames: ["method", "route", "status_code", "success"],
   registers: [register],
 });
@@ -27,15 +26,15 @@ export const httpRequestCounter = new client.Counter({
  * @description Error Rate metrics
  */
 
-export const httpErrorsByRoute = new client.Counter({
-  name: "product_http_errors_total",
+export const httpErrorsByRoute = new Counter({
+  name: "payment_http_errors_total",
   help: "HTTP errors by route and status code",
   labelNames: ["method", "route", "status_code", "error_type"],
   registers: [register],
 });
 
 export const httpErrorRate = new client.Gauge({
-  name: "product_http_error_rate",
+  name: "payment_http_error_rate",
   help: "Current HTTP error rate (errors/sec)",
   labelNames: ["route"],
   registers: [register],
@@ -45,20 +44,20 @@ export const httpErrorRate = new client.Gauge({
  * @description  Resource Metrics (USE)
  */
 export const cpuUsageGauge = new client.Gauge({
-  name: "product_service_cpu_usage_percent",
+  name: "payment_service_cpu_usage_percent",
   help: "CPU usage percentage",
   registers: [register],
 });
 
 export const memoryUsageGauge = new client.Gauge({
-  name: "product_service_memory_usage_bytes",
+  name: "payment_service_memory_usage_bytes",
   help: "Memory usage in bytes",
   labelNames: ["type"],
   registers: [register],
 });
 
 export const eventLoopLagGauge = new client.Gauge({
-  name: "product_service_eventloop_lag_seconds",
+  name: "payment_service_eventloop_lag_seconds",
   help: "Event loop lag in seconds",
   registers: [register],
 });
@@ -66,91 +65,103 @@ export const eventLoopLagGauge = new client.Gauge({
 /**
  * @description Workers Metrics
  */
-export const productWorkerTasksProcesses = new client.Counter({
-  name: "product_service_worker_tasks_processed",
-  help: "Number of tasks processed by the Product service upload worker",
+export const paymentWorkerTasksProcesses = new Counter({
+  name: "payment_service_worker_tasks_processed",
+  help: "Number of tasks processed by the payment service upload worker",
   registers: [register],
   labelNames: ["topic"],
 });
 
-export const productWorkerQueueDepth = new client.Gauge({
-  name: "product_service_worker_queue_depth",
+export const paymentWorkerQueueDepth = new client.Gauge({
+  name: "payment_service_worker_queue_depth",
   help: "Current depth of worker queue",
   registers: [register],
   labelNames: ["topic"],
 });
 
-export const productWorkerErrors = new client.Counter({
-  name: "product_service_worker_errors_total",
+export const paymentWorkerErrors = new Counter({
+  name: "payment_service_worker_errors_total",
   help: "Total number of errors in worker",
   registers: [register],
   labelNames: ["topic"],
 });
 
 export const databaseQueryTimeHistogram = new client.Histogram({
-  name: "product_database_query_duration_seconds",
-  help: "Product Database query duration in seconds",
+  name: "payment_database_query_duration_seconds",
+  help: "payment Database query duration in seconds",
   buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30],
   registers: [register],
   labelNames: ["operation", "success", "table"],
 });
 
 // Error tracking metrics
-export const errorCounter = new client.Counter({
-  name: "product_service_errors_total",
-  help: "Total number of errors in Product service",
+export const errorCounter = new Counter({
+  name: "payment_service_errors_total",
+  help: "Total number of errors in payment service",
   labelNames: ["error_type", "operation", "severity"],
   registers: [register],
 });
 
 // Database connection metrics
 export const databaseConnectionsGauge = new client.Gauge({
-  name: "product_database_connections_active",
+  name: "payment_database_connections_active",
   help: "Number of active database connections",
   registers: [register],
 });
 
 export const databaseConnectionPoolGauge = new client.Gauge({
-  name: "product_database_connection_pool_size",
+  name: "payment_database_connection_pool_size",
   help: "Database connection pool size",
   labelNames: ["state"], // idle, used, pending
   registers: [register],
 });
 
-// Cache metrics
-export const cacheHitCounter = new client.Counter({
-  name: "product_cache_hits_total",
-  help: "Total Product cache hits",
+
+const circuitEvents = new Counter({
+  name: 'Api_Gateway_Circuit_breaker_events_total',
+  help: 'Api Gateway Circuit breaker state changes',
+  labelNames: ['service', 'state'],
+  registers: [register],
+});
+
+export const trackCircuitBreakerEvent = (service: string, state: string) => {
+  circuitEvents.labels(service, state).inc();
+};
+
+
+export const cacheHitCounter = new Counter({
+  name: "payment_cache_hits_total",
+  help: "Total payment cache hits",
   labelNames: ["cache_type", "operation"],
   registers: [register],
 });
 
-export const cacheMissCounter = new client.Counter({
-  name: "product_cache_misses_total",
-  help: "Total Product cache misses",
+export const cacheMissCounter = new Counter({
+  name: "payment_cache_misses_total",
+  help: "Total payment cache misses",
   labelNames: ["cache_type", "operation"],
   registers: [register],
 });
 
 // Business metrics
-export const businessOperationCounter = new client.Counter({
-  name: "product_business_operations_total",
-  help: "Total Product business operations",
-  labelNames: ["operation_type", "product_type", "status"],
+export const businessOperationCounter = new Counter({
+  name: "payment_business_operations_total",
+  help: "Total payment business operations",
+  labelNames: ["operation_type", "payment_type", "status"],
   registers: [register],
 });
 
 export const businessOperationDuration = new client.Histogram({
-  name: "product_business_operation_duration_seconds",
+  name: "payment_business_operation_duration_seconds",
   help: "Business operation duration in seconds",
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["operation_type", "product_type"],
+  labelNames: ["operation_type", "payment_type"],
   registers: [register],
 });
 
 // Queue/async operation metrics
 export const queueDepthGauge = new client.Gauge({
-  name: "product_service_queue_depth",
+  name: "payment_service_queue_depth",
   help: "Current queue depth",
   labelNames: ["queue_name"],
   registers: [register],
@@ -173,11 +184,10 @@ export const trackCacheMiss = (cacheType: string, operation: string) => {
   cacheMissCounter.inc({ cache_type: cacheType, operation });
 };
 
-// Enhanced database query measurement with error tracking
 export async function measureDatabaseQuery<T>(
   operation: string,
   query: () => Promise<T>,
-  table: string = "products"
+  table: string = "payments"
 ): Promise<T> {
   const startTime = process.hrtime();
   const labels = { operation, success: "true", table };
@@ -223,11 +233,12 @@ export async function measureDatabaseQuery<T>(
 }
 
 export const serverHealthGauge = new client.Gauge({
-  name: "product_service_health_status",
+  name: "payment_service_health_status",
   help: "Overall service health status (1=healthy, 0=unhealthy)",
 });
 
-// Enhanced HTTP metrics with error classification
+
+
 export async function reqReplyTime(
   req: Request,
   res: Response,
@@ -277,7 +288,7 @@ export async function reqReplyTime(
 // Business operation tracker
 export async function measureBusinessOperation<T>(
   operationType: string,
-  productType: string,
+  paymentType: string,
   operation: () => Promise<T>
 ): Promise<T> {
   const startTime = process.hrtime();
@@ -289,12 +300,12 @@ export async function measureBusinessOperation<T>(
 
     businessOperationCounter.inc({
       operation_type: operationType,
-      product_type: productType,
+      payment_type: paymentType,
       status: "success",
     });
 
     businessOperationDuration.observe(
-      { operation_type: operationType, product_type: productType },
+      { operation_type: operationType, payment_type: paymentType },
       durationSeconds
     );
 
@@ -302,7 +313,7 @@ export async function measureBusinessOperation<T>(
   } catch (error) {
     businessOperationCounter.inc({
       operation_type: operationType,
-      product_type: productType,
+      payment_type: paymentType,
       status: "error",
     });
 
@@ -341,4 +352,4 @@ export const updateDatabaseMetrics = (connectionStats: {
   );
 };
 
-export const productRegistry = register;
+export const paymentRegistry = register;

@@ -8,9 +8,9 @@ import { connectMongoDB } from "./utils/connectDB";
 import {
   trackError,
   serverHealthGauge,
-  databaseConnectionsGauge,
-  businessOperationCounter,
 } from "./utils/metrics";
+import { connectConsumer, disconnectConsumer } from "./messaging/consumer";
+import { connectProducer, disconnectProducer } from "./messaging/producer";
 
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
@@ -19,8 +19,8 @@ async function GracefulShutdown() {
     const shutdownStart = process.hrtime();
 
     await mongoose.connection.close();
-    // await disconnectConsumer();
-    // await disconnectUserProducer();
+    await disconnectConsumer();
+    await disconnectProducer();
     await redisClient.quit();
 
     const shutdownDuration = process.hrtime(shutdownStart);
@@ -53,12 +53,11 @@ app.listen(PORT, async () => {
   }
 
   try {
-    // Track each initialization component
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
       { name: "redis", fn: () => redisClient.ping() },
-      // { name: "kakfa_consumer", fn: connectConsumer },
-      // { name: "kakfa_producer", fn: connectProducer },
+      { name: "kakfa_consumer", fn: connectConsumer },
+      { name: "kakfa_producer", fn: connectProducer },
     ];
 
     for (const step of initSteps) {
@@ -94,7 +93,6 @@ app.listen(PORT, async () => {
     const totalDuration = process.hrtime(serverStartTime);
     const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
 
-    // Mark server as healthy only after all components are initialized
     serverHealthGauge.set(1);
 
     logger.info("Server initialized successfully", {

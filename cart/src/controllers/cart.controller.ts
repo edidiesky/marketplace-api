@@ -73,7 +73,7 @@ const GetSingleStoreCartHandler = asyncHandler(
     if (!cart) {
       logger.error("Cart item not found:", {
         event: "cart_not_found",
-        user: req.user?.userId,
+        user: (req as AuthenticatedRequest).user?.userId,
         cart,
       });
       res.status(NOT_FOUND_STATUS_CODE).json({ message: "Cart not found" });
@@ -105,7 +105,7 @@ const UpdateCartHandler = asyncHandler(async (req: Request, res: Response) => {
   if (!cart) {
     logger.error("Cart item not found:", {
       event: "cart_not_found",
-      user: req.user?.userId,
+      user: (req as AuthenticatedRequest).user?.userId,
       cart,
     });
     res.status(NOT_FOUND_STATUS_CODE);
@@ -125,7 +125,7 @@ const DeleteCartItemHandler = asyncHandler(
     if (!productId) {
        logger.error("Product item not found:", {
         event: "product_not_found",
-        user: req.user?.userId,
+        user: (req as AuthenticatedRequest).user?.userId,
         storeId,
         productId
       });

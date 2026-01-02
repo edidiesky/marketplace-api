@@ -6,6 +6,7 @@ export interface IOrderRepository {
     data: Partial<IOrder>,
     session: mongoose.ClientSession
   ) => Promise<IOrder>;
+  
   // OrderExists
   getUserOrders: (
     query: FilterQuery<IOrder>,

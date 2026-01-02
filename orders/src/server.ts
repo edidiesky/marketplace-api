@@ -53,7 +53,6 @@ app.listen(PORT, async () => {
   }
 
   try {
-    // Track each initialization component
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
       { name: "redis", fn: () => redisClient.ping() },
@@ -93,8 +92,6 @@ app.listen(PORT, async () => {
 
     const totalDuration = process.hrtime(serverStartTime);
     const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
-
-    // Mark server as healthy only after all components are initialized
     serverHealthGauge.set(1);
 
     logger.info("Server initialized successfully", {

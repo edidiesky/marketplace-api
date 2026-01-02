@@ -1,11 +1,10 @@
-
-
 import mongoose from "mongoose";
 import logger from "./logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
+import { serverHealthGauge } from "./metrics";
 
 // Add new metrics for connection monitoring
 import client from "prom-client";
+import { IPayment } from "../models/Payment";
 
 export const databaseConnectionAttempts = new client.Counter({
   name: "user_database_connection_attempts_total",
@@ -20,7 +19,6 @@ export const databaseConnectionDuration = new client.Histogram({
   labelNames: ["status", "attempt"],
 });
 
-
 export const connectMongoDB = async (
   mongoUrl: string,
   maxRetries: number = 5,
@@ -31,15 +29,14 @@ export const connectMongoDB = async (
     const startTime = process.hrtime();
 
     try {
-      // connection pooling
       await mongoose.connect(mongoUrl, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
         connectTimeoutMS: 30000,
         retryWrites: true,
         retryReads: true,
-        minPoolSize:10,
-        maxPoolSize:50,
+        minPoolSize: 8,
+        maxPoolSize: 20,
       });
 
       logger.info("MongoDB connected successfully", {
@@ -51,7 +48,6 @@ export const connectMongoDB = async (
       const duration = process.hrtime(startTime);
       const durationSeconds = duration[0] + duration[1] / 1e9;
 
-    
       let errorType = "unknown";
       let severity: "low" | "medium" | "high" | "critical" = "high";
 
@@ -112,3 +108,30 @@ export const connectMongoDB = async (
     }
   }
 };
+
+// input: fn: (client session): rerturns Payment
+export default async function withTransaction<T>(
+  fn: (session: mongoose.ClientSession) => Promise<Partial<IPayment> | null>
+) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const result = await fn(session);
+    await session.commitTransaction();
+    return result
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+
+    if (error instanceof Error) {
+      logger.error("Error did occurred when aboirting transaction:", {
+        message: error.message,
+        stack: error.stack,
+      });
+      throw error
+    }
+  } finally {
+    await session.endSession();
+  }
+}
