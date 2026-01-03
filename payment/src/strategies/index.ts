@@ -1,9 +1,9 @@
 import { PaymentGateway } from "../models/Payment";
 import createPaystackAdapter from "./paystackAdapter";
 import { IAdapterResponse, IClassAdapterCred } from "../types";
-import createFlutterWaveAdapter from "./flutterwaveAdapter";
+import createFlutterWaveAdapter from "./flutterwavePaymentStrategy";
 
-class PaymentAdapter {
+class PaymentStrategies {
   private stategies: Record<PaymentGateway, IAdapterResponse>;
   constructor() {
     this.stategies = {
@@ -42,4 +42,4 @@ class PaymentAdapter {
   }
 }
 
-export const createPaymentAdapter = new PaymentAdapter();
+export const createPaymentAdapter = new PaymentStrategies();

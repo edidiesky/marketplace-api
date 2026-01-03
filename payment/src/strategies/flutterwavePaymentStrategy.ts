@@ -6,7 +6,7 @@ import {
 import logger from "../utils/logger";
 import axios from "axios";
 
-const createFlutterWaveAdapter = (req: IAdapterRequest) => {
+const createFlutterwavePaymentStrategy = (req: IAdapterRequest) => {
   const { secretKey } = req;
   return {
     async process(processBody: IPaymentProcessRequest) {
@@ -83,4 +83,4 @@ const createFlutterWaveAdapter = (req: IAdapterRequest) => {
 };
 
 
-export default createFlutterWaveAdapter
+export default createFlutterwavePaymentStrategy
