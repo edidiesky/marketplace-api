@@ -1,11 +1,13 @@
 import mongoose, { Schema, Types } from "mongoose";
+import { Document } from "mongoose";
 
 export enum OrderStatus {
   PENDING = "pending",
   COMPLETED = "completed",
   FAILED = "failed",
   CANCELLED = "cancelled",
-}
+  OUT_OF_STOCK = "out_of_stock",
+};
 
 export enum PaymentChannel {
   PAYSTACK = "PAYSTACK",
@@ -24,7 +26,8 @@ export interface CartItems {
   productImage: string[];
 }
 
-export interface IOrder extends mongoose.Document {
+
+export interface IOrder extends Document {
   _id: any;
   userId: Types.ObjectId;
   sellerId: Types.ObjectId;
@@ -38,6 +41,7 @@ export interface IOrder extends mongoose.Document {
   orderStatus: OrderStatus;
   paymentChannel: PaymentChannel;
   transactionId?: string;
+  failureReason:string,
   paymentDate?: Date;
   requestId: string;
   createdAt: Date;
@@ -113,6 +117,8 @@ const OrderSchema = new Schema<IOrder>(
       required: true,
       unique: true,
     },
+
+    failureReason:String,
   },
   { timestamps: true }
 );

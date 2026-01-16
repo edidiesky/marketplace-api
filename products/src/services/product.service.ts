@@ -1,90 +1,59 @@
-import Product, { IProduct } from "../models/Product";
-import mongoose, { FilterQuery, Types } from "mongoose";
-import { withTransaction } from "../utils/withTransaction";
-import { ProductRepository } from "../repository/ProductRepository";
 import { IProductRepository } from "../repository/IProductRepository";
+import { IProduct } from "../models/Product";
+import mongoose, { FilterQuery } from "mongoose";
+import { withTransaction } from "../utils/withTransaction";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+import Product from "../models/Product";
 
 export class ProductService {
   private productRepo: IProductRepository;
-  constructor() {
-    this.productRepo = new ProductRepository();
+
+  // ← Now accepts repo — makes it testable and flexible
+  constructor(productRepo: IProductRepository) {
+    this.productRepo = productRepo;
   }
-  /**
-   * @description Create Product method
-   * @param userId
-   * @param body
-   * @returns
-   */
+
   async CreateProductService(
     userId: string,
     body: Partial<IProduct>
   ): Promise<IProduct> {
     return withTransaction(async (session) => {
       const productData = {
-        ownerId: new Types.ObjectId(userId),
+        ownerId: new mongoose.Types.ObjectId(userId),
         ...body,
       };
-      const product = await this.productRepo.createProduct(
-        productData,
-        session
-      );
+
+      const product = await this.productRepo.createProduct(productData, session);
+      if (!product) {
+        throw new Error("Failed to create product");
+      }
       return product;
     });
   }
 
-  /**
-   * @description Get all Product method
-   * @param query
-   * @param skip
-   * @param limit
-   * @returns
-   */
   async getAllProducts(
     query: FilterQuery<IProduct>,
     skip: number,
     limit: number
-  ): Promise<{
-    data: {
-      products: IProduct[];
-      totalCount: number;
-      totalPages: number;
-    };
-    success: boolean;
-    statusCode: number;
-  }> {
+  ) {
     const [products, totalCount] = await Promise.all([
       this.productRepo.findAllProduct(query, skip, limit),
       Product.countDocuments(query),
     ]);
-    const totalPages = Math.ceil(totalCount / limit);
+
+    const totalPages = Math.ceil(totalCount / limit || 1);
 
     return {
-      data: {
-        products,
-        totalCount,
-        totalPages,
-      },
+      data: { products, totalCount, totalPages },
       success: true,
       statusCode: SUCCESSFULLY_FETCHED_STATUS_CODE,
     };
   }
 
-  /**
-   * @description Get single Product method
-   * @param query id
-   * @returns
-   */
   async getProductById(id: string): Promise<IProduct | null> {
     return this.productRepo.findProductById(id);
   }
 
-  /**
-   * @description update single Product method
-   * @param id
-   * @param body
-   * @returns
-   */
   async updateProduct(
     id: string,
     body: Partial<IProduct>
@@ -97,7 +66,7 @@ export class ProductService {
   }
 
   async softDeleteProduct(id: string, deletedBy: string): Promise<IProduct> {
-    const product = await withTransaction(async (session) => {
+    return withTransaction(async (session) => {
       await this.productRepo.softDeleteProduct(id, deletedBy, session);
       const prod = await this.productRepo.findProductById(id);
       if (!prod) {
@@ -105,21 +74,18 @@ export class ProductService {
       }
       return prod;
     });
-    return product;
   }
+
   async restoreProduct(id: string): Promise<IProduct> {
     return withTransaction(async (session) => {
-      const restoredProduct = await this.productRepo.restoreProduct(
-        id,
-        session
-      );
+      const restoredProduct = await this.productRepo.restoreProduct(id, session);
       if (!restoredProduct) {
         throw new Error(`Product with id ${id} not found`);
       }
-      return restoredProduct as IProduct;
+      return restoredProduct;
     });
   }
 }
 
-const productService = new ProductService();
-export default productService;
+const defaultProductRepo = new (require("../repository/ProductRepository").ProductRepository)();
+export default new ProductService(defaultProductRepo);

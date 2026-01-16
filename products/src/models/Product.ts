@@ -1,4 +1,3 @@
-import { ProductService } from "@/services/product.service";
 import mongoose, { Schema, Types } from "mongoose";
 
 export interface IProduct {

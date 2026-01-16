@@ -17,4 +17,5 @@ export interface IInventoryRepository {
     inventoryId: string
   ) => Promise<IInventory | null>;
   deleteInventory: (data: string) => Promise<void>;
+  getInventoryByProduct: (productId: string, storeId: string) => Promise<IInventory | null>;
 }

@@ -7,9 +7,12 @@ import {
   ORDER_PAYMENT_COMPLETED_TOPIC,
   ORDER_COMPLETED_TOPIC,
   ORDER_PAYMENT_FAILED_TOPIC,
+  ORDER_RESERVATION_FAILED_TOPIC,
+  CART_ITEM_OUT_OF_STOCK_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
 import { sendOrderMessage } from "./producer";
+import { OrderStatus } from "../models/Order";
 
 export const OrderTopic = {
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
@@ -42,7 +45,9 @@ export const OrderTopic = {
             paymentDate,
             event: "order_not_found_during_payment_completion",
           });
-          throw new Error("Order not found");
+          return;
+          // 
+          // throw new Error("Order not found");
         }
 
         await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
@@ -99,6 +104,72 @@ export const OrderTopic = {
       logger.info("Payment failed processed", { orderId, reason });
     } catch (error) {
       logger.error("Failed to handle payment failure", { orderId, error });
+    }
+  },
+  [ORDER_RESERVATION_FAILED_TOPIC]: async (data: any) => {
+    const { orderId, sagaId, reason, userId, storeId, failedItems } = data;
+
+    const idempotencyKey = `reservation-failed-${sagaId}`;
+    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!locked) {
+      logger.info("Duplicate reservation failed event ignored", {
+        sagaId,
+        orderId,
+      });
+      return;
+    }
+
+    let order;
+    try {
+      order = await orderService.updateOrderToOutOfStock(
+        orderId,
+        OrderStatus.OUT_OF_STOCK,
+        { failureReason: reason }
+      );
+
+      if (!order) {
+        logger.warn("Order not found when handling reservation failure", {
+          orderId,
+        });
+        return;
+      }
+
+
+      try {
+        await sendOrderMessage(CART_ITEM_OUT_OF_STOCK_TOPIC, {
+          cartId: order.cartId.toString(),
+          userId: order.userId.toString(),
+          orderId: order._id.toString(),
+          unavailableItems: failedItems || [], 
+          sagaId,
+          failedAt: new Date().toISOString(),
+        });
+
+        logger.info("Cart notified of unavailable items", {
+          orderId,
+          cartId: order.cartId,
+          sagaId,
+          failedItemsCount: failedItems?.length || 0,
+        });
+      } catch (emitErr) {
+        logger.error("Failed to emit CART_ITEM_OUT_OF_STOCK_TOPIC", {
+          orderId,
+          emitErr,
+        });
+      }
+
+      logger.info("Successfully handled reservation failure", {
+        orderId,
+        sagaId,
+        reason,
+        newStatus: order.orderStatus,
+      });
+    } catch (error: any) {
+      logger.error("Failed to handle reservation failure", {
+        orderId,
+        sagaId,
+        error: error.message,
+      });
     }
   },
 };

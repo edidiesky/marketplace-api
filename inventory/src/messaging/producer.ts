@@ -40,7 +40,6 @@ export async function connectProducer() {
 
 /**
  * Send Inventory message with proper partitioning
- * Messages with same transactionId/userId will always go to same partition
  * Handler created here guarantees ordering for that customer's transactions
  */
 export async function sendInventoryMessage(
@@ -62,8 +61,6 @@ export async function sendInventoryMessage(
             timestamp: Date.now().toString(),
             "correlation-id": data.sagaId || data.transactionId || "null",
           },
-          // Optional: explicit partition assignment
-          // partition: customPartitionLogic(partitionKey),
         },
       ],
       acks: -1,
@@ -84,41 +81,6 @@ export async function sendInventoryMessage(
   }
 }
 
-/**
- * Batch send for high throughput scenarios
- */
-export async function sendTenantMessageBatch(
-  topic: string,
-  messages: Array<{ data: any; key?: string }>
-) {
-  try {
-    const kafkaMessages = messages.map((msg) => ({
-      key: msg.key || msg.data.transactionId || msg.data.userId,
-      value: JSON.stringify(msg.data),
-      headers: {
-        service: "Inventory-service",
-        timestamp: Date.now().toString(),
-      },
-    }));
-
-    const result = await producer.send({
-      topic,
-      messages: kafkaMessages,
-      acks: -1,
-      compression: CompressionTypes.GZIP,
-    });
-
-    logger.info("Batch messages sent to Kafka", {
-      topic,
-      count: messages.length,
-    });
-
-    return result;
-  } catch (error: any) {
-    logger.error("Error sending batch messages", { topic, error });
-    throw error;
-  }
-}
 
 export async function disconnectProducer() {
   await producer.disconnect();

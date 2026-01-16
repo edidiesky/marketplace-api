@@ -17,6 +17,7 @@ export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
     domain,
     startDate,
     endDate,
+    sellerId,
   } = req.query;
 
   let queryFilter: FilterQuery<Partial<ICart>> = {
@@ -26,6 +27,7 @@ export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
     queryFilter.userId = new Types.ObjectId(userId);
   }
 
+  if (sellerId) queryFilter.sellerId = new Types.ObjectId(String(sellerId));
   if (productTitle) queryFilter.productTitle = productTitle;
   if (quantityAvailable) queryFilter.quantityAvailable = quantityAvailable;
   if (quantityReserved) queryFilter.quantityReserved = quantityReserved;

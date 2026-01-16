@@ -20,5 +20,6 @@ export interface IOrderRepository {
     status: string,
     updates?: Partial<IOrder>
   ) => Promise<IOrder | null>;
+getOrderByCartId  : (cartId: string) => Promise<IOrder | null>;
   //   deleteOrder: (data: string) => Promise<void>;
 }

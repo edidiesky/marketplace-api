@@ -1,5 +1,5 @@
 import { FilterQuery, Types } from "mongoose";
-import Cart, { ICart } from "../models/Cart";
+import Cart, { CartItemStatus, ICart } from "../models/Cart";
 import { withTransaction } from "../utils/connectDB";
 import { ICartRepository } from "../repository/ICartRepository";
 import { CartRepository } from "../repository/CartRepository";
@@ -7,6 +7,7 @@ import logger from "../utils/logger";
 import redisClient from "../config/redis";
 import { AddToCartRequest } from "../types";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+
 export class CartService {
   private CartRepo: ICartRepository;
   private readonly CACHE_TTL = 60 * 1;
@@ -73,7 +74,7 @@ export class CartService {
       const doc = await this.CartRepo.cartExists(storeId, userId);
       if (!doc) return null;
       version = doc.version;
-      await redisClient.set(latestKey, version.toString(), "EX", 86400);
+      await redisClient.set(latestKey, version.toString(), "EX", 86400, "NX");
     }
 
     const cacheKey = this.getCacheKey(userId, storeId, version);
@@ -140,7 +141,6 @@ export class CartService {
   ): Promise<ICart | string> {
     const {
       productId,
-      idempotencyKey,
       productTitle,
       productImage,
       productPrice,
@@ -149,12 +149,57 @@ export class CartService {
       fullName,
       email,
       storeId,
+      sellerId,
     } = request;
+    const cacheKey = `inventory:${storeId}:${productId}`;
+    let availableStock: number | null = null;
 
-    const lockKey = `cart:add:${storeId}:${userId}:${idempotencyKey}`;
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) {
+        availableStock = parseInt(cached, 10);
+        logger.info("Inventory cache hit in cart service", {
+          productId,
+          availableStock,
+        });
+      }
+    } catch (err) {
+      logger.warn("Redis read failed, will call inventory service", { err });
+    }
+
+    if (availableStock === null) {
+      try {
+        const response = await fetch(
+          `http://inventory:4008/api/v1/inventories/check/${productId}?storeId=${storeId}`
+        );
+        const data = (await response.json()) as {
+          quantityAvailable: number;
+        };
+        availableStock = data?.quantityAvailable;
+        await redisClient.set(cacheKey, availableStock.toString(), "EX", 300);
+        logger.info("Fetched inventory from inventory service", {
+          productId,
+          availableStock,
+        });
+      } catch (err) {
+        logger.error("Failed to check inventory", {
+          productId,
+          message: err instanceof Error ? err.message : String(err),
+        });
+        throw new Error("Unable to verify stock availability");
+      }
+    }
+
+    // 3. Check if enough stock
+    if (availableStock < quantity) {
+      return `Insufficient stock. Only ${availableStock} available.`;
+    }
+
+    // 4. Proceed with cart creation
+    const lockKey = `cart:add:${storeId}:${userId}:${productId}:${request.idempotencyKey}`;
     const locked = await redisClient.set(lockKey, "1", "EX", 600, "NX");
     if (!locked) {
-      return "Cart has already been placed";
+      return "Cart operation already in progress";
     }
 
     return withTransaction(async (session) => {
@@ -167,6 +212,7 @@ export class CartService {
         cart = new Cart({
           userId: new Types.ObjectId(userId),
           storeId: new Types.ObjectId(storeId),
+          sellerId: new Types.ObjectId(sellerId),
           fullName: fullName || "",
           email: email || "",
           cartItems: [],
@@ -188,6 +234,7 @@ export class CartService {
         productQuantity: quantity,
         reservedAt: new Date(),
         productDescription: productDescription || "",
+        availabilityStatus: CartItemStatus.AVAILABLE,
       });
 
       cart.quantity = cart.cartItems.reduce((s, i) => s + i.productQuantity, 0);
@@ -208,24 +255,16 @@ export class CartService {
     storeId: string,
     productId: string,
     quantity: number
-  ): Promise<ICart | null> {
+  ) {
     return withTransaction(async (session) => {
-      if (quantity <= 0) {
-        logger.error("Quantity must be > 0", {
-          event: "lower_quantity",
-          userId,
-          storeId,
-          productId,
-        });
-        throw new Error("Quantity must be > 0");
-      }
-
-      const cart = await this.getCart(userId, storeId);
+      const cart = await Cart.findOne({
+        userId: new Types.ObjectId(userId),
+        storeId: new Types.ObjectId(storeId),
+      }).session(session);
       if (!cart) {
-        logger.error("Cart was not found", {
-          event: "cart_missing",
-          userId,
-          storeId,
+        logger.error("cart was not found:", {
+          userId: new Types.ObjectId(userId),
+          storeId: new Types.ObjectId(storeId),
           productId,
         });
         throw new Error("Cart not found");
@@ -235,10 +274,9 @@ export class CartService {
         i.productId.equals(new Types.ObjectId(productId))
       );
       if (!item) {
-        logger.error("Cart was not found", {
-          event: "cart_missing",
-          userId,
-          storeId,
+        logger.error("Item was not found:", {
+          userId: new Types.ObjectId(userId),
+          storeId: new Types.ObjectId(storeId),
           productId,
         });
         throw new Error("Item not in cart");
@@ -253,6 +291,8 @@ export class CartService {
       );
 
       await cart.save({ session });
+
+      // After commit, update cache
       await this.addToCache(userId, storeId, cart);
 
       return cart;
@@ -285,6 +325,85 @@ export class CartService {
 
   async clearCartById(cartId: string): Promise<void> {
     await Cart.deleteOne({ _id: new Types.ObjectId(cartId) });
+  }
+
+  async markItemsUnavailable(
+    cartId: string,
+    unavailableItems: Array<{ productId: string; reason: string }>
+  ): Promise<void> {
+    return withTransaction(async (session) => {
+      const cart = await Cart.findById(new Types.ObjectId(cartId)).session(
+        session
+      );
+
+      if (!cart) {
+        logger.warn("Cart not found when marking items unavailable", {
+          cartId,
+          event: "cart_not_found_unavailable_items",
+        });
+        return;
+      }
+
+      // Mar
+      let updated = false;
+      for (const unavailableItem of unavailableItems) {
+        const cartItem = cart.cartItems.find((item) =>
+          item.productId.equals(new Types.ObjectId(unavailableItem.productId))
+        );
+
+        if (cartItem) {
+          cartItem.availabilityStatus = CartItemStatus.OUT_OF_STOCK;
+          cartItem.unavailabilityReason = unavailableItem.reason;
+          updated = true;
+
+          logger.info("Cart item marked as unavailable", {
+            cartId,
+            productId: unavailableItem.productId,
+            reason: unavailableItem.reason,
+            event: "cart_item_marked_unavailable",
+          });
+        }
+      }
+
+      if (updated) {
+        await cart.save({ session });
+
+        // Invalidate cache after transaction commits
+        const userId = cart.userId.toString();
+        const storeId = cart.storeId.toString();
+
+        try {
+          // Invalidate version cache
+          const latestKey = this.getLatestVersionKey(userId, storeId);
+          const versionKey = this.getCacheKey(userId, storeId, cart.version);
+
+          await Promise.all([
+            redisClient.del(latestKey),
+            redisClient.del(versionKey),
+          ]);
+
+          logger.info(
+            "Cart cache invalidated after marking items unavailable",
+            {
+              cartId,
+              userId,
+              storeId,
+            }
+          );
+        } catch (cacheErr) {
+          logger.warn(
+            "Failed to invalidate cache after marking items unavailable",
+            {
+              cartId,
+              error:
+                cacheErr instanceof Error
+                  ? cacheErr.message
+                  : "Unknown cache error",
+            }
+          );
+        }
+      }
+    });
   }
 }
 

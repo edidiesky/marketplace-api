@@ -565,7 +565,7 @@ services:
     image: grafana/tempo:latest
     command: ["-config.file=/etc/tempo/tempo.yaml"]
     volumes:
-      - ./tempo.yaml:/etc/tempo/tempo.yaml
+      - ./etc/tempo/tempo-config.yaml:/etc/tempo/tempo.yaml:ro
       - tempo-data:/tmp/tempo
     ports:
       - "3200:3200" # HTTP API
@@ -614,6 +614,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=grafana-exploretraces-app
     entrypoint:
       - sh
       - -euc
@@ -629,7 +630,7 @@ services:
           url: http://loki:3100
           basicAuth: false
           isDefault: true
-          version: 1
+          version: 1c:\Users\essie\marketplace-api\etc\tempo\tempo.yaml
           editable: false
         EOF
         /run.sh

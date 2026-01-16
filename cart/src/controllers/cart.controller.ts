@@ -25,6 +25,7 @@ const CreateCartHandler = asyncHandler(async (req: Request, res: Response) => {
     fullName: name,
     email: req.body.email,
     storeId,
+    sellerId: req.body.sellerId
   });
 
   if (typeof result === "string") {

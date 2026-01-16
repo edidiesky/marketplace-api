@@ -18,7 +18,6 @@ async function GracefulShutdown() {
     const shutdownStart = process.hrtime();
 
     await mongoose.connection.close();
-    // await disconnectConsumer();
     await disconnectProducer();
     await redisClient.quit();
 

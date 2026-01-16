@@ -120,9 +120,10 @@ export const InventoryTopic = {
           itemCount: items.length,
         });
         return;
+        
       } catch (error: any) {
         if (
-          error.message.includes("INSUFFICIENT_STOCK") ||
+          error.message.includes("No sufficient inventory stock") ||
           error.message.includes("STOCK_CONTENTION")
         ) {
           logger.warn("Reservation failed - insufficient or contended stock", {
@@ -131,7 +132,7 @@ export const InventoryTopic = {
             error: error.message,
           });
 
-          // Emit failure event
+          // failure event
           try {
             await sendInventoryMessage(ORDER_RESERVATION_FAILED_TOPIC, {
               orderId,

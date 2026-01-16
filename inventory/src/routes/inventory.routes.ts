@@ -5,6 +5,7 @@ import {
   GetSingleStoreInventoryHandler,
   UpdateInventoryHandler,
   DeleteInventoryHandler,
+  CheckInventoryAvailabilityHandler,
 } from "../controllers/inventory.controller";
 import {
   authenticate,
@@ -27,6 +28,8 @@ router
   .get(authenticate, GetSingleStoreInventoryHandler)
   .put(authenticate, UpdateInventoryHandler)
   .delete(authenticate, DeleteInventoryHandler);
+
+router.get("/check/:productId", CheckInventoryAvailabilityHandler);
 export default router;
 
 

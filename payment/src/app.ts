@@ -22,8 +22,6 @@ app.use(
   cors({
     origin: [
       process.env.WEB_ORIGIN!,
-      process.env.WEB_ORIGIN2!,
-      process.env.WEB_ORIGIN3!,
     ],
     credentials: true,
   })

@@ -6,10 +6,9 @@ import redisClient from "../config/redis";
 import logger from "../utils/logger";
 import { withTransaction } from "../utils/connectDB";
 import {
-  ORDER_CHECKOUT_STARTED_TOPIC,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
-import { sendOrderMessage } from "../messaging/producer";
+import { ICart } from "../types";
 
 export class OrderService {
   private repo: IOrderRepository;
@@ -73,63 +72,41 @@ export class OrderService {
 
   async createOrderFromCart(
     userId: string,
-    cart: any,
+    cart: ICart,
+    sellerId: string,
     requestId: string
   ): Promise<IOrder> {
+    const cartId = cart._id;
     return withTransaction(async (session) => {
-      const existing = await this.repo.getOrderByRequestId(requestId);
+      const existing = await this.repo.getOrderByCartId(cartId);
       if (existing) {
         logger.error("Order is existing:", {
           event: "existing_order",
           order: existing?._id,
           userId,
+          cartId
         });
         return existing;
       }
 
       const orderData: Partial<IOrder> = {
         userId: new Types.ObjectId(userId),
+        sellerId: new Types.ObjectId(sellerId),
         storeId: new Types.ObjectId(cart.storeId),
         cartId: new Types.ObjectId(cart._id),
         fullName: cart.fullName,
         totalPrice: cart.totalPrice,
         quantity: cart.quantity,
-        cartItems: cart.cartItems,
+        cartItems: cart.cartItems.map((item: any) => ({
+          ...item,
+          productId: new Types.ObjectId(item.productId),
+        })),
         requestId,
         orderStatus: OrderStatus.PENDING,
       };
 
       const order = await this.repo.createOrder(orderData, session);
       await this.addToCache(userId, order);
-      try {
-        await sendOrderMessage(ORDER_CHECKOUT_STARTED_TOPIC, {
-          orderId: order._id.toString(),
-          userId: userId,
-          storeId: cart.storeId,
-          cartId: cart._id,
-          items: cart.cartItems.map((item: any) => ({
-            productId: item.productId.toString(),
-            quantity: item.productQuantity,
-            price: item.productPrice,
-          })),
-          totalPrice: cart.totalPrice,
-          requestId,
-          sagaId: requestId,
-          initiatedAt: new Date().toISOString(),
-        });
-
-        logger.info("Emitted checkout started event", {
-          orderId: order._id,
-          sagaId: requestId,
-          userId,
-        });
-      } catch (emitError) {
-        logger.error("Failed to emit checkout started", {
-          orderId: order._id,
-          event: "order_emit_checkout_failed",
-          error: emitError,
-        });
-      }
       logger.info("Succesfully Created order - Order Service:", {
         event: "order_successfully_created",
         order_id: order?._id,
@@ -139,7 +116,7 @@ export class OrderService {
       });
       return order;
     });
-  }
+  };
 
   async getOrderById(orderId: string): Promise<IOrder | null> {
     return this.repo.getOrderById(orderId);
@@ -185,7 +162,6 @@ export class OrderService {
 
     if (order) {
       await this.addToCache(order.userId.toString(), order);
-      // TODO: Emit order.completed → clear cart, generate invoice, send email
       logger.info("Order completed successfully", { orderId });
     }
 
@@ -199,9 +175,26 @@ export class OrderService {
     );
     if (order) {
       await this.addToCache(order.userId.toString(), order);
-      // TODO: Emit order.payment.failed → release inventory
     }
     return order;
+  }
+
+  async updateOrderToOutOfStock(
+    orderId: string,
+    status: OrderStatus = OrderStatus.OUT_OF_STOCK,
+    updates: Partial<IOrder> = {}
+  ): Promise<IOrder | null> {
+    const updated = await this.repo.updateOrderStatus(orderId, status, updates);
+
+    if (updated) {
+      await this.addToCache(updated.userId.toString(), updated);
+      logger.info("Order marked as out of stock due to reservation issue", {
+        orderId,
+        newStatus: status,
+      });
+    }
+
+    return updated;
   }
 }
 

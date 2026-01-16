@@ -37,6 +37,7 @@ export interface AddToCartRequest {
   fullName: string;
   email: string;
   storeId: string;
+  sellerId:string;
   idempotencyKey: string;
   productTitle: string;
   productImage: string[];

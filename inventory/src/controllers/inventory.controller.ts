@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import {
   BAD_REQUEST_STATUS_CODE,
+  NOT_FOUND_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
@@ -91,10 +92,48 @@ const DeleteInventoryHandler = asyncHandler(
   }
 );
 
+/**
+ * @description: Check Inventory Availability Handler
+ * @route  GET /api/v1/inventories/check/:productId?storeId=
+ * @access  Public
+ */
+const CheckInventoryAvailabilityHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { productId } = req.params;
+    const { storeId } = req.query;
+
+    const inventory = await inventoryService.getInventoryByProduct(
+      productId,
+      storeId as string
+    );
+
+    if (!inventory) {
+      res.status(NOT_FOUND_STATUS_CODE).json({ 
+        quantityAvailable: 0, 
+        message: "Product not found" 
+      });
+      return;
+    }
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      productId,
+      storeId,
+      quantityAvailable: inventory.quantityAvailable,
+      quantityOnHand: inventory.quantityOnHand,
+      quantityReserved: inventory.quantityReserved,
+    });
+  }
+);
+
+// In Inventory Routes
+// router.get("/check/:productId", CheckInventoryAvailabilityHandler);
+
 export {
   CreateInventoryHandler,
   GetAllStoreInventoryHandler,
   GetSingleStoreInventoryHandler,
   UpdateInventoryHandler,
   DeleteInventoryHandler,
+  CheckInventoryAvailabilityHandler,
+  
 };

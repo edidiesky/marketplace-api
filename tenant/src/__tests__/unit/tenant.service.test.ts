@@ -134,7 +134,7 @@ describe("Tenant Service Tests", () => {
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
-        lean: jest.fn().mockResolvedValue(tenantsOutcome),
+        lean: jest.fn<()=> Promise<ITenant[]>().mockResolvedValue(tenantsOutcome),
       };
       MockedRedis.get.mockResolvedValueOnce(null);
       MockedTenant.find.mockReturnValue(mockQuery as any);

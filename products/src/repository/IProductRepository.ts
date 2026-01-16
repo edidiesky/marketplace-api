@@ -8,7 +8,7 @@ export interface IProductRepository {
   ) => Promise<IProduct>;
   findProductById: (id: string) => Promise<IProduct | null>;
   updateProduct: (id: string, data: Partial<IProduct>) => Promise<IProduct | null>;
-  deleteproductById: (id: string) => void;
+  deleteproductById: (id: string) => Promise<void>;  // ← Change to Promise<void>
   findAllProduct: (
     queryParams: FilterQuery<IProduct>,
     skip: number,
@@ -24,4 +24,3 @@ export interface IProductRepository {
     session?: mongoose.ClientSession
   ) => Promise<IProduct | null>;
 }
-

@@ -80,6 +80,15 @@ export class InventoryRepository implements IInventoryRepository {
 
     return inventory;
   }
+
+  async getInventoryByProduct(productId: string, storeId: string): Promise<IInventory | null> {
+    const inventory = await measureDatabaseQuery("fetch_inventory_by_product", () =>
+      Inventory.findOne({ productId : productId, storeId: storeId }).lean().exec()
+    );
+    logger.info("Fetched inventory by productId and storeId", { productId, storeId });
+    return inventory;
+  }
+
   /**
    * @description Get single Inventory method
    * @param inventoryId

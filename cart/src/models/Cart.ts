@@ -1,5 +1,12 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
+export enum CartItemStatus {
+  AVAILABLE = "available",
+  OUT_OF_STOCK = "out_of_stock",
+  PRICE_CHANGED = "price_changed",
+  DISCONTINUED = "discontinued",
+}
+
 export interface ICartItems {
   productId: Types.ObjectId;
   productTitle: string;
@@ -8,11 +15,14 @@ export interface ICartItems {
   productQuantity: number;
   reservedAt: Date;
   productImage: string[];
+  availabilityStatus: CartItemStatus;
+  unavailabilityReason?: string;
 }
 
 export interface ICart extends Document {
   _id: any;
   userId: Types.ObjectId;
+  sellerId: Types.ObjectId;
   storeId: Types.ObjectId;
   fullName: string;
   quantity: number;
@@ -27,6 +37,10 @@ export interface ICart extends Document {
 const CartSchema = new Schema<ICart>(
   {
     userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    sellerId: {
       type: Schema.Types.ObjectId,
       required: true,
     },
@@ -55,6 +69,12 @@ const CartSchema = new Schema<ICart>(
         productPrice: { type: Number, required: true },
         productQuantity: { type: Number, required: true, min: 1 },
         reservedAt: Date,
+        availabilityStatus: {
+          type: String,
+          enum: Object.values(CartItemStatus),
+          default: CartItemStatus.AVAILABLE,
+        },
+        unavailabilityReason: String,
       },
     ],
     expireAt: {
@@ -76,14 +96,15 @@ const CartSchema = new Schema<ICart>(
   { timestamps: true }
 );
 
-CartSchema.pre("save", function(next){
-  if(this.isModified() || this.isNew) {
-    this.version = Number((this.version || 0)) + 1
+CartSchema.pre("save", function (next) {
+  if (this.isModified() || this.isNew) {
+    this.version = Number(this.version || 0) + 1;
   }
-  next()
-})
+  next();
+});
 CartSchema.index({ userId: 1, storeId: 1 }, { unique: true });
 CartSchema.index({ store: 1 });
+CartSchema.index({ sellerId: 1 });
 CartSchema.index({ category: 1 });
 CartSchema.index({ size: 1 });
 CartSchema.index({ createdAt: -1 });

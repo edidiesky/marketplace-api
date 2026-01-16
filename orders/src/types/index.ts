@@ -31,3 +31,38 @@ export interface CreateCategoryInput {
   name: string;
   value: string;
 }
+
+export enum CartItemStatus {
+  AVAILABLE = "available",
+  OUT_OF_STOCK = "out_of_stock",
+  PRICE_CHANGED = "price_changed",
+  DISCONTINUED = "discontinued",
+}
+
+
+export interface ICartItems {
+  productId: string;
+  productTitle: string;
+  productDescription: string;
+  productPrice: number;
+  productQuantity: number;
+  reservedAt: Date;
+  productImage: string[];
+  availabilityStatus: CartItemStatus;
+  unavailabilityReason?: string;
+}
+
+export interface ICart {
+  _id: any;
+  userId: string;
+  sellerId: string;
+  storeId: string;
+  fullName: string;
+  quantity: number;
+  totalPrice: number;
+  cartItems: ICartItems[];
+  createdAt: Date;
+  updatedAt: Date;
+  expireAt: Date;
+  version: number;
+}

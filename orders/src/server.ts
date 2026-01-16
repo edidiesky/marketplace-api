@@ -115,14 +115,13 @@ app.listen(PORT, async () => {
 process.on("SIGINT", GracefulShutdown);
 process.on("SIGTERM", GracefulShutdown);
 
-// Handle unhandled promise rejections
+
 process.on("unhandledRejection", (reason, promise) => {
   trackError("unhandled_promise_rejection", "process", "critical");
   logger.error("Unhandled Promise Rejection at:", promise, "reason:", reason);
   GracefulShutdown();
 });
 
-// Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
   trackError("uncaught_exception", "process", "critical");
   logger.error("Uncaught Exception:", error);

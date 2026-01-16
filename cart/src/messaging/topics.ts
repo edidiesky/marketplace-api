@@ -1,6 +1,9 @@
 import { cartService } from "../services/cart.service";
 import logger from "../utils/logger";
-import { ORDER_COMPLETED_TOPIC } from "../constants";
+import {
+  CART_ITEM_OUT_OF_STOCK_TOPIC,
+  ORDER_COMPLETED_TOPIC,
+} from "../constants";
 import redisClient from "../config/redis";
 
 export const CartTopic = {
@@ -8,7 +11,7 @@ export const CartTopic = {
     const { cartId, userId, storeId } = data;
 
     const idempotencyKey = `clear-cart-${cartId}`;
-    if (!await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX")) {
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
       return;
     }
 
@@ -24,5 +27,18 @@ export const CartTopic = {
     } catch (error) {
       logger.error("Failed to clear cart", { cartId, error });
     }
+  },
+
+  [CART_ITEM_OUT_OF_STOCK_TOPIC]: async (data: any) => {
+    const { cartId, unavailableItems, sagaId } = data;
+    // unavailableItems: [{ productId, reason }]
+
+    // Idempotency check
+    const idempotencyKey = `cart-unavailable-${sagaId}`;
+    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!locked) return;
+
+    // Mark items as unavailable (don't delete)
+    await cartService.markItemsUnavailable(cartId, unavailableItems);
   },
 };

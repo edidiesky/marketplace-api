@@ -12,11 +12,12 @@ import { buildQuery } from "../utils/buildQuery";
 const CreateOrderHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const { cart, requestId } = req.body;
+    const { cart, requestId, sellerId } = req.body;
 
     const order = await orderService.createOrderFromCart(
       userId,
       cart,
+      sellerId,
       requestId as string
     );
 
@@ -46,3 +47,4 @@ const GetOrderHandler = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export { CreateOrderHandler, GetUserOrdersHandler, GetOrderHandler };
+

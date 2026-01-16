@@ -4,6 +4,7 @@ import { IOrderRepository } from "./IOrderRepository";
 import logger from "../utils/logger";
 import { measureDatabaseQuery } from "../utils/metrics";
 import mongoose, { FilterQuery } from "mongoose";
+import { Types } from "mongoose";
 
 export class OrderRepository implements IOrderRepository {
   private readonly CACHE_TTL = 300;
@@ -77,6 +78,17 @@ export class OrderRepository implements IOrderRepository {
 
   async getOrderByRequestId(requestId: string): Promise<IOrder | null> {
     return Order.findOne({ requestId }).lean().exec();
+  }
+
+  /**
+   * @description Get order by cart ID
+   * @param cartId
+   * @returns
+   */
+  async getOrderByCartId(cartId: string): Promise<IOrder | null> {
+    return Order.findOne({ cartId: new mongoose.Types.ObjectId(cartId) })
+      .lean()
+      .exec();
   }
 
   async getUserOrders(

@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import logger from "./logger";
 import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
 
-// Add new metrics for connection monitoring
 import client from "prom-client";
 
 export const databaseConnectionAttempts = new client.Counter({

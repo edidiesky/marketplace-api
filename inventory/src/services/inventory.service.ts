@@ -86,6 +86,7 @@ export class InventoryService {
           throw new Error("No sufficient inventory stock");
         }
 
+        // invalidating cache
         try {
           await redisClient.del(this.getCacheKey(productId, storeId));
           logger.debug("Cache invalidated after reservation", {
@@ -402,6 +403,16 @@ export class InventoryService {
    */
   async getInventoryById(id: string): Promise<IInventory | null> {
     return this.InventoryRepo.getSingleInventory(id);
+  }
+
+  /**
+   * @description Get inventory by productId and storeId
+   * @param productId 
+   * @param storeId 
+   * @returns 
+   */
+  async getInventoryByProduct(productId: string, storeId: string): Promise<IInventory | null> {
+    return this.InventoryRepo.getInventoryByProduct(productId, storeId);
   }
 
   /**

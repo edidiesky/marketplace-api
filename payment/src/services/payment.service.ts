@@ -19,8 +19,8 @@ import logger from "../utils/logger";
 import redisClient from "../config/redis";
 import { requestCoalescer } from "../utils/requestCoalescer";
 import withTransaction from "../utils/connectDB";
-import { createPaymentAdapter } from "../adapters";
 import { v4 } from "uuid";
+import { createPaymentAdapter } from "../strategies";
 
 class PaymentService {
   private CACHE_TTL: number;
