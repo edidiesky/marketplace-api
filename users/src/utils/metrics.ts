@@ -7,7 +7,6 @@ client.collectDefaultMetrics({
   register,
 });
 
-// Existing metrics (improved)
 export const requestResponseTimeHistogram = new client.Histogram({
   name: "user_http_request_duration_seconds",
   help: "user API duration in seconds",
@@ -39,52 +38,6 @@ export const httpErrorRate = new client.Gauge({
   help: "Current HTTP error rate (errors/sec)",
   labelNames: ["route"],
   registers: [register],
-});
-
-/**
- * @description  Resource Metrics (USE)
- */
-export const cpuUsageGauge = new client.Gauge({
-  name: "user_service_cpu_usage_percent",
-  help: "CPU usage percentage",
-  registers: [register],
-});
-
-export const memoryUsageGauge = new client.Gauge({
-  name: "user_service_memory_usage_bytes",
-  help: "Memory usage in bytes",
-  labelNames: ["type"],
-  registers: [register],
-});
-
-export const eventLoopLagGauge = new client.Gauge({
-  name: "user_service_eventloop_lag_seconds",
-  help: "Event loop lag in seconds",
-  registers: [register],
-});
-
-/**
- * @description Workers Metrics
- */
-export const UserWorkerTasksProcesses = new client.Counter({
-  name: "user_service_worker_tasks_processed",
-  help: "Number of tasks processed by the user service upload worker",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const UserWorkerQueueDepth = new client.Gauge({
-  name: "user_service_worker_queue_depth",
-  help: "Current depth of worker queue",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const UserWorkerErrors = new client.Counter({
-  name: "user_service_worker_errors_total",
-  help: "Total number of errors in worker",
-  registers: [register],
-  labelNames: ["topic"],
 });
 
 export const databaseQueryTimeHistogram = new client.Histogram({
@@ -148,15 +101,7 @@ export const businessOperationDuration = new client.Histogram({
   registers: [register],
 });
 
-// Queue/async operation metrics
-export const queueDepthGauge = new client.Gauge({
-  name: "user_service_queue_depth",
-  help: "Current queue depth",
-  labelNames: ["queue_name"],
-  registers: [register],
-});
-
-// Helper functions for error tracking
+//  error tracking
 export const trackError = (
   errorType: string,
   operation: string,
@@ -227,7 +172,6 @@ export const serverHealthGauge = new client.Gauge({
   help: "Overall service health status (1=healthy, 0=unhealthy)",
 });
 
-// Enhanced HTTP metrics with error classification
 export async function reqReplyTime(
   req: Request,
   res: Response,
@@ -274,7 +218,7 @@ export async function reqReplyTime(
   }
 }
 
-// Business operation tracker
+// Business operation
 export async function measureBusinessOperation<T>(
   operationType: string,
   userType: string,
@@ -311,34 +255,5 @@ export async function measureBusinessOperation<T>(
   }
 }
 
-setInterval(() => {
-  const usage = process.cpuUsage();
-  cpuUsageGauge.set((usage.user + usage.system) / 1000000);
-
-  const mem = process.memoryUsage();
-  memoryUsageGauge.set({ type: "heap_used" }, mem.heapUsed);
-  memoryUsageGauge.set({ type: "heap_total" }, mem.heapTotal);
-  memoryUsageGauge.set({ type: "rss" }, mem.rss);
-
-  const start = Date.now();
-  setImmediate(() => {
-    eventLoopLagGauge.set((Date.now() - start) / 1000);
-  });
-}, 10000);
-
-// Database connection monitoring (call this periodically)
-export const updateDatabaseMetrics = (connectionStats: {
-  active: number;
-  idle: number;
-  pending: number;
-}) => {
-  databaseConnectionsGauge.set(connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "active" }, connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "idle" }, connectionStats.idle);
-  databaseConnectionPoolGauge.set(
-    { state: "pending" },
-    connectionStats.pending
-  );
-};
 
 export const userRegistry = register;
