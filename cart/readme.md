@@ -1009,26 +1009,9 @@ less profile.txt
 
 MIT License - see LICENSE file for details
 
-## Support
-
-- **Documentation:** https://docs.yourapp.com/cart-service
-- **Issues:** https://github.com/yourorg/cart-service/issues
-- **Slack:** #cart-service-support
-- **Email:** cart-service@yourapp.com
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history.
-
 ## Related Services
 
 - **Inventory Service:** Manages product stock and reservations
 - **Order Service:** Processes cart checkout
 - **Product Service:** Provides product information
 - **User Service:** Manages user authentication
-
----
-
-**Version:** 2.0.0  
-**Last Updated:** January 27, 2026  
-**Maintained by:** Cart Service Team
