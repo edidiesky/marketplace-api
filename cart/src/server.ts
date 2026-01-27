@@ -53,7 +53,6 @@ app.listen(PORT, async () => {
   }
 
   try {
-    // Track each initialization component
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
       { name: "redis", fn: () => redisClient.ping() },

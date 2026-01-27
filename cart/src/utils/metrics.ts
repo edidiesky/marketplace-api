@@ -41,51 +41,6 @@ export const httpErrorRate = new client.Gauge({
   registers: [register],
 });
 
-/**
- * @description  Resource Metrics (USE)
- */
-export const cpuUsageGauge = new client.Gauge({
-  name: "Cart_service_cpu_usage_percent",
-  help: "CPU usage percentage",
-  registers: [register],
-});
-
-export const memoryUsageGauge = new client.Gauge({
-  name: "Cart_service_memory_usage_bytes",
-  help: "Memory usage in bytes",
-  labelNames: ["type"],
-  registers: [register],
-});
-
-export const eventLoopLagGauge = new client.Gauge({
-  name: "Cart_service_eventloop_lag_seconds",
-  help: "Event loop lag in seconds",
-  registers: [register],
-});
-
-/**
- * @description Workers Metrics
- */
-export const CartWorkerTasksProcesses = new client.Counter({
-  name: "Cart_service_worker_tasks_processed",
-  help: "Number of tasks processed by the Cart service upload worker",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const CartWorkerQueueDepth = new client.Gauge({
-  name: "Cart_service_worker_queue_depth",
-  help: "Current depth of worker queue",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const CartWorkerErrors = new client.Counter({
-  name: "Cart_service_worker_errors_total",
-  help: "Total number of errors in worker",
-  registers: [register],
-  labelNames: ["topic"],
-});
 
 export const databaseQueryTimeHistogram = new client.Histogram({
   name: "Cart_database_query_duration_seconds",
@@ -103,19 +58,6 @@ export const errorCounter = new client.Counter({
   registers: [register],
 });
 
-// Database connection metrics
-export const databaseConnectionsGauge = new client.Gauge({
-  name: "Cart_database_connections_active",
-  help: "Number of active database connections",
-  registers: [register],
-});
-
-export const databaseConnectionPoolGauge = new client.Gauge({
-  name: "Cart_database_connection_pool_size",
-  help: "Database connection pool size",
-  labelNames: ["state"], // idle, used, pending
-  registers: [register],
-});
 
 // Cache metrics
 export const cacheHitCounter = new client.Counter({
@@ -311,33 +253,5 @@ export async function measureBusinessOperation<T>(
   }
 }
 
-setInterval(() => {
-  const usage = process.cpuUsage();
-  cpuUsageGauge.set((usage.user + usage.system) / 1000000);
-
-  const mem = process.memoryUsage();
-  memoryUsageGauge.set({ type: "heap_used" }, mem.heapUsed);
-  memoryUsageGauge.set({ type: "heap_total" }, mem.heapTotal);
-  memoryUsageGauge.set({ type: "rss" }, mem.rss);
-
-  const start = Date.now();
-  setImmediate(() => {
-    eventLoopLagGauge.set((Date.now() - start) / 1000);
-  });
-}, 10000);
-
-export const updateDatabaseMetrics = (connectionStats: {
-  active: number;
-  idle: number;
-  pending: number;
-}) => {
-  databaseConnectionsGauge.set(connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "active" }, connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "idle" }, connectionStats.idle);
-  databaseConnectionPoolGauge.set(
-    { state: "pending" },
-    connectionStats.pending
-  );
-};
 
 export const CartRegistry = register;

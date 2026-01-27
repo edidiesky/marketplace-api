@@ -23,8 +23,6 @@ app.use(
   cors({
     origin: [
       process.env.WEB_ORIGIN!,
-      process.env.WEB_ORIGIN2!,
-      process.env.WEB_ORIGIN3!,
     ],
     credentials: true,
   })
@@ -61,8 +59,7 @@ app.get("/metrics", async (req, res) => {
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
-
-app.use(errorHandler);
 app.use(NotFound);
+app.use(errorHandler);
 
 export { app };

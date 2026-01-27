@@ -129,13 +129,6 @@ export interface IUser extends Document {
   trialEndsAt?: Date;
   currentPeriodEndsAt?: Date;
   cancelAtPeriodEnd: boolean;
-
-  limits: {
-    stores: number;
-    products: number;
-    teamMembers: number;
-    apiCallsPerMonth: number;
-  };
 }
 
 const UserSchema = new Schema<IUser>(
@@ -197,14 +190,6 @@ const UserSchema = new Schema<IUser>(
     trialEndsAt: { type: Date },
     currentPeriodEndsAt: { type: Date },
     cancelAtPeriodEnd: { type: Boolean, default: false },
-
-    // Quotas
-    limits: {
-      stores: { type: Number, default: 1 },
-      products: { type: Number, default: 100 },
-      teamMembers: { type: Number, default: 3 },
-      apiCallsPerMonth: { type: Number, default: 10_000 },
-    },
 
     gender: {
       type: String,

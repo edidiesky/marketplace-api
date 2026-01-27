@@ -48,8 +48,7 @@ export async function sendAuthenticationMessage(
 ) {
   try {
     const partitionKey = 
-      key || 
-      data.transactionId || 
+      key ||
       data.userId || 
       data.sagaId || 
       data.email || 

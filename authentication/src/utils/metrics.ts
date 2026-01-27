@@ -41,52 +41,6 @@ export const httpErrorRate = new client.Gauge({
   registers: [register],
 });
 
-/**
- * @description  Resource Metrics (USE)
- */
-export const cpuUsageGauge = new client.Gauge({
-  name: "user_service_cpu_usage_percent",
-  help: "CPU usage percentage",
-  registers: [register],
-});
-
-export const memoryUsageGauge = new client.Gauge({
-  name: "user_service_memory_usage_bytes",
-  help: "Memory usage in bytes",
-  labelNames: ["type"],
-  registers: [register],
-});
-
-export const eventLoopLagGauge = new client.Gauge({
-  name: "user_service_eventloop_lag_seconds",
-  help: "Event loop lag in seconds",
-  registers: [register],
-});
-
-/**
- * @description Workers Metrics
- */
-export const UserWorkerTasksProcesses = new client.Counter({
-  name: "user_service_worker_tasks_processed",
-  help: "Number of tasks processed by the user service upload worker",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const UserWorkerQueueDepth = new client.Gauge({
-  name: "user_service_worker_queue_depth",
-  help: "Current depth of worker queue",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
-export const UserWorkerErrors = new client.Counter({
-  name: "user_service_worker_errors_total",
-  help: "Total number of errors in worker",
-  registers: [register],
-  labelNames: ["topic"],
-});
-
 export const databaseQueryTimeHistogram = new client.Histogram({
   name: "user_database_query_duration_seconds",
   help: "user Database query duration in seconds",
@@ -100,20 +54,6 @@ export const errorCounter = new client.Counter({
   name: "user_service_errors_total",
   help: "Total number of errors in user service",
   labelNames: ["error_type", "operation", "severity"],
-  registers: [register],
-});
-
-// Database connection metrics
-export const databaseConnectionsGauge = new client.Gauge({
-  name: "user_database_connections_active",
-  help: "Number of active database connections",
-  registers: [register],
-});
-
-export const databaseConnectionPoolGauge = new client.Gauge({
-  name: "user_database_connection_pool_size",
-  help: "Database connection pool size",
-  labelNames: ["state"], // idle, used, pending
   registers: [register],
 });
 
@@ -311,34 +251,5 @@ export async function measureBusinessOperation<T>(
   }
 }
 
-setInterval(() => {
-  const usage = process.cpuUsage();
-  cpuUsageGauge.set((usage.user + usage.system) / 1000000);
-
-  const mem = process.memoryUsage();
-  memoryUsageGauge.set({ type: "heap_used" }, mem.heapUsed);
-  memoryUsageGauge.set({ type: "heap_total" }, mem.heapTotal);
-  memoryUsageGauge.set({ type: "rss" }, mem.rss);
-
-  const start = Date.now();
-  setImmediate(() => {
-    eventLoopLagGauge.set((Date.now() - start) / 1000);
-  });
-}, 10000);
-
-// Database connection monitoring (call this periodically)
-export const updateDatabaseMetrics = (connectionStats: {
-  active: number;
-  idle: number;
-  pending: number;
-}) => {
-  databaseConnectionsGauge.set(connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "active" }, connectionStats.active);
-  databaseConnectionPoolGauge.set({ state: "idle" }, connectionStats.idle);
-  databaseConnectionPoolGauge.set(
-    { state: "pending" },
-    connectionStats.pending
-  );
-};
 
 export const userRegistry = register;

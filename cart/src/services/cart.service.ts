@@ -19,7 +19,7 @@ export class CartService {
   private getCacheKey(
     userId: string,
     storeId: string,
-    version: number
+    version: number,
   ): string {
     return `${this.CACHE_PREFIX}${storeId}:${userId}:v${version}`;
   }
@@ -31,7 +31,7 @@ export class CartService {
   private async addToCache(
     userId: string,
     storeId: string,
-    cart: ICart
+    cart: ICart,
   ): Promise<void> {
     const versionKey = this.getCacheKey(userId, storeId, cart.version);
     const latestKey = this.getLatestVersionKey(userId, storeId);
@@ -43,7 +43,7 @@ export class CartService {
           latestKey,
           cart.version.toString(),
           "EX",
-          this.CACHE_TTL
+          this.CACHE_TTL,
         ),
       ]);
       logger.info("Cart cached (versioned)", {
@@ -108,7 +108,7 @@ export class CartService {
   async getAllCarts(
     query: FilterQuery<ICart>,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<{
     data: {
       carts: ICart[] | null;
@@ -137,7 +137,7 @@ export class CartService {
 
   async createCart(
     userId: string,
-    request: AddToCartRequest
+    request: AddToCartRequest,
   ): Promise<ICart | string> {
     const {
       productId,
@@ -170,13 +170,13 @@ export class CartService {
     if (availableStock === null) {
       try {
         const response = await fetch(
-          `http://inventory:4008/api/v1/inventories/check/${productId}?storeId=${storeId}`
+          `http://inventory:4008/api/v1/inventories/check/${productId}?storeId=${storeId}`,
         );
         const data = (await response.json()) as {
           quantityAvailable: number;
         };
         availableStock = data?.quantityAvailable;
-        await redisClient.set(cacheKey, availableStock.toString(), "EX", 300);
+        await redisClient.setnx(cacheKey, availableStock.toString());
         logger.info("Fetched inventory from inventory service", {
           productId,
           availableStock,
@@ -190,15 +190,18 @@ export class CartService {
       }
     }
 
-    // 3. Check if enough stock
     if (availableStock < quantity) {
+      logger.warn(`Insufficient stock. Only ${availableStock} available.`);
       return `Insufficient stock. Only ${availableStock} available.`;
     }
-
-    // 4. Proceed with cart creation
     const lockKey = `cart:add:${storeId}:${userId}:${productId}:${request.idempotencyKey}`;
-    const locked = await redisClient.set(lockKey, "1", "EX", 600, "NX");
+    const locked = await redisClient.setnx(lockKey, "1");
     if (!locked) {
+      logger.warn("Cart operation already in progress", {
+        lockKey,
+        userId,
+        request,
+      });
       return "Cart operation already in progress";
     }
 
@@ -223,7 +226,7 @@ export class CartService {
       }
 
       cart.cartItems = cart.cartItems.filter(
-        (item) => !item.productId.equals(new Types.ObjectId(productId))
+        (item) => !item.productId.equals(new Types.ObjectId(productId)),
       );
 
       cart.cartItems.push({
@@ -240,7 +243,7 @@ export class CartService {
       cart.quantity = cart.cartItems.reduce((s, i) => s + i.productQuantity, 0);
       cart.totalPrice = cart.cartItems.reduce(
         (s, i) => s + i.productPrice * i.productQuantity,
-        0
+        0,
       );
 
       await cart.save({ session });
@@ -254,7 +257,7 @@ export class CartService {
     userId: string,
     storeId: string,
     productId: string,
-    quantity: number
+    quantity: number,
   ) {
     return withTransaction(async (session) => {
       const cart = await Cart.findOne({
@@ -271,7 +274,7 @@ export class CartService {
       }
 
       const item = cart.cartItems.find((i) =>
-        i.productId.equals(new Types.ObjectId(productId))
+        i.productId.equals(new Types.ObjectId(productId)),
       );
       if (!item) {
         logger.error("Item was not found:", {
@@ -287,7 +290,7 @@ export class CartService {
       cart.quantity = cart.cartItems.reduce((s, i) => s + i.productQuantity, 0);
       cart.totalPrice = cart.cartItems.reduce(
         (s, i) => s + i.productPrice * i.productQuantity,
-        0
+        0,
       );
 
       await cart.save({ session });
@@ -302,20 +305,20 @@ export class CartService {
   async deleteCart(
     userId: string,
     storeId: string,
-    productId: string
+    productId: string,
   ): Promise<void> {
     return withTransaction(async (session) => {
       const cart = await this.getCart(userId, storeId);
       if (!cart) throw new Error("Cart not found");
 
       cart.cartItems = cart.cartItems.filter(
-        (i) => !i.productId.equals(new Types.ObjectId(productId))
+        (i) => !i.productId.equals(new Types.ObjectId(productId)),
       );
 
       cart.quantity = cart.cartItems.reduce((s, i) => s + i.productQuantity, 0);
       cart.totalPrice = cart.cartItems.reduce(
         (s, i) => s + i.productPrice * i.productQuantity,
-        0
+        0,
       );
 
       await cart.save({ session });
@@ -329,11 +332,11 @@ export class CartService {
 
   async markItemsUnavailable(
     cartId: string,
-    unavailableItems: Array<{ productId: string; reason: string }>
+    unavailableItems: Array<{ productId: string; reason: string }>,
   ): Promise<void> {
     return withTransaction(async (session) => {
       const cart = await Cart.findById(new Types.ObjectId(cartId)).session(
-        session
+        session,
       );
 
       if (!cart) {
@@ -348,7 +351,7 @@ export class CartService {
       let updated = false;
       for (const unavailableItem of unavailableItems) {
         const cartItem = cart.cartItems.find((item) =>
-          item.productId.equals(new Types.ObjectId(unavailableItem.productId))
+          item.productId.equals(new Types.ObjectId(unavailableItem.productId)),
         );
 
         if (cartItem) {
@@ -388,7 +391,7 @@ export class CartService {
               cartId,
               userId,
               storeId,
-            }
+            },
           );
         } catch (cacheErr) {
           logger.warn(
@@ -399,7 +402,7 @@ export class CartService {
                 cacheErr instanceof Error
                   ? cacheErr.message
                   : "Unknown cache error",
-            }
+            },
           );
         }
       }

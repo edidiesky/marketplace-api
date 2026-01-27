@@ -28,7 +28,6 @@ export const AuthenticationTopic = {
           {
             $set: {
               tenantId,
-              limits,
               tenantPlan: tenantPlan,
               tenantType,
               trialEndsAt,
