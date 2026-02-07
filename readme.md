@@ -1,66 +1,87 @@
-# Kindly, Read This First!
-
-SellEasi API is a multi-tenant e-commerce platform designed specifically for students to sell products of their choice. It enables users to create and manage their own tenant stores, handle inventory, process payments, and facilitate sales in a scalable, secure manner. The platform is built using a microservices architecture to ensure modularity, fault tolerance, and ease of scaling each services independently. It also features detailed Monitoring of Logs and service route unique metrics using Prometheus, Loki, and Promtail (Latency, throughput, error rates, and utilization) via Grafana unique Dashboard
-
-![Project Screenshot](/architecture/Main-Onboarding-1.png)
-
-![Project Screenshot](/architecture/Onboarding%20Process%201.png)
-![Project Screenshot](/architecture/Payment%20Workflow.png)
-![Audit Workflow](/architecture/Payment_Audit_Workflow.png)
-
-# Repo Map
-```bash
-SELLEASI-ARCHITECTURE/
-├── api_gateway # Central entry point for all requests in Selleasi, handles routing, rate limiting, and security.
-├── audit # Basic Service that logs activities for compliance and debugging.
-├── authentication # Manages user login, JWT tokens, and role-based access.
-├── user # Service that helps me to fetch all user's information.
-├── product # Simple CRUD operations for products, including attributes like categories, colors, sizes.
-├── cart # Manages user shopping carts.
-├── categories # Manages user login, JWT tokens, and role-based access.
-├── color # Manages user login, JWT tokens, and role-based access.
-├── inventory # Manages user login, JWT tokens, and role-based access.
-├── orders # Processes orders asynchronously via Kafka, integrates with payments and inventory.
-├── payment # Service that aid interacting with payment gateways (e.g., Paystack, Paypal) for transactions.
-├── size # Manages user login, JWT tokens, and role-based access.
-├── stores # Manages store profiles and configurations per tenant.
-├── tenant # Handles multi-tenancy, allowing students to create and manage isolated stores.
-├── prometheus # Monitoring and metrics collection.
-├── etc # Promtail and Loki configuration for metrics scraping and querying of Logs via Loki using Grafana
-├── architecture # Various High level diagram depicting my thinking and also some deep dives
-├── redis # Configurations for each of the Redis cluster participating Nodes (Master and both slave config)
-├── .gitignore
-```
-
-
-
-### This MVP focuses on core features including:
-
-1. Multi-tenancy for isolated store environments.
-2. User authentication and authorization.
-3. Product catalog management (categories, colors, sizes, reviews).
-4. Shopping cart and order processing.
-5. Inventory management with real-time updates.
-6. Payment integration.
-7. API gateway for routing and rate limiting.
-8. Event-driven architecture using Kafka for asynchronous communication (e.g., order workflows).
-9. Caching with Redis for performance optimization.
-10. Notifications for order updates.
-11. Monitoring with Prometheus.
-12. Detailed unit and Integration tests for each services
-
-
-
+# Distributed MarketPlace
+A Production-grade distributed Distributed Marketplace built on MongoDB, NodeJS, Typescript, and event driven microservice architecture.
 
 ## Table of Contents
+1. [The Goals of this project](#the-goals-of-this-project)
+2. [System Architecture](#system-architecture)
+3. [Technologies Used](#technologies--libraries)
+4. [Features](#features)
+5. [Project Structure](#project-structure)
+6. [How to Use it](#how-to-use-it)
+7. [API Documentation](#table-of-contents)
+8. [Tradeoffs](#table-of-contents)
+9. [Monitoring and Observability](#table-of-contents)
+10. [Testing Strategy](#testing-strategy)
+11. [Performance Bench marks]()
+11. [Roadmaps]()
 
-- [MVP](#mvp)
-- [Architecture](#architecure)
-- [Technologies Used](#technologies-used)
-- [Features](#features)
-- [Mini Workflow](#mini workflow)
-- [Getting Started](#getting-started)
-- [Contact](#contact)
+
+### The Goals of this project:
+The essence of me building this project is to show in simple terms on how to build an event driven microservice, and enterprise grade 
+applications with core engineering focus on the following:
+
+### **Architectural patterns**
+1. **Event-Driven Architecture** with Kafka for asynchronous inter-service communication
+1. **CQRS (Command Query Responsibility Segregation)** for read and write optimization
+1. **Saga Pattern** for distributed transaction cheoreography
+1. **Outbox Pattern** for guaranteed at-least-once event delivery
+1. **Inbox Pattern** for idempotent message consumption
+
+
+
+### **Distributed Database (MongoDB)**
+1. Horizontal sharding with configurable shard count (4 shards)
+1. Replication factor of 2 for high availability
+1. Worker failure simulation and automatic failover
+1. Hot spot detection and shard rebalancing
+1. Consistent hashing visualization
+
+
+### **Real-Time Data Streaming**
+1. **Change Data Capture (CDC)** with Debezium capturing all table mutations
+1. Kafka as event backbone (3-broker cluster for fault tolerance)
+1. Event-driven read model synchronization
+1. Audit trail generation from database changelog
+
+
+
+### **Production-Ready Infrastructure**
+1.  Connection pooling with MongoDB cient (100 max clients, 25 per pool)
+1.  Redis for distributed caching and session management
+1.  JWT-based authentication with refresh token rotation
+1.  Role-based access control (Free vs Premium users)
+1.  Rate limiting and abuse prevention using Token buceket based algorithm.
+
+
+### **Observability & Monitoring**
+1.  Full-stack monitoring: **Prometheus + Grafana + Loki + Tempo**
+1.  Distributed tracing with OpenTelemetry
+1.  Custom Citus metrics (shard sizes, replication lag, hot nodes)
+1.  Application metrics (p95 latency, error rates, saga success/failure)
+1.  CDC lag monitoring and alerting
+
+### **Payment Integration**
+1.  Stripe/Paystack for subscription management
+1.  Saga-cheoreography payment workflows with compensating transactions
+1.  Webhook handling for subscription lifecycle events
+1.  Grace period and invoice generation in near real time.
+
+
+### **Advanced Analytics**
+1. Real-time click tracking with deduplication (unique visitors)
+1. Geographic distribution (IP geolocation with MaxMind)
+1. Device/browser analytics from user-agent parsing
+1. Referral source tracking (UTM parameters, referrer headers)
+1. Time-series aggregations (hourly/daily/monthly trends)
+
+### **In Progress**
+1.  Custom domain support for premium users
+1.  QR code generation for short URLs
+1.  Chaos engineering tests (network partitions, Byzantine failures)
+1.  Multi-region deployment with geo-routing
+
+
+## System Architecture
 
 
 ## Technologies Used
