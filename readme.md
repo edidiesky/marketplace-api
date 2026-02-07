@@ -27,8 +27,6 @@ applications with core engineering focus on the following:
 1. **Outbox Pattern** for guaranteed at-least-once event delivery
 1. **Inbox Pattern** for idempotent message consumption
 
-
-
 ### **Distributed Database (MongoDB)**
 1. Horizontal sharding with configurable shard count (4 shards)
 1. Replication factor of 2 for high availability
@@ -82,51 +80,47 @@ applications with core engineering focus on the following:
 
 
 ## System Architecture
+###
+
+## Technologies & Libraries
+
+### Core Stack.
+1. **Node.js version 20**: The main runtime environment
+2. **Typescript version 5**: For typesafe environment
+1. **Express 4.18** : Web framework
+1. **Citus 13.0.3** : Distributed PostgreSQL
+1. **Redis 7.0** : In memory cache and session store
+1. **Apache Kafka 3.6** : Event streaming platform
+
+### **Database Layer**
+1. **nodejs postgress (pg)**: PostgreSQL client with connection pooling
+1. **Debezium version 2.4**: My main change data capture connector
+1. **pg bouncer**: For connection pooling ( helps me to create resusauble TCP connection to the database server)
+1. **ioredis)**: A redis client that supports also cluster mode
 
 
-## Technologies Used
+### **Authentication & Security**
+1. **jsonwebtoken**: Mainly used to generate JWT tokens and also for token verification.
+1. **bcrypt**: Used to generate non reversible hash content for password.
+1. **helmet** :Security headers middleware
+1. **express.rate-limit** : DDoS protection
 
-1. Languages/Frameworks: NodeJS and Typescript Docker and Kubernetes for containerization.
-2. Messaging: Apache Kafka for event streaming.
-3. Caching: Redis for in-memory data store.
-4. API Management: NGINX as Reverse Proxy, rate limiting via custom middleware.
-5. Monitoring: Prometheus for metrics scraping, Grafana for Visualization, Promtail for Log collection and Loki for Logs Visualization.
-6. Orchestration: Docker Compose for development, Kubernetes for production.
-7. Workflow: Saga pattern for distributed transactions.
-
-
-## Features
-
-1. Multi-tenant store creation and management.
-2. Secure authentication with JWT and Role Based Access Control.
-3. Comprehensive product catalog with reviews.
-4. Real-time inventory tracking.
-5. Seamless payment processing.
-6. Event-driven order workflows using Kafka.
-7. Caching for performance optimization.
-8. Notifications for order status updates.
-9. API rate limiting and monitoring.
+### **Monitoring & Observability**
+1. **Prometheus** Metrics collection
+1. **Grafana** Visualization dashboards
+1. **Loki** Log aggregation
+1. **Promtail**: For log collection and routing it to Loki for aggregation.
+1. **Tempo** : Distributed tracing
+1. **OpenTelemetry** : Instrumentation SDK
+1. **Winston** : Structured logging
 
 
-## Mini Workflow (SAGA Pattern with Kafka)
-The platform uses a choreographed Saga pattern for distributed transactions, ensuring consistency across services without a central orchestrator. Kafka topics handle event propagation for critical flows like order processing. Below is a high-level depiction of the order fulfillment workflow:
+## How to use it
 
-1. Order Placement (Step 1): User places an order via the Orders Service. The service validates the cart, reserves inventory tentatively, and initiates payment.
-2. Payment Processing (Step 2): Orders Service publishes an event to Kafka (e.g., ORDER_CREATED). Payment Service consumes this, processes the payment, and publishes PAYMENT_COMPLETED on success (or PAYMENT_FAILED for rollback).
-3. Order Update (Step 3): Orders Service consumes PAYMENT_COMPLETED and updates the order status, publishing ORDER_PAYMENT_COMPLETED.
-4. Inventory Update (Step 4): Inventory Service consumes ORDER_PAYMENT_COMPLETED, deducts stock, and publishes STOCK_COUNT_UPDATED (or initiates compensation if stock is insufficient).
-5. Stock Confirmation (Step 5): Orders Service consumes STOCK_COUNT_UPDATED to finalize the order.
-Notification (Step 6): Notification Service consumes relevant events (e.g., STOCK_COUNT_UPDATED) and sends confirmations to the user and seller.
-
-In a failure scenario, services publish rollback events to undo partial changes, maintaining eventual consistency.
-
-
-## Getting Started
 ### Prerequisites
-
-1. Docker and docker-compose installed.
-2. Node.js runtime available on yourn Local machine.
-3. Kafka and Redis clusters (configured in docker-compose.dev.yml).
+1. Docker Engine 24.x+ and Docker Compose 2.x+
+1. Node.js 20.x+ (for local development without Docker)
+1. 8GB RAM minimum (recommended 16GB for full stack)
 4. Environment variables: Set API keys for payments, database connections, etc., in .env files per service.
 
 
@@ -140,5 +134,13 @@ In a failure scenario, services publish rollback events to undo partial changes,
 6. Test endpoints: Use Postman or curl to hit routes like /auth/login, /products, /orders.
 
 
-## Deployment
-For production, use Kubernetes for orchestration. Integrate CI/CD with GitHub Actions or Jenkins. Enable HTTPS via NGINX and monitor with Prometheus/Grafana.
+## Testing Strategy
+### **Test Pyramid**
+1. E2E Tests make up 10 perecent of the Test in the app
+2. Integration Tests makes up 20 percent
+3. Unit Tests takes the remaining 70 percentage
+
+### **Test Coverage Goals**
+- Unit: >80%
+- Integration: >60%
+- E2E: Critical paths only
