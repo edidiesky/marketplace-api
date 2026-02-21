@@ -38,7 +38,7 @@ applications with core engineering focus on the following:
 
 | Service | Port | Description | Docs |
 |---------|------|-------------|------|
-| **API Gateway** | 8000 | Reverse proxy, circuit breaker, rate limiting, request valdiation, auth guard, metrics aggregation | [Docs](./api-gateway/README.md) |
+| **API Gateway** | 8000 | Reverse proxy, circuit breaker, rate limiting, request valdiation, auth guard, metrics aggregation | [Docs](./api-gateway/readme.md) |
 | **Authentication** | 4001 | Registration, 2FA login, JWT, RBAC, refresh rotation | [Docs](./authentication/README.md) |
 | **Products** | 4003 | Product CRUD, variant management, search | [Docs](./products/README.md) |
 | **Inventory** | 4008 | Stock levels, reservations, replenishment alerts | [Docs](./inventory/README.md) |
