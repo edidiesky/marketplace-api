@@ -76,20 +76,20 @@ All routes prefixed with `/api/v1/auth` (accessed via gateway as `/auth/api/v1/a
 ### Onboarding Flow (3 steps)
 
 ```
-POST /api/v1/auth/email/confirmation     Step 1: Send magic link
+POST /api/v1/auth/verify-email     Step 1: Send magic link
 GET  /api/v1/auth/email/confirmation     Step 2: Verify email token (query: email, token)
-POST /api/v1/auth/password/confirmation  Step 3: Set password
+POST /api/v1/auth/verify-password  Step 3: Set password
 POST /api/v1/auth/signup                 Step 4: Complete registration
 ```
 
-#### POST /api/v1/auth/email/confirmation
+#### POST /api/v1/auth/verify-email
 ```json
 Request:  { "email": "string", "firstName": "string", "lastName": "string", "notificationId": "string" }
 Response: { "success": true, "message": "Verification email sent..." }
 ```
 Side effects: Saves `{ email, firstName, lastName, token, expiresAt, step: 'email' }` to Redis key `onboarding:<email>`. Fires `NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC` to Kafka.
 
-#### GET /api/v1/auth/email/confirmation?token=&email=
+#### GET /api/v1/auth/email/confirmation?token=1234&email=example@gamil.com
 ```json
 Response: { "success": true, "nextStep": "password" }
 ```
@@ -100,7 +100,7 @@ Validates token against Redis. Does not mutate state.
 Request:  { "email": "string", "password": "string" }
 Response: { "success": true, "data": { "email": "..." } }
 ```
-Bcrypt-hashes password (cost 12) and updates Redis onboarding state.
+Bcrypt-hashes password and it then updates Redis onboarding state.
 
 #### POST /api/v1/auth/signup
 ```json
