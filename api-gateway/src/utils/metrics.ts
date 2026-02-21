@@ -1,4 +1,4 @@
-import client from "prom-client";
+import client, { Counter } from "prom-client";
 import { Request, Response } from "express";
 
 const register = new client.Registry();
@@ -24,6 +24,17 @@ export const httpRequestCounter = new client.Counter({
   labelNames: ["method", "route", "status_code", "success"],
 });
 
+
+const circuitEvents = new Counter({
+  name: 'api_gateway_circuit_breaker_events_total',
+  help: 'Api Gateway Circuit breaker state changes',
+  labelNames: ['service', 'state'],
+  registers: [register],
+});
+
+export const trackCircuitBreakerEvent = (service: string, state: string) => {
+  circuitEvents.labels(service, state).inc();
+};
 export async function reqReplyTime(
   req: Request,
   res: Response,
