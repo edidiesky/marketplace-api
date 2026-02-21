@@ -7,8 +7,6 @@ import Product from "../models/Product";
 
 export class ProductService {
   private productRepo: IProductRepository;
-
-  // ← Now accepts repo — makes it testable and flexible
   constructor(productRepo: IProductRepository) {
     this.productRepo = productRepo;
   }

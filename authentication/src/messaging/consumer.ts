@@ -10,6 +10,7 @@ const kafka = new Kafka({
   retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
 });
 
+
 const consumer: Consumer = kafka.consumer({
   groupId: "Authentication-group",
   sessionTimeout: 30000,

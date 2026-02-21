@@ -1,86 +1,56 @@
 # Distributed MarketPlace
-A Production-grade distributed Distributed Marketplace built on MongoDB, NodeJS, Typescript, and event driven microservice architecture.
+A Production-grade distributed Distributed Marketplace built on Node.js 20, TypeScript 5, MongoDB, Apache Kafka, and the full Grafana observability stack.
 
 ## Table of Contents
-1. [The Goals of this project](#the-goals-of-this-project)
+1. [Project Goals](#project-goals)
 2. [System Architecture](#system-architecture)
-3. [Technologies Used](#technologies--libraries)
-4. [Features](#features)
-5. [Project Structure](#project-structure)
-6. [How to Use it](#how-to-use-it)
-7. [API Documentation](#table-of-contents)
-8. [Tradeoffs](#table-of-contents)
-9. [Monitoring and Observability](#table-of-contents)
+3. [Service Catalogue](#service-catalogue)
+4. [Technology Stack](#technology-stack)
+5. [Infrastructure Overview](#infrastructure-overview)
+6. [Architectural Patterns](#architectural-patterns)
+7. [Observability & Monitoring](#observability--monitoring)
+8. [Getting Started](#getting-started)
+9. [Environment Variables](#environment-variables)
 10. [Testing Strategy](#testing-strategy)
-11. [Performance Bench marks]()
-11. [Roadmaps]()
+11. [Performance Benchmarks](#performance-benchmarks)
+12. [Roadmap](#roadmap)
 
 
-### The Goals of this project:
+### Project Goals:
 The essence of me building this project is to show in simple terms on how to build an event driven microservice, and enterprise grade 
 applications with core engineering focus on the following:
 
-### **Architectural patterns**
-1. **Event-Driven Architecture** with Kafka for asynchronous inter-service communication
-1. **CQRS (Command Query Responsibility Segregation)** for read and write optimization
-1. **Saga Pattern** for distributed transaction cheoreography
-1. **Outbox Pattern** for guaranteed at-least-once event delivery
-1. **Inbox Pattern** for idempotent message consumption
+1. **Distributed Systems**: Kafka-backed event choreography, saga patterns, outbox/inbox for exactly-once semantics, and CDC via Debezium.
 
-### **Distributed Database (MongoDB)**
-1. Horizontal sharding with configurable shard count (4 shards)
-1. Replication factor of 2 for high availability
-1. Worker failure simulation and automatic failover
-1. Hot spot detection and shard rebalancing
-1. Consistent hashing visualization
+2. **Multi-Tenant Architecture**: Tenant isolation at the data and billing layer, supporting SELLER_INDIVIDUAL, SELLER_BUSINESS, MARKETPLACE, and FRANCHISE tenant types with FREE / PRO / ENTERPRISE billing plans.
 
+3. **Observability-First Design**: Every service ships structured JSON logs (Winston → Loki), Prometheus metrics, and distributed traces (OpenTelemetry → Tempo), all surfaced in Grafana.
 
-### **Real-Time Data Streaming**
-1. **Change Data Capture (CDC)** with Debezium capturing all table mutations
-1. Kafka as event backbone (3-broker cluster for fault tolerance)
-1. Event-driven read model synchronization
-1. Audit trail generation from database changelog
+4. **Security Depth**: JWT with refresh-token rotation, 2FA (email/SMS/TOTP), RBAC with hierarchical role levels, token-bucket rate limiting, and false-identification flagging.
 
-
-
-### **Production-Ready Infrastructure**
-1.  Connection pooling with MongoDB cient (100 max clients, 25 per pool)
-1.  Redis for distributed caching and session management
-1.  JWT-based authentication with refresh token rotation
-1.  Role-based access control (Free vs Premium users)
-1.  Rate limiting and abuse prevention using Token buceket based algorithm.
-
-
-### **Observability & Monitoring**
-1.  Full-stack monitoring: **Prometheus + Grafana + Loki + Tempo**
-1.  Distributed tracing with OpenTelemetry
-1.  Custom Citus metrics (shard sizes, replication lag, hot nodes)
-1.  Application metrics (p95 latency, error rates, saga success/failure)
-1.  CDC lag monitoring and alerting
-
-### **Payment Integration**
-1.  Stripe/Paystack for subscription management
-1.  Saga-cheoreography payment workflows with compensating transactions
-1.  Webhook handling for subscription lifecycle events
-1.  Grace period and invoice generation in near real time.
-
-
-### **Advanced Analytics**
-1. Real-time click tracking with deduplication (unique visitors)
-1. Geographic distribution (IP geolocation with MaxMind)
-1. Device/browser analytics from user-agent parsing
-1. Referral source tracking (UTM parameters, referrer headers)
-1. Time-series aggregations (hourly/daily/monthly trends)
-
-### **In Progress**
-1.  Custom domain support for premium users
-1.  QR code generation for short URLs
-1.  Chaos engineering tests (network partitions, Byzantine failures)
-1.  Multi-region deployment with geo-routing
+5. **Resilience Engineering**: Chaos Engineering (K6 tests), Graceful shutdown sequences, Kafka consumer retry + DLQ patterns, Redis-backed idempotency, MongoDB replica sets.
 
 
 ## System Architecture
-###
+![System architecture](./architecture.png)
+
+## Service Catalogue
+
+| Service | Port | Description | Docs |
+|---------|------|-------------|------|
+| **API Gateway** | 8000 | Reverse proxy, circuit breaker, rate limiting, request valdiation, auth guard, metrics aggregation | [Docs](./api-gateway/README.md) |
+| **Authentication** | 4001 | Registration, 2FA login, JWT, RBAC, refresh rotation | [Docs](./authentication/README.md) |
+| **Products** | 4003 | Product CRUD, variant management, search | [Docs](./products/README.md) |
+| **Inventory** | 4008 | Stock levels, reservations, replenishment alerts | [Docs](./inventory/README.md) |
+| **Cart** | 4009 | Session cart, pricing, coupon application |  [Docs](./cart/README.md) |
+| **Orders** | 4012 | Order lifecycle, saga orchestration |  [Docs](./orders/README.md) |
+| **Payment** | 4004 | Stripe/Paystack, webhooks, saga compensation | [Docs](./payment/README.md) |
+| **Stores** | 4007 | Store creation, theme, custom domain (roadmap) | [Docs](./stores/README.md) |
+| **Tenant** | 4010 | Tenant provisioning, billing plan management |  [Docs](./tenant/README.md) |
+| **Notification** | 4006 | Email/SMS dispatch, template engine |  [Docs](./notification/README.md) |
+| **Review** | 4011 | Product reviews, moderation, rating aggregation |  [Docs](./review/README.md) |
+| **Audit** | 4002 | Immutable event log, compliance reporting | [Docs](./audit/README.md)  |
+
 
 ## Technologies & Libraries
 
@@ -115,32 +85,165 @@ applications with core engineering focus on the following:
 1. **Winston** : Structured logging
 
 
-## How to use it
+
+
+## Infrastructure Overview
+
+### Kafka Cluster (KRaft mode — no ZooKeeper)
+
+3-broker cluster with combined broker+controller roles:
+
+- `KAFKA_MIN_INSYNC_REPLICAS: 2` — writes require 2 of 3 replicas to acknowledge
+- `KAFKA_DEFAULT_REPLICATION_FACTOR: 3` — every topic replicated to all brokers
+- `KAFKA_AUTO_CREATE_TOPICS_ENABLE: false` — topics provisioned explicitly
+- Producer idempotency enabled: `idempotent: true`, `acks: -1`
+
+
+### Redis
+
+Roles: 2FA token store, onboarding session state, user cache, refresh token store, rate-limit counters.
+TTL discipline: all keys use explicit `SETEX` — no unbounded keys.
+
+### MongoDB
+Per-service databases (no cross-service joins). Mongoose with sessions for multi-document ACID transactions. Indexes declared on schema, not ad hoc.
+
+
+
+## Architectural Patterns
+### Saga (Choreography)
+Each service has a local transaction and the service is responsible for sending events to the next service once the she has seen that her internal transaction 
+has been completed. In cases, where the internal transaction of the service fails, the service should send compensating event to the previous
+service that it receives her first transaction from.
+
+
+Example: `User Onboarding`
+```
+Auth → USER_ONBOARDING_COMPLETED_TOPIC → Tenant Service
+Tenant → TENANT_ONBOARDING_COMPLETED_TOPIC → Auth (update tenantId)
+Tenant → NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC → Notification
+```
+
+Compensation: `USER_ROLLBACK_TOPIC` triggers soft-delete of user record if tenant provisioning fails
+
+### Outbox Pattern
+
+Events written to MongoDB in the same transaction as domain writes, then relayed to Kafka by a background relay process. Prevents dual-write inconsistency between DB and broker.
+
+
+### Inbox Pattern
+
+Consumers persist a processed message ID before acting on it. Duplicate Kafka deliveries (at-least-once) are silently dropped — idempotent consumption.
+
+### CQRS
+
+Read models (caches, projections) maintained via Kafka CDC events from write-side MongoDB. Queries hit Redis projections; writes go to MongoDB.
+
+
+## Observability & Monitoring
+
+Every service exposes:
+- `GET /health` — liveness probe (Docker healthcheck)
+- `GET /metrics` — Prometheus scrape endpoint
+
+Trace context injected into Winston logs via `@opentelemetry/instrumentation-winston`:
+```json
+{
+  "level": "info",
+  "message": "User signed in",
+  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "span_id": "00f067aa0ba902b7",
+  "service": "auth_service"
+}
+```
+
+
+Grafana datasources provisioned automatically on startup: Loki, Tempo, Prometheus.
+
+---
+
+## Getting Started
 
 ### Prerequisites
-1. Docker Engine 24.x+ and Docker Compose 2.x+
-1. Node.js 20.x+ (for local development without Docker)
-1. 8GB RAM minimum (recommended 16GB for full stack)
-4. Environment variables: Set API keys for payments, database connections, etc., in .env files per service.
 
+- Docker Engine 24.x+ and Docker Compose 2.x+
+- Node.js 20.x+ (local dev only)
+- 16GB RAM recommended (8GB minimum)
 
-## Development Setup
+### Start Full Stack
 
-1. Clone the repository: git clone <repo-url>.
-2. Navigate to the root: cd marketplace-api.
-3. Start services: docker-compose -f docker-compose.dev.yml up -d.
-4. Access API Gateway at http://localhost:8000.
-5. Seed databases: Run migration scripts in each service (e.g., via entrypoints in Dockerfiles).
-6. Test endpoints: Use Postman or curl to hit routes like /auth/login, /products, /orders.
+```bash
+git clone 
+cd marketplace-api
 
+# Copy and fill env files per service
+cp api-gateway/.env.example api-gateway/.env
+cp authentication/.env.example authentication/.env
+# ... repeat for each service
+
+docker compose up -d
+```
+
+### Service Endpoints (local)
+
+| Service | URL |
+|---------|-----|
+| API Gateway | http://localhost:8000 |
+| Grafana | http://localhost:3000 |
+| Kafka UI | http://localhost:8080 |
+| Prometheus | http://localhost:9090 |
+| Loki | http://localhost:3100 |
+| Tempo | http://localhost:3200 |
+
+### Run Tests
+
+```bash
+cd authentication && npm test
+
+k6 run tests/k6/auth-load.js
+k6 run tests/k6/stress.js
+```
+
+---
+
+## Environment Variables
+
+Each service requires a `.env` file. Common variables across services:
+
+```bash
+NODE_ENV=development
+PORT=
+DATABASE_URL=mongodb://:27017/
+REDIS_URL=redis://redis:6379
+JWT_SECRET=
+JWT_REFRESH_SECRET=
+WEB_ORIGIN=http://localhost:3000
+```
+
+See each service's `README.md` for service-specific variables.
+
+---
 
 ## Testing Strategy
-### **Test Pyramid**
-1. E2E Tests make up 10 perecent of the Test in the app
-2. Integration Tests makes up 20 percent
-3. Unit Tests takes the remaining 70 percentage
 
-### **Test Coverage Goals**
-- Unit: >80%
-- Integration: >60%
-- E2E: Critical paths only
+### Testing Plan
+1. E2E will most take 10 percent of my testing structure
+2. Integration will most take 20 percent of my testing structure
+2. For the Unit tests, it will take 70 percent of my testing structure
+
+### Coverage Targets
+
+| Tier | Target |
+|------|--------|
+| Unit | > 80% |
+| Integration | > 60% |
+| E2E | Critical paths only |
+
+### Load Testing (k6)
+
+- **Load test** : I am checking the base load the API can hold. So I will be using 4000 VU over a 4 min period.
+- **Stress test** : For this test, I am just trying to see at what request the PAI will fail. So I will be using 7000 VUs
+- **Spike test** : I will increase the stress test to 10 percent, to see how well it can handle sudden traffic
+- **Strain test** : So for this test, I will just use the base load I made use of in the load test to see how well the
+system can sustain it for a 10 min period.
+
+---

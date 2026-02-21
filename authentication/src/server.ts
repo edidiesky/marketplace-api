@@ -10,14 +10,11 @@ import { connectMongoDB } from "./utils/connectDB";
 import {
   trackError,
   serverHealthGauge,
-  databaseConnectionsGauge,
   businessOperationCounter,
 } from "./utils/metrics";
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
   serverHealthGauge.set(0);
-  databaseConnectionsGauge.set(0);
-
   try {
     await mongoose.connection.close();
     await redisClient.quit();
