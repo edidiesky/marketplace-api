@@ -13,8 +13,8 @@ export class CartService {
   private CartRepo: ICartRepository;
   private readonly CACHE_TTL = 60 * 1;
   private readonly CACHE_PREFIX = "Cart:";
-  private readonly LOCK_TTL = 30; // 30 seconds for lock expiry
-  private readonly INVENTORY_CACHE_TTL = 60; // Short TTL to avoid stale data
+  private readonly LOCK_TTL = 30; 
+  private readonly INVENTORY_CACHE_TTL = 60;
   
   constructor() {
     this.CartRepo = new CartRepository();
@@ -53,7 +53,6 @@ export class CartService {
 
   /**
    * Reserve inventory with the inventory service
-   * FIX: Issue #1 - Now actually reserves inventory
    */
   private async reserveInventory(
     storeId: string,
