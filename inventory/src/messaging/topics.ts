@@ -78,7 +78,6 @@ export const InventoryTopic = {
         }
         if (attempt === MAX_RETRIES - 1) {
           logger.error("ALL RETRIES FAILED, Sending rollback", { ownerId });
-          // await sendInventoryMessage(Inventory_CREATION_FAILED_TOPIC, data);
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
           await new Promise((r) => setTimeout(r, delay));
@@ -86,7 +85,6 @@ export const InventoryTopic = {
       }
     }
   },
-
   [ORDER_CHECKOUT_STARTED_TOPIC]: async (data: any) => {
     const { orderId, storeId, items, sagaId, userId } = data;
 
@@ -100,62 +98,175 @@ export const InventoryTopic = {
       });
       return;
     }
+    const reservedItems: Array<{
+      productId: string;
+      quantity: number;
+    }> = [];
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      try {
-        // Reserve all items
-        for (const item of items) {
-          await inventoryService.reserveStock(
-            item.productId,
-            storeId,
-            item.quantity,
-            sagaId
-          );
-        }
+    const BATCH_TIMEOUT = 25000; 
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error("Batch reservation timeout")),
+        BATCH_TIMEOUT
+      );
+    });
 
-        logger.info("All items reserved successfully", {
-          event: "reservation_success",
-          orderId,
-          sagaId,
-          itemCount: items.length,
-        });
-        return;
-        
-      } catch (error: any) {
-        if (
-          error.message.includes("No sufficient inventory stock") ||
-          error.message.includes("STOCK_CONTENTION")
-        ) {
-          logger.warn("Reservation failed - insufficient or contended stock", {
+    try {
+      await Promise.race([
+        (async () => {
+          for (const item of items) {
+            try {
+              const ITEM_TIMEOUT = 5000;
+              const itemTimeoutPromise = new Promise((_, reject) => {
+                setTimeout(
+                  () =>
+                    reject(
+                      new Error(
+                        `Reservation timeout for product ${item.productId}`
+                      )
+                    ),
+                  ITEM_TIMEOUT
+                );
+              });
+
+              await Promise.race([
+                inventoryService.reserveStock(
+                  item.productId,
+                  storeId,
+                  item.quantity,
+                  `${sagaId}-${item.productId}` // Unique saga per item
+                ),
+                itemTimeoutPromise,
+              ]);
+
+              // Track successful reservation
+              reservedItems.push({
+                productId: item.productId,
+                quantity: item.quantity,
+              });
+
+              logger.debug("Item reserved successfully", {
+                productId: item.productId,
+                quantity: item.quantity,
+                sagaId,
+              });
+            } catch (itemError: any) {
+              // FIX #13: Rollback on any item failure
+              logger.error("Item reservation failed, starting rollback", {
+                failedProduct: item.productId,
+                error: itemError.message,
+                reservedCount: reservedItems.length,
+                sagaId,
+              });
+
+              // Determine failure items for cart notification
+              const failedItems = items
+                .filter(
+                  (i: any) =>
+                    !reservedItems.some((r) => r.productId === i.productId)
+                )
+                .map((i: any) => ({
+                  productId: i.productId,
+                  productTitle: i.productTitle,
+                  reason: itemError.message.includes("INSUFFICIENT_STOCK")
+                    ? "Out of stock"
+                    : "Reservation failed",
+                }));
+
+              // Rollback successfully reserved items
+              for (const reserved of reservedItems) {
+                try {
+                  await inventoryService.releaseStock(
+                    reserved.productId,
+                    storeId,
+                    reserved.quantity,
+                    `${sagaId}-rollback-${reserved.productId}`
+                  );
+                  logger.info("Rolled back reservation", {
+                    productId: reserved.productId,
+                    quantity: reserved.quantity,
+                  });
+                } catch (rollbackError) {
+                  logger.error("CRITICAL: Rollback failed for item", {
+                    productId: reserved.productId,
+                    rollbackError,
+                    // This requires manual intervention
+                  });
+                }
+              }
+
+              // Send failure event
+              try {
+                await sendInventoryMessage(ORDER_RESERVATION_FAILED_TOPIC, {
+                  orderId,
+                  sagaId,
+                  userId,
+                  storeId,
+                  reason: itemError.message,
+                  failedItems,
+                  failedAt: new Date().toISOString(),
+                });
+
+                logger.info("Reservation failure event sent", {
+                  orderId,
+                  sagaId,
+                  failedItemCount: failedItems.length,
+                });
+              } catch (emitErr) {
+                logger.error("Failed to emit reservation failed event", {
+                  emitErr,
+                });
+              }
+
+              return; // Exit - reservation failed
+            }
+          }
+
+          // All items reserved successfully
+          logger.info("All items reserved successfully", {
+            event: "reservation_success",
             orderId,
             sagaId,
-            error: error.message,
+            itemCount: items.length,
           });
+        })(),
+        timeoutPromise,
+      ]);
+    } catch (batchError: any) {
+      // Handle batch timeout
+      logger.error("Batch reservation timeout, rolling back", {
+        batchError: batchError.message,
+        reservedCount: reservedItems.length,
+        sagaId,
+      });
 
-          // failure event
-          try {
-            await sendInventoryMessage(ORDER_RESERVATION_FAILED_TOPIC, {
-              orderId,
-              sagaId,
-              userId,
-              storeId,
-              reason: error.message,
-              failedAt: new Date().toISOString(),
-            });
-          } catch (emitErr) {
-            logger.error("Failed to emit reservation failed", { emitErr });
-          }
-          return;
-        }
-
-        logger.error(`Reservation failed (attempt ${attempt + 1})`, { error });
-        if (attempt === MAX_RETRIES - 1) {
-          logger.error("Final reservation failure", { orderId, sagaId });
-        } else {
-          await new Promise((r) =>
-            setTimeout(r, Math.pow(2, attempt) * BASE_DELAY_MS + JITTER)
+      for (const reserved of reservedItems) {
+        try {
+          await inventoryService.releaseStock(
+            reserved.productId,
+            storeId,
+            reserved.quantity,
+            `${sagaId}-timeout-rollback-${reserved.productId}`
           );
+        } catch (rollbackError) {
+          logger.error("CRITICAL: Timeout rollback failed", {
+            productId: reserved.productId,
+            rollbackError,
+          });
         }
+      }
+      try {
+        await sendInventoryMessage(ORDER_RESERVATION_FAILED_TOPIC, {
+          orderId,
+          sagaId,
+          userId,
+          storeId,
+          reason: "Reservation timeout",
+          failedItems: [],
+          failedAt: new Date().toISOString(),
+        });
+      } catch (emitErr) {
+        logger.error("Failed to emit timeout failure event", { emitErr });
       }
     }
   },
@@ -175,7 +286,7 @@ export const InventoryTopic = {
           item.productId,
           storeId,
           item.quantity,
-          sagaId
+          `${sagaId}-${item.productId}`
         );
       }
 
@@ -184,13 +295,13 @@ export const InventoryTopic = {
         orderId,
         sagaId,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Failed to commit stock - compensation needed!", {
         orderId,
         sagaId,
-        error,
+        error: error.message,
+      
       });
-      // Critical alert
     }
   },
 
@@ -198,7 +309,8 @@ export const InventoryTopic = {
     const { orderId, sagaId, items, storeId } = data;
 
     const idempotencyKey = `release-${sagaId || orderId}`;
-    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) return;
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX")))
+      return;
 
     try {
       for (const item of items) {
@@ -206,7 +318,7 @@ export const InventoryTopic = {
           item.productId,
           storeId,
           item.quantity,
-          sagaId
+          `${sagaId}-${item.productId}`
         );
       }
 
@@ -215,10 +327,11 @@ export const InventoryTopic = {
         orderId,
         sagaId,
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error("Failed to release stock on payment failure", {
-        error,
+        error: error.message,
         orderId,
+        // Manual intervention may be required
       });
     }
   },

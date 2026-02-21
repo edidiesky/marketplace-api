@@ -10,6 +10,7 @@ import { IInventory } from "../models/Inventory";
 import { AuthenticatedRequest } from "../types";
 import { inventoryService } from "../services/inventory.service";
 import { buildQuery } from "../utils/buildQuery";
+import logger from "../utils/logger";
 
 // @description: Create Inventory handler
 // @route  POST /api/v1/inventories/:storeId/store
@@ -58,6 +59,7 @@ const GetSingleStoreInventoryHandler = asyncHandler(
 // @description: Update A Single Inventory Handler
 // @route  PUT /api/v1/inventories/:id
 // @access  Private
+// FIX #7: Now checks for active reservations
 const UpdateInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -67,6 +69,8 @@ const UpdateInventoryHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Inventory does not exist");
     }
+
+    // FIX #7: Service now checks for active reservations
     const Inventory = await inventoryService.updateInventory(
       id,
       req.body as Partial<IInventory>
@@ -78,6 +82,7 @@ const UpdateInventoryHandler = asyncHandler(
 // @description: Delete A Single Inventory Handler
 // @route  DELETE /api/v1/inventories/:id
 // @access  Private
+// FIX #7: Now checks for active reservations
 const DeleteInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -87,8 +92,12 @@ const DeleteInventoryHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Inventory does not exist");
     }
-    const message = await inventoryService.deleteInventory(id);
-    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
+
+    // FIX #7: Service now checks for active reservations
+    await inventoryService.deleteInventory(id);
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      message: "Inventory deleted successfully",
+    });
   }
 );
 
@@ -108,9 +117,9 @@ const CheckInventoryAvailabilityHandler = asyncHandler(
     );
 
     if (!inventory) {
-      res.status(NOT_FOUND_STATUS_CODE).json({ 
-        quantityAvailable: 0, 
-        message: "Product not found" 
+      res.status(NOT_FOUND_STATUS_CODE).json({
+        quantityAvailable: 0,
+        message: "Product not found",
       });
       return;
     }
@@ -125,8 +134,214 @@ const CheckInventoryAvailabilityHandler = asyncHandler(
   }
 );
 
-// In Inventory Routes
-// router.get("/check/:productId", CheckInventoryAvailabilityHandler);
+// FIX #1: NEW ENDPOINTS - Reserve, Release, Commit
+
+/**
+ * @description: Reserve Stock Handler
+ * @route  POST /api/v1/inventories/reserve
+ * @access  Public (called by Cart Service)
+ */
+const ReserveStockHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { storeId, productId, quantity, userId, sagaId, reservationType } =
+      req.body;
+
+    if (!storeId || !productId || !quantity || !userId || !sagaId) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error(
+        "Missing required fields: storeId, productId, quantity, userId, sagaId"
+      );
+    }
+
+    if (quantity <= 0) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error("Quantity must be greater than 0");
+    }
+
+    try {
+      const inventory = await inventoryService.reserveStock(
+        productId,
+        storeId,
+        quantity,
+        sagaId
+      );
+
+      logger.info("Stock reservation successful via API", {
+        productId,
+        storeId,
+        quantity,
+        sagaId,
+        userId,
+        reservationType,
+      });
+
+      res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+        success: true,
+        reservationId: `${sagaId}-${productId}`,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+        quantityReserved: quantity,
+        remainingAvailable: inventory.quantityAvailable,
+      });
+    } catch (error: any) {
+      // Handle specific error types
+      if (error.message.includes("INSUFFICIENT_STOCK")) {
+        const inventory = await inventoryService.getInventoryByProduct(
+          productId,
+          storeId
+        );
+
+        res.status(BAD_REQUEST_STATUS_CODE).json({
+          success: false,
+          availableStock: inventory?.quantityAvailable || 0,
+          message: `Insufficient stock. Only ${inventory?.quantityAvailable || 0} available.`,
+        });
+        return;
+      }
+
+      if (error.message.includes("STOCK_CONTENTION")) {
+        res.status(409).json({
+          success: false,
+          message: "Stock reservation in progress. Please retry.",
+        });
+        return;
+      }
+
+      throw error;
+    }
+  }
+);
+
+/**
+ * @description: Release Stock Handler
+ * @route  POST /api/v1/inventories/release
+ * @access  Public (called by Cart Service)
+ */
+const ReleaseStockHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { storeId, productId, quantity, userId, sagaId, reservationType } =
+      req.body;
+
+    if (!storeId || !productId || !quantity || !userId || !sagaId) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error(
+        "Missing required fields: storeId, productId, quantity, userId, sagaId"
+      );
+    }
+
+    if (quantity <= 0) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error("Quantity must be greater than 0");
+    }
+
+    try {
+      const inventory = await inventoryService.releaseStock(
+        productId,
+        storeId,
+        quantity,
+        sagaId
+      );
+
+      logger.info("Stock release successful via API", {
+        productId,
+        storeId,
+        quantity,
+        sagaId,
+        userId,
+        reservationType,
+      });
+
+      res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+        success: true,
+        releasedQuantity: quantity,
+        newAvailable: inventory.quantityAvailable,
+        remainingReserved: inventory.quantityReserved,
+      });
+    } catch (error: any) {
+      if (error.message.includes("INSUFFICIENT_RESERVATION")) {
+        res.status(BAD_REQUEST_STATUS_CODE).json({
+          success: false,
+          message: "Cannot release more than currently reserved",
+        });
+        return;
+      }
+
+      if (error.message.includes("STOCK_CONTENTION")) {
+        res.status(409).json({
+          success: false,
+          message: "Stock operation in progress. Please retry.",
+        });
+        return;
+      }
+
+      throw error;
+    }
+  }
+);
+
+/**
+ * @description: Commit Stock Handler (after successful payment)
+ * @route  POST /api/v1/inventories/commit
+ * @access  Public (called by Order Service)
+ */
+const CommitStockHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { storeId, productId, quantity, userId, sagaId } = req.body;
+
+    if (!storeId || !productId || !quantity || !userId || !sagaId) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error(
+        "Missing required fields: storeId, productId, quantity, userId, sagaId"
+      );
+    }
+
+    if (quantity <= 0) {
+      res.status(BAD_REQUEST_STATUS_CODE);
+      throw new Error("Quantity must be greater than 0");
+    }
+
+    try {
+      const inventory = await inventoryService.commitStock(
+        productId,
+        storeId,
+        quantity,
+        sagaId
+      );
+
+      logger.info("Stock commit successful via API", {
+        productId,
+        storeId,
+        quantity,
+        sagaId,
+        userId,
+      });
+
+      res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+        success: true,
+        committedQuantity: quantity,
+        remainingOnHand: inventory.quantityOnHand,
+        remainingReserved: inventory.quantityReserved,
+      });
+    } catch (error: any) {
+      if (error.message.includes("RESERVATION_NOT_FOUND")) {
+        res.status(NOT_FOUND_STATUS_CODE).json({
+          success: false,
+          message: "Reservation not found. May have been already committed or released.",
+        });
+        return;
+      }
+
+      if (error.message.includes("STOCK_CONTENTION")) {
+        res.status(409).json({
+          success: false,
+          message: "Stock operation in progress. Please retry.",
+        });
+        return;
+      }
+
+      throw error;
+    }
+  }
+);
 
 export {
   CreateInventoryHandler,
@@ -135,5 +350,8 @@ export {
   UpdateInventoryHandler,
   DeleteInventoryHandler,
   CheckInventoryAvailabilityHandler,
-  
+  // FIX #1: NEW EXPORTS
+  ReserveStockHandler,
+  ReleaseStockHandler,
+  CommitStockHandler,
 };
