@@ -20,6 +20,8 @@ export const ORDER_COMPLETED_TOPIC = "order.completed.topic";
 
 export const CART_ITEM_OUT_OF_STOCK_TOPIC = "cart.item.outOfStock.topic";
 
+
+
 export const CART_CONSUMER_TOPICS = [
   ORDER_COMPLETED_TOPIC,
   CART_ITEM_OUT_OF_STOCK_TOPIC
