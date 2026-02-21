@@ -89,20 +89,20 @@ applications with core engineering focus on the following:
 
 ## Infrastructure Overview
 
-### Kafka Cluster (KRaft mode — no ZooKeeper)
+### Kafka Cluster (KRaft mode, no ZooKeeper needed for cordination)
 
 3-broker cluster with combined broker+controller roles:
 
-- `KAFKA_MIN_INSYNC_REPLICAS: 2` — writes require 2 of 3 replicas to acknowledge
-- `KAFKA_DEFAULT_REPLICATION_FACTOR: 3` — every topic replicated to all brokers
-- `KAFKA_AUTO_CREATE_TOPICS_ENABLE: false` — topics provisioned explicitly
+- `KAFKA_MIN_INSYNC_REPLICAS: 2` : writes require 2 of 3 replicas to acknowledge
+- `KAFKA_DEFAULT_REPLICATION_FACTOR: 3` : every topic replicated to all brokers
+- `KAFKA_AUTO_CREATE_TOPICS_ENABLE: false` : topics provisioned explicitly
 - Producer idempotency enabled: `idempotent: true`, `acks: -1`
 
 
 ### Redis
 
 Roles: 2FA token store, onboarding session state, user cache, refresh token store, rate-limit counters.
-TTL discipline: all keys use explicit `SETEX` — no unbounded keys.
+TTL discipline: all keys use explicit `SETEX` : no unbounded keys.
 
 ### MongoDB
 Per-service databases (no cross-service joins). Mongoose with sessions for multi-document ACID transactions. Indexes declared on schema, not ad hoc.
@@ -110,6 +110,7 @@ Per-service databases (no cross-service joins). Mongoose with sessions for multi
 
 
 ## Architectural Patterns
+
 ### Saga (Choreography)
 Each service has a local transaction and the service is responsible for sending events to the next service once the she has seen that her internal transaction 
 has been completed. In cases, where the internal transaction of the service fails, the service should send compensating event to the previous
@@ -127,12 +128,15 @@ Compensation: `USER_ROLLBACK_TOPIC` triggers soft-delete of user record if tenan
 
 ### Outbox Pattern
 
-Events written to MongoDB in the same transaction as domain writes, then relayed to Kafka by a background relay process. Prevents dual-write inconsistency between DB and broker.
+To achieve a state of consistency between the primary db of a service and a messaging system, I made use of the OUTBOX pattern using the db transactional log. 
+Note, In some cases I basically poll from a 2nd table that has a transactional context with the primary database. Once a write command has been processed by the 
+DB, the write event, and its payload will first be persisted in the WAL files for crash wrecovery purposes. I then make us of Debezium to stream the appendable log
+and send it to the Kakfa broker so the downstream consumer service can act on the data. 
 
 
 ### Inbox Pattern
 
-Consumers persist a processed message ID before acting on it. Duplicate Kafka deliveries (at-least-once) are silently dropped — idempotent consumption.
+Consumers persist a processed message ID before acting on it. Duplicate Kafka deliveries (at-least-once) are silently dropped : idempotent consumption.
 
 ### CQRS
 
@@ -142,8 +146,8 @@ Read models (caches, projections) maintained via Kafka CDC events from write-sid
 ## Observability & Monitoring
 
 Every service exposes:
-- `GET /health` — liveness probe (Docker healthcheck)
-- `GET /metrics` — Prometheus scrape endpoint
+- `GET /health` : liveness probe (Docker healthcheck)
+- `GET /metrics` : Prometheus scrape endpoint
 
 Trace context injected into Winston logs via `@opentelemetry/instrumentation-winston`:
 ```json
@@ -178,7 +182,7 @@ cd marketplace-api
 # Copy and fill env files per service
 cp api-gateway/.env.example api-gateway/.env
 cp authentication/.env.example authentication/.env
-# ... repeat for each service
+# ... just repeat the same abiwve flow for each service
 
 docker compose up -d
 ```
@@ -245,5 +249,3 @@ See each service's `README.md` for service-specific variables.
 - **Spike test** : I will increase the stress test to 10 percent, to see how well it can handle sudden traffic
 - **Strain test** : So for this test, I will just use the base load I made use of in the load test to see how well the
 system can sustain it for a 10 min period.
-
----
