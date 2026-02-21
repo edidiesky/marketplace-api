@@ -54,6 +54,7 @@ applications with core engineering focus on the following:
 
 ## Technologies & Libraries
 
+
 ### Core Stack.
 1. **Node.js version 20**: The main runtime environment
 2. **Typescript version 5**: For typesafe environment
