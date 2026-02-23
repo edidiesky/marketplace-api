@@ -23,7 +23,7 @@ event-driven cart management service with inventory reservation, distributed loc
 
 The Cart Service manages shopping cart operations for selleazy platform with features like:
 
-- Inventory reservation to prevent overselling
+- Inventory reservation to prevent overselling ensuring strong consistentency in the cart placement.
 - Distributed locking for concurrent operation safety
 - Event-driven architecture for service coordination
 - Versioned caching for optimal performance
@@ -52,45 +52,7 @@ The Cart Service manages shopping cart operations for selleazy platform with fea
 
 ## Architecture
 
-```
-┌─────────────┐
-│   Client    │
-└──────┬──────┘
-       │
-       │ 
-       ▼
-┌──────────────────
-│   API GATEWAY    │
-└──────┬───────────
-       │
-       │ HTTP
-       ▼
-┌─────────────────────────────────────────┐
-│          Cart Service                    │
-│                                          │
-│  ┌──────────────┐    ┌──────────────┐  │
-│  │ Controllers  │───▶│  Services    │  │
-│  └──────────────┘    └───────┬──────┘  │
-│                              │          │
-│  ┌──────────────┐    ┌───────▼──────┐  │
-│  │  Validators  │    │ Repositories │  │
-│  └──────────────┘    └───────┬──────┘  │
-└────────────────────────────┬─┴─────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-  ┌──────────┐        ┌──────────┐        ┌──────────┐
-  │  MongoDB │        │  Redis   │        │  Kafka   │
-  │  (Data)  │        │ (Cache)  │        │ (Events) │
-  └──────────┘        └──────────┘        └──────────┘
-        │
-        │ Inventory Check/Reserve
-        ▼
-  ┌──────────────────┐
-  │ Inventory Service│
-  └──────────────────┘
-```
+![Architecture](./image.png)
 
 ### Data Flow
 
@@ -171,11 +133,11 @@ KAFKA_GROUP_ID=cart-service-group
 INVENTORY_SERVICE_URL=http://inventory:4008
 
 # Cache Configuration
-CART_CACHE_TTL=60          # Cart cache TTL in seconds
-INVENTORY_CACHE_TTL=60     # Inventory cache TTL in seconds
+CART_CACHE_TTL=60     
+INVENTORY_CACHE_TTL=60    
 
 # Lock Configuration
-LOCK_TTL=30                # Distributed lock TTL in seconds
+LOCK_TTL=30   
 
 # Cart Configuration
 CART_EXPIRY_DAYS=30        # Auto-delete inactive carts after N days
@@ -191,10 +153,9 @@ LOG_LEVEL=info             # debug | info | warn | error
 
 ### Kafka Topics
 
-Ensure these topics exists in the Kafka Broker before starting the service:
+Please kindly ensure these topics exists in the Kafka Broker before starting the service:
 
 ```bash
-# Cart Events (Published by this service)
 cart.item.added
 cart.item.updated
 cart.item.removed
@@ -212,7 +173,7 @@ cart.item.out_of_stock
 db.carts.createIndex({ userId: 1, storeId: 1 }, { unique: true });
 db.carts.createIndex({ storeId: 1 });
 db.carts.createIndex({ sellerId: 1 });
-db.carts.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
+db.carts.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }); 
 db.carts.createIndex({ createdAt: -1 });
 ```
 
@@ -681,38 +642,6 @@ npm run dev
 npm run dev:watch
 ```
 
-### Code Structure
-
-```
-src/
-├── config/
-│   ├── kafka.ts          # Kafka producer configuration
-│   └── redis.ts          # Redis client configuration
-├── controllers/
-│   └── cart.controller.ts    # Request handlers
-├── services/
-│   └── cart.service.ts       # Business logic
-├── repositories/
-│   ├── ICartRepository.ts    # Repository interface
-│   └── CartRepository.ts     # Data access layer
-├── models/
-│   └── Cart.ts              # MongoDB schema
-├── middleware/
-│   ├── auth.middleware.ts   # JWT authentication
-│   └── validate.middleware.ts # Request validation
-├── validators/
-│   └── cart.validation.ts   # Joi schemas
-├── subscribers/
-│   └── cart.subscriber.ts   # Kafka event consumers
-├── types/
-│   └── index.ts            # TypeScript types
-├── utils/
-│   ├── logger.ts           # Winston logger
-│   ├── connectDB.ts        # MongoDB connection
-│   └── metrics.ts          # Prometheus metrics
-├── constants.ts            # Constants and configs
-└── app.ts                 # Express app setup
-```
 
 ### Adding New Features
 
@@ -982,9 +911,9 @@ less profile.txt
 ## Contributing
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
+2. Create feature branch (`git checkout -b feature/victor-feature`)
+3. Commit changes (`git commit -m 'Add victor feature'`)
+4. Push to branch (`git push origin feature/victor-feature`)
 5. Open Pull Request
 
 ### Coding Standards

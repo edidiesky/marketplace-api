@@ -120,7 +120,7 @@ Response: { "message": "2FA token sent...", "email": "string" }
 ```
 Validates password, generates 6-character 2FA OTP, stores in Redis `2fa:<email>` with 15-min TTL, fires `NOTIFICATION_AUTHENTICATION_2FA_TOPIC`.
 
-#### POST /api/v1/auth/verify-2fa
+#### POST /api/v1/auth/verify-otp
 ```json
 Request:  { "email": "string", "otp": "string" }
 Response: { "accessToken": "string", "refreshToken": "string", "user": { ... } }
@@ -279,7 +279,7 @@ POST /api/v1/auth/login
   * Kafka: NOTIFICATION_AUTHENTICATION_2FA_TOPIC
   * Return 200
 
-POST /api/v1/auth/verify-2fa
+POST /api/v1/auth/verify-otp
   * MongoDB: User.findOne({ email }) 
   * Redis GET 2fa:<email>
   * Validate OTP + expiry

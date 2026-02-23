@@ -42,7 +42,7 @@ applications with core engineering focus on the following:
 | **Authentication** | 4001 | Registration, 2FA login, JWT, RBAC, refresh rotation | [Docs](./authentication/README.md) |
 | **Products** | 4003 | Product CRUD, variant management, search | [Docs](./products/README.md) |
 | **Inventory** | 4008 | Stock levels, reservations, replenishment alerts | [Docs](./inventory/README.md) |
-| **Cart** | 4009 | Session cart, pricing, coupon application |  [Docs](./cart/README.md) |
+| **Cart** | 4009 | Session cart, Distributed locks with TTL, Redis versioned caching, pricing, coupon application |  [Docs](./cart/README.md) |
 | **Orders** | 4012 | Order lifecycle, saga orchestration |  [Docs](./orders/README.md) |
 | **Payment** | 4004 | Stripe/Paystack, webhooks, saga compensation | [Docs](./payment/README.md) |
 | **Stores** | 4007 | Store creation, theme, custom domain (roadmap) | [Docs](./stores/README.md) |
