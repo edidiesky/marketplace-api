@@ -1102,7 +1102,7 @@ db.inventory.find({
 - **Payment Service:** Triggers commit/release based on payment result
 
 ## Additional Documentation
-- [TRADEOFFS_INVENTORY.md](./Inventory_Tradeoffs.md) - Architecture decisions and tradeoffs I did chose
+- [TRADEOFFS_INVENTORY.md](./inventory.tradeoffs.md) - Architecture decisions and tradeoffs I did chose
 
 ---
 
