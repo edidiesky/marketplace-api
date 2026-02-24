@@ -39,11 +39,11 @@ applications with core engineering focus on the following:
 | Service | Port | Description | Docs |
 |---------|------|-------------|------|
 | **API Gateway** | 8000 | Reverse proxy, circuit breaker, rate limiting, request valdiation, auth guard, metrics aggregation | [Docs](./api-gateway/readme.md) |
-| **Authentication** | 4001 | Registration, 2FA login, JWT, RBAC, refresh rotation | [Docs](./authentication/README.md) |
-| **Products** | 4003 | Product CRUD, variant management, search | [Docs](./products/README.md) |
-| **Inventory** | 4008 | Stock levels, reservations, replenishment alerts | [Docs](./inventory/README.md) |
-| **Cart** | 4009 | Session cart, Distributed locks with TTL, Redis versioned caching, pricing, coupon application |  [Docs](./cart/README.md) |
-| **Orders** | 4012 | Order lifecycle, saga orchestration |  [Docs](./orders/README.md) |
+| **Authentication** | 4001 | Registration, 2FA login, JWT, RBAC, refresh rotation | [Docs](./authentication/readme.md) |
+| **Products** | 4003 | Product CRUD, variant management, search | [Docs](./products/readme.md) |
+| **Inventory** | 4008 | Stock levels, reservations, replenishment alerts | [Docs](./inventory/readme.md) |
+| **Cart** | 4009 | Session cart, Distributed locks with TTL, Redis versioned caching, pricing, coupon application |  [Docs](./cart/readme.md) |
+| **Orders** | 4012 | Order lifecycle, saga orchestration |  [Docs](./orders/readme.md) |
 | **Payment** | 4004 | Stripe/Paystack, webhooks, saga compensation | [Docs](./payment/README.md) |
 | **Stores** | 4007 | Store creation, theme, custom domain (roadmap) | [Docs](./stores/README.md) |
 | **Tenant** | 4010 | Tenant provisioning, billing plan management |  [Docs](./tenant/README.md) |
