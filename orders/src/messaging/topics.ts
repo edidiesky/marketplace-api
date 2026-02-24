@@ -17,15 +17,14 @@ import { OrderStatus } from "../models/Order";
 export const OrderTopic = {
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
     const { orderId, transactionId, paymentDate, sagaId } = data;
-
-    const idempotencyKey = `payment-success-${orderId}-${transactionId}`;
+    const idempotencyKey = `payment-success-${sagaId}`;
     const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
     if (!locked) {
       logger.info("Duplicate payment success ignored", {
         event: "duplicate_order_payment",
         orderId,
         transactionId,
-        paymentDate,
+        sagaId,
       });
       return;
     }
@@ -39,19 +38,17 @@ export const OrderTopic = {
         );
 
         if (!order) {
-          logger.error("Order was not found:", {
+          logger.error("Order not found during payment completion", {
             orderId,
             transactionId,
             paymentDate,
+            sagaId,
             event: "order_not_found_during_payment_completion",
           });
           return;
-          // 
-          // throw new Error("Order not found");
         }
-
         await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
-          orderId: order._id,
+          orderId: order._id.toString(),
           userId: order.userId.toString(),
           cartId: order.cartId.toString(),
           storeId: order.storeId.toString(),
@@ -64,19 +61,25 @@ export const OrderTopic = {
           event: "order_completed_emitted",
           paymentDate,
           transactionId,
+          sagaId,
         });
         return;
-      } catch (error) {
+      } catch (error: any) {
         logger.error(
           `Payment success handling failed (attempt ${attempt + 1})`,
           {
             orderId,
-            error,
+            sagaId,
+            error: error.message,
           }
         );
 
         if (attempt === MAX_RETRIES - 1) {
-          logger.error("Final failure processing payment success", { orderId });
+          logger.error("Final failure processing payment success", {
+            orderId,
+            sagaId,
+
+          });
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
           await new Promise((r) => setTimeout(r, delay));
@@ -88,24 +91,28 @@ export const OrderTopic = {
   [ORDER_PAYMENT_FAILED_TOPIC]: async (data: any) => {
     const { orderId, reason, sagaId } = data;
 
-    const idempotencyKey = `payment-failed-${orderId}`;
+    const idempotencyKey = `payment-failed-${sagaId}`;
     const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) return;
+    if (!locked) {
+      logger.info("Duplicate payment failure event ignored", {
+        orderId,
+        sagaId,
+      });
+      return;
+    }
 
     try {
-      await orderService.markPaymentFailed(orderId);
-      await sendOrderMessage(ORDER_PAYMENT_FAILED_TOPIC, {
+      await orderService.markPaymentFailed(orderId, reason);
+      logger.info("Payment failure processed", { orderId, reason, sagaId });
+    } catch (error: any) {
+      logger.error("Failed to handle payment failure", {
         orderId,
-        reason,
         sagaId,
-        failedAt: new Date().toISOString(),
+        error: error.message,
       });
-
-      logger.info("Payment failed processed", { orderId, reason });
-    } catch (error) {
-      logger.error("Failed to handle payment failure", { orderId, error });
     }
   },
+
   [ORDER_RESERVATION_FAILED_TOPIC]: async (data: any) => {
     const { orderId, sagaId, reason, userId, storeId, failedItems } = data;
 
@@ -119,9 +126,8 @@ export const OrderTopic = {
       return;
     }
 
-    let order;
     try {
-      order = await orderService.updateOrderToOutOfStock(
+      const order = await orderService.updateOrderToOutOfStock(
         orderId,
         OrderStatus.OUT_OF_STOCK,
         { failureReason: reason }
@@ -130,31 +136,32 @@ export const OrderTopic = {
       if (!order) {
         logger.warn("Order not found when handling reservation failure", {
           orderId,
+          sagaId,
         });
         return;
       }
-
 
       try {
         await sendOrderMessage(CART_ITEM_OUT_OF_STOCK_TOPIC, {
           cartId: order.cartId.toString(),
           userId: order.userId.toString(),
           orderId: order._id.toString(),
-          unavailableItems: failedItems || [], 
+          unavailableItems: failedItems || [],
           sagaId,
           failedAt: new Date().toISOString(),
         });
 
         logger.info("Cart notified of unavailable items", {
           orderId,
-          cartId: order.cartId,
+          cartId: order.cartId.toString(),
           sagaId,
           failedItemsCount: failedItems?.length || 0,
         });
-      } catch (emitErr) {
+      } catch (emitErr: any) {
         logger.error("Failed to emit CART_ITEM_OUT_OF_STOCK_TOPIC", {
           orderId,
-          emitErr,
+          sagaId,
+          error: emitErr.message,
         });
       }
 

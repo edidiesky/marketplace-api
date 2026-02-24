@@ -7,8 +7,10 @@ import logger from "../utils/logger";
 import { withTransaction } from "../utils/connectDB";
 import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
+  ORDER_CHECKOUT_STARTED_TOPIC,
 } from "../constants";
 import { ICart } from "../types";
+import { sendOrderMessage } from "../messaging/producer";
 
 export class OrderService {
   private repo: IOrderRepository;
@@ -50,8 +52,6 @@ export class OrderService {
         event: "write_to_cache_successful",
         latestKey,
         versionKey,
-        message:
-          "The write to both the version and data cache were botgh succesful",
       });
     } catch (error) {
       logger.error("Order cache write failed", {
@@ -59,17 +59,14 @@ export class OrderService {
         latestKey,
         versionKey,
         message:
-          error instanceof Error
-            ? error?.message
-            : "an unknown error has occured",
+          error instanceof Error ? error?.message : "an unknown error occurred",
         stack:
-          error instanceof Error
-            ? error?.stack
-            : "an unknown error has occured",
+          error instanceof Error ? error?.stack : "an unknown error occurred",
       });
     }
   }
 
+  
   async createOrderFromCart(
     userId: string,
     cart: ICart,
@@ -77,17 +74,31 @@ export class OrderService {
     requestId: string
   ): Promise<IOrder> {
     const cartId = cart._id;
+    const existingByRequestId = await this.repo.getOrderByRequestId(requestId);
+    if (existingByRequestId) {
+      logger.info("Order already exists for this request", {
+        event: "duplicate_order_request",
+        orderId: existingByRequestId._id,
+        requestId,
+        userId,
+      });
+      return existingByRequestId;
+    }
+
+    const existingByCart = await this.repo.getOrderByCartId(cartId);
+    if (existingByCart) {
+      logger.warn("Order already exists for this cart (different requestId)", {
+        event: "existing_order_different_request",
+        orderId: existingByCart._id,
+        existingRequestId: existingByCart.requestId,
+        newRequestId: requestId,
+        cartId,
+      });
+      return existingByCart;
+    }
+
     return withTransaction(async (session) => {
-      const existing = await this.repo.getOrderByCartId(cartId);
-      if (existing) {
-        logger.error("Order is existing:", {
-          event: "existing_order",
-          order: existing?._id,
-          userId,
-          cartId
-        });
-        return existing;
-      }
+      const sagaId = `order-${Date.now()}-${userId}-${requestId}`;
 
       const orderData: Partial<IOrder> = {
         userId: new Types.ObjectId(userId),
@@ -107,34 +118,89 @@ export class OrderService {
 
       const order = await this.repo.createOrder(orderData, session);
       await this.addToCache(userId, order);
-      logger.info("Succesfully Created order - Order Service:", {
+
+      logger.info("Order created successfully", {
         event: "order_successfully_created",
-        order_id: order?._id,
-        user_id: order?.userId,
-        cart_id: cart._id,
+        orderId: order._id,
+        userId: order.userId,
+        cartId: cart._id,
         totalPrice: cart.totalPrice,
+        requestId,
+        sagaId,
       });
+
+      try {
+        await sendOrderMessage(
+          ORDER_CHECKOUT_STARTED_TOPIC,
+          {
+            orderId: order._id.toString(),
+            userId: order.userId.toString(),
+            storeId: order.storeId.toString(),
+            cartId: order.cartId.toString(),
+            sagaId,
+            items: order.cartItems.map((item) => ({
+              productId: item.productId.toString(),
+              productTitle: item.productTitle,
+              quantity: item.productQuantity,
+              price: item.productPrice,
+            })),
+            totalPrice: order.totalPrice,
+            createdAt: new Date().toISOString(),
+          },
+          order.userId.toString() // Partition key
+        );
+
+        logger.info("ORDER_CHECKOUT_STARTED event published", {
+          orderId: order._id,
+          sagaId,
+          itemCount: order.cartItems.length,
+        });
+      } catch (eventError) {
+        logger.error("CRITICAL: Failed to publish checkout started event", {
+          orderId: order._id,
+          sagaId,
+          error: eventError instanceof Error ? eventError.message : String(eventError),
+        });
+
+        await this.repo.updateOrderStatus(
+          order._id.toString(),
+          OrderStatus.FAILED,
+          {
+            failureReason: "Failed to initiate checkout process",
+          }
+        );
+
+        throw new Error(
+          "Order created but failed to start checkout process. Please contact support."
+        );
+      }
+
       return order;
     });
-  };
+  }
 
   async getOrderById(orderId: string): Promise<IOrder | null> {
     return this.repo.getOrderById(orderId);
   }
 
-  async getUserOrders(query: FilterQuery<IOrder>, skip: number, limit: number) {
+  async getUserOrders(
+    query: FilterQuery<IOrder>,
+    skip: number,
+    limit: number
+  ) {
     const [orders, totalCount] = await Promise.all([
       this.repo.getUserOrders(query, skip, limit),
       Order.countDocuments(query),
     ]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    logger.info("User orders has been fetched succesfully:", {
+    logger.info("User orders fetched successfully", {
       event: "user_order_successfully_fetched",
       orderLength: orders?.length,
       query,
       limit,
     });
+
     return {
       data: {
         orders,
@@ -168,14 +234,20 @@ export class OrderService {
     return order;
   }
 
-  async markPaymentFailed(orderId: string) {
+  async markPaymentFailed(orderId: string, reason?: string) {
     const order = await this.repo.updateOrderStatus(
       orderId,
-      OrderStatus.FAILED
+      OrderStatus.FAILED,
+      {
+        failureReason: reason || "Payment failed",
+      }
     );
+
     if (order) {
       await this.addToCache(order.userId.toString(), order);
+      logger.info("Order marked as payment failed", { orderId, reason });
     }
+
     return order;
   }
 
@@ -191,6 +263,7 @@ export class OrderService {
       logger.info("Order marked as out of stock due to reservation issue", {
         orderId,
         newStatus: status,
+        failureReason: updates.failureReason,
       });
     }
 

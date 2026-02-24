@@ -18,8 +18,8 @@ const RELEASE_LOCK_SCRIPT = `
 export class InventoryService {
   private InventoryRepo: IInventoryRepository;
   private readonly CACHE_PREFIX = "inv:";
-  private readonly LOCK_TTL = 10; 
-  private readonly OPERATION_TIMEOUT = 25000; 
+  private readonly LOCK_TTL = 10;
+  private readonly OPERATION_TIMEOUT = 25000;
 
   constructor() {
     this.InventoryRepo = new InventoryRepository();
@@ -43,15 +43,15 @@ export class InventoryService {
    */
   private async withTimeout<T>(
     operation: Promise<T>,
-    timeoutMs: number = this.OPERATION_TIMEOUT
+    timeoutMs: number = this.OPERATION_TIMEOUT,
   ): Promise<T> {
     return Promise.race([
       operation,
       new Promise<T>((_, reject) =>
         setTimeout(
           () => reject(new Error(`Operation timeout after ${timeoutMs}ms`)),
-          timeoutMs
-        )
+          timeoutMs,
+        ),
       ),
     ]);
   }
@@ -88,7 +88,7 @@ export class InventoryService {
         expectedOnHand,
       });
       throw new Error(
-        `Inventory data inconsistency: onHand(${quantityOnHand}) != available(${quantityAvailable}) + reserved(${quantityReserved})`
+        `Inventory data inconsistency: onHand(${quantityOnHand}) != available(${quantityAvailable}) + reserved(${quantityReserved})`,
       );
     }
 
@@ -113,7 +113,7 @@ export class InventoryService {
     productId: string,
     storeId: string,
     quantity: number,
-    sagaId: string
+    sagaId: string,
   ): Promise<IInventory> {
     if (quantity <= 0) {
       throw new Error("Quantity must be positive");
@@ -123,11 +123,14 @@ export class InventoryService {
     const idempotencyKey = this.getIdempotencyKey("reserve", sagaId);
     const existing = await redisClient.get(idempotencyKey);
     if (existing) {
-      logger.info("Duplicate reservation request detected - returning cached result", {
-        sagaId,
-        productId,
-        storeId,
-      });
+      logger.info(
+        "Duplicate reservation request detected - returning cached result",
+        {
+          sagaId,
+          productId,
+          storeId,
+        },
+      );
       return JSON.parse(existing);
     }
 
@@ -137,27 +140,20 @@ export class InventoryService {
 
     try {
       // Extended TTL from 10 to 120 seconds
-      const acquired = await redisClient.set(
-        lockKey,
-        lockValue,
-        "EX",
-        this.LOCK_TTL,
-        "NX"
-      );
+      const acquired = await redisClient.setnx(lockKey, this.LOCK_TTL);
 
       if (!acquired) {
         logger.info(
-          "Stock reservation contention - lock held by another instance",
-          { productId, storeId, sagaId }
+          "Stock reservation contention, lock held by another instance",
+          { productId, storeId, sagaId, lockKey },
         );
         throw new Error(
-          "STOCK_CONTENTION: Another operation in progress. Please retry."
+          "STOCK_CONTENTION: Another operation in progress. Please retry.",
         );
       }
 
       lockAcquired = true;
 
-      //  Wrap in timeout
       const inventory = await this.withTimeout(
         withTransaction(async (session) => {
           const inv = await Inventory.findOneAndUpdate(
@@ -172,7 +168,7 @@ export class InventoryService {
                 quantityReserved: +quantity,
               },
             },
-            { new: true, session }
+            { new: true, session },
           );
 
           if (!inv) {
@@ -182,7 +178,9 @@ export class InventoryService {
               productId,
               requestedQuantity: quantity,
             });
-            throw new Error("INSUFFICIENT_STOCK: No sufficient inventory stock");
+            throw new Error(
+              "INSUFFICIENT_STOCK: No sufficient inventory stock",
+            );
           }
 
           //  Validate invariants after update
@@ -199,7 +197,7 @@ export class InventoryService {
           });
 
           return inv;
-        })
+        }),
       );
 
       // Invalidate cache
@@ -220,7 +218,7 @@ export class InventoryService {
         idempotencyKey,
         JSON.stringify(inventory),
         "EX",
-        3600 // 1 hour
+        3600, 
       );
 
       return inventory;
@@ -234,7 +232,7 @@ export class InventoryService {
     productId: string,
     storeId: string,
     quantity: number,
-    sagaId: string
+    sagaId: string,
   ): Promise<IInventory> {
     if (quantity <= 0) {
       logger.error("Quantity was not a positive value", {
@@ -250,10 +248,13 @@ export class InventoryService {
     const idempotencyKey = this.getIdempotencyKey("commit", sagaId);
     const existing = await redisClient.get(idempotencyKey);
     if (existing) {
-      logger.info("Duplicate commit request detected - returning cached result", {
-        sagaId,
-        productId,
-      });
+      logger.info(
+        "Duplicate commit request detected - returning cached result",
+        {
+          sagaId,
+          productId,
+        },
+      );
       return JSON.parse(existing);
     }
 
@@ -262,13 +263,12 @@ export class InventoryService {
     let lockAcquired = false;
 
     try {
-      const acquired = await redisClient.set(
+      const acquired = await redisClient.setnx(
         lockKey,
         lockValue,
-        "EX",
-        this.LOCK_TTL,
-        "NX"
       );
+
+      await redisClient.expire(lockKey, this.LOCK_TTL);
 
       if (!acquired) {
         logger.info("Stock commit contention - lock held by another instance", {
@@ -295,18 +295,18 @@ export class InventoryService {
                 quantityReserved: -quantity,
               },
             },
-            { new: true, session }
+            { new: true, session },
           );
 
           if (!inv) {
-            logger.error("Stock commit failed - reservation does not exist", {
+            logger.error("Stock commit failed, reservation does not exist", {
               productId,
               storeId,
               sagaId,
               requestedQuantity: quantity,
             });
             throw new Error(
-              "RESERVATION_NOT_FOUND: Stock commit failed - reservation does not exist"
+              "RESERVATION_NOT_FOUND: Stock commit failed - reservation does not exist",
             );
           }
 
@@ -323,7 +323,7 @@ export class InventoryService {
           });
 
           return inv;
-        })
+        }),
       );
 
       // Invalidate cache
@@ -340,7 +340,7 @@ export class InventoryService {
         idempotencyKey,
         JSON.stringify(inventory),
         "EX",
-        3600
+        3600,
       );
 
       return inventory;
@@ -360,7 +360,7 @@ export class InventoryService {
     productId: string,
     storeId: string,
     quantity: number,
-    sagaId: string
+    sagaId: string,
   ): Promise<IInventory> {
     if (quantity <= 0) {
       throw new Error("Quantity must be positive");
@@ -379,19 +379,16 @@ export class InventoryService {
     let lockAcquired = false;
 
     try {
-      const acquired = await redisClient.set(
+      const acquired = await redisClient.setnx(
         lockKey,
         lockValue,
-        "EX",
-        this.LOCK_TTL,
-        "NX"
       );
+      await redisClient.expire(lockKey, this.LOCK_TTL)
 
-      // Throw error instead of returning null
       if (!acquired) {
         logger.warn("Stock release contention", { productId, storeId, sagaId });
         throw new Error(
-          "STOCK_CONTENTION: Another operation in progress. Please retry."
+          "STOCK_CONTENTION: Another operation in progress. Please retry.",
         );
       }
 
@@ -399,7 +396,6 @@ export class InventoryService {
 
       const inventory = await this.withTimeout(
         withTransaction(async (session) => {
-          // Check that we have enough reserved before releasing
           const inv = await Inventory.findOneAndUpdate(
             {
               productId: new Types.ObjectId(productId),
@@ -412,7 +408,7 @@ export class InventoryService {
                 quantityReserved: -quantity,
               },
             },
-            { new: true, session }
+            { new: true, session },
           );
 
           if (!inv) {
@@ -422,7 +418,7 @@ export class InventoryService {
               requestedRelease: quantity,
             });
             throw new Error(
-              "INSUFFICIENT_RESERVATION: Cannot release more than reserved"
+              "INSUFFICIENT_RESERVATION: Cannot release more than reserved",
             );
           }
 
@@ -439,7 +435,7 @@ export class InventoryService {
           });
 
           return inv;
-        })
+        }),
       );
 
       // Invalidate cache
@@ -456,7 +452,7 @@ export class InventoryService {
         idempotencyKey,
         JSON.stringify(inventory),
         "EX",
-        3600
+        3600,
       );
 
       return inventory;
@@ -472,7 +468,7 @@ export class InventoryService {
    */
   async updateInventory(
     id: string,
-    body: Partial<IInventory>
+    body: Partial<IInventory>,
   ): Promise<IInventory | null> {
     // Check for active reservations
     const current = await this.InventoryRepo.getSingleInventory(id);
@@ -486,7 +482,7 @@ export class InventoryService {
         quantityReserved: current.quantityReserved,
       });
       throw new Error(
-        `Cannot modify inventory with ${current.quantityReserved} items reserved. Wait for reservations to clear.`
+        `Cannot modify inventory with ${current.quantityReserved} items reserved. Wait for reservations to clear.`,
       );
     }
 
@@ -497,13 +493,12 @@ export class InventoryService {
       body.quantityReserved !== undefined
     ) {
       const newOnHand = body.quantityOnHand ?? current.quantityOnHand;
-      const newAvailable =
-        body.quantityAvailable ?? current.quantityAvailable;
+      const newAvailable = body.quantityAvailable ?? current.quantityAvailable;
       const newReserved = body.quantityReserved ?? current.quantityReserved;
 
       if (newOnHand !== newAvailable + newReserved) {
         throw new Error(
-          `Invalid update: quantityOnHand (${newOnHand}) must equal quantityAvailable (${newAvailable}) + quantityReserved (${newReserved})`
+          `Invalid update: quantityOnHand (${newOnHand}) must equal quantityAvailable (${newAvailable}) + quantityReserved (${newReserved})`,
         );
       }
     }
@@ -526,7 +521,7 @@ export class InventoryService {
         quantityReserved: current.quantityReserved,
       });
       throw new Error(
-        `Cannot delete inventory with ${current.quantityReserved} items reserved. Wait for reservations to clear or release them first.`
+        `Cannot delete inventory with ${current.quantityReserved} items reserved. Wait for reservations to clear or release them first.`,
       );
     }
 
@@ -538,7 +533,7 @@ export class InventoryService {
    */
   async createInventory(
     userId: string,
-    body: Partial<IInventory>
+    body: Partial<IInventory>,
   ): Promise<IInventory> {
     return withTransaction(async (session) => {
       const inventoryData = {
@@ -553,13 +548,13 @@ export class InventoryService {
 
       if (onHand !== available + reserved) {
         throw new Error(
-          `Invalid inventory creation: quantityOnHand (${onHand}) must equal quantityAvailable (${available}) + quantityReserved (${reserved})`
+          `Invalid inventory creation: quantityOnHand (${onHand}) must equal quantityAvailable (${available}) + quantityReserved (${reserved})`,
         );
       }
 
       const inventory = await this.InventoryRepo.createInventory(
         inventoryData,
-        session
+        session,
       );
       return inventory;
     });
@@ -568,7 +563,7 @@ export class InventoryService {
   async getAllInventorys(
     query: FilterQuery<IInventory>,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<{
     data: {
       inventorys: IInventory[] | null;
@@ -601,7 +596,7 @@ export class InventoryService {
 
   async getInventoryByProduct(
     productId: string,
-    storeId: string
+    storeId: string,
   ): Promise<IInventory | null> {
     return this.InventoryRepo.getInventoryByProduct(productId, storeId);
   }

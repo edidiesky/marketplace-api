@@ -59,7 +59,6 @@ const GetSingleStoreInventoryHandler = asyncHandler(
 // @description: Update A Single Inventory Handler
 // @route  PUT /api/v1/inventories/:id
 // @access  Private
-// FIX #7: Now checks for active reservations
 const UpdateInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -69,8 +68,6 @@ const UpdateInventoryHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Inventory does not exist");
     }
-
-    // FIX #7: Service now checks for active reservations
     const Inventory = await inventoryService.updateInventory(
       id,
       req.body as Partial<IInventory>
@@ -82,7 +79,6 @@ const UpdateInventoryHandler = asyncHandler(
 // @description: Delete A Single Inventory Handler
 // @route  DELETE /api/v1/inventories/:id
 // @access  Private
-// FIX #7: Now checks for active reservations
 const DeleteInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -92,8 +88,6 @@ const DeleteInventoryHandler = asyncHandler(
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This Inventory does not exist");
     }
-
-    // FIX #7: Service now checks for active reservations
     await inventoryService.deleteInventory(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       message: "Inventory deleted successfully",
@@ -178,7 +172,7 @@ const ReserveStockHandler = asyncHandler(
       res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
         success: true,
         reservationId: `${sagaId}-${productId}`,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), 
         quantityReserved: quantity,
         remainingAvailable: inventory.quantityAvailable,
       });
@@ -350,7 +344,6 @@ export {
   UpdateInventoryHandler,
   DeleteInventoryHandler,
   CheckInventoryAvailabilityHandler,
-  // FIX #1: NEW EXPORTS
   ReserveStockHandler,
   ReleaseStockHandler,
   CommitStockHandler,

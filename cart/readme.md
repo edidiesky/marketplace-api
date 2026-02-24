@@ -1,5 +1,5 @@
 # Cart Service
-event-driven cart management service with inventory reservation, distributed locking, and real-time cache invalidation.
+An event-driven cart management service with inventory reservation, distributed locking, and real-time cache invalidation.
 
 ## Table of Contents
 

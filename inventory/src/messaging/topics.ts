@@ -78,6 +78,7 @@ export const InventoryTopic = {
         }
         if (attempt === MAX_RETRIES - 1) {
           logger.error("ALL RETRIES FAILED, Sending rollback", { ownerId });
+          // await sendInventoryMessage(INVENTORY_CREATION_FAILED_TOPIC, data);
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
           await new Promise((r) => setTimeout(r, delay));
@@ -85,11 +86,12 @@ export const InventoryTopic = {
       }
     }
   },
+
   [ORDER_CHECKOUT_STARTED_TOPIC]: async (data: any) => {
     const { orderId, storeId, items, sagaId, userId } = data;
 
     const idempotencyKey = `reserve-${sagaId || orderId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 900, "NX");
+    const locked = await redisClient.setnx(idempotencyKey, "1");
     if (!locked) {
       logger.info("Duplicate reservation attempt ignored", {
         event: "duplicate_order",
@@ -98,6 +100,9 @@ export const InventoryTopic = {
       });
       return;
     }
+
+    await redisClient.expire(idempotencyKey, 90);
+
     const reservedItems: Array<{
       productId: string;
       quantity: number;
@@ -134,12 +139,11 @@ export const InventoryTopic = {
                   item.productId,
                   storeId,
                   item.quantity,
-                  `${sagaId}-${item.productId}` // Unique saga per item
+                  `${sagaId}-${item.productId}`
                 ),
                 itemTimeoutPromise,
               ]);
 
-              // Track successful reservation
               reservedItems.push({
                 productId: item.productId,
                 quantity: item.quantity,
@@ -151,7 +155,6 @@ export const InventoryTopic = {
                 sagaId,
               });
             } catch (itemError: any) {
-              // FIX #13: Rollback on any item failure
               logger.error("Item reservation failed, starting rollback", {
                 failedProduct: item.productId,
                 error: itemError.message,
@@ -159,7 +162,6 @@ export const InventoryTopic = {
                 sagaId,
               });
 
-              // Determine failure items for cart notification
               const failedItems = items
                 .filter(
                   (i: any) =>
@@ -172,8 +174,6 @@ export const InventoryTopic = {
                     ? "Out of stock"
                     : "Reservation failed",
                 }));
-
-              // Rollback successfully reserved items
               for (const reserved of reservedItems) {
                 try {
                   await inventoryService.releaseStock(
@@ -190,7 +190,6 @@ export const InventoryTopic = {
                   logger.error("CRITICAL: Rollback failed for item", {
                     productId: reserved.productId,
                     rollbackError,
-                    // This requires manual intervention
                   });
                 }
               }
@@ -218,7 +217,7 @@ export const InventoryTopic = {
                 });
               }
 
-              return; // Exit - reservation failed
+              return; 
             }
           }
 
@@ -240,6 +239,7 @@ export const InventoryTopic = {
         sagaId,
       });
 
+      // Rollback all reserved items
       for (const reserved of reservedItems) {
         try {
           await inventoryService.releaseStock(
@@ -255,6 +255,8 @@ export const InventoryTopic = {
           });
         }
       }
+
+      // Send failure event
       try {
         await sendInventoryMessage(ORDER_RESERVATION_FAILED_TOPIC, {
           orderId,
@@ -300,7 +302,6 @@ export const InventoryTopic = {
         orderId,
         sagaId,
         error: error.message,
-      
       });
     }
   },
@@ -331,7 +332,6 @@ export const InventoryTopic = {
       logger.error("Failed to release stock on payment failure", {
         error: error.message,
         orderId,
-        // Manual intervention may be required
       });
     }
   },
