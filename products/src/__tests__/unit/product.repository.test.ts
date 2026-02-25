@@ -46,20 +46,20 @@ function makeProduct(overrides: Partial<IProduct> = {}): IProduct {
 jest.mock("../../models/Product", () => ({
   __esModule: true,
   default: {
-    create:            jest.fn(),
-    find:              jest.fn(),
-    findById:          jest.fn(),
+    create: jest.fn(),
+    find: jest.fn(),
+    findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     findByIdAndDelete: jest.fn(),
-    countDocuments:    jest.fn(),
+    countDocuments: jest.fn(),
   },
 }));
 
 //  Redis mock
 jest.mock("../../config/redis", () => ({
-  get:  jest.fn(),
-  set:  jest.fn(),
-  del:  jest.fn(),
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
   keys: jest.fn(),
   quit: jest.fn(),
 }));
@@ -69,7 +69,9 @@ jest.mock("../../config/redis", () => ({
 
 function chainLeanExec<T>(value: T) {
   return {
-    lean: () => ({ exec: jest.fn<() => Promise<T>>().mockResolvedValue(value) }),
+    lean: () => ({
+      exec: jest.fn<() => Promise<T>>().mockResolvedValue(value),
+    }),
   };
 }
 
@@ -78,7 +80,9 @@ function chainSkipLimitSortLeanExec<T>(value: T) {
     skip: jest.fn().mockReturnValue({
       limit: jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnValue({
-          lean: () => ({ exec: jest.fn<() => Promise<T>>().mockResolvedValue(value) }),
+          lean: () => ({
+            exec: jest.fn<() => Promise<T>>().mockResolvedValue(value),
+          }),
         }),
       }),
     }),
@@ -94,9 +98,9 @@ function chainExec<T>(value: T) {
 describe("ProductRepository", () => {
   let repo: ProductRepository;
   let redisSpy: {
-    get:  jest.SpiedFunction<any>;
-    set:  jest.SpiedFunction<any>;
-    del:  jest.SpiedFunction<any>;
+    get: jest.SpiedFunction<any>;
+    set: jest.SpiedFunction<any>;
+    del: jest.SpiedFunction<any>;
     keys: jest.SpiedFunction<any>;
   };
   const fakeSession = {} as mongoose.ClientSession;
@@ -106,9 +110,9 @@ describe("ProductRepository", () => {
     repo = new ProductRepository();
 
     redisSpy = {
-      get:  jest.spyOn(redisModule as any, "get"),
-      set:  jest.spyOn(redisModule as any, "set"),
-      del:  jest.spyOn(redisModule as any, "del"),
+      get: jest.spyOn(redisModule as any, "get"),
+      set: jest.spyOn(redisModule as any, "set"),
+      del: jest.spyOn(redisModule as any, "del"),
       keys: jest.spyOn(redisModule as any, "keys"),
     };
   });
@@ -121,27 +125,24 @@ describe("ProductRepository", () => {
   });
 
   //  findProductById
-
   describe("findProductById", () => {
-   it("returns cached product on hit — never queries MongoDB", async () => {
-  const product = makeProduct();
-  // Round-trip through JSON to match what the repository actually returns
-  // from cache — dates become ISO strings, ObjectIds become plain strings
-  const cached = JSON.parse(JSON.stringify(product));
-  redisSpy.get.mockResolvedValueOnce(JSON.stringify(product));
+    it("returns cached product on hit, never queries MongoDB", async () => {
+      const product = makeProduct();
+      const cached = JSON.parse(JSON.stringify(product));
+      redisSpy.get.mockResolvedValueOnce(JSON.stringify(product));
 
-  const result = await repo.findProductById(product._id.toString());
+      const result = await repo.findProductById(product._id.toString());
 
-  expect(result).toEqual(cached);
-  expect(Product.findById).not.toHaveBeenCalled();
-});
+      expect(result).toEqual(cached);
+      expect(Product.findById).not.toHaveBeenCalled();
+    });
 
     it("queries MongoDB and writes to cache on miss", async () => {
       const product = makeProduct();
       redisSpy.get.mockResolvedValueOnce(null);
-      jest.mocked(Product.findById).mockReturnValueOnce(
-        chainLeanExec(product) as any,
-      );
+      jest
+        .mocked(Product.findById)
+        .mockReturnValueOnce(chainLeanExec(product) as any);
       redisSpy.set.mockResolvedValueOnce("OK" as never);
 
       const result = await repo.findProductById(product._id.toString());
@@ -158,9 +159,9 @@ describe("ProductRepository", () => {
 
     it("does not write to cache when MongoDB returns null", async () => {
       redisSpy.get.mockResolvedValueOnce(null);
-      jest.mocked(Product.findById).mockReturnValueOnce(
-        chainLeanExec(null) as any,
-      );
+      jest
+        .mocked(Product.findById)
+        .mockReturnValueOnce(chainLeanExec(null) as any);
 
       const result = await repo.findProductById(objectId().toString());
 
@@ -171,10 +172,10 @@ describe("ProductRepository", () => {
     it("degrades to MongoDB when Redis GET throws", async () => {
       const product = makeProduct();
       redisSpy.get.mockRejectedValueOnce(new Error("ECONNREFUSED") as never);
-      jest.mocked(Product.findById).mockReturnValueOnce(
-        chainLeanExec(product) as any,
-      );
-      // cache write also fails — should still not throw
+      jest
+        .mocked(Product.findById)
+        .mockReturnValueOnce(chainLeanExec(product) as any);
+      // cache write also fails, should still not throw
       redisSpy.set.mockRejectedValueOnce(new Error("ECONNREFUSED") as never);
 
       const result = await repo.findProductById(product._id.toString());
@@ -187,7 +188,7 @@ describe("ProductRepository", () => {
   describe("findAllProduct", () => {
     const query = { store: new mongoose.Types.ObjectId(), isDeleted: false };
 
-    it("returns cached list on hit — never queries MongoDB", async () => {
+    it("returns cached list on hit, never queries MongoDB", async () => {
       const products = [makeProduct(), makeProduct()];
       redisSpy.get.mockResolvedValueOnce(JSON.stringify(products));
 
@@ -200,9 +201,9 @@ describe("ProductRepository", () => {
     it("queries MongoDB with correct skip and limit on miss", async () => {
       const products = [makeProduct()];
       redisSpy.get.mockResolvedValueOnce(null);
-      jest.mocked(Product.find).mockReturnValueOnce(
-        chainSkipLimitSortLeanExec(products) as any,
-      );
+      jest
+        .mocked(Product.find)
+        .mockReturnValueOnce(chainSkipLimitSortLeanExec(products) as any);
       redisSpy.set.mockResolvedValueOnce("OK" as never);
 
       const result = await repo.findAllProduct(query, 20, 5);
@@ -216,9 +217,9 @@ describe("ProductRepository", () => {
     it("writes result to cache with correct TTL after DB query", async () => {
       const products = [makeProduct()];
       redisSpy.get.mockResolvedValueOnce(null);
-      jest.mocked(Product.find).mockReturnValueOnce(
-        chainSkipLimitSortLeanExec(products) as any,
-      );
+      jest
+        .mocked(Product.find)
+        .mockReturnValueOnce(chainSkipLimitSortLeanExec(products) as any);
 
       await repo.findAllProduct(query, 0, 10);
 
@@ -233,9 +234,9 @@ describe("ProductRepository", () => {
     it("degrades to MongoDB when Redis GET throws", async () => {
       const products = [makeProduct()];
       redisSpy.get.mockRejectedValueOnce(new Error("Redis down") as never);
-      jest.mocked(Product.find).mockReturnValueOnce(
-        chainSkipLimitSortLeanExec(products) as any,
-      );
+      jest
+        .mocked(Product.find)
+        .mockReturnValueOnce(chainSkipLimitSortLeanExec(products) as any);
       redisSpy.set.mockRejectedValueOnce(new Error("Redis down") as never);
 
       const result = await repo.findAllProduct(query, 0, 10);
@@ -294,9 +295,7 @@ describe("ProductRepository", () => {
     it("does not throw when Redis keys() fails during invalidation", async () => {
       const product = makeProduct();
       jest.mocked(Product.create).mockResolvedValueOnce([product] as any);
-      redisSpy.keys.mockRejectedValueOnce(
-        new Error("ECONNREFUSED") as never,
-      );
+      redisSpy.keys.mockRejectedValueOnce(new Error("ECONNREFUSED") as never);
 
       await expect(
         repo.createProduct({ ...product }, fakeSession),
@@ -470,9 +469,7 @@ describe("ProductRepository", () => {
     });
 
     it("returns null when product not found", async () => {
-      jest
-        .mocked(Product.findByIdAndUpdate)
-        .mockResolvedValueOnce(null as any);
+      jest.mocked(Product.findByIdAndUpdate).mockResolvedValueOnce(null as any);
 
       const result = await repo.restoreProduct(
         objectId().toString(),
@@ -483,7 +480,7 @@ describe("ProductRepository", () => {
     });
   });
 
-  //  invalidateSearchCache edge cases 
+  //  invalidateSearchCache edge cases
 
   describe("invalidateSearchCache", () => {
     it("does not throw when del throws after keys returns results", async () => {
