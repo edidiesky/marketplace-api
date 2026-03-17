@@ -1,5 +1,5 @@
 import { Kafka, Partitioners, logLevel, CompressionTypes } from "kafkajs";
-import logger from "../utils/logger";
+import logger from "../../utils/logger";
 
 const kafka = new Kafka({
   clientId: "Payment_Service",

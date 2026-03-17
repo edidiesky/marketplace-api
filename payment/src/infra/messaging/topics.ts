@@ -1,5 +1,5 @@
-import logger from "../utils/logger";
-import { paymentService } from "../services/payment.service";
+import logger from "../../utils/logger";
+import { paymentService } from "../../services/payment.service";
 import {
   MAX_RETRIES,
   BASE_DELAY_MS,
@@ -7,8 +7,8 @@ import {
   ORDER_PAYMENT_COMPLETED_TOPIC,
   ORDER_COMPLETED_TOPIC,
   ORDER_PAYMENT_FAILED_TOPIC,
-} from "../constants";
-import redisClient from "../config/redis";
+} from "../../constants";
+import {redisClient} from "../cache/redis";
 import { sendPaymentMessage } from "./producer";
 
 export const PaymentTopic = {
@@ -16,7 +16,7 @@ export const PaymentTopic = {
     const { orderId, reason, sagaId } = data;
 
     const idempotencyKey = `payment-failed-${orderId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    const locked = await redisClient.getClient().set(idempotencyKey, "1", "EX", 3600, "NX");
     if (!locked) return;
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {

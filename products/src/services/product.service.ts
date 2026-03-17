@@ -4,6 +4,7 @@ import mongoose, { FilterQuery } from "mongoose";
 import { withTransaction } from "../utils/withTransaction";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import Product from "../models/Product";
+import logger from "../utils/logger";
 
 export class ProductService {
   private productRepo: IProductRepository;
@@ -13,7 +14,7 @@ export class ProductService {
 
   async CreateProductService(
     userId: string,
-    body: Partial<IProduct>
+    body: Partial<IProduct>,
   ): Promise<IProduct> {
     return withTransaction(async (session) => {
       const productData = {
@@ -21,8 +22,12 @@ export class ProductService {
         ...body,
       };
 
-      const product = await this.productRepo.createProduct(productData, session);
+      const product = await this.productRepo.createProduct(
+        productData,
+        session,
+      );
       if (!product) {
+        logger.error("Failed to create product");
         throw new Error("Failed to create product");
       }
       return product;
@@ -32,7 +37,7 @@ export class ProductService {
   async getAllProducts(
     query: FilterQuery<IProduct>,
     skip: number,
-    limit: number
+    limit: number,
   ) {
     const [products, totalCount] = await Promise.all([
       this.productRepo.findAllProduct(query, skip, limit),
@@ -54,7 +59,7 @@ export class ProductService {
 
   async updateProduct(
     id: string,
-    body: Partial<IProduct>
+    body: Partial<IProduct>,
   ): Promise<IProduct | null> {
     return this.productRepo.updateProduct(id, body);
   }
@@ -68,6 +73,7 @@ export class ProductService {
       await this.productRepo.softDeleteProduct(id, deletedBy, session);
       const prod = await this.productRepo.findProductById(id);
       if (!prod) {
+        logger.error(`Product with id ${id} not found`);
         throw new Error(`Product with id ${id} not found after soft delete`);
       }
       return prod;
@@ -76,8 +82,12 @@ export class ProductService {
 
   async restoreProduct(id: string): Promise<IProduct> {
     return withTransaction(async (session) => {
-      const restoredProduct = await this.productRepo.restoreProduct(id, session);
+      const restoredProduct = await this.productRepo.restoreProduct(
+        id,
+        session,
+      );
       if (!restoredProduct) {
+        logger.error(`Product with id ${id} not found`);
         throw new Error(`Product with id ${id} not found`);
       }
       return restoredProduct;
@@ -85,5 +95,6 @@ export class ProductService {
   }
 }
 
-const defaultProductRepo = new (require("../repository/ProductRepository").ProductRepository)();
+const defaultProductRepo =
+  new (require("../repository/ProductRepository").ProductRepository)();
 export default new ProductService(defaultProductRepo);

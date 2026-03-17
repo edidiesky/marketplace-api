@@ -92,16 +92,14 @@ The Cart Service manages shopping cart operations for selleazy platform with fea
 
 ```bash
 # Clone repository
-git clone https://github.com/yourorg/cart-service.git
+git clone https://github.com/fakename/cart-service.git
 cd cart-service
 
 # Install dependencies
 npm install
 
-# Copy environment template
 cp .env.example .env
 
-# Configure environment variables
 nano .env
 ```
 
@@ -136,11 +134,9 @@ INVENTORY_SERVICE_URL=http://inventory:4008
 CART_CACHE_TTL=60     
 INVENTORY_CACHE_TTL=60    
 
-# Lock Configuration
 LOCK_TTL=30   
 
-# Cart Configuration
-CART_EXPIRY_DAYS=30        # Auto-delete inactive carts after N days
+CART_EXPIRY_DAYS=30   
 
 # Feature Flags
 ENABLE_INVENTORY_RESERVATION=true
@@ -148,7 +144,7 @@ ENABLE_EVENT_PUBLISHING=true
 ENABLE_CACHE_INVALIDATION=true
 
 # Logging
-LOG_LEVEL=info             # debug | info | warn | error
+LOG_LEVEL=info  
 ```
 
 ### Kafka Topics

@@ -20,6 +20,24 @@ export const databaseConnectionDuration = new client.Histogram({
 });
 
 
+export function isMongoConnected(): boolean {
+  return mongoose.connection.readyState === 1;
+}
+
+export function getMongoDb(): mongoose.mongo.Db {
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error(
+      `MongoDB not connected (readyState=${mongoose.connection.readyState}). ` +
+      "Call connectMongoDB() before getMongoDb()."
+    );
+  }
+  const db = mongoose.connection.db;
+  if (!db) throw new Error("mongoose.connection.db is null despite readyState=1");
+  return db;
+}
+
+
+
 export const connectMongoDB = async (
   mongoUrl: string,
   maxRetries: number = 5,

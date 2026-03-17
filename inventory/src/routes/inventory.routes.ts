@@ -6,7 +6,6 @@ import {
   UpdateInventoryHandler,
   DeleteInventoryHandler,
   CheckInventoryAvailabilityHandler,
-  // FIX #1: Import new handlers
   ReserveStockHandler,
   ReleaseStockHandler,
   CommitStockHandler,

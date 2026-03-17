@@ -1,8 +1,8 @@
 import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
-import logger from "../utils/logger";
+import logger from "../../utils/logger";
 import { PaymentTopic } from "./topics";
 import { sendPaymentMessage } from "./producer";
-import { PAYMENT_CONSUMER_TOPICS } from "../constants";
+import { PAYMENT_CONSUMER_TOPICS } from "../../constants";
 
 
 const kafka = new Kafka({

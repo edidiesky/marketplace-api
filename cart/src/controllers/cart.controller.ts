@@ -134,7 +134,7 @@ const DeleteCartItemHandler = asyncHandler(
       throw new Error("productId is required");
     }
 
-    await cartService.deleteCart(userId, storeId, productId);
+    await cartService.deleteCartItem(userId, storeId, productId);
 
     res
       .status(SUCCESSFULLY_FETCHED_STATUS_CODE)

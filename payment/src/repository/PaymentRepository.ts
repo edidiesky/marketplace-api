@@ -1,10 +1,9 @@
-import redisClient from "../config/redis";
+import {redisClient} from "../infra/cache/redis";
 import Payment, { IPayment, PaymentStatus } from "../models/Payment";
 import { IPaymentRepository } from "./IPaymentRepository";
 import logger from "../utils/logger";
 import mongoose, { FilterQuery } from "mongoose";
 import { measureDatabaseQuery } from "../utils/metrics";
-
 
 export class PaymentRepository implements IPaymentRepository {
   private readonly CACHE_TTL = 300;
@@ -31,7 +30,7 @@ export class PaymentRepository implements IPaymentRepository {
 
   private async setCache(key: string, value: any): Promise<void> {
     try {
-      await redisClient.set(key, JSON.stringify(value), "EX", this.CACHE_TTL);
+      await redisClient.setValue(key, JSON.stringify(value));
     } catch (error) {
       logger.warn("Cache write failed", {
         key,

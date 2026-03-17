@@ -7,7 +7,7 @@ import Payment, {
   PaymentMethod,
   PaymentStatus,
 } from "../models/Payment";
-import { sendPaymentMessage } from "../messaging/producer";
+import { sendPaymentMessage } from "../infra/messaging/producer";
 import {
   JITTER,
   ORDER_PAYMENT_COMPLETED_TOPIC,
@@ -16,7 +16,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import logger from "../utils/logger";
-import redisClient from "../config/redis";
+import {redisClient} from "../infra/cache/redis";
 import { requestCoalescer } from "../utils/requestCoalescer";
 import withTransaction from "../utils/connectDB";
 import { v4 } from "uuid";
@@ -413,7 +413,7 @@ class PaymentService {
     }
 
     const lockKey = `payment:lock:${transactionId}`;
-    const lockAcquired = await redisClient.setnx(lockKey, "LOCKED");
+    const lockAcquired = await redisClient.setNX(lockKey, "LOCKED", 30 * 4);
     if (!lockAcquired) {
       logger.warn("Webhook processing in progress", { transactionId });
       throw new Error("Payment already has been processed");

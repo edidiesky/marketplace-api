@@ -3,33 +3,28 @@ import { app } from "./app";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 const PORT = process.env.PORT;
 import logger from "./utils/logger";
-import redisClient from "./config/redis";
 import { connectMongoDB } from "./utils/connectDB";
-import {
-  trackError,
-  serverHealthGauge,
-} from "./utils/metrics";
-import { connectConsumer, disconnectConsumer } from "./messaging/consumer";
-import { connectProducer, disconnectProducer } from "./messaging/producer";
+import { trackError, serverHealthGauge } from "./utils/metrics";
+import { connectConsumer, disconnectConsumer } from "./infra/messaging/consumer";
+import { connectProducer, disconnectProducer } from "./infra/messaging/producer";
+import { redisClient } from "./infra/cache/redis";
 
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
 
   try {
     const shutdownStart = process.hrtime();
-
-    await mongoose.connection.close();
     await disconnectConsumer();
     await disconnectProducer();
-    await redisClient.quit();
+    await mongoose.connection.close();
+    await redisClient.disconnect();
 
     const shutdownDuration = process.hrtime(shutdownStart);
     const shutdownSeconds = shutdownDuration[0] + shutdownDuration[1] / 1e9;
 
-    logger.info("Mongoose, kakfa, and Redis have been disconnected!", {
+    logger.info("Mongoose, Kafka, and Redis disconnected", {
       shutdownDuration: shutdownSeconds,
     });
-
     process.exit(0);
   } catch (err) {
     trackError("graceful_shutdown_failed", "system", "critical");
@@ -38,7 +33,6 @@ async function GracefulShutdown() {
   }
 }
 
-/** ERROR MIDDLEWARE */
 app.use(NotFound);
 app.use(errorHandler);
 
@@ -55,23 +49,26 @@ app.listen(PORT, async () => {
   try {
     const initSteps = [
       { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
-      { name: "redis", fn: () => redisClient.ping() },
-      { name: "kakfa_consumer", fn: connectConsumer },
-      { name: "kakfa_producer", fn: connectProducer },
+      {
+        name: "redis",
+        fn: async () => {
+          const ok = await redisClient.ping();
+          if (!ok) {
+            throw new Error(
+              "Redis ping failed — server is unreachable or not ready"
+            );
+          }
+        },
+      },
+      { name: "kafka_consumer", fn: connectConsumer },
+      { name: "kafka_producer", fn: connectProducer },
     ];
 
     for (const step of initSteps) {
       const stepStart = process.hrtime();
 
       try {
-
-        if (step.name === "redis") {
-          await step.fn();
-          logger.info(`Successfully connected to Redis at`);
-        } else {
-          await step.fn();
-        }
-
+        await step.fn();
         const stepDuration = process.hrtime(stepStart);
         const stepSeconds = stepDuration[0] + stepDuration[1] / 1e9;
         logger.info(`${step.name} initialized successfully`, {
@@ -85,7 +82,10 @@ app.listen(PORT, async () => {
           "server_initialization",
           "critical"
         );
-
+        logger.error(`${step.name} initialization failed`, {
+          error,
+          duration: stepSeconds,
+        });
         throw error;
       }
     }
@@ -95,7 +95,7 @@ app.listen(PORT, async () => {
 
     serverHealthGauge.set(1);
 
-    logger.info("Server initialized successfully", {
+    logger.info("Payment service initialized successfully", {
       totalDuration: totalSeconds,
       components: initSteps.length,
     });
@@ -104,7 +104,7 @@ app.listen(PORT, async () => {
     const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
     trackError("server_initialization_failed", "server_startup", "critical");
 
-    logger.error(`Server initialization failed`, {
+    logger.error("Server initialization failed", {
       error,
       totalDuration: totalSeconds,
     });
@@ -116,16 +116,14 @@ app.listen(PORT, async () => {
 process.on("SIGINT", GracefulShutdown);
 process.on("SIGTERM", GracefulShutdown);
 
-// Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
   trackError("unhandled_promise_rejection", "process", "critical");
-  logger.error("Unhandled Promise Rejection at:", promise, "reason:", reason);
+  logger.error("Unhandled Promise Rejection", { promise, reason });
   GracefulShutdown();
 });
 
-// Handle uncaught exceptions
 process.on("uncaughtException", (error) => {
   trackError("uncaught_exception", "process", "critical");
-  logger.error("Uncaught Exception:", error);
+  logger.error("Uncaught Exception", { error });
   GracefulShutdown();
 });

@@ -18,7 +18,7 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
   let queryFilter: FilterQuery<Partial<IInventory>> = {
     storeId: new Types.ObjectId(req.params.storeId),
   };
-  if (role !== "ADMIN") {
+  if (role === "ADMIN" || role === "SELLER") {
     queryFilter.ownerId = new Types.ObjectId(userId);
   }
   if (productTitle) queryFilter.productTitle = productTitle;
@@ -29,11 +29,11 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
   if (search) {
     queryFilter.$or = [
       {
-        productTitle: { $regex: search, $option: "i" },
-        ownerName: { $regex: search, $option: "i" },
-        subdomain: { $regex: search, $option: "i" },
-        storeName: { $regex: search, $option: "i" },
-        storeDomain: { $regex: search, $option: "i" },
+        productTitle: { $regex: search, $options: "i" },
+        ownerName: { $regex: search, $options: "i" },
+        subdomain: { $regex: search, $options: "i" },
+        storeName: { $regex: search, $options: "i" },
+        storeDomain: { $regex: search, $options: "i" },
       },
     ];
   }

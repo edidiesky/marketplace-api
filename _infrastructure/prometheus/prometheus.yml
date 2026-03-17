@@ -15,11 +15,11 @@ scrape_configs:
         labels:
           group: "grafana"
 
-  - job_name: "api_gateway"
+  - job_name: "api-gateway"
     static_configs:
-      - targets: ["api_gateway:8000"]
+      - targets: ["api-gateway:8000"]
         labels:
-          group: "api_gateway"
+          group: "api-gateway"
 
   - job_name: "authentication"
     static_configs:
@@ -103,13 +103,6 @@ scrape_configs:
   #     - targets: ["view:4014"]
   #       labels:
   #         group: "view"
-
-  - job_name: "rabbitmq"
-    static_configs:
-      - targets: ["rabbitmq:15672"]
-        labels:
-          group: "rabbitmq"
-
   - job_name: "redis"
     static_configs:
       - targets: ["redis:6379"]

@@ -19,7 +19,7 @@ export const signupSchema = Joi.object({
   userType: Joi.string()
     .valid(
       ...Object.values(UserType).filter((type) =>
-        [UserType.SELLERS, UserType.INVESTORS].includes(type)
+        [UserType.SELLERS, UserType.INVESTORS, UserType.CUSTOMER, UserType.ADMIN].includes(type)
       )
     )
     .required()

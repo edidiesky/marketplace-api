@@ -25,7 +25,7 @@ export const buildQuery = async (
   };
 
   if (role !== "ADMIN") {
-    queryFilter.ownerId = new Types.ObjectId(userId);
+    // queryFilter.ownerId = new Types.ObjectId(userId);
     queryFilter.isDeleted = isDeleted === "true" ? true : false;
   }
 

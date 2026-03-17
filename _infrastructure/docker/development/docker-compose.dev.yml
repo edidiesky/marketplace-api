@@ -1,5 +1,5 @@
 networks:
-  app-tier:
+  selleasi-network:
     driver: bridge
 
 services:
@@ -7,7 +7,7 @@ services:
     image: redis:7.0-alpine
     container_name: redis
     networks:
-      - app-tier
+      - selleasi-network
     volumes:
       - redis-data:/data
     command: redis-server --save 60 1 --loglevel warning
@@ -25,7 +25,7 @@ services:
     # container_name: kafka-1
     hostname: kafka-1
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "9092:9092"
     environment:
@@ -64,7 +64,7 @@ services:
     # container_name: kafka-2
     hostname: kafka-2
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "9093:9093"
     environment:
@@ -103,7 +103,7 @@ services:
     # container_name: kafka-3
     hostname: kafka-3
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "9094:9094"
     environment:
@@ -141,11 +141,11 @@ services:
     image: provectuslabs/kafka-ui:latest
     # container_name: kafka-ui
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "8080:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: marketplace-cluster
+      KAFKA_CLUSTERS_0_NAME: selleasi-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
       DYNAMIC_CONFIG_ENABLED: true
     depends_on:
@@ -165,11 +165,11 @@ services:
       kafka-3:
         condition: service_healthy
     env_file:
-      - ./api-gateway/.env
+      - ../../../api-gateway/.env
     ports:
       - "8000:8000"
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 1m30s
@@ -177,7 +177,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./api-gateway
+      context: ../../../api-gateway
       dockerfile: Dockerfile
   # authentication
   authentication:
@@ -190,11 +190,11 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-authentication
+    container_name: selleasi-authentication
     env_file:
-      - ./authentication/.env
+      - ../../../authentication/.env
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "4001:4001"
     healthcheck:
@@ -205,35 +205,35 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./authentication
+      context: ../../../authentication
       dockerfile: Dockerfile
   # audit
-  audit:
-    depends_on:
-      redis:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: marketplace-audit
-    ports:
-      - "4002:4002"
-    env_file:
-      - ./audit/.env
-    networks:
-      - app-tier
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ./audit
-      dockerfile: Dockerfile
+  # audit:
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     kafka-1:
+  #       condition: service_healthy
+  #     kafka-2:
+  #       condition: service_healthy
+  #     kafka-3:
+  #       condition: service_healthy
+  #   container_name: selleasi-audit
+  #   ports:
+  #     - "4002:4002"
+  #   env_file:
+  #     - ../../../audit/.env
+  #   networks:
+  #     - selleasi-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
+  #     interval: 1m30s
+  #     timeout: 30s
+  #     retries: 5
+  #     start_period: 30s
+  #   build:
+  #     context: ../../../audit
+  #     dockerfile: Dockerfile
   products:
     depends_on:
       redis:
@@ -244,13 +244,13 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-products
+    container_name: selleasi-products
     ports:
       - "4003:4003"
     env_file:
-      - ./products/.env
+      - ../../../products/.env
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
       interval: 1m30s
@@ -258,7 +258,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./products
+      context: ../../../products
       dockerfile: Dockerfile
 
       # payment
@@ -274,9 +274,9 @@ services:
         condition: service_healthy
     container_name: payment
     env_file:
-      - ./payment/.env
+      - ../../../payment/.env
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "4004:4004"
     healthcheck:
@@ -286,7 +286,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./payment
+      context: ../../../payment
       dockerfile: Dockerfile
   # categories
   # categories:
@@ -301,9 +301,9 @@ services:
   #       condition: service_healthy
   # container_name: categories
   #   env_file:
-  #     - ./categories/.env
+  #     - ../../../categories/.env
   #   networks:
-  #     - app-tier
+  #     - selleasi-network
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://categories:4005/health"]
   #     interval: 1m30s
@@ -311,7 +311,7 @@ services:
   #     retries: 5
   #     start_period: 30s
   #   build:
-  #     context: ./categories
+  #     context: ../../../categories
   #     dockerfile: Dockerfile
   # notification
   notification:
@@ -324,13 +324,13 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-notification
+    container_name: selleasi-notification
     env_file:
-      - ./notification/.env
+      - ../../../notification/.env
     ports:
       - "4006:4006"
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4006/health"]
       interval: 1m30s
@@ -338,7 +338,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./notification
+      context: ../../../notification
       dockerfile: Dockerfile
   # stores
   stores:
@@ -351,13 +351,13 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-stores
+    container_name: selleasi-stores
     env_file:
-      - ./stores/.env
+      - ../../../stores/.env
     ports:
       - "4007:4007"
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4007/health"]
       interval: 1m30s
@@ -365,7 +365,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./stores
+      context: ../../../stores
       dockerfile: Dockerfile
   inventory:
     depends_on:
@@ -379,9 +379,9 @@ services:
         condition: service_healthy
     container_name: inventory
     env_file:
-      - ./inventory/.env
+      - ../../../inventory/.env
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "4008:4008"
     healthcheck:
@@ -391,7 +391,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./inventory
+      context: ../../../inventory
       dockerfile: Dockerfile
   # cart
   cart:
@@ -406,11 +406,11 @@ services:
         condition: service_healthy
     container_name: cart
     env_file:
-      - ./cart/.env
+      - ../../../cart/.env
     ports:
       - "4009:4009"
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4009/health"]
       interval: 1m30s
@@ -418,7 +418,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./cart
+      context: ../../../cart
       dockerfile: Dockerfile
   tenant:
     depends_on:
@@ -430,13 +430,13 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-tenant
+    container_name: selleasi-tenant
     ports:
       - "4010:4010"
     env_file:
-      - ./tenant/.env
+      - ../../../tenant/.env
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
       interval: 1m30s
@@ -444,7 +444,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./tenant
+      context: ../../../tenant
       dockerfile: Dockerfile
 
   review:
@@ -457,13 +457,13 @@ services:
         condition: service_healthy
       kafka-3:
         condition: service_healthy
-    container_name: marketplace-review
+    container_name: selleasi-review
     env_file:
-      - ./review/.env
+      - ../../../review/.env
     ports:
       - "4011:4011"
     networks:
-      - app-tier
+      - selleasi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4011/health"]
       interval: 1m30s
@@ -471,7 +471,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./review
+      context: ../../../review
       dockerfile: Dockerfile
 
   orders:
@@ -486,9 +486,9 @@ services:
         condition: service_healthy
     container_name: orders
     env_file:
-      - ./orders/.env
+      - ../../../orders/.env
     networks:
-      - app-tier
+      - selleasi-network
     ports:
       - "4012:4012"
     healthcheck:
@@ -498,7 +498,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ./orders
+      context: ../../../orders
       dockerfile: Dockerfile
   # color:
   #   depends_on:
@@ -512,9 +512,9 @@ services:
   #       condition: service_healthy
   # container_name: color
   #   env_file:
-  #     - ./color/.env
+  #     - ../../../color/.env
   #   networks:
-  #     - app-tier
+  #     - selleasi-network
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://color:4013/health"]
   #     interval: 1m30s
@@ -522,7 +522,7 @@ services:
   #     retries: 5
   #     start_period: 30s
   #   build:
-  #     context: ./color
+  #     context: ../../../color
   #     dockerfile: Dockerfile
   # view:
   #   depends_on:
@@ -536,9 +536,9 @@ services:
   #       condition: service_healthy
   # container_name: view
   #   env_file:
-  #     - ./view/.env
+  #     - ../../../view/.env
   #   networks:
-  #     - app-tier
+  #     - selleasi-network
   #   healthcheck:
   #     test: ["CMD", "curl", "-f", "http://view:4014/health"]
   #     interval: 1m30s
@@ -546,69 +546,71 @@ services:
   #     retries: 5
   #     start_period: 30s
   #   build:
-  #     context: ./view
+  #     context: ../../../view
   #     dockerfile: Dockerfile
 
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prom_data:/prometheus
     networks:
-      - app-tier
-  tempo:
-    image: grafana/tempo:latest
-    command: ["-config.file=/etc/tempo/tempo.yaml"]
+      - selleasi-network
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
     volumes:
-      - ./etc/tempo/tempo-config.yaml:/etc/tempo/tempo.yaml:ro
-      - tempo-data:/tmp/tempo
-    ports:
-      - "3200:3200" # HTTP API
-      - "4318:4318" # OTLP gRPC
-      - "4317:4317" # OTLP HTTP
+      - ../../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
   loki:
     image: grafana/loki:latest
     ports:
       - "3100:3100"
+    networks:
+      - selleasi-network
+    command: -config.file=/etc/loki/loki-config.yml -config.expand-env=true
     volumes:
       - loki_data:/loki
-      - ./etc/loki/loki-config.yml:/etc/loki/loki-config.yml
-    command: -config.file=/etc/loki/loki-config.yml -config.expand-env=true
-    networks:
-      - app-tier
+      - ../../loki/loki-config.yml:/etc/loki/loki-config.yml
   promtail:
     image: grafana/promtail:latest
-    command: -config.file=/etc/promtail/promtail-config.yml
     networks:
-      - app-tier
+      - selleasi-network
+    command: -config.file=/etc/promtail/promtail-config.yml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./etc/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - ../../promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # - ./audit:/app/audit
-      - ./products:/app/products
-      - ./inventory:/app/inventory
-      - ./auth:/app/auth
-      - ./payment:/app/payment
-      # - ./categories:/app/categories
-      - ./stores:/app/stores
-      - ./cart:/app/cart
-      - ./tenant:/app/tenant
-      - ./review:/app/review
-      - ./orders:/app/orders
-      # - ./color:/app/color
-      # - ./view:/app/view
-      - ./notification:/app/notification
-      - ./api-gateway:/app/api-gateway
+      - ../../../products:/app/products
+      - ../../../inventory:/app/inventory
+      - ../../../payment:/app/payment
+      - ../../../stores:/app/stores
+      - ../../../cart:/app/cart
+      - ../../../tenant:/app/tenant
+      - ../../../review:/app/review
+      - ../../../orders:/app/orders
+      - ../../../notification:/app/notification
+      - ../../../api-gateway:/app/api-gateway
+
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"
+      - "4318:4318"
+      - "4317:4317"
+    networks:
+      - selleasi-network
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ../../tempo/tempo-config.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/tmp/tempo
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - selleasi-network
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -630,18 +632,49 @@ services:
           url: http://loki:3100
           basicAuth: false
           isDefault: true
-          version: 1c:\Users\essie\marketplace-api\etc\tempo\tempo.yaml
+          version: 1
           editable: false
         EOF
         /run.sh
-    ports:
-      - "3000:3000"
     volumes:
-      - ./grafana.ini:/etc/grafana/grafana.ini
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/datasources/tempo.yaml:/etc/grafana/provisioning/datasources/tempo.yaml
-    networks:
-      - app-tier
+      - ../../grafana/provisioning/datasources/tempo.yaml:/etc/grafana/provisioning/datasources/tempo.yaml
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+  #   container_name: selleasi-elasticsearch
+  #   hostname: elasticsearch
+  #   networks:
+  #     - selleasi-network
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   environment:
+  #     - discovery.type=single-node       
+  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m 
+  #     - xpack.security.enabled=false      
+  #     - xpack.security.http.ssl.enabled=false
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 10
+  #     start_period: 60s
+  #   volumes:
+  #     - es-data:/usr/share/elasticsearch/data
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.11.0
+  #   container_name: selleasi-kibana
+  #   networks:
+  #     - selleasi-network
+  #   ports:
+  #     - "5601:5601"
+  #   environment:
+  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+
 volumes:
   prom_data:
   redis-data:
@@ -651,3 +684,5 @@ volumes:
   kafka2_data:
   kafka3_data:
   tempo-data:
+  # kafka-connect-data:
+  # es-data:
