@@ -2,7 +2,10 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import productRoute from "./routes/payment.routes"
+import paymentRoute from "./routes/payment.routes"
+import walletRoute from "./routes/wallet.routes"
+import webhookRoute from "./routes/webhook.routes"
+import payoutRoute from "./routes/payout.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -46,7 +49,10 @@ app.get("/health", (_req, res) => {
 });
 
 /** ROUTES */
-app.use("/api/v1/payments", productRoute);
+app.use("/api/v1/payments", paymentRoute);
+app.use("/api/v1/wallets", walletRoute);
+app.use("/api/v1/webhooks", webhookRoute);
+app.use("/api/v1/payouts", payoutRoute);
 
 /**
  * @description Metrics endpoint for my Prometheus server

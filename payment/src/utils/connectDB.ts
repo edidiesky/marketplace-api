@@ -109,28 +109,27 @@ export const connectMongoDB = async (
   }
 };
 
-// input: fn: (client session): rerturns Payment
 export default async function withTransaction<T>(
-  fn: (session: mongoose.ClientSession) => Promise<Partial<IPayment> | null>
-) {
+  fn: (session: mongoose.ClientSession) => Promise<T>
+): Promise<T> {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const result = await fn(session);
     await session.commitTransaction();
-    return result
+    return result;
   } catch (error) {
     if (session.inTransaction()) {
       await session.abortTransaction();
     }
-
     if (error instanceof Error) {
-      logger.error("Error did occurred when aboirting transaction:", {
+      logger.error("Transaction aborted", {
         message: error.message,
         stack: error.stack,
       });
-      throw error
+      throw error;
     }
+    throw new Error("Unknown transaction error");
   } finally {
     await session.endSession();
   }
