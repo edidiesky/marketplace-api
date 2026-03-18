@@ -8,8 +8,7 @@ export interface IInventory {
   warehouseName: string;
   productTitle: string;
   productImage: string;
-  ownerName: string;
-  sku: string;
+  ownerName: string;  
   ownerEmail: string;
   quantityAvailable: number;
   quantityReserved: number;
@@ -39,7 +38,6 @@ const InventorySchema = new Schema<IInventory>(
     },
     productImage: [String],
     productTitle: String,
-    sku: String,
     storeDomain:String,
     storeName:String,
     storeId: {
@@ -80,7 +78,6 @@ const InventorySchema = new Schema<IInventory>(
 InventorySchema.index({ storeId: 1, sku: 1 }, { unique: true });
 InventorySchema.index({ storeId: 1, isLowStock: 1 });
 InventorySchema.index({ ownerId: 1, isLowStock: 1 });
-InventorySchema.index({ sku: 1 });
 InventorySchema.index({ productId: 1 });
 
 export default mongoose.model<IInventory>("Inventory", InventorySchema);

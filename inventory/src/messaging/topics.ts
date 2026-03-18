@@ -57,7 +57,6 @@ export const InventoryTopic = {
           quantityOnHand: availableStock,
           quantityAvailable: availableStock,
           quantityReserved: 0,
-          sku,
           reorderPoint: thresholdStock,
           storeName: data.storeName,
           storeDomain: data.storeDomain,

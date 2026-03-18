@@ -1,212 +1,412 @@
 import { FilterQuery, Types } from "mongoose";
-import Order, { IOrder, OrderStatus } from "../models/Order";
+import Order, {
+  FulfillmentStatus,
+  IOrder,
+  OrderStatus,
+  ShippingAddress,
+} from "../models/Order";
 import { IOrderRepository } from "../repository/IOrderRepository";
 import { OrderRepository } from "../repository/OrderRepository";
+import { withTransaction } from "../utils/connectDB";
 import redisClient from "../config/redis";
 import logger from "../utils/logger";
-import { withTransaction } from "../utils/connectDB";
-import {
-  SUCCESSFULLY_FETCHED_STATUS_CODE,
-  ORDER_CHECKOUT_STARTED_TOPIC,
-} from "../constants";
-import { ICart } from "../types";
-import { sendOrderMessage } from "../messaging/producer";
+import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+import { fulfillmentTransitions } from "../utils/fulfillmentTransitions";
+
+const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4003";
+const INVENTORY_SERVICE_URL =
+  process.env.INVENTORY_SERVICE_URL ?? "http://inventory:4008";
+const INTERNAL_SECRET = process.env.INTERNAL_SERVICE_SECRET ?? "";
+const TIMEOUT_MS = 8000;
+
+interface CartSnapshot {
+  _id: string;
+  userId: string;
+  storeId: string;
+  sellerId: string;
+  fullName: string;
+  quantity: number;
+  totalPrice: number;
+  cartItems: Array<{
+    productId: string;
+    productTitle: string;
+    productDescription?: string;
+    productPrice: number;
+    productQuantity: number;
+    productImage: string[];
+  }>;
+}
 
 export class OrderService {
   private repo: IOrderRepository;
   private readonly CACHE_PREFIX = "Order:";
-  private readonly CACHE_TTL = 60;
+  private readonly CACHE_TTL = 300;
 
   constructor() {
     this.repo = new OrderRepository();
   }
 
-  private getLatestVersionKey(userId: string): string {
-    return `${this.CACHE_PREFIX}${userId}:latest_version`;
+  private getCacheKey(orderId: string): string {
+    return `${this.CACHE_PREFIX}${orderId}`;
   }
 
-  private getVersionKey(userId: string, version: number): string {
-    return `${this.CACHE_PREFIX}${userId}:v${version}`;
-  }
-
-  private async addToCache(userId: string, order: IOrder): Promise<void> {
-    const latestKey = this.getLatestVersionKey(userId);
-    const versionKey = this.getVersionKey(userId, order.version);
-
+  private async writeCache(orderId: string, order: IOrder): Promise<void> {
     try {
-      await Promise.all([
-        redisClient.set(
-          versionKey,
-          JSON.stringify(order),
-          "EX",
-          this.CACHE_TTL
-        ),
-        redisClient.set(
-          latestKey,
-          order.version.toString(),
-          "EX",
-          this.CACHE_TTL
-        ),
-      ]);
-      logger.info("Order cache write successful", {
-        event: "write_to_cache_successful",
-        latestKey,
-        versionKey,
-      });
-    } catch (error) {
-      logger.error("Order cache write failed", {
-        event: "failed_to_write_cache",
-        latestKey,
-        versionKey,
-        message:
-          error instanceof Error ? error?.message : "an unknown error occurred",
-        stack:
-          error instanceof Error ? error?.stack : "an unknown error occurred",
-      });
+      await redisClient.set(
+        this.getCacheKey(orderId),
+        JSON.stringify(order),
+        "EX",
+        this.CACHE_TTL,
+      );
+    } catch (err) {
+      logger.warn("Order cache write failed", { orderId });
     }
   }
 
-  
-  async createOrderFromCart(
+  private async invalidateCache(orderId: string): Promise<void> {
+    try {
+      await redisClient.del(this.getCacheKey(orderId));
+    } catch (err) {
+      logger.warn("Order cache invalidation failed", { orderId });
+    }
+  }
+
+  private async fetchWithTimeout(
+    url: string,
+    init: RequestInit,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private internalHeaders() {
+    return {
+      "Content-Type": "application/json",
+      "x-internal-secret": INTERNAL_SECRET,
+    };
+  }
+
+  private async fetchCart(storeId: string): Promise<CartSnapshot> {
+    const res = await this.fetchWithTimeout(
+      `${CART_SERVICE_URL}/api/v1/carts/${storeId}`,
+      { method: "GET", headers: this.internalHeaders() },
+    );
+    if (!res.ok) throw new Error(`CART_FETCH_FAILED:${res.status}`);
+    return res.json() as Promise<CartSnapshot>;
+  }
+
+  private async reserveItem(
+    storeId: string,
+    productId: string,
+    quantity: number,
+    sagaId: string,
     userId: string,
-    cart: ICart,
-    sellerId: string,
-    requestId: string
-  ): Promise<IOrder> {
-    const cartId = cart._id;
-    const existingByRequestId = await this.repo.getOrderByRequestId(requestId);
-    if (existingByRequestId) {
-      logger.info("Order already exists for this request", {
-        event: "duplicate_order_request",
-        orderId: existingByRequestId._id,
-        requestId,
-        userId,
-      });
-      return existingByRequestId;
-    }
+  ): Promise<void> {
+    const res = await this.fetchWithTimeout(
+      `${INVENTORY_SERVICE_URL}/api/v1/inventories/reserve`,
+      {
+        method: "POST",
+        headers: this.internalHeaders(),
+        body: JSON.stringify({ storeId, productId, quantity, userId, sagaId }),
+      },
+    );
 
-    const existingByCart = await this.repo.getOrderByCartId(cartId);
-    if (existingByCart) {
-      logger.warn("Order already exists for this cart (different requestId)", {
-        event: "existing_order_different_request",
-        orderId: existingByCart._id,
-        existingRequestId: existingByCart.requestId,
-        newRequestId: requestId,
-        cartId,
-      });
-      return existingByCart;
-    }
-
-    return withTransaction(async (session) => {
-      const sagaId = `order-${Date.now()}-${userId}-${requestId}`;
-
-      const orderData: Partial<IOrder> = {
-        userId: new Types.ObjectId(userId),
-        sellerId: new Types.ObjectId(sellerId),
-        storeId: new Types.ObjectId(cart.storeId),
-        cartId: new Types.ObjectId(cart._id),
-        fullName: cart.fullName,
-        totalPrice: cart.totalPrice,
-        quantity: cart.quantity,
-        cartItems: cart.cartItems.map((item: any) => ({
-          ...item,
-          productId: new Types.ObjectId(item.productId),
-        })),
-        requestId,
-        orderStatus: OrderStatus.PENDING,
+    if (!res.ok) {
+      const body = (await res.json()) as {
+        message?: string;
+        availableStock?: number;
       };
-
-      const order = await this.repo.createOrder(orderData, session);
-      await this.addToCache(userId, order);
-
-      logger.info("Order created successfully", {
-        event: "order_successfully_created",
-        orderId: order._id,
-        userId: order.userId,
-        cartId: cart._id,
-        totalPrice: cart.totalPrice,
-        requestId,
-        sagaId,
-      });
-
-      try {
-        await sendOrderMessage(
-          ORDER_CHECKOUT_STARTED_TOPIC,
+      if (res.status === 400) {
+        logger.warn(
+          `INSUFFICIENT_STOCK:${body.availableStock ?? 0}:${productId}`,
           {
-            orderId: order._id.toString(),
-            userId: order.userId.toString(),
-            storeId: order.storeId.toString(),
-            cartId: order.cartId.toString(),
+            storeId,
+            productId,
+            userId,
             sagaId,
-            items: order.cartItems.map((item) => ({
-              productId: item.productId.toString(),
-              productTitle: item.productTitle,
-              quantity: item.productQuantity,
-              price: item.productPrice,
-            })),
-            totalPrice: order.totalPrice,
-            createdAt: new Date().toISOString(),
+            quantity,
           },
-          order.userId.toString() // Partition key
         );
-
-        logger.info("ORDER_CHECKOUT_STARTED event published", {
-          orderId: order._id,
-          sagaId,
-          itemCount: order.cartItems.length,
-        });
-      } catch (eventError) {
-        logger.error("CRITICAL: Failed to publish checkout started event", {
-          orderId: order._id,
-          sagaId,
-          error: eventError instanceof Error ? eventError.message : String(eventError),
-        });
-
-        await this.repo.updateOrderStatus(
-          order._id.toString(),
-          OrderStatus.FAILED,
-          {
-            failureReason: "Failed to initiate checkout process",
-          }
-        );
-
         throw new Error(
-          "Order created but failed to start checkout process. Please contact support."
+          `INSUFFICIENT_STOCK:${body.availableStock ?? 0}:${productId}`,
         );
       }
+      if (res.status === 409) {
+        logger.warn(`STOCK_CONTENTION:${productId}`, {
+          storeId,
+          productId,
+          userId,
+          sagaId,
+          quantity,
+        });
+        throw new Error(`STOCK_CONTENTION:${productId}`);
+      }
+      logger.warn(`RESERVE_FAILED:${productId}`, {
+        storeId,
+        productId,
+        userId,
+        sagaId,
+        quantity,
+      });
+      throw new Error(`RESERVE_FAILED:${productId}`);
+    }
+  }
 
-      return order;
+  private async releaseItem(
+    storeId: string,
+    productId: string,
+    quantity: number,
+    sagaId: string,
+    userId: string,
+  ): Promise<void> {
+    try {
+      await this.fetchWithTimeout(
+        `${INVENTORY_SERVICE_URL}/api/v1/inventories/release`,
+        {
+          method: "POST",
+          headers: this.internalHeaders(),
+          body: JSON.stringify({
+            storeId,
+            productId,
+            quantity,
+            userId,
+            sagaId,
+          }),
+        },
+      );
+    } catch (err) {
+      logger.error("Release failed during compensation, TTL will clean up", {
+        productId,
+        sagaId,
+        userId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  /**
+   * Checkout flow:
+   *
+   * 1. Idempotency check on requestId
+   * 2. Fetch cart from cart service (server-side, not from client)
+   * 3. Reserve inventory per item via HTTP (synchronous, fail fast)
+   * 4. Create order in PAYMENT_PENDING inside MongoDB transaction
+   * 5. Cache order
+   *
+   * State: PENDING to RESERVING to PAYMENT_PENDING
+   *
+   * The user is redirected to the order page after this returns.
+   * Payment is initiated separately when the user selects a provider.
+   */
+  async checkout(
+    userId: string,
+    storeId: string,
+    cartId: string,
+    requestId: string,
+  ): Promise<IOrder> {
+    // Step 1: Idempotency
+    const existing = await this.repo.getOrderByRequestId(requestId);
+    if (existing) {
+      logger.info("Duplicate checkout, returning existing order", {
+        requestId,
+        orderId: existing._id,
+      });
+      return existing;
+    }
+
+    const sagaId = `order-${Date.now()}-${userId}-${requestId}`;
+    const cart = await this.fetchCart(storeId);
+
+    if (!cart.cartItems.length) throw new Error("Cart is empty");
+
+    // Reserve inventory per item
+    // Track reserved items so we can roll back on partial failure
+    const reservedItems: Array<{ productId: string; quantity: number }> = [];
+    const failedItems: Array<{
+      productId: string;
+      productTitle: string;
+      reason: string;
+    }> = [];
+
+    for (const item of cart.cartItems) {
+      try {
+        await this.reserveItem(
+          storeId,
+          item.productId,
+          item.productQuantity,
+          `${sagaId}-${item.productId}`,
+          userId,
+        );
+        reservedItems.push({
+          productId: item.productId,
+          quantity: item.productQuantity,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+
+        failedItems.push({
+          productId: item.productId,
+          productTitle: item.productTitle,
+          reason: msg.startsWith("INSUFFICIENT_STOCK")
+            ? "Out of stock"
+            : "Reservation failed",
+        });
+        for (const reserved of reservedItems) {
+          await this.releaseItem(
+            storeId,
+            reserved.productId,
+            reserved.quantity,
+            `${sagaId}-${reserved.productId}`,
+            userId,
+          );
+        }
+
+        logger.warn("Checkout reservation failed, compensation complete", {
+          sagaId,
+          failedProduct: item.productId,
+          rolledBack: reservedItems.length,
+          userId,
+        });
+
+        const error = new Error("One or more items are unavailable") as any;
+        error.statusCode = 400;
+        error.failedItems = failedItems;
+        throw error;
+      }
+    }
+
+    // Step 4: Create order in PAYMENT_PENDING inside a transaction
+    // No HTTP calls inside this block
+    const order = await withTransaction(async (session) => {
+      return this.repo.createOrder(
+        {
+          userId: new Types.ObjectId(userId),
+          sellerId: new Types.ObjectId(cart.sellerId),
+          storeId: new Types.ObjectId(storeId),
+          cartId: new Types.ObjectId(cartId),
+          fullName: cart.fullName,
+          quantity: cart.quantity,
+          totalPrice: cart.totalPrice,
+          cartItems: cart.cartItems.map((i) => ({
+            productId: new Types.ObjectId(i.productId),
+            productTitle: i.productTitle,
+            productDescription: i.productDescription,
+            productPrice: i.productPrice,
+            productQuantity: i.productQuantity,
+            productImage: i.productImage,
+            reservedAt: new Date(),
+          })),
+          orderStatus: OrderStatus.PAYMENT_PENDING,
+          requestId,
+          sagaId,
+        },
+        session,
+      );
     });
+    await this.writeCache(order._id.toString(), order);
+
+    logger.info("Checkout complete, order in PAYMENT_PENDING", {
+      orderId: order._id,
+      sagaId,
+      userId,
+      totalPrice: order.totalPrice,
+    });
+
+    return order;
+  }
+
+  /**
+   * Add shipping details to an existing order.
+   * Only allowed when order is in PAYMENT_PENDING or PAYMENT_INITIATED state.
+   * Shipping is frozen once order reaches COMPLETED or FAILED.
+   */
+  async addShipping(
+    userId: string,
+    orderId: string,
+    shipping: ShippingAddress,
+  ): Promise<IOrder | null> {
+    const order = await this.repo.getOrderById(orderId);
+
+    if (!order) {
+      logger.warn("Order was not found for the order id provided,", {
+        userId,
+        orderId,
+        shipping,
+      });
+      throw new Error("Order was not found for the order id provided");
+    }
+
+    if (order.userId.toString() !== userId) {
+      logger.warn(
+        "You are not authorized to perform this operation since you are not the owner of this order item",
+        {
+          userId,
+          orderId,
+          shipping,
+        },
+      );
+      throw new Error(
+        "You are not authorized to perform this operation since you are not the owner of this order item",
+      );
+    }
+
+    const mutableStates: OrderStatus[] = [
+      OrderStatus.PAYMENT_PENDING,
+      OrderStatus.PAYMENT_INITIATED,
+    ];
+
+    if (!mutableStates.includes(order.orderStatus)) {
+      logger.warn(
+        `Cannot update shipping for order in status: ${order.orderStatus}`,
+        {
+          userId,
+          orderId,
+          status: order.orderStatus,
+        },
+      );
+      throw new Error(
+        `Cannot update shipping for order in status: ${order.orderStatus}`,
+      );
+    }
+
+    const updated = await this.repo.updateOrderStatus(
+      orderId,
+      order.orderStatus,
+      { shipping },
+    );
+
+    if (updated) await this.writeCache(orderId, updated);
+    return updated;
   }
 
   async getOrderById(orderId: string): Promise<IOrder | null> {
-    return this.repo.getOrderById(orderId);
+    const cacheKey = this.getCacheKey(orderId);
+
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch (err) {
+      logger.warn("Order cache read failed", { orderId });
+    }
+
+    const order = await this.repo.getOrderById(orderId);
+    if (order) await this.writeCache(orderId, order);
+    return order;
   }
 
-  async getUserOrders(
-    query: FilterQuery<IOrder>,
-    skip: number,
-    limit: number
-  ) {
+  async getUserOrders(query: FilterQuery<IOrder>, skip: number, limit: number) {
     const [orders, totalCount] = await Promise.all([
       this.repo.getUserOrders(query, skip, limit),
       Order.countDocuments(query),
     ]);
-    const totalPages = Math.ceil(totalCount / limit);
-
-    logger.info("User orders fetched successfully", {
-      event: "user_order_successfully_fetched",
-      orderLength: orders?.length,
-      query,
-      limit,
-    });
 
     return {
-      data: {
-        orders,
-        totalCount,
-        totalPages,
-      },
+      data: { orders, totalCount, totalPages: Math.ceil(totalCount / limit) },
       success: true,
       statusCode: SUCCESSFULLY_FETCHED_STATUS_CODE,
     };
@@ -215,55 +415,114 @@ export class OrderService {
   async confirmPaymentSuccess(
     orderId: string,
     transactionId: string,
-    paymentDate: Date
-  ) {
+    paymentDate: Date,
+  ): Promise<IOrder | null> {
     const order = await this.repo.updateOrderStatus(
       orderId,
       OrderStatus.COMPLETED,
-      {
-        transactionId,
-        paymentDate,
-      }
+      { transactionId, paymentDate },
     );
-
-    if (order) {
-      await this.addToCache(order.userId.toString(), order);
-      logger.info("Order completed successfully", { orderId });
-    }
-
+    if (order) await this.writeCache(orderId, order);
     return order;
   }
 
-  async markPaymentFailed(orderId: string, reason?: string) {
+  async markPaymentFailed(
+    orderId: string,
+    reason?: string,
+  ): Promise<IOrder | null> {
     const order = await this.repo.updateOrderStatus(
       orderId,
       OrderStatus.FAILED,
-      {
-        failureReason: reason || "Payment failed",
-      }
+      { failureReason: reason ?? "Payment failed" },
     );
-
-    if (order) {
-      await this.addToCache(order.userId.toString(), order);
-      logger.info("Order marked as payment failed", { orderId, reason });
-    }
-
+    if (order) await this.writeCache(orderId, order);
     return order;
   }
 
   async updateOrderToOutOfStock(
     orderId: string,
     status: OrderStatus = OrderStatus.OUT_OF_STOCK,
-    updates: Partial<IOrder> = {}
+    updates: Partial<IOrder> = {},
   ): Promise<IOrder | null> {
-    const updated = await this.repo.updateOrderStatus(orderId, status, updates);
+    const order = await this.repo.updateOrderStatus(orderId, status, updates);
+    if (order) await this.writeCache(orderId, order);
+    return order;
+  }
+
+  async updateFulfillment(
+    sellerId: string,
+    orderId: string,
+    status: FulfillmentStatus,
+    trackingNumber?: string,
+    courierName?: string,
+  ): Promise<IOrder | null> {
+    const order = await this.repo.getOrderById(orderId);
+
+    if (!order) throw new Error("Order not found");
+
+    // Only the seller who owns this order can update fulfillment
+    if (order.sellerId.toString() !== sellerId) {
+      logger.warn(`The user is not authprized to perform this action`, {
+        sellerId,
+        orderId,
+        status,
+        courierName,
+      });
+      throw new Error("Unauthorized");
+    }
+
+    if (order.orderStatus !== OrderStatus.COMPLETED) {
+      logger.warn(
+        `Cannot update fulfillment for order in payment status: ${order.orderStatus}`,
+        {
+          sellerId,
+          orderId,
+          status,
+          courierName,
+        },
+      );
+      throw new Error(
+        `Cannot update fulfillment for order in payment status: ${order.orderStatus}`,
+      );
+    }
+
+    if (
+      !fulfillmentTransitions({
+        prevStatus: order.fulfillmentStatus,
+        currStatus: status,
+      })
+    ) {
+      logger.warn(
+        `Invalid transition: ${order.fulfillmentStatus} to ${status}`,
+        {
+          sellerId,
+          orderId,
+          status,
+          courierName,
+        },
+      );
+      throw new Error(
+        `Invalid transition: ${order.fulfillmentStatus} to ${status}`,
+      );
+    }
+
+    const updates: Partial<IOrder> = { fulfillmentStatus: status };
+    if (trackingNumber) updates.trackingNumber = trackingNumber;
+    if (courierName) updates.courierName = courierName;
+
+    const updated = await this.repo.updateOrderStatus(
+      orderId,
+      order.orderStatus, 
+      updates,
+    );
 
     if (updated) {
-      await this.addToCache(updated.userId.toString(), updated);
-      logger.info("Order marked as out of stock due to reservation issue", {
+      await this.writeCache(orderId, updated);
+      logger.info("Fulfillment status updated", {
         orderId,
-        newStatus: status,
-        failureReason: updates.failureReason,
+        from: order.fulfillmentStatus,
+        to: status,
+        sellerId,
       });
     }
 

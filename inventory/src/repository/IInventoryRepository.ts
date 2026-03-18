@@ -4,7 +4,7 @@ import { IInventory } from "../models/Inventory";
 export interface IInventoryRepository {
   createInventory: (
     data: Partial<IInventory>,
-    session: mongoose.ClientSession
+    session?: mongoose.ClientSession
   ) => Promise<IInventory>;
   getStoreInventory: (
     query: FilterQuery<IInventory>,

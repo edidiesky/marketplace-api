@@ -66,7 +66,7 @@ This endpoint does **not** check or reserve inventory. Inventory is checked at c
 ```
 
 **Response: 200 OK**
-Returned instead of 201 when the idempotency lock is already held (duplicate in-flight request).
+Returned instead of 201 when the idempotency lock is already held (mainly duplicate in-flight request).
 
 ```json
 { "message": "Cart operation already in progress" }

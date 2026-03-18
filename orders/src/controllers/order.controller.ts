@@ -9,27 +9,37 @@ import { AuthenticatedRequest } from "../types";
 import { orderService } from "../services/order.service";
 import { buildQuery } from "../utils/buildQuery";
 
-const CreateOrderHandler = asyncHandler(
+const CheckoutHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const { cart, requestId, sellerId } = req.body;
+    const { storeId } = req.params;
+    const { cartId, requestId } = req.body;
 
-    const order = await orderService.createOrderFromCart(
-      userId,
-      cart,
-      sellerId,
-      requestId as string
-    );
-
+    const order = await orderService.checkout(userId, storeId, cartId, requestId);
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(order);
   }
 );
 
+const AddShippingHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = (req as AuthenticatedRequest).user;
+    const { orderId } = req.params;
+
+    const order = await orderService.addShipping(userId, orderId, req.body);
+
+    if (!order) {
+      res.status(NOT_FOUND_STATUS_CODE);
+      throw new Error("Order not found");
+    }
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(order);
+  }
+);
+
 const GetUserOrdersHandler = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     const { page = 1, limit = 10 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
-
     const query = buildQuery(req);
 
     const result = await orderService.getUserOrders(query, skip, Number(limit));
@@ -37,14 +47,48 @@ const GetUserOrdersHandler = asyncHandler(
   }
 );
 
-const GetOrderHandler = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderService.getOrderById(req.params.id);
-  if (!order) {
-    res.status(NOT_FOUND_STATUS_CODE);
-    throw new Error("Order not found");
+const GetOrderHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const order = await orderService.getOrderById(req.params.id);
+    if (!order) {
+      res.status(NOT_FOUND_STATUS_CODE);
+      throw new Error("Order not found");
+    }
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(order);
   }
-  res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(order);
-});
+);
 
-export { CreateOrderHandler, GetUserOrdersHandler, GetOrderHandler };
 
+const UpdateFulfillmentHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = (req as AuthenticatedRequest).user;
+    const { orderId } = req.params;
+    const { status, trackingNumber, courierName } = req.body;
+
+    const order = await orderService.updateFulfillment(
+      userId,
+      orderId,
+      status,
+      trackingNumber,
+      courierName
+    );
+
+    if (!order) {
+      res.status(NOT_FOUND_STATUS_CODE);
+      throw new Error("Order not found");
+    }
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(order);
+  }
+);
+
+
+
+
+export {
+  CheckoutHandler,
+  AddShippingHandler,
+  GetUserOrdersHandler,
+  GetOrderHandler,
+  UpdateFulfillmentHandler
+};
