@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { IRules } from "../models/Rules";
-import { RulesService, CreateRuleDTO, UpdateRuleDTO } from "../services/rules.service";
+import {
+  RulesService,
+  CreateRuleDTO,
+  UpdateRuleDTO,
+} from "../services/rules.service";
 import logger from "../utils/logger";
 
 const SUCCESS_STATUS = 200;
@@ -36,18 +40,25 @@ export class RulesController {
 
   getRules = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { page, limit, id_type, resource, enabled } = req.query as any;
+      const page = Number(req.query.page ?? 1);
+      const limit = Number(req.query.limit ?? 20);
 
       const filter: FilterQuery<IRules> = {};
-      if (id_type) filter.id_type = id_type;
-      if (resource) filter.resource = resource;
-      if (enabled !== undefined) filter.enabled = enabled;
+      if (req.query.id_type) filter.id_type = String(req.query.id_type);
+      if (req.query.resource) filter.resource = String(req.query.resource);
+      if (req.query.enabled !== undefined) {
+        filter.enabled = req.query.enabled === "true";
+      }
 
       const result = await this.service.getRules(filter, page, limit);
       res.status(SUCCESS_STATUS).json({
         status: "success",
         data: result.data,
-        pagination: { page: result.page, limit: result.limit, total: result.total },
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+        },
       });
     } catch (error: any) {
       logger.error("Failed to fetch rules", { error: error.message });
@@ -60,7 +71,8 @@ export class RulesController {
 
   getSingleRule = async (req: Request, res: Response): Promise<void> => {
     try {
-      const rule = await this.service.getSingleRule(req.params.ruleId);
+      const ruleId = String(req.params.ruleId);
+      const rule = await this.service.getSingleRule(ruleId);
       res.status(SUCCESS_STATUS).json({ status: "success", data: rule });
     } catch (error: any) {
       if (error.message?.includes("not found")) {
@@ -79,7 +91,11 @@ export class RulesController {
 
   updateRule = async (req: Request, res: Response): Promise<void> => {
     try {
-      const rule = await this.service.updateRule(req.params.ruleId, req.body as UpdateRuleDTO);
+      const ruleId = String(req.params.ruleId);
+      const rule = await this.service.updateRule(
+        ruleId,
+        req.body as UpdateRuleDTO,
+      );
       res.status(SUCCESS_STATUS).json({ status: "success", data: rule });
     } catch (error: any) {
       if (error.message?.includes("not found")) {
@@ -98,7 +114,9 @@ export class RulesController {
 
   toggleRule = async (req: Request, res: Response): Promise<void> => {
     try {
-      const rule = await this.service.toggleRule(req.params.ruleId, req.body.enabled);
+      const ruleId = String(req.params.ruleId);
+      const enabled = Boolean(req.body.enabled);
+      const rule = await this.service.toggleRule(ruleId, enabled);
       res.status(SUCCESS_STATUS).json({ status: "success", data: rule });
     } catch (error: any) {
       if (error.message?.includes("not found")) {
@@ -117,7 +135,8 @@ export class RulesController {
 
   deleteRule = async (req: Request, res: Response): Promise<void> => {
     try {
-      await this.service.deleteRule(req.params.ruleId);
+      const ruleId = String(req.params.ruleId);
+      await this.service.deleteRule(ruleId);
       res.status(SUCCESS_STATUS).json({ status: "success", data: null });
     } catch (error: any) {
       if (error.message?.includes("not found")) {

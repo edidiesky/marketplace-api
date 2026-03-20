@@ -1,28 +1,7 @@
-/**
- * RulesService
- *
- * Responsibilities:
- *   1. CRUD via RulesRepository (DB + Redis cache)
- *   2. After any write: update the in-memory RulesEngine + broadcast via PubSub
- *      so all gateway instances pick up the change within one Redis RTT
- *   3. Translate IRules (DB shape) -> RateLimitRule (engine shape) for the engine
- *
- * Why the service owns the PubSub publish:
- *   The controller should not know about PubSub or the engine.
- *   The repository should not know about the engine.
- *   The service sits between them and is the right place to coordinate
- *   the three writes: DB -> engine -> broadcast.
- *
- * Failure handling:
- *   DB write fails         -> throw, nothing else happens
- *   Engine update fails    -> log + continue (engine reloads on next TTL anyway)
- *   PubSub publish fails   -> log + continue (non-fatal, other instances reload on TTL)
- */
-
+import { RulesSyncPubSub } from "../rules/rulesSync";
 import { IRules, RulesIDType } from "../models/Rules";
 import { IRulesRepository } from "../repository/IRulesRepository";
 import { RulesEngine } from "../rules/engine";
-import { RulesSyncPubSub } from "../pubsub/rulesSync";
 import { RateLimitRule, UserTier, Algorithm } from "../rules/repository";
 import logger from "../utils/logger";
 import { FilterQuery } from "mongoose";
@@ -30,7 +9,7 @@ import mongoose from "mongoose";
 
 export interface CreateRuleDTO {
   id_type: RulesIDType;
-  id_value: string; // userId, IP, or API key value
+  id_value: string; 
   resource: string; // route pattern e.g. "/auth/*"
   limits: {
     algorithm: Algorithm;

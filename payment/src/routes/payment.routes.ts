@@ -3,7 +3,6 @@ import {
   initializePayment,
   getPaymentHistory,
   getPaymentById,
-  handleWebhook,
   initiateRefund,
 } from "../controllers/payment.controller";
 import { authenticate } from "../middleware/auth.middleware";
@@ -17,7 +16,7 @@ import Joi from "joi";
 
 const router = Router();
 
-router.post("/webhook/:gateway", handleWebhook);
+// router.post("/webhook/:gateway", handleWebhook);
 router.use(authenticate);
 router
   .route("/initialize")

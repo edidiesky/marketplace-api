@@ -36,10 +36,9 @@ export const initializePayment = asyncHandler(
       gateway,
       customerEmail,
       customerName,
-      amount,
       phone,
       currency,
-      customerId: new Types.ObjectId(userId),
+      customerId: userId,
     });
 
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
@@ -83,56 +82,6 @@ export const getPaymentById = asyncHandler(
       success: true,
       data: payment,
     });
-  }
-);
-
-/**
- * @description Handle ZWebhook Payment Notifications
- * @routesGET POST /api/v1/payments/webhook
- * @private
- */
-export const handleWebhook = asyncHandler(
-  async (req: Request, res: Response) => {
-    const gateway = req.params.gateway as PaymentGateway;
-
-    if (!Object.values(PaymentGateway).includes(gateway)) {
-      res.status(BAD_REQUEST_STATUS_CODE).json({ message: "Unsupported gateway" });
-      return;
-    }
-
-    const signature = req.headers["x-paystack-signature"] as string;
-
-    try {
-      const payment = await paymentService.handleWebhook(
-        gateway,
-        req.body,
-        signature
-      );
-
-      logger.info("Webhook processed successfully", {
-        gateway,
-        paymentId: payment.paymentId,
-        status: payment.status,
-        event: req.body.event,
-      });
-
-      res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({ message: "Thank you", success: true });
-    } catch (err: any) {
-      logger.error("Webhook processing failed", {
-        gateway,
-        error: err.message,
-        event: req.body.event,
-      });
-
-      if (err.message.toLowerCase().includes("signature")) {
-        res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({ message: "Invalid signature - ignored" });
-        return;
-      }
-
-      res.status(BAD_REQUEST_STATUS_CODE).json({ message: err.message });
-    } finally {
-      
-    }
   }
 );
 

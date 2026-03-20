@@ -176,4 +176,20 @@ export class RulesRepository implements IRulesRepository {
 
     logger.info("Rule deleted and cache invalidated", { ruleId });
   }
+
+  async getStoreRules(query: FilterQuery<IRules>, skip: number, limit: number) {
+     const cacheKey = this.getSearchCacheKey(query, skip, limit);
+    const cached = await this.getCache<IRules[]>(cacheKey);
+    if (cached) {
+      logger.debug("Rules search cache hit", { cacheKey });
+      return cached;
+    }
+
+    const rules = await measureDatabaseQuery("fetch_all_rules", () =>
+      RulesModel.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }).lean().exec(),
+    );
+
+    await this.setCache(cacheKey, rules);
+    return rules as IRules[];
+  };
 }
