@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-03-17
-**Owner:** Inventory service team
+**Owner:** Eddy
 
 ---
 

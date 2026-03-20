@@ -1,6 +1,6 @@
 # Error Codes: Inventory Service
 
-**Owner:** Inventory service team
+**Owner:** Eddy
 **Last updated:** 2026-03-17
 
 ---

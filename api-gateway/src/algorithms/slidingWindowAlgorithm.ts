@@ -36,8 +36,9 @@
  *   Sliding log is ideal for strict per-IP rate limiting at lower rates.
  */
 
-import { RateLimitResult } from './token-bucket';
 import { v4 as uuidv4 } from 'uuid';
+import { RateLimitResult } from './tokenBucketAlgorithm';
+import Redis from 'ioredis';
 
 export interface SlidingWindowLogConfig {
   limit: number;   
@@ -81,7 +82,7 @@ export class SlidingWindowLogLimiter {
   private scriptSha: string | null = null;
 
   constructor(
-    private readonly redis: RedisClient,
+    private readonly redis: Redis,
     private readonly config: SlidingWindowLogConfig,
   ) {}
 

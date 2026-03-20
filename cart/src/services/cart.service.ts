@@ -22,20 +22,27 @@ export class CartService {
     return `${this.CACHE_PREFIX}${storeId}:${userId}`;
   }
 
-  private async writeCache(userId: string, storeId: string, cart: ICart): Promise<void> {
+  private async writeCache(
+    userId: string,
+    storeId: string,
+    cart: ICart,
+  ): Promise<void> {
     try {
       await redisClient.set(
         this.getCacheKey(userId, storeId),
         JSON.stringify(cart),
         "EX",
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
     } catch (err) {
       logger.warn("Cache write failed", { userId, storeId });
     }
   }
 
-  private async invalidateCache(userId: string, storeId: string): Promise<void> {
+  private async invalidateCache(
+    userId: string,
+    storeId: string,
+  ): Promise<void> {
     try {
       await redisClient.del(this.getCacheKey(userId, storeId));
     } catch (err) {
@@ -74,15 +81,32 @@ export class CartService {
     };
   }
 
-  async createCart(userId: string, request: AddToCartRequest): Promise<ICart | string> {
+  async createCart(
+    userId: string,
+    request: AddToCartRequest,
+  ): Promise<ICart | string> {
     const {
-      productId, productTitle, productImage, productPrice,
-      productDescription, quantity = 1, fullName, email,
-      storeId, sellerId, idempotencyKey,
+      productId,
+      productTitle,
+      productImage,
+      productPrice,
+      productDescription,
+      quantity = 1,
+      fullName,
+      email,
+      storeId,
+      sellerId,
+      idempotencyKey,
     } = request;
 
     const lockKey = `cart:add:${storeId}:${userId}:${productId}:${idempotencyKey}`;
-    const locked = await redisClient.set(lockKey, "1", "EX", this.LOCK_TTL, "NX");
+    const locked = await redisClient.set(
+      lockKey,
+      "1",
+      "EX",
+      this.LOCK_TTL,
+      "NX",
+    );
     if (!locked) return "Cart operation already in progress";
 
     try {
@@ -107,7 +131,7 @@ export class CartService {
         }
 
         cartDoc.cartItems = cartDoc.cartItems.filter(
-          (item) => !item.productId.equals(new Types.ObjectId(productId))
+          (item) => !item.productId.equals(new Types.ObjectId(productId)),
         );
 
         cartDoc.cartItems.push({
@@ -121,8 +145,14 @@ export class CartService {
           availabilityStatus: CartItemStatus.AVAILABLE,
         });
 
-        cartDoc.quantity = cartDoc.cartItems.reduce((s, i) => s + i.productQuantity, 0);
-        cartDoc.totalPrice = cartDoc.cartItems.reduce((s, i) => s + i.productPrice * i.productQuantity, 0);
+        cartDoc.quantity = cartDoc.cartItems.reduce(
+          (s, i) => s + i.productQuantity,
+          0,
+        );
+        cartDoc.totalPrice = cartDoc.cartItems.reduce(
+          (s, i) => s + i.productPrice * i.productQuantity,
+          0,
+        );
         cartDoc.expireAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
         await cartDoc.save({ session });
@@ -140,7 +170,7 @@ export class CartService {
     userId: string,
     storeId: string,
     productId: string,
-    quantity: number
+    quantity: number,
   ): Promise<ICart | null> {
     const cart = await withTransaction(async (session) => {
       const cartDoc = await Cart.findOne({
@@ -148,16 +178,38 @@ export class CartService {
         storeId: new Types.ObjectId(storeId),
       }).session(session);
 
-      if (!cartDoc) throw new Error("Cart not found");
+      if (!cartDoc) {
+        logger.warn("Item not found in cart", {
+          userId,
+          storeId,
+          productId,
+          quantity,
+        });
+        throw new Error("Item not found in cart");
+      }
 
       const item = cartDoc.cartItems.find((i) =>
-        i.productId.equals(new Types.ObjectId(productId))
+        i.productId.equals(new Types.ObjectId(productId)),
       );
-      if (!item) throw new Error("Item not in cart");
+      if (!item) {
+        logger.warn("Item not found in cart", {
+          userId,
+          storeId,
+          productId,
+          quantity,
+        });
+        throw new Error("Item not found in cart");
+      }
 
       item.productQuantity = quantity;
-      cartDoc.quantity = cartDoc.cartItems.reduce((s, i) => s + i.productQuantity, 0);
-      cartDoc.totalPrice = cartDoc.cartItems.reduce((s, i) => s + i.productPrice * i.productQuantity, 0);
+      cartDoc.quantity = cartDoc.cartItems.reduce(
+        (s, i) => s + i.productQuantity,
+        0,
+      );
+      cartDoc.totalPrice = cartDoc.cartItems.reduce(
+        (s, i) => s + i.productPrice * i.productQuantity,
+        0,
+      );
 
       await cartDoc.save({ session });
       return cartDoc;
@@ -167,21 +219,38 @@ export class CartService {
     return cart;
   }
 
-  async deleteCartItem(userId: string, storeId: string, productId: string): Promise<void> {
+  async deleteCartItem(
+    userId: string,
+    storeId: string,
+    productId: string,
+  ): Promise<void> {
     await withTransaction(async (session) => {
       const cartDoc = await Cart.findOne({
         userId: new Types.ObjectId(userId),
         storeId: new Types.ObjectId(storeId),
       }).session(session);
 
-      if (!cartDoc) throw new Error("Cart not found");
+      if (!cartDoc) {
+        logger.warn("Item not found in cart", {
+          userId,
+          storeId,
+          productId,
+        });
+        throw new Error("Item not found in cart");
+      }
 
       cartDoc.cartItems = cartDoc.cartItems.filter(
-        (i) => !i.productId.equals(new Types.ObjectId(productId))
+        (i) => !i.productId.equals(new Types.ObjectId(productId)),
       );
 
-      cartDoc.quantity = cartDoc.cartItems.reduce((s, i) => s + i.productQuantity, 0);
-      cartDoc.totalPrice = cartDoc.cartItems.reduce((s, i) => s + i.productPrice * i.productQuantity, 0);
+      cartDoc.quantity = cartDoc.cartItems.reduce(
+        (s, i) => s + i.productQuantity,
+        0,
+      );
+      cartDoc.totalPrice = cartDoc.cartItems.reduce(
+        (s, i) => s + i.productPrice * i.productQuantity,
+        0,
+      );
 
       await cartDoc.save({ session });
     });
@@ -201,15 +270,17 @@ export class CartService {
 
   async markItemsUnavailable(
     cartId: string,
-    unavailableItems: Array<{ productId: string; reason: string }>
+    unavailableItems: Array<{ productId: string; reason: string }>,
   ): Promise<void> {
     await withTransaction(async (session) => {
-      const cart = await Cart.findById(new Types.ObjectId(cartId)).session(session);
+      const cart = await Cart.findById(new Types.ObjectId(cartId)).session(
+        session,
+      );
       if (!cart) return;
 
       for (const { productId, reason } of unavailableItems) {
         const item = cart.cartItems.find((i) =>
-          i.productId.equals(new Types.ObjectId(productId))
+          i.productId.equals(new Types.ObjectId(productId)),
         );
         if (item) {
           item.availabilityStatus = CartItemStatus.OUT_OF_STOCK;
@@ -218,7 +289,10 @@ export class CartService {
       }
 
       await cart.save({ session });
-      await this.invalidateCache(cart.userId.toString(), cart.storeId.toString());
+      await this.invalidateCache(
+        cart.userId.toString(),
+        cart.storeId.toString(),
+      );
     });
   }
 }

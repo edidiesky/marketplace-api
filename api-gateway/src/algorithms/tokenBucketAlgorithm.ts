@@ -62,8 +62,6 @@ export class TokenBucketLimiter {
 
   private async loadScript(): Promise<string> {
     if (this.scriptSha) return this.scriptSha;
-    // SCRIPT LOAD caches Lua on Redis side, we send SHA on subsequent calls
-    // This saves bandwidth at 1M rps - sending 300 bytes vs 20 bytes per call
     this.scriptSha = (await (this.redis as any).script(
       "LOAD",
       this.script,
@@ -86,8 +84,7 @@ export class TokenBucketLimiter {
         this.config.capacity,
         refillRatePerMs,
         now,
-        tokens,
-        ttl,
+        ttl, // position 4 = ARGV[4] in Lua = ttl
       )) as [number, number, number];
 
       return {

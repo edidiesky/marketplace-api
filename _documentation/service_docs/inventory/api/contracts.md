@@ -3,7 +3,7 @@
 **Base URL:** `/api/v1/inventories`
 **Auth:** Bearer JWT required unless noted. Internal endpoints require `x-internal-secret` header.
 **Last updated:** 2026-03-17
-**Owner:** Inventory service team
+**Owner:** Eddy
 
 All responses are JSON. All timestamps are ISO 8601 UTC. All IDs are MongoDB ObjectId strings.
 
@@ -19,22 +19,22 @@ Inventory records are also created automatically via the `product.onboarding.com
 
 **Path params**
 
-| Param | Type | Description |
-|---|---|---|
+| Param     | Type            | Description |
+| --------- | --------------- | ----------- |
 | `storeId` | ObjectId string | Store scope |
 
 **Request body**
 
-| Field | Type | Required | Constraints |
-|---|---|---|---|
-| `productId` | string | Yes | Valid ObjectId |
-| `productTitle` | string | No | - |
-| `productImage` | string[] | No | - |
-| `sku` | string | No | Unique per store if provided |
-| `quantityOnHand` | number | Yes | >= 0 |
-| `quantityAvailable` | number | Yes | >= 0, <= quantityOnHand |
-| `reorderPoint` | number | No | Defaults to 10 |
-| `reorderQuantity` | number | No | Defaults to 50 |
+| Field               | Type     | Required | Constraints                  |
+| ------------------- | -------- | -------- | ---------------------------- |
+| `productId`         | string   | Yes      | Valid ObjectId               |
+| `productTitle`      | string   | No       | -                            |
+| `productImage`      | string[] | No       | -                            |
+| `sku`               | string   | No       | Unique per store if provided |
+| `quantityOnHand`    | number   | Yes      | >= 0                         |
+| `quantityAvailable` | number   | Yes      | >= 0, <= quantityOnHand      |
+| `reorderPoint`      | number   | No       | Defaults to 10               |
+| `reorderQuantity`   | number   | No       | Defaults to 50               |
 
 **Response: 201 Created**
 
@@ -57,11 +57,12 @@ Inventory records are also created automatically via the `product.onboarding.com
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Missing required field |
-| INV_002 | 401 | Missing or invalid JWT |
-| INV_003 | 409 | Inventory already exists for this productId + storeId |
+| HTTP | Condition |
+
+|---|---|
+| 400 | Missing required field |
+| 401 | Missing or invalid JWT |
+| 409 | Inventory already exists for this productId + storeId |
 
 ---
 
@@ -73,11 +74,11 @@ Paginated list of all inventory records for a store.
 
 **Query params**
 
-| Param | Type | Default | Description |
-|---|---|---|---|
-| `page` | number | 1 | Page number |
-| `limit` | number | 10 | Items per page |
-| `isLowStock` | boolean | - | Filter low stock items |
+| Param        | Type    | Default | Description            |
+| ------------ | ------- | ------- | ---------------------- |
+| `page`       | number  | 1       | Page number            |
+| `limit`      | number  | 10      | Items per page         |
+| `isLowStock` | boolean | -       | Filter low stock items |
 
 **Response: 200 OK**
 
@@ -103,15 +104,15 @@ Read-only stock availability check. Used by the frontend cart view to warn users
 
 **Path params**
 
-| Param | Type | Description |
-|---|---|---|
+| Param       | Type            | Description      |
+| ----------- | --------------- | ---------------- |
 | `productId` | ObjectId string | Product to check |
 
 **Query params**
 
-| Param | Type | Required | Description |
-|---|---|---|---|
-| `storeId` | string | Yes | Store scope |
+| Param     | Type   | Required | Description |
+| --------- | ------ | -------- | ----------- |
+| `storeId` | string | Yes      | Store scope |
 
 **Response: 200 OK**
 
@@ -127,9 +128,9 @@ Read-only stock availability check. Used by the frontend cart view to warn users
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_004 | 404 | No inventory record for this productId + storeId |
+| HTTP | Condition                                        |
+| ---- | ------------------------------------------------ |
+| 404  | No inventory record for this productId + storeId |
 
 ---
 
@@ -145,9 +146,9 @@ Full inventory document. Same shape as POST 201 response.
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_004 | 404 | Inventory not found |
+| HTTP | Condition           |
+| ---- | ------------------- |
+| 404  | Inventory not found |
 
 ---
 
@@ -167,10 +168,10 @@ Full updated inventory document.
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Inventory does not exist |
-| INV_002 | 401 | Missing or invalid JWT |
+| HTTP | Condition                |
+| ---- | ------------------------ |
+| 400  | Inventory does not exist |
+| 401  | Missing or invalid JWT   |
 
 ---
 
@@ -188,10 +189,10 @@ Delete an inventory record. Only valid if `quantityReserved = 0`.
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Inventory does not exist |
-| INV_005 | 409 | Cannot delete inventory with active reservations |
+| HTTP | Condition                                        |
+| ---- | ------------------------------------------------ |
+| 400  | Inventory does not exist                         |
+| 409  | Cannot delete inventory with active reservations |
 
 ---
 
@@ -203,13 +204,13 @@ Reserve stock for an in-progress checkout. Atomically decrements `quantityAvaila
 
 **Request body**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `storeId` | string | Yes | Store scope |
-| `productId` | string | Yes | Product to reserve |
-| `quantity` | number | Yes | Units to reserve, >= 1 |
-| `userId` | string | Yes | Buyer user ID |
-| `sagaId` | string | Yes | Unique saga/order identifier for idempotency |
+| Field       | Type   | Required | Description                                  |
+| ----------- | ------ | -------- | -------------------------------------------- |
+| `storeId`   | string | Yes      | Store scope                                  |
+| `productId` | string | Yes      | Product to reserve                           |
+| `quantity`  | number | Yes      | Units to reserve, >= 1                       |
+| `userId`    | string | Yes      | Buyer user ID                                |
+| `sagaId`    | string | Yes      | Unique saga/order identifier for idempotency |
 
 **Response: 201 Created**
 
@@ -225,12 +226,14 @@ Reserve stock for an in-progress checkout. Atomically decrements `quantityAvaila
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Missing required field or quantity <= 0 |
-| INV_006 | 400 | Insufficient stock. Body includes `availableStock` |
-| INV_007 | 409 | Stock contention. Caller should retry with backoff |
-| INV_008 | 401 | Missing or invalid `x-internal-secret` |
+| HTTP | Condition |
+
+|---|---|
+
+| Missing required field or quantity <= 0 |
+| 400 | Insufficient stock. Body includes `availableStock` |
+| 409 | Stock contention. Caller should retry with backoff |
+| 401 | Missing or invalid `x-internal-secret` |
 
 ---
 
@@ -257,12 +260,14 @@ Same shape as `/reserve`.
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Missing required field |
-| INV_009 | 400 | Cannot release more than currently reserved |
-| INV_007 | 409 | Stock contention. Retry with backoff |
-| INV_008 | 401 | Missing or invalid `x-internal-secret` |
+| HTTP | Condition |
+
+|---|---|
+
+| Missing required field |
+| 400 | Cannot release more than currently reserved |
+| 409 | Stock contention. Retry with backoff |
+| 401 | Missing or invalid `x-internal-secret` |
 
 ---
 
@@ -289,28 +294,30 @@ Same shape as `/reserve`.
 
 **Errors**
 
-| Code | HTTP | Condition |
-|---|---|---|
-| INV_001 | 400 | Missing required field |
-| INV_010 | 404 | Reservation not found. May have expired or already committed |
-| INV_007 | 409 | Stock contention. Retry with backoff |
-| INV_008 | 401 | Missing or invalid `x-internal-secret` |
+| HTTP | Condition |
+
+|---|---|
+
+| Missing required field |
+| 404 | Reservation not found. May have expired or already committed |
+| 409 | Stock contention. Retry with backoff |
+| 401 | Missing or invalid `x-internal-secret` |
 
 ---
 
 ## Internal Events Consumed (Kafka)
 
-| Topic | Published by | Action |
-|---|---|---|
-| `product.onboarding.completed` | Product service | Create inventory record for new product |
-| `order.checkout.started` | Order service | Reserve stock for all items in order |
-| `order.payment.completed` | Order/Payment service | Commit stock permanently |
-| `order.payment.failed` | Order/Payment service | Release reservation back to available |
+| Topic                          | Published by          | Action                                  |
+| ------------------------------ | --------------------- | --------------------------------------- |
+| `product.onboarding.completed` | Product service       | Create inventory record for new product |
+| `order.checkout.started`       | Order service         | Reserve stock for all items in order    |
+| `order.payment.completed`      | Order/Payment service | Commit stock permanently                |
+| `order.payment.failed`         | Order/Payment service | Release reservation back to available   |
 
 ---
 
 ## Internal Events Published (Kafka)
 
-| Topic | Trigger | Payload |
-|---|---|---|
+| Topic                      | Trigger                                                        | Payload                                                                 |
+| -------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `order.reservation.failed` | Any item fails reservation in `order.checkout.started` handler | `{ orderId, sagaId, userId, storeId, reason, failedItems[], failedAt }` |

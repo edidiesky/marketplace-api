@@ -38,7 +38,15 @@ export const cacheMissCounter = new client.Counter({
   registers: [register],
 });
 
+export const serverHealthGauge = new client.Gauge({
+  name: "server_health_gauge",
+  help: "Total Server health guage",
+  labelNames: ["cache_type", "operation"],
+  registers: [register],
+});
 
+
+// serverHealthGauge
 
 export const errorCounter = new client.Counter({
   name: "Rules_service_errors_total",

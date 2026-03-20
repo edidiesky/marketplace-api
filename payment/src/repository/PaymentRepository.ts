@@ -367,3 +367,6 @@ export class PaymentRepository implements IPaymentRepository {
     }
   }
 }
+
+
+export const paymentRepository = new PaymentRepository()

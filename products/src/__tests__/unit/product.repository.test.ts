@@ -12,7 +12,6 @@ import {
 import * as redisModule from "../../config/redis";
 
 //  objectId helpe
-
 const objectId = () => new mongoose.Types.ObjectId();
 
 //  makeProduct fixture
@@ -92,8 +91,6 @@ function chainSkipLimitSortLeanExec<T>(value: T) {
 function chainExec<T>(value: T) {
   return { exec: jest.fn<() => Promise<T>>().mockResolvedValue(value) };
 }
-
-//  Tests
 
 describe("ProductRepository", () => {
   let repo: ProductRepository;
