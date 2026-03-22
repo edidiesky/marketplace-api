@@ -1,95 +1,94 @@
 import withTransaction from "../utils/connectDB";
-import LedgerEntry, { ILedgerEntry, LedgerEntryType, LedgerEntryStatus } from "../models/LedgerEntry";
+import LedgerEntry, {
+  ILedgerEntry,
+  LedgerEntryType,
+  LedgerEntryStatus,
+} from "../models/LedgerEntry";
 import Wallet from "../models/Wallet";
 import logger from "../utils/logger";
 import { Types } from "mongoose";
+import mongoose from "mongoose";
 
 const PLATFORM_FEE_RATE = parseFloat(process.env.PLATFORM_FEE_RATE ?? "0.05");
 
 export class LedgerRepository {
   /**
-   * Write CREDIT + FEE entries atomically on payment confirmation.
-   * CREDIT amount = net (gross - fee).
-   * FEE entry is audit record only - does not deduct from balance again.
-   * Wallet balance updated by +net only.
+   * Write CREDIT + FEE entries and update wallet balance.
+   * Accepts an external session so it participates in the
+   * caller's transaction. Does NOT start its own transaction.
    */
-  async creditOnPaymentConfirmed(data: {
-    sellerId: Types.ObjectId;
-    storeId: Types.ObjectId;
-    walletId: Types.ObjectId;
-    orderId: Types.ObjectId;
-    paymentId: string;
-    grossAmount: number;
-  }): Promise<{ credit: ILedgerEntry; fee: ILedgerEntry }> {
+  async creditOnPaymentConfirmed(
+    data: {
+      sellerId: Types.ObjectId;
+      storeId: Types.ObjectId;
+      walletId: Types.ObjectId;
+      orderId: Types.ObjectId;
+      paymentId: string;
+      grossAmount: number;
+    },
+    session: mongoose.ClientSession,
+  ): Promise<{ credit: ILedgerEntry; fee: ILedgerEntry }> {
     const fee = parseFloat((data.grossAmount * PLATFORM_FEE_RATE).toFixed(2));
     const net = parseFloat((data.grossAmount - fee).toFixed(2));
 
-    return withTransaction(async (session) => {
-      // Step 1: Get current wallet balance inside transaction
-      const wallet = await Wallet.findById(data.walletId).session(session);
-      if (!wallet) throw new Error("Wallet not found");
+    const wallet = await Wallet.findById(data.walletId).session(session);
+    if (!wallet) throw new Error("Wallet not found");
 
-      const balanceAfterCredit = parseFloat(
-        (wallet.balance + net).toFixed(2)
-      );
+    const balanceAfterCredit = parseFloat((wallet.balance + net).toFixed(2));
 
-      // Step 2: Write CREDIT entry
-      const [creditEntry] = await LedgerEntry.create(
-        [
-          {
-            sellerId: data.sellerId,
-            storeId: data.storeId,
-            walletId: data.walletId,
-            orderId: data.orderId,
-            paymentId: data.paymentId,
-            type: LedgerEntryType.CREDIT,
-            amount: net,
-            balanceAfter: balanceAfterCredit,
-            description: `Payment received for order ${data.orderId}`,
-            status: LedgerEntryStatus.COMPLETED,
-            idempotencyKey: `credit-${data.paymentId}`,
-          },
-        ],
-        { session }
-      );
+    const [creditEntry] = await LedgerEntry.create(
+      [
+        {
+          sellerId: data.sellerId,
+          storeId: data.storeId,
+          walletId: data.walletId,
+          orderId: data.orderId,
+          paymentId: data.paymentId,
+          type: LedgerEntryType.CREDIT,
+          amount: net,
+          balanceAfter: balanceAfterCredit,
+          description: `Payment received for order ${data.orderId}`,
+          status: LedgerEntryStatus.COMPLETED,
+          idempotencyKey: `credit-${data.paymentId}`,
+        },
+      ],
+      { session },
+    );
 
-      // Step 3: Write FEE entry (audit only, balanceAfter same as credit)
-      const [feeEntry] = await LedgerEntry.create(
-        [
-          {
-            sellerId: data.sellerId,
-            storeId: data.storeId,
-            walletId: data.walletId,
-            orderId: data.orderId,
-            paymentId: data.paymentId,
-            type: LedgerEntryType.FEE,
-            amount: fee,
-            balanceAfter: balanceAfterCredit,
-            description: `Platform fee (${PLATFORM_FEE_RATE * 100}%) for order ${data.orderId}`,
-            status: LedgerEntryStatus.COMPLETED,
-            idempotencyKey: `fee-${data.paymentId}`,
-          },
-        ],
-        { session }
-      );
+    const [feeEntry] = await LedgerEntry.create(
+      [
+        {
+          sellerId: data.sellerId,
+          storeId: data.storeId,
+          walletId: data.walletId,
+          orderId: data.orderId,
+          paymentId: data.paymentId,
+          type: LedgerEntryType.FEE,
+          amount: fee,
+          balanceAfter: balanceAfterCredit,
+          description: `Platform fee (${PLATFORM_FEE_RATE * 100}%) for order ${data.orderId}`,
+          status: LedgerEntryStatus.COMPLETED,
+          idempotencyKey: `fee-${data.paymentId}`,
+        },
+      ],
+      { session },
+    );
 
-      // Step 4: Update wallet balance atomically
-      await Wallet.findByIdAndUpdate(
-        data.walletId,
-        { $inc: { balance: net } },
-        { session }
-      );
+    await Wallet.findByIdAndUpdate(
+      data.walletId,
+      { $inc: { balance: net } },
+      { session },
+    );
 
-      logger.info("Ledger credit and fee entries written", {
-        paymentId: data.paymentId,
-        grossAmount: data.grossAmount,
-        net,
-        fee,
-        balanceAfter: balanceAfterCredit,
-      });
-
-      return { credit: creditEntry, fee: feeEntry };
+    logger.info("Ledger credit and fee entries written", {
+      paymentId: data.paymentId,
+      grossAmount: data.grossAmount,
+      net,
+      fee,
+      balanceAfter: balanceAfterCredit,
     });
+
+    return { credit: creditEntry, fee: feeEntry };
   }
 
   async debitOnRefund(data: {
@@ -109,7 +108,7 @@ export class LedgerRepository {
       }
 
       const balanceAfter = parseFloat(
-        (wallet.balance - data.refundAmount).toFixed(2)
+        (wallet.balance - data.refundAmount).toFixed(2),
       );
 
       const [entry] = await LedgerEntry.create(
@@ -128,13 +127,13 @@ export class LedgerRepository {
             idempotencyKey: `refund-${data.paymentId}`,
           },
         ],
-        { session }
+        { session },
       );
 
       await Wallet.findByIdAndUpdate(
         data.walletId,
         { $inc: { balance: -data.refundAmount } },
-        { session }
+        { session },
       );
 
       return entry;
@@ -156,7 +155,9 @@ export class LedgerRepository {
         throw new Error("INSUFFICIENT_WALLET_BALANCE");
       }
 
-      const balanceAfter = parseFloat((wallet.balance - data.amount).toFixed(2));
+      const balanceAfter = parseFloat(
+        (wallet.balance - data.amount).toFixed(2),
+      );
 
       const [entry] = await LedgerEntry.create(
         [
@@ -174,13 +175,13 @@ export class LedgerRepository {
             idempotencyKey: `payout-${data.payoutRequestId}`,
           },
         ],
-        { session }
+        { session },
       );
 
       await Wallet.findByIdAndUpdate(
         data.walletId,
         { $inc: { balance: -data.amount } },
-        { session }
+        { session },
       );
 
       return entry;

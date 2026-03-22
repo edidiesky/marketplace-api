@@ -212,7 +212,8 @@ export class PaymentRepository implements IPaymentRepository {
   async updatePaymentStatus(
     paymentId: string,
     status: PaymentStatus,
-    updates: Partial<IPayment> = {}
+    updates: Partial<IPayment> = {},
+    session?: mongoose.ClientSession
   ): Promise<IPayment | null> {
     try {
       const updateData: any = { status, ...updates };
@@ -229,7 +230,7 @@ export class PaymentRepository implements IPaymentRepository {
       const payment = await Payment.findOneAndUpdate(
         { paymentId },
         { $set: updateData },
-        { new: true }
+        { new: true, session: session ?? null }
       ).exec();
 
       if (!payment) {
