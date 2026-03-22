@@ -68,7 +68,4 @@ app.get("/metrics", async (req, res) => {
   }
 });
 
-app.use(errorHandler);
-app.use(NotFound);
-
 export { app };

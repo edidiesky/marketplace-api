@@ -6,7 +6,6 @@ import productRoute from "./routes/order.routes"
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, orderRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
@@ -61,8 +60,5 @@ app.get("/metrics", async (req, res) => {
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
-
-app.use(errorHandler);
-app.use(NotFound);
 
 export { app };

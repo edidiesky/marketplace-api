@@ -21,7 +21,7 @@ import withTransaction from "../utils/connectDB";
 import { v4 as uuidv4 } from "uuid";
 import { createPaymentAdapter } from "../strategies";
 
-const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL ?? "http://order:4005";
+const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL ?? "http://orders:4012";
 const INTERNAL_SECRET = process.env.INTERNAL_SERVICE_SECRET ?? "";
 const TIMEOUT_MS = 8000;
 

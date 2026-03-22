@@ -13,7 +13,7 @@ import logger from "../utils/logger";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import { fulfillmentTransitions } from "../utils/fulfillmentTransitions";
 
-const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4003";
+const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4009";
 const INVENTORY_SERVICE_URL =
   process.env.INVENTORY_SERVICE_URL ?? "http://inventory:4008";
 const INTERNAL_SECRET = process.env.INTERNAL_SERVICE_SECRET ?? "";
@@ -91,9 +91,9 @@ export class OrderService {
     };
   }
 
-  private async fetchCart(storeId: string): Promise<CartSnapshot> {
+  private async fetchCart(cartId: string): Promise<CartSnapshot> {
     const res = await this.fetchWithTimeout(
-      `${CART_SERVICE_URL}/api/v1/carts/${storeId}`,
+      `${CART_SERVICE_URL}/api/v1/carts/internal/${cartId}`,
       { method: "GET", headers: this.internalHeaders() },
     );
     if (!res.ok) throw new Error(`CART_FETCH_FAILED:${res.status}`);
@@ -220,9 +220,17 @@ export class OrderService {
     }
 
     const sagaId = `order-${Date.now()}-${userId}-${requestId}`;
-    const cart = await this.fetchCart(storeId);
+    const cart = await this.fetchCart(cartId);
 
-    if (!cart.cartItems.length) throw new Error("Cart is empty");
+    if (!cart.cartItems.length) {
+      logger.warn("Cart is empty:", {
+        userId,
+        storeId,
+        cartId,
+        requestId,
+      });
+      throw new Error("Cart is empty");
+    }
 
     // Reserve inventory per item
     // Track reserved items so we can roll back on partial failure
@@ -512,7 +520,7 @@ export class OrderService {
 
     const updated = await this.repo.updateOrderStatus(
       orderId,
-      order.orderStatus, 
+      order.orderStatus,
       updates,
     );
 

@@ -10,6 +10,13 @@ const options = {
   resetTimeout: 30000,
   rollingCountTimeout: 10000,
   volumeThreshold: 5,
+  errorFilter: (error: any): boolean => {
+    const status = error?.response?.status;
+    if (status && status >= 400 && status < 500) {
+      return true;
+    }
+    return false; 
+  },
 };
 
 const breakers = new Map<string, CircuitBreaker>();

@@ -149,10 +149,11 @@ export class CartService {
           (s, i) => s + i.productQuantity,
           0,
         );
-        cartDoc.totalPrice = cartDoc.cartItems.reduce(
+        let totalPrice = cartDoc.cartItems.reduce(
           (s, i) => s + i.productPrice * i.productQuantity,
           0,
         );
+        cartDoc.totalPrice = Math.round((totalPrice * 100) / 100);
         cartDoc.expireAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
         await cartDoc.save({ session });
@@ -206,10 +207,11 @@ export class CartService {
         (s, i) => s + i.productQuantity,
         0,
       );
-      cartDoc.totalPrice = cartDoc.cartItems.reduce(
+      let totalPrice = cartDoc.cartItems.reduce(
         (s, i) => s + i.productPrice * i.productQuantity,
         0,
       );
+      cartDoc.totalPrice = Math.round((totalPrice * 100) / 100);
 
       await cartDoc.save({ session });
       return cartDoc;

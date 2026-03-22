@@ -9,19 +9,27 @@ const NotFound = (req: Request, res: Response, next: NextFunction) => {
   next(error);
 };
 
-const errorHandler = (
-  err: Error,
+export function errorHandler(
+  error: any,
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  const statuscode = res.statusCode === 200 ? 500 : res.statusCode;
-  const errMessage = err.message;
-  logger.error("Error message:", errMessage);
-  res.status(statuscode);
-  res.json({
-    message: errMessage,
-  });
-};
+): void {
+  const statusCode = error.statusCode ?? 500;
+  const message = error.message ?? "Internal Server Error";
 
-export { errorHandler, NotFound };
+  logger.error("Request failed", {
+    method: req.method,
+    url: req.originalUrl,
+    statusCode,
+    error: message,
+    stack: process.env.NODE_ENV !== "production" ? error.stack : undefined,
+  });
+
+  res.status(statusCode).json({
+    status: "error",
+    error: message,
+  });
+}
+
+export { NotFound };

@@ -13,8 +13,10 @@ import {
   updateCartItemSchema,
 } from "../validators/cart.validation";
 import { validateRequest } from "../middleware/validate.middleware";
+import { internalOnly } from "../middleware/internal";
 const router = express.Router();
 
+router.get("/internal/:cartId", internalOnly, GetSingleStoreCartHandler);
 router
   .route("/:storeId/store")
   .post(authenticate, validateRequest(addToCartSchema), CreateCartHandler)

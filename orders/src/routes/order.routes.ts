@@ -9,6 +9,7 @@ import {
   UpdateFulfillmentHandler,
 } from "../controllers/order.controller";
 import { CheckoutSchema, FulfillmentSchema, ShippingSchema } from "../validators/order.validation";
+import { authenticateOrInternal } from "../middleware/internal";
 
 const router = express.Router();
 
@@ -49,7 +50,7 @@ router.get("/:storeId/store", authenticate, GetUserOrdersHandler);
  * @route GET /orders/detail/:id
  * @access PRIVATE
  */
-router.get("/detail/:id", authenticate, GetOrderHandler);
+router.get("/detail/:id", authenticateOrInternal, GetOrderHandler);
 
 /**
  * @description route to handle order delivery (basically updates the fulfillment state)

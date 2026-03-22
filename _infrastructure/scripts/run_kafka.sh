@@ -1,5 +1,5 @@
 echo "Creating ALL 19 topics"
-docker exec marketplace-kafka-1-1 bash -c "
+docker exec development-kafka-1-1 bash -c "
   kafka-topics --create --if-not-exists --topic notification.onboarding.email.confirmation.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic notification.onboarding.phone.confirmation.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic notification.onboarding.user.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
@@ -15,6 +15,7 @@ docker exec marketplace-kafka-1-1 bash -c "
   kafka-topics --create --if-not-exists --topic order.checkout.started.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic order.payment.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic order.payment.failed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
+  kafka-topics --create --if-not-exists --topic order.payment.refunded.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic order.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic order.reservation.failed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic inventory.reservation.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&

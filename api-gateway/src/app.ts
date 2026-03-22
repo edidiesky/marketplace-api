@@ -145,9 +145,9 @@ app.use(
       "content-type": "application/json",
       authorization: req.headers.authorization,
       cookie: req.headers.cookie,
-      "x-paystack-signature": req.headers["x-paystack-signature"] as
-        | string
-        | undefined,
+      "x-paystack-signature": req.headers[
+        "x-paystack-signature"
+      ] as string | undefined,
       "verif-hash": req.headers["verif-hash"] as string | undefined,
     };
 
@@ -177,13 +177,16 @@ app.use(
             ...forwardedHeaders,
             host: new URL(targetURL).host,
           },
-          responseType: "stream",
           timeout: 8000,
+          validateStatus: (status) => status < 500,
         }),
-      )) as AxiosResponse<Readable>;
+      )) as AxiosResponse;
 
-      res.setHeader("Cache-Control", "no-cache");
-      response.data.pipe(res);
+      res
+        .status(response.status)
+        .set("Cache-Control", "no-cache")
+        .json(response.data);
+
     } catch (error: any) {
       if (error.isBreakerOpen) {
         logger.warn(`Circuit breaker open for ${service}`, {
@@ -199,21 +202,7 @@ app.use(
       }
 
       const status = error.response?.status || SERVER_ERROR_STATUS_CODE;
-      let errorData = error.response?.data;
-
-      if (errorData && typeof errorData === "object" && errorData.pipe) {
-        try {
-          const chunks: Buffer[] = [];
-          await new Promise<void>((resolve, reject) => {
-            errorData.on("data", (chunk: Buffer) => chunks.push(chunk));
-            errorData.on("end", resolve);
-            errorData.on("error", reject);
-          });
-          errorData = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-        } catch {
-          errorData = { error: "Failed to parse error response" };
-        }
-      }
+      const errorData = error.response?.data;
 
       logger.error("Proxy error", {
         service,

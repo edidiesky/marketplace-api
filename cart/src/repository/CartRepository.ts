@@ -113,39 +113,11 @@ export class CartRepository implements ICartRepository {
    * @param CartId
    * @returns
    */
-  async getSingleCart(CartId: string): Promise<ICart | null> {
-    // const cacheKey = this.getCacheKey(CartId);
-
-    // try {
-    //   const cached = await redisClient.get(cacheKey);
-
-    //   if (cached) {
-    //     logger.debug("Cart cache hit", { cacheKey });
-    //     return JSON.parse(cached);
-    //   }
-    // } catch (error) {
-    //   logger.warn("Cache read failed, proceeding with database query", {
-    //     error,
-    //   });
-    // }
+  async getSingleCart(cartId: string): Promise<ICart | null> {
 
     const cart = await measureDatabaseQuery("fetch_single_Cart", () =>
-      Cart.findById(CartId).lean().exec()
+      Cart.findOne({_id:cartId}).lean().exec()
     );
-
-    // if (cart) {
-    //   try {
-    //     await redisClient.set(
-    //       cacheKey,
-    //       JSON.stringify(cart),
-    //       "EX",
-    //       this.CACHE_TTL
-    //     );
-    //   } catch (error) {
-    //     logger.warn("Cache write failed", { error, cacheKey });
-    //   }
-    // }
-
     return cart;
   }
 

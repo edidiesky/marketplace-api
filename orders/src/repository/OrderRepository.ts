@@ -97,7 +97,7 @@ export class OrderRepository implements IOrderRepository {
     }
 
     const order = await measureDatabaseQuery("fetch_single_order", () =>
-      Order.findById(orderId).lean().exec()
+      Order.findOne({_id: orderId}).lean().exec()
     );
 
     if (order) {

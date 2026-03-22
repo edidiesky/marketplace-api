@@ -69,13 +69,14 @@ const GetAllStoreCartHandler = asyncHandler(
 // Admin: Get any cart by Mongo _id
 const GetSingleStoreCartHandler = asyncHandler(
   async (req: Request, res: Response) => {
-    const cart = await cartService.getCartById(req.params.id);
+    let cartId = req.params.cartId
+    const cart = await cartService.getCartById(cartId);
 
     if (!cart) {
       logger.error("Cart item not found:", {
         event: "cart_not_found",
         user: (req as AuthenticatedRequest).user?.userId,
-        cart,
+        cartId
       });
       res.status(NOT_FOUND_STATUS_CODE).json({ message: "Cart not found" });
       return;

@@ -20,6 +20,7 @@ const CheckoutHandler = asyncHandler(
   }
 );
 
+
 const AddShippingHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
