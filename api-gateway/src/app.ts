@@ -109,12 +109,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Authentication
 app.use("/:service/*", (req: Request, res: Response, next: NextFunction) => {
   const service = req.params.service as keyof Services;
+  const path = req.params[0];
 
   if (
     req.originalUrl.startsWith("/api-docs") ||
     req.originalUrl.startsWith("/openapi.json") ||
-    req.params[0] === "health" ||
-    service === "auth"
+    path === "health" ||
+    service === "auth" ||
+    (service === "payment" && path.startsWith("api/v1/webhooks/"))
   ) {
     return next();
   }
@@ -122,7 +124,17 @@ app.use("/:service/*", (req: Request, res: Response, next: NextFunction) => {
   return authenticate(req, res, next);
 });
 
-app.use("/:service/*", rateLimiter);
+// Rate limiting
+app.use("/:service/*", (req: Request, res: Response, next: NextFunction) => {
+  const service = req.params.service as keyof Services;
+  const path = req.params[0];
+
+  if (service === "payment" && path.startsWith("api/v1/webhooks/")) {
+    return next();
+  }
+
+  return rateLimiter(req, res, next);
+});
 
 // Proxy handler
 app.use(
@@ -145,9 +157,9 @@ app.use(
       "content-type": "application/json",
       authorization: req.headers.authorization,
       cookie: req.headers.cookie,
-      "x-paystack-signature": req.headers[
-        "x-paystack-signature"
-      ] as string | undefined,
+      "x-paystack-signature": req.headers["x-paystack-signature"] as
+        | string
+        | undefined,
       "verif-hash": req.headers["verif-hash"] as string | undefined,
     };
 
@@ -186,7 +198,6 @@ app.use(
         .status(response.status)
         .set("Cache-Control", "no-cache")
         .json(response.data);
-
     } catch (error: any) {
       if (error.isBreakerOpen) {
         logger.warn(`Circuit breaker open for ${service}`, {

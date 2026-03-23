@@ -1,23 +1,3 @@
-/**
- * k6 load test — Products Service
- *
- * Run:
- *   k6 run product-load.js
- *   k6 run product-load.js --env BASE_URL=http://staging.example.com
- *   k6 run product-load.js --env STAGE=stress
- *
- * Stages:
- *   smoke  — 1 VU, 1 min   : verify baseline, catch obvious breaks
- *   load   — ramp to 150   : normal peak traffic
- *   stress — ramp to 600   : find the breaking point
- *
- * Traffic model (realistic marketplace ratio):
- *   70% — GET single product   (buyers browsing)
- *   15% — GET product list     (store listings)
- *   10% — POST create product  (sellers uploading)
- *    5% — PUT update + DELETE  (sellers managing)
- */
-
 import http from "k6/http";
 import { check, group, sleep } from "k6";
 import { Counter, Rate, Trend } from "k6/metrics";
@@ -36,18 +16,18 @@ const STAGES = {
     { duration: "1m", target: 1 },
   ],
   load: [
-    { duration: "30s", target: 10 },   // ramp up
-    { duration: "3m", target: 150 },   // sustained load
-    { duration: "30s", target: 0 },    // ramp down
+    { duration: "30s", target: 10 },   
+    { duration: "3m", target: 150 },  
+    { duration: "30s", target: 0 }, 
   ],
   stress: [
-    { duration: "1m", target: 150 },   // warm up at normal load
-    { duration: "2m", target: 300 },   // ramp to 2x
-    { duration: "2m", target: 600 },   // ramp to 4x — find breaking point
-    { duration: "1m", target: 0 },     // ramp down
+    { duration: "1m", target: 150 },  
+    { duration: "2m", target: 300 }, 
+    { duration: "2m", target: 600 },   
+    { duration: "1m", target: 0 },
   ],
   soak: [
-    { duration: "10m", target: 50 },   // sustained moderate load — detect memory leaks
+    { duration: "10m", target: 50 },
   ],
 };
 
@@ -66,7 +46,7 @@ export const options = {
   },
 };
 
-// Custom metrics ────
+// Custom metrics 
 
 const productReadDuration   = new Trend("product_read_duration",   true);
 const productListDuration   = new Trend("product_list_duration",   true);
@@ -74,10 +54,6 @@ const productCreateDuration = new Trend("product_create_duration", true);
 const productCreateSuccess  = new Rate("product_create_success");
 const productReadSuccess    = new Rate("product_read_success");
 const cacheHitInferred      = new Counter("cache_hit_inferred"); 
-
-// Shared state ──────
-// k6 VUs do not share state — this array is populated per VU via setup()
-// and passed to each VU's default function via scenario data
 
 let createdProductIds = [];
 
@@ -140,7 +116,6 @@ export default function (data) {
 }
 
 // Scenario functions 
-
 function readProduct(productIds, headers) {
   if (productIds.length === 0) return;
 
@@ -247,10 +222,6 @@ function manageProduct(productIds, headers) {
   });
 }
 
-// Pagination stress ─
-// Dedicated scenario to surface Redis KEYS scan performance degradation
-// Run with: k6 run product-load.js --env SCENARIO=pagination
-
 export function paginationStress() {
   const headers = {
     "Content-Type": "application/json",
@@ -277,8 +248,7 @@ export function paginationStress() {
   }
 }
 
-// Teardown ──────────
-
+// Teardown 
 export function teardown(data) {
   // Soft-delete all products created during load test to leave DB clean
   const headers = {
@@ -298,8 +268,6 @@ export function teardown(data) {
 
   console.log(`Teardown: soft-deleted ${cleaned}/${data.productIds.length} products`);
 }
-
-// Custom summary ────
 
 export function handleSummary(data) {
   const metrics = data.metrics;
