@@ -9,17 +9,15 @@ import Payment, {
 } from "../models/Payment";
 import { sendPaymentMessage } from "../infra/messaging/producer";
 import {
-  PAYMENT_CONFIRMED_TOPIC,
-  PAYMENT_FAILED_TOPIC,
   ORDER_PAYMENT_REFUNDED_TOPIC,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
 import logger from "../utils/logger";
 import { redisClient } from "../infra/cache/redis";
-import { requestCoalescer } from "../utils/requestCoalescer";
 import withTransaction from "../utils/connectDB";
-import { v4 as uuidv4 } from "uuid";
 import { createPaymentAdapter } from "../strategies";
+import { outboxRepository } from "../repository/OutboxRepository";
+import { OutboxEventType } from "../models/OutboxEvent";
 
 const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL ?? "http://orders:4012";
 const INTERNAL_SECRET = process.env.INTERNAL_SERVICE_SECRET ?? "";
@@ -64,10 +62,12 @@ class PaymentService {
         this.getCacheKey(payment.paymentId),
         JSON.stringify(payment),
         "EX",
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
     } catch (err) {
-      logger.warn("Payment cache write failed", { paymentId: payment.paymentId });
+      logger.warn("Payment cache write failed", {
+        paymentId: payment.paymentId,
+      });
     }
   }
 
@@ -81,7 +81,7 @@ class PaymentService {
 
   private async fetchWithTimeout(
     url: string,
-    init: RequestInit
+    init: RequestInit,
   ): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -102,31 +102,10 @@ class PaymentService {
   private async fetchOrder(orderId: string): Promise<OrderSnapshot> {
     const res = await this.fetchWithTimeout(
       `${ORDER_SERVICE_URL}/api/v1/orders/detail/${orderId}`,
-      { method: "GET", headers: this.internalHeaders() }
+      { method: "GET", headers: this.internalHeaders() },
     );
     if (!res.ok) throw new Error(`ORDER_FETCH_FAILED:${res.status}`);
     return res.json() as Promise<OrderSnapshot>;
-  }
-
-  private async markOrderPaymentInitiated(
-    orderId: string,
-    reference: string
-  ): Promise<void> {
-    try {
-      await this.fetchWithTimeout(
-        `${ORDER_SERVICE_URL}/api/v1/orders/detail/${orderId}/payment-initiated`,
-        {
-          method: "PATCH",
-          headers: this.internalHeaders(),
-          body: JSON.stringify({ transactionId: reference }),
-        }
-      );
-    } catch (err) {
-      logger.warn("Failed to mark order PAYMENT_INITIATED, non-fatal", {
-        orderId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
   }
 
   async initializePayment(input: InitializePaymentInput): Promise<{
@@ -158,13 +137,13 @@ class PaymentService {
         order.orderStatus !== "payment_initiated"
       ) {
         throw new Error(
-          `Order is not in a payable state: ${order.orderStatus}`
+          `Order is not in a payable state: ${order.orderStatus}`,
         );
       }
 
       const existingPayment = await this.repo.getPaymentByOrderId(
         orderIdStr,
-        session
+        session,
       );
 
       if (existingPayment) {
@@ -195,7 +174,7 @@ class PaymentService {
 
       if (!success || !transactionId) {
         throw new Error(
-          `Payment link creation failed with ${gateway}: ${message}`
+          `Payment link creation failed with ${gateway}: ${message}`,
         );
       }
 
@@ -217,7 +196,17 @@ class PaymentService {
           sagaId: order.sagaId,
           metadata: { authorization_url: redirectUrl },
         },
-        session
+        session,
+      );
+
+      await outboxRepository.create(
+        OutboxEventType.PAYMENT_INITIATED,
+        {
+          orderId: orderIdStr,
+          transactionId,
+          sagaId: order.sagaId,
+        },
+        session,
       );
 
       await this.writeCache(payment);
@@ -228,9 +217,6 @@ class PaymentService {
         gateway,
         amount: order.totalPrice,
       });
-
-      await this.markOrderPaymentInitiated(orderIdStr, transactionId);
-
       return {
         paymentId: payment.paymentId,
         redirectUrl: redirectUrl!,
@@ -241,7 +227,7 @@ class PaymentService {
   async getPaymentHistory(
     query: FilterQuery<IPayment>,
     skip: number,
-    limit: number
+    limit: number,
   ) {
     const [payments, totalCount] = await Promise.all([
       this.repo.getUserPayments(query, skip, limit),
@@ -267,16 +253,14 @@ class PaymentService {
 
   async getPaymentStats(storeId: string, days = 30) {
     const endDate = new Date();
-    const startDate = new Date(
-      endDate.getTime() - days * 24 * 60 * 60 * 1000
-    );
+    const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
     return this.repo.getPaymentStats(storeId, startDate, endDate);
   }
 
   async initiateRefund(
     paymentId: string,
     amount?: number,
-    reason = "Customer requested refund"
+    reason = "Customer requested refund",
   ): Promise<IPayment> {
     const payment = await this.repo.getPaymentByPaymentId(paymentId);
     if (!payment) throw new Error("Payment not found");
@@ -289,9 +273,7 @@ class PaymentService {
     });
 
     if (!("refund" in adapter) || typeof adapter.refund !== "function") {
-      throw new Error(
-        `Refund not supported for gateway: ${payment.gateway}`
-      );
+      throw new Error(`Refund not supported for gateway: ${payment.gateway}`);
     }
 
     const refundResult = await adapter.refund({
@@ -310,7 +292,7 @@ class PaymentService {
       {
         refundedAt: new Date(),
         metadata: { ...payment.metadata, refundResponse: refundResult },
-      }
+      },
     );
 
     if (!updated) throw new Error("Failed to update payment after refund");

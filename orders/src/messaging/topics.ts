@@ -12,7 +12,7 @@ import {
 } from "../constants";
 import redisClient from "../config/redis";
 import { sendOrderMessage } from "./producer";
-import { OrderStatus } from "../models/Order";
+import { IOrder, OrderStatus } from "../models/Order";
 
 export const OrderTopic = {
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
@@ -34,7 +34,7 @@ export const OrderTopic = {
         const order = await orderService.confirmPaymentSuccess(
           orderId,
           transactionId,
-          new Date(paymentDate)
+          new Date(paymentDate),
         );
 
         if (!order) {
@@ -71,19 +71,59 @@ export const OrderTopic = {
             orderId,
             sagaId,
             error: error.message,
-          }
+          },
         );
 
         if (attempt === MAX_RETRIES - 1) {
           logger.error("Final failure processing payment success", {
             orderId,
             sagaId,
-
           });
         } else {
           const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
           await new Promise((r) => setTimeout(r, delay));
         }
+      }
+    }
+  },
+
+  "order.payment.initiated.topic": async (data: {
+    orderId: string;
+    transactionId: string;
+  }) => {
+    const {orderId, transactionId} = data
+    // no need for idempotency check since PUT is idempotent
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        await orderService.markPaymentInitiated(
+          data.orderId,
+          data.transactionId,
+        );
+        logger.info("Order marked payment initiated", {
+          orderId: data.orderId,
+          transactionId: data.transactionId,
+        });
+      } catch (error) {
+        let mess = error instanceof Error ? error.message: String(error)
+        logger.error(
+          `Payment success handling failed (attempt ${attempt + 1})`,
+          {
+            orderId,
+            transactionId,
+            error: mess,
+          },
+        );
+
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("Final failure processing payment success", {
+            orderId,
+            transactionId,
+          });
+        } else {
+          const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+          await new Promise((r) => setTimeout(r, delay));
+        }
+
       }
     }
   },
@@ -130,7 +170,7 @@ export const OrderTopic = {
       const order = await orderService.updateOrderToOutOfStock(
         orderId,
         OrderStatus.OUT_OF_STOCK,
-        { failureReason: reason }
+        { failureReason: reason },
       );
 
       if (!order) {

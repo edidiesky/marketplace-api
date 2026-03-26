@@ -13,8 +13,8 @@ export interface IWallet extends Document {
 
 const WalletSchema = new Schema<IWallet>(
   {
-    sellerId: { type: Schema.Types.ObjectId, required: true, unique: true },
-    storeId: { type: Schema.Types.ObjectId, required: true, unique: true },
+    sellerId: { type: Schema.Types.ObjectId, required: true },
+    storeId: { type: Schema.Types.ObjectId, required: true },
     balance: { type: Number, default: 0, min: 0 },
     currency: { type: String, default: "NGN", uppercase: true },
     version: { type: Number, default: 1, min: 1 },

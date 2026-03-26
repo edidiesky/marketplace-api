@@ -22,6 +22,8 @@ export const ORDER_PAYMENT_COMPLETED_TOPIC = "order.payment.completed.topic";
 export const ORDER_PAYMENT_FAILED_TOPIC = "order.payment.failed.topic";
 export const ORDER_COMPLETED_TOPIC = "order.completed.topic";
 export const ORDER_RESERVATION_FAILED_TOPIC = "order.reservation.failed.topic";
+export const PAYMENT_INITIATED_TOPIC = "order.payment.initiated.topic";
+
 
 
 export const INVENTORY_RESERVATION_REQUEST_TOPIC = "inventory.reservation.request.topic"; 
@@ -34,5 +36,6 @@ export const ORDER_CONSUMER_TOPICS = [
   ORDER_PAYMENT_COMPLETED_TOPIC,
   ORDER_PAYMENT_FAILED_TOPIC,
   INVENTORY_RESERVATION_COMPLETED_TOPIC, 
-  ORDER_RESERVATION_FAILED_TOPIC
+  ORDER_RESERVATION_FAILED_TOPIC,
+  PAYMENT_INITIATED_TOPIC
 ];

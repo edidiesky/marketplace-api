@@ -536,6 +536,20 @@ export class OrderService {
 
     return updated;
   }
+  async markPaymentInitiated(
+    orderId: string,
+    transactionId: string,
+  ): Promise<IOrder | null> {
+    const order = await this.repo.updateOrderStatus(
+      orderId,
+      OrderStatus.PAYMENT_INITIATED,
+      { transactionId },
+    );
+    if (order) await this.writeCache(orderId, order);
+
+    logger.info("Order marked PAYMENT_INITIATED", { orderId, transactionId });
+    return order;
+  }
 }
 
 export const orderService = new OrderService();

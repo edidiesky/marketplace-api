@@ -18,6 +18,7 @@ export const CART_ITEM_REMOVED_TOPIC = "cart.item.removed.topic";
 export const CART_EXPIRED_TOPIC = "cart.expired.topic";
 
 export const PAYMENT_CONFIRMED_TOPIC = "order.payment.completed.topic";
+export const PAYMENT_INITIATED_TOPIC = "order.payment.initiated.topic";
 export const PAYMENT_FAILED_TOPIC = "order.payment.failed.topic";
 
 

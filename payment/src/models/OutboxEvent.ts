@@ -9,6 +9,7 @@ export enum OutboxEventStatus {
 export enum OutboxEventType {
   PAYMENT_CONFIRMED = "payment.confirmed",
   PAYMENT_FAILED = "payment.failed",
+  PAYMENT_INITIATED = "order.payment.initiated.topic",
 }
 
 export interface IOutboxEvent extends Document {

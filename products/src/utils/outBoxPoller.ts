@@ -1,25 +1,37 @@
-import { outboxRepository } from "../repository/OutboxRepository";
-import { sendPaymentMessage } from "../infra/messaging/producer";
-import {
-  PAYMENT_CONFIRMED_TOPIC,
-  PAYMENT_FAILED_TOPIC,
-  PAYMENT_INITIATED_TOPIC,
-} from "../constants";
-import { OutboxEventType } from "../models/OutboxEvent";
-import logger from "./logger";
+/**
+ * declare the global variable for the timer
+ *
+ * ******** GETTING AL PENDING OUTBOX EVENTS ***
+ * declare a function that starts the poling
+ * it gets all pending putbox events
+ * if none it exists
+ * it then loops through all the pending outbox
+ * t ehcekc if the otubo event matches the required list of events
+ * if through, ut sends the evtn wieth the payload.
+ * if succesful, it mark as being completed
+ * if none it retires
+ *
+ * ******* DECLARING A FUNCTION THAT STOPS THE OUTBX ACTIONS DURING SERVER SHUTDOWN
+ * it basically clear the timeout
+ *
+ */
 
+import { outboxRepository } from "../repository/OutboxRepository";
+import { PRODUCT_ONBOARDING_COMPLETED_TOPIC } from "../constants";
+import { IOutboxEventType } from "../models/OutboxEvent";
+import logger from "./logger";
+import { sendProductMessage } from "../messaging/producer";
 const POLL_INTERVAL_MS = 5_000;
-const TOPIC_MAP: Record<OutboxEventType, string> = {
-  [OutboxEventType.PAYMENT_CONFIRMED]: PAYMENT_CONFIRMED_TOPIC,
-  [OutboxEventType.PAYMENT_FAILED]: PAYMENT_FAILED_TOPIC,
-  [OutboxEventType.PAYMENT_INITIATED]: PAYMENT_INITIATED_TOPIC,
-  
+const TOPIC_MAP: Record<IOutboxEventType, string> = {
+  [IOutboxEventType.PRODUCT_ONBOARDING_COMPLETED_TOPIC]:
+    PRODUCT_ONBOARDING_COMPLETED_TOPIC,
 };
+
 
 let pollerTimer: NodeJS.Timeout | null = null;
 
 async function pollOnce(): Promise<void> {
-  const events = await outboxRepository.getPending();
+  const events = await outboxRepository.getPendingOutbox();
   if (!events.length) return;
 
   logger.info(`Outbox poller: processing ${events.length} pending events`);
@@ -36,8 +48,8 @@ async function pollOnce(): Promise<void> {
         continue;
       }
 
-      await sendPaymentMessage(topic, event.payload);
-      await outboxRepository.markProcessed(event._id.toString());
+      await sendProductMessage(topic, event.payload);
+      await outboxRepository.markOutboxAsProccessed(event._id.toString());
 
       logger.info("Outbox event published", {
         id: event._id,
