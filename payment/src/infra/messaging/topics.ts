@@ -4,46 +4,40 @@ import {
   MAX_RETRIES,
   BASE_DELAY_MS,
   JITTER,
-  ORDER_PAYMENT_COMPLETED_TOPIC,
-  ORDER_COMPLETED_TOPIC,
   ORDER_PAYMENT_FAILED_TOPIC,
 } from "../../constants";
-import {redisClient} from "../cache/redis";
-import { sendPaymentMessage } from "./producer";
+import { redisClient } from "../cache/redis";
 
 export const PaymentTopic = {
   [ORDER_PAYMENT_FAILED_TOPIC]: async (data: any) => {
-    const { orderId, reason, sagaId } = data;
+    const { orderId, sagaId } = data;
 
-    const idempotencyKey = `payment-failed-${orderId}`;
-    const locked = await redisClient.getClient().set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) return;
+    const idempotencyKey = `payment-mark-failed-${sagaId || orderId}`;
+    if (!(await redisClient.getClient().set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate payment failed event ignored", { orderId, sagaId });
+      return;
+    }
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        // await paymentService.markPaymentFailed(orderId);
-        await sendPaymentMessage(ORDER_PAYMENT_FAILED_TOPIC, {
+        await paymentService.markPaymentFailed(orderId);
+        logger.info("Payment marked failed", { orderId, sagaId });
+        return;
+      } catch (error: any) {
+        logger.error(`Mark payment failed (attempt ${attempt + 1})`, {
           orderId,
-          reason,
           sagaId,
-          failedAt: new Date().toISOString(),
+          error: error.message,
         });
-
-        logger.info("Payment failed processed", { orderId, reason });
-        break;
-      } catch (error) {
-        if (attempt === MAX_RETRIES) {
-          if (error instanceof Error) {
-            logger.error("Failed to handle payment failure", {
-              orderId,
-              message: error.message,
-              stack: error.stack,
-            });
-          }
-          // wills end to DLQ later on
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("All retries exhausted for mark payment failed", {
+            orderId,
+            sagaId,
+          });
+          return;
         }
-        const delay = Math.pow(2, attempt) * BASE_DELAY_MS;
-        await new Promise((resolve) => setTimeout(resolve, JITTER + delay));
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   },

@@ -22,6 +22,7 @@ export const ORDER_CHECKOUT_STARTED_TOPIC = "order.checkout.started.topic";
 export const ORDER_PAYMENT_COMPLETED_TOPIC = "order.payment.completed.topic";
 export const ORDER_PAYMENT_FAILED_TOPIC = "order.payment.failed.topic";
 export const ORDER_RESERVATION_FAILED_TOPIC = "order.reservation.failed.topic";
+export const ORDER_STOCK_COMMITTED_TOPIC = "order.stock.committed.topic";
 
 export const INVENTORY_CONSUMER_TOPICS = [
   PRODUCT_ONBOARDING_COMPLETED_TOPIC,

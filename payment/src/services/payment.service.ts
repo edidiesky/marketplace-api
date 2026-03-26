@@ -309,6 +309,21 @@ class PaymentService {
 
     return updated;
   }
+
+  async markPaymentFailed(orderId: string): Promise<void> {
+    const payment = await Payment.findOne({
+      orderId: new Types.ObjectId(orderId),
+    });
+    if (!payment) return;
+
+    await Payment.updateOne({ orderId: new Types.ObjectId(orderId) }, {
+      $set:{
+        status: PaymentStatus.FAILED
+      }
+    });
+
+    logger.info("Payment marked as cancelled", { orderId });
+  }
 }
 
 export const paymentService = new PaymentService();

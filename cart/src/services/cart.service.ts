@@ -270,6 +270,18 @@ export class CartService {
     logger.info("Cart cleared", { cartId });
   }
 
+  async clearCartByStoreId(storeId:string): Promise<void> {
+    const cart = await Cart.findOne({
+      storeId: new Types.ObjectId(storeId)
+    });
+    if (!cart) return;
+
+    await Cart.deleteOne({ storeId: new Types.ObjectId(storeId) });
+    await this.invalidateCache(cart.userId.toString(), cart.storeId.toString());
+
+    logger.info("Cart cleared", { storeId });
+  }
+
   async markItemsUnavailable(
     cartId: string,
     unavailableItems: Array<{ productId: string; reason: string }>,

@@ -19,7 +19,7 @@ export const CART_EXPIRED_TOPIC = "cart.expired.topic";
 export const ORDER_COMPLETED_TOPIC = "order.completed.topic";
 
 export const CART_ITEM_OUT_OF_STOCK_TOPIC = "cart.item.outOfStock.topic";
-
+export const ORDER_STOCK_COMMITTED_TOPIC = "order.stock.committed.topic";
 
 
 export const CART_CONSUMER_TOPICS = [

@@ -28,6 +28,7 @@ export const NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC =
   "notification.tenant.onboarding.confirmation.topic";
 export const NOTIFICATION_STORE_ONBOARDING_COMPLETED_TOPIC =
   "notification.store.onboarding.completed.topic";
+export const ORDER_STOCK_COMMITTED_TOPIC = "order.stock.committed.topic";
 /**
  * @description QUEUES
  */

@@ -9,23 +9,19 @@ import {
   ORDER_PAYMENT_FAILED_TOPIC,
   ORDER_RESERVATION_FAILED_TOPIC,
   CART_ITEM_OUT_OF_STOCK_TOPIC,
+  ORDER_PAYMENT_INITIATED_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
 import { sendOrderMessage } from "./producer";
-import { IOrder, OrderStatus } from "../models/Order";
+import { OrderStatus } from "../models/Order";
 
 export const OrderTopic = {
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
     const { orderId, transactionId, paymentDate, sagaId } = data;
+
     const idempotencyKey = `payment-success-${sagaId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) {
-      logger.info("Duplicate payment success ignored", {
-        event: "duplicate_order_payment",
-        orderId,
-        transactionId,
-        sagaId,
-      });
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate payment success ignored", { orderId, sagaId });
       return;
     }
 
@@ -34,19 +30,18 @@ export const OrderTopic = {
         const order = await orderService.confirmPaymentSuccess(
           orderId,
           transactionId,
-          new Date(paymentDate),
+          new Date(paymentDate)
         );
 
         if (!order) {
           logger.error("Order not found during payment completion", {
             orderId,
             transactionId,
-            paymentDate,
             sagaId,
-            event: "order_not_found_during_payment_completion",
           });
           return;
         }
+
         await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
           orderId: order._id.toString(),
           userId: order.userId.toString(),
@@ -57,73 +52,58 @@ export const OrderTopic = {
         });
 
         logger.info("Order completed and event emitted", {
-          orderId,
           event: "order_completed_emitted",
-          paymentDate,
+          orderId,
           transactionId,
           sagaId,
         });
         return;
       } catch (error: any) {
-        logger.error(
-          `Payment success handling failed (attempt ${attempt + 1})`,
-          {
-            orderId,
-            sagaId,
-            error: error.message,
-          },
-        );
-
+        logger.error(`Payment success handling failed (attempt ${attempt + 1})`, {
+          orderId,
+          sagaId,
+          error: error.message,
+        });
         if (attempt === MAX_RETRIES - 1) {
-          logger.error("Final failure processing payment success", {
+          logger.error("All retries exhausted for payment success handling", {
             orderId,
             sagaId,
           });
-        } else {
-          const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
-          await new Promise((r) => setTimeout(r, delay));
+          return;
         }
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
 
-  "order.payment.initiated.topic": async (data: {
+  [ORDER_PAYMENT_INITIATED_TOPIC]: async (data: {
     orderId: string;
     transactionId: string;
+    sagaId: string;
   }) => {
-    const {orderId, transactionId} = data
-    // no need for idempotency check since PUT is idempotent
+    const { orderId, transactionId, sagaId } = data;
+
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
-        await orderService.markPaymentInitiated(
-          data.orderId,
-          data.transactionId,
-        );
-        logger.info("Order marked payment initiated", {
-          orderId: data.orderId,
-          transactionId: data.transactionId,
+        await orderService.markPaymentInitiated(orderId, transactionId);
+        logger.info("Order marked payment initiated", { orderId, transactionId });
+        return;
+      } catch (error: any) {
+        logger.error(`Mark payment initiated failed (attempt ${attempt + 1})`, {
+          orderId,
+          transactionId,
+          error: error.message,
         });
-      } catch (error) {
-        let mess = error instanceof Error ? error.message: String(error)
-        logger.error(
-          `Payment success handling failed (attempt ${attempt + 1})`,
-          {
-            orderId,
-            transactionId,
-            error: mess,
-          },
-        );
-
         if (attempt === MAX_RETRIES - 1) {
-          logger.error("Final failure processing payment success", {
+          logger.error("All retries exhausted for mark payment initiated", {
             orderId,
             transactionId,
           });
-        } else {
-          const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
-          await new Promise((r) => setTimeout(r, delay));
+          return;
         }
-
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
@@ -132,56 +112,60 @@ export const OrderTopic = {
     const { orderId, reason, sagaId } = data;
 
     const idempotencyKey = `payment-failed-${sagaId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) {
-      logger.info("Duplicate payment failure event ignored", {
-        orderId,
-        sagaId,
-      });
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate payment failure event ignored", { orderId, sagaId });
       return;
     }
 
-    try {
-      await orderService.markPaymentFailed(orderId, reason);
-      logger.info("Payment failure processed", { orderId, reason, sagaId });
-    } catch (error: any) {
-      logger.error("Failed to handle payment failure", {
-        orderId,
-        sagaId,
-        error: error.message,
-      });
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        await orderService.markPaymentFailed(orderId, reason);
+        logger.info("Payment failure processed", { orderId, reason, sagaId });
+        return;
+      } catch (error: any) {
+        logger.error(`Payment failure handling failed (attempt ${attempt + 1})`, {
+          orderId,
+          sagaId,
+          error: error.message,
+        });
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("All retries exhausted for payment failure handling", {
+            orderId,
+            sagaId,
+          });
+          return;
+        }
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
+      }
     }
   },
 
   [ORDER_RESERVATION_FAILED_TOPIC]: async (data: any) => {
-    const { orderId, sagaId, reason, userId, storeId, failedItems } = data;
+    const { orderId, sagaId, reason, failedItems } = data;
 
     const idempotencyKey = `reservation-failed-${sagaId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) {
-      logger.info("Duplicate reservation failed event ignored", {
-        sagaId,
-        orderId,
-      });
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate reservation failed event ignored", { sagaId, orderId });
       return;
     }
 
-    try {
-      const order = await orderService.updateOrderToOutOfStock(
-        orderId,
-        OrderStatus.OUT_OF_STOCK,
-        { failureReason: reason },
-      );
-
-      if (!order) {
-        logger.warn("Order not found when handling reservation failure", {
-          orderId,
-          sagaId,
-        });
-        return;
-      }
-
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
+        const order = await orderService.updateOrderToOutOfStock(
+          orderId,
+          OrderStatus.OUT_OF_STOCK,
+          { failureReason: reason }
+        );
+
+        if (!order) {
+          logger.warn("Order not found when handling reservation failure", {
+            orderId,
+            sagaId,
+          });
+          return;
+        }
+
         await sendOrderMessage(CART_ITEM_OUT_OF_STOCK_TOPIC, {
           cartId: order.cartId.toString(),
           userId: order.userId.toString(),
@@ -191,32 +175,29 @@ export const OrderTopic = {
           failedAt: new Date().toISOString(),
         });
 
-        logger.info("Cart notified of unavailable items", {
+        logger.info("Reservation failure handled and cart notified", {
+          event: "reservation_failure_handled",
           orderId,
-          cartId: order.cartId.toString(),
           sagaId,
           failedItemsCount: failedItems?.length || 0,
         });
-      } catch (emitErr: any) {
-        logger.error("Failed to emit CART_ITEM_OUT_OF_STOCK_TOPIC", {
+        return;
+      } catch (error: any) {
+        logger.error(`Reservation failure handling failed (attempt ${attempt + 1})`, {
           orderId,
           sagaId,
-          error: emitErr.message,
+          error: error.message,
         });
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("All retries exhausted for reservation failure handling", {
+            orderId,
+            sagaId,
+          });
+          return;
+        }
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
       }
-
-      logger.info("Successfully handled reservation failure", {
-        orderId,
-        sagaId,
-        reason,
-        newStatus: order.orderStatus,
-      });
-    } catch (error: any) {
-      logger.error("Failed to handle reservation failure", {
-        orderId,
-        sagaId,
-        error: error.message,
-      });
     }
   },
 };

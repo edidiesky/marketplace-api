@@ -1,44 +1,89 @@
 import { cartService } from "../services/cart.service";
 import logger from "../utils/logger";
 import {
+  BASE_DELAY_MS,
   CART_ITEM_OUT_OF_STOCK_TOPIC,
-  ORDER_COMPLETED_TOPIC,
+  JITTER,
+  MAX_RETRIES,
+  ORDER_STOCK_COMMITTED_TOPIC,
 } from "../constants";
 import redisClient from "../config/redis";
 
 export const CartTopic = {
-  [ORDER_COMPLETED_TOPIC]: async (data: any) => {
-    const { cartId, userId, storeId } = data;
+  [ORDER_STOCK_COMMITTED_TOPIC]: async (data: any) => {
+    const { orderId, sagaId, storeId } = data;
 
-    const idempotencyKey = `clear-cart-${cartId}`;
+    const idempotencyKey = `clear-cart-${sagaId || orderId}`;
     if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate cart clear ignored", { orderId, sagaId });
       return;
     }
 
-    try {
-      await cartService.clearCartById(cartId);
-
-      logger.info("Cart cleared after successful order", {
-        event: "cart_cleared_on_order_completion",
-        cartId,
-        userId,
-        storeId,
-      });
-    } catch (error) {
-      logger.error("Failed to clear cart", { cartId, error });
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        await cartService.clearCartByStoreId(storeId);
+        logger.info("Cart cleared after stock committed", {
+          event: "cart_cleared_on_stock_committed",
+          orderId,
+          sagaId,
+          storeId,
+        });
+        return;
+      } catch (error: any) {
+        logger.error(`Cart clear failed (attempt ${attempt + 1})`, {
+          orderId,
+          sagaId,
+          storeId,
+          error: error.message,
+        });
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("All retries exhausted for cart clear", {
+            orderId,
+            sagaId,
+          });
+          return;
+        }
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
+      }
     }
   },
 
   [CART_ITEM_OUT_OF_STOCK_TOPIC]: async (data: any) => {
     const { cartId, unavailableItems, sagaId } = data;
-    // unavailableItems: [{ productId, reason }]
 
-    // Idempotency check
     const idempotencyKey = `cart-unavailable-${sagaId}`;
-    const locked = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
-    if (!locked) return;
+    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+      logger.info("Duplicate cart unavailable event ignored", { sagaId });
+      return;
+    }
 
-    // Mark items as unavailable (don't delete)
-    await cartService.markItemsUnavailable(cartId, unavailableItems);
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        await cartService.markItemsUnavailable(cartId, unavailableItems);
+        logger.info("Cart items marked unavailable", {
+          event: "cart_items_marked_unavailable",
+          cartId,
+          sagaId,
+          itemCount: unavailableItems?.length || 0,
+        });
+        return;
+      } catch (error: any) {
+        logger.error(`Mark items unavailable failed (attempt ${attempt + 1})`, {
+          cartId,
+          sagaId,
+          error: error.message,
+        });
+        if (attempt === MAX_RETRIES - 1) {
+          logger.error("All retries exhausted for mark items unavailable", {
+            cartId,
+            sagaId,
+          });
+          return;
+        }
+        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
   },
 };
