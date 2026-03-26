@@ -1,5 +1,6 @@
 import { Kafka, Partitioners, logLevel, CompressionTypes } from "kafkajs";
 import logger from "../utils/logger";
+import { context, propagation } from "@opentelemetry/api";
 
 const kafka = new Kafka({
   clientId: "Product_Service",
@@ -44,14 +45,13 @@ export async function connectProducer() {
 export async function sendProductMessage(
   topic: string,
   data: any,
-  key?: string
+  key?: string,
 ) {
   try {
-    const partitionKey = 
-      key || 
-      data._id || 
-      data.userId || 
-      null;
+    const partitionKey = key || data._id || data.userId || null;
+
+    let traceHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), traceHeaders);
 
     const result = await producer.send({
       topic,
@@ -63,6 +63,7 @@ export async function sendProductMessage(
             service: "Product-service",
             timestamp: Date.now().toString(),
             "correlation-id": data._id || "none",
+            ...traceHeaders,
           },
         },
       ],
@@ -79,7 +80,10 @@ export async function sendProductMessage(
 
     return result;
   } catch (error: any) {
-    logger.error("Error sending message to Kafka", { topic, error: error.message });
+    logger.error("Error sending message to Kafka", {
+      topic,
+      error: error.message,
+    });
     throw error;
   }
 }
@@ -88,15 +92,18 @@ export async function sendProductMessage(
  */
 export async function sendProductMessageBatch(
   topic: string,
-  messages: Array<{ data: any; key?: string }>
+  messages: Array<{ data: any; key?: string }>,
 ) {
   try {
+     let traceHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), traceHeaders);
     const kafkaMessages = messages.map((msg) => ({
       key: msg.key || msg.data._id || msg.data.userId,
       value: JSON.stringify(msg.data),
       headers: {
         service: "Product-service",
         timestamp: Date.now().toString(),
+        ...traceHeaders
       },
     }));
 

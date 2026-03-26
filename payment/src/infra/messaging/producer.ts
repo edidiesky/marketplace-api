@@ -1,5 +1,6 @@
 import { Kafka, Partitioners, logLevel, CompressionTypes } from "kafkajs";
 import logger from "../../utils/logger";
+import { context, propagation, trace } from "@opentelemetry/api";
 
 const kafka = new Kafka({
   clientId: "Payment_Service",
@@ -50,13 +51,18 @@ export async function connectProducer() {
 
 /**
  * Send Payment message with proper partitioning
- * I am paritioning by the PaymentId
+ * I am paritioning HERE by the PaymentId
  * Handler created here guarantees Paymenting for that customer's transactions
  */
-export async function sendPaymentMessage(topic: string, data: any, key?: string) {
+export async function sendPaymentMessage(
+  topic: string,
+  data: any,
+  key?: string,
+) {
   try {
-    const partitionKey =
-      key || data.transactionId || null;
+    const partitionKey = key || data.transactionId || null;
+    let traceHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), traceHeaders);
     const result = await producer.send({
       topic,
       messages: [
@@ -67,6 +73,7 @@ export async function sendPaymentMessage(topic: string, data: any, key?: string)
             service: "Payment-service",
             timestamp: Date.now().toString(),
             "correlation-id": data.sagaId || data.transactionId || "null",
+            ...traceHeaders,
           },
         },
       ],
@@ -102,15 +109,18 @@ export async function sendPaymentMessage(topic: string, data: any, key?: string)
  */
 export async function sendPaymentMessageBatch(
   topic: string,
-  messages: Array<{ data: any; key?: string }>
+  messages: Array<{ data: any; key?: string }>,
 ) {
   try {
+    let traceHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), traceHeaders);
     const kafkaMessages = messages.map((msg) => ({
       key: msg.key || msg.data.transactionId || msg.data.userId,
       value: JSON.stringify(msg.data),
       headers: {
         service: "Payment-service",
         timestamp: Date.now().toString(),
+        ...traceHeaders
       },
     }));
 

@@ -1,11 +1,10 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../types";
-import { IPayment, PaymentGateway } from "../models/Payment";
+import { IPayment } from "../models/Payment";
 import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
-  BAD_REQUEST_STATUS_CODE,
 } from "../constants";
 import logger from "../utils/logger";
 import { paymentService } from "../services/payment.service";
@@ -109,3 +108,4 @@ export const initiateRefund = asyncHandler(
     });
   }
 );
+

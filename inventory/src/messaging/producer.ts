@@ -1,5 +1,6 @@
 import { Kafka, Partitioners, logLevel, CompressionTypes } from "kafkajs";
 import logger from "../utils/logger";
+import { context, propagation } from "@opentelemetry/api";
 
 const kafka = new Kafka({
   clientId: "Tenant_Service",
@@ -45,11 +46,13 @@ export async function connectProducer() {
 export async function sendInventoryMessage(
   topic: string,
   data: any,
-  key?: string
+  key?: string,
 ) {
   try {
     const partitionKey =
       key || data.transactionId || data.userId || data.ownerEmail || null;
+    let traceHeaders: Record<string, string> = {};
+    propagation.inject(context.active(), traceHeaders);
     const result = await producer.send({
       topic,
       messages: [
@@ -60,6 +63,7 @@ export async function sendInventoryMessage(
             service: "Inventory-service",
             timestamp: Date.now().toString(),
             "correlation-id": data.sagaId || data.transactionId || "null",
+            ...traceHeaders
           },
         },
       ],
@@ -80,7 +84,6 @@ export async function sendInventoryMessage(
     throw error;
   }
 }
-
 
 export async function disconnectProducer() {
   await producer.disconnect();

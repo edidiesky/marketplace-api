@@ -3,16 +3,24 @@ import logger from "../utils/logger";
 import { CartTopic } from "./topics";
 import { sendCartMessage } from "./producer";
 import { CART_CONSUMER_TOPICS } from "../constants";
+import {
+  context,
+  propagation,
+  SpanKind,
+  SpanStatusCode,
+  trace,
+} from "@opentelemetry/api";
 
+const tracer = trace.getTracer("cart-consumer");
 
 const kafka = new Kafka({
-  clientId: "Inventory_Service",
+  clientId: "Cart_Service",
   brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
   retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
 });
 
 const consumer: Consumer = kafka.consumer({
-  groupId: "Order-group",
+  groupId: "Cart-group",
   sessionTimeout: 30000,
   heartbeatInterval: 3000,
   rebalanceTimeout: 60000,
@@ -36,7 +44,7 @@ export async function connectConsumer() {
         topics: CART_CONSUMER_TOPICS,
         fromBeginning: false,
       });
-      logger.info("Order consumer connected");
+      logger.info("Cart consumer connected");
       await startConsuming();
       return;
     } catch (err) {
@@ -53,15 +61,24 @@ async function startConsuming() {
     eachMessage: async (payload: EachMessagePayload) => {
       const { topic, partition, message, heartbeat } = payload;
       const start = Date.now();
+      const rawHeaders = message.headers ?? {};
+      const normalizedHeaders: Record<string, string> = {};
+      for (const [key, value] of Object.entries(rawHeaders)) {
+        if (value !== undefined && value !== null) {
+          normalizedHeaders[key] = Buffer.isBuffer(value)
+            ? value.toString("utf8")
+            : String(value);
+        }
+      }
 
+      const parentContext = propagation.extract(
+        context.active(),
+        normalizedHeaders
+      );
       let data: any;
       try {
         if (!message.value) {
-          logger.warn("Empty message", {
-            topic,
-            partition,
-            offset: message.offset,
-          });
+          logger.warn("Empty message", { topic, partition, offset: message.offset });
           await commitOffset(topic, partition, message.offset);
           return;
         }
@@ -78,47 +95,67 @@ async function startConsuming() {
         return;
       }
 
-      try {
-        logger.info("Processing message", {
-          topic,
-          partition,
-          offset: message.offset,
-          key: message.key?.toString(),
+      await context.with(parentContext, async () => {
+        const span = tracer.startSpan(`kafka.consume.${topic}`, {
+          kind: SpanKind.CONSUMER,
+          attributes: {
+            "messaging.system": "kafka",
+            "messaging.destination": topic,
+            "messaging.operation": "receive",
+            "messaging.kafka.partition": partition,
+            "messaging.kafka.offset": message.offset,
+          },
         });
 
-        const handler = CartTopic[topic as keyof typeof CartTopic];
-        if (!handler) {
-          logger.warn("No handler for topic", { topic });
-          await commitOffset(topic, partition, message.offset);
-          return;
-        }
+        await context.with(trace.setSpan(context.active(), span), async () => {
+          try {
+            logger.info("Processing message", {
+              topic,
+              partition,
+              offset: message.offset,
+              key: message.key?.toString(),
+            });
 
-        await handler(data);
-        await commitOffset(topic, partition, message.offset);
-        await heartbeat();
+            const handler = CartTopic[topic as keyof typeof CartTopic];
+            if (!handler) {
+              logger.warn("No handler for topic", { topic });
+              await commitOffset(topic, partition, message.offset);
+              span.setStatus({ code: SpanStatusCode.OK });
+              return;
+            }
 
-        logger.info("Message processed", {
-          topic,
-          duration: Date.now() - start,
+            await handler(data);
+            await commitOffset(topic, partition, message.offset);
+            await heartbeat();
+
+            span.setStatus({ code: SpanStatusCode.OK });
+            logger.info("Message processed", {
+              topic,
+              duration: Date.now() - start,
+            });
+          } catch (procErr) {
+            span.recordException(procErr as Error);
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: (procErr as Error).message,
+            });
+            logger.error("Handler failed", {
+              topic,
+              partition,
+              offset: message.offset,
+              error: procErr,
+            });
+            await sendToDLQ(topic, partition, message, data, procErr as Error);
+            await commitOffset(topic, partition, message.offset);
+          } finally {
+            span.end();
+          }
         });
-      } catch (procErr) {
-        logger.error("Handler failed", {
-          topic,
-          partition,
-          offset: message.offset,
-          error: procErr,
-        });
-        await sendToDLQ(topic, partition, message, data, procErr as Error);
-        await commitOffset(topic, partition, message.offset);
-        // // Optional backpressure
-        // const p = pause();
-        // setTimeout(() => p.resume(), 5000);
-      }
+      });
     },
   });
 }
 
-//  COMMIT OFFSET
 async function commitOffset(topic: string, partition: number, offset: string) {
   try {
     await consumer.commitOffsets([
@@ -133,7 +170,6 @@ async function commitOffset(topic: string, partition: number, offset: string) {
   }
 }
 
-//  DLQ
 async function sendToDLQ(
   origTopic: string,
   partition: number,
@@ -163,11 +199,9 @@ export async function disconnectConsumer() {
     await consumer.disconnect();
     logger.info("Consumer disconnected");
   } catch (error) {
-    logger.error("Error in connecting to the Kafka comsumer", {
-      message:
-        error instanceof Error ? error.message : "unknown error has occurred",
-      stack:
-        error instanceof Error ? error.stack : "unknown error has occurred",
+    logger.error("Error disconnecting cart consumer", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : "Unknown error",
     });
   }
 }

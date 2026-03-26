@@ -11,7 +11,7 @@ import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3";
 
 const TEMPO_URL = process.env.TEMPO_URL ?? "http://tempo:4318/v1/traces";
 const OTEL_ENABLED = process.env.OTEL_ENABLED !== "false";
-const SERVICE_NAME = process.env.OTEL_SERVICE_NAME ?? "inventory-service";
+const SERVICE_NAME = process.env.OTEL_SERVICE_NAME ?? "authentication-service";
 
 if (process.env.NODE_ENV !== "production") {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
