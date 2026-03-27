@@ -1,6 +1,7 @@
 './utils/otel'
 import helmet from "helmet";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
 dotenv.config();
 import morgan from "morgan";
 import productRoute from "./routes/order.routes"
@@ -10,6 +11,7 @@ import cookieParser from "cookie-parser";
 import { reqReplyTime, orderRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
+import { ordersSwaggerSpec } from "./config/swagger";
 
 const app = express();
 
@@ -47,6 +49,25 @@ app.get("/health", (_req, res) => {
 
 /** ROUTES */
 app.use("/api/v1/orders", productRoute);
+
+
+// SWAGGER DOCS
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(ordersSwaggerSpec);
+});
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(ordersSwaggerSpec, {
+    customSiteTitle: "Orders Service API",
+    customCss: ".swagger-ui .topbar { display: none }",
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  })
+);
 
 /**
  * @description Metrics endpoint for my Prometheus server
