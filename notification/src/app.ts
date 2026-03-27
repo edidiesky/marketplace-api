@@ -11,7 +11,8 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, notificationRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-
+import swaggerUi from 'swagger-ui-express'
+import { notificationSwaggerSpec } from "./config/swagger";
 const app = express();
 
 /** MIDDLEWARE */
@@ -50,6 +51,9 @@ app.get("/health", (_req, res) => {
 
 /** ROUTES */
 app.use("/api/v1/notifications", notificationRoute);
+
+app.get("/openapi.json", (_req, res) => { res.setHeader("Content-Type", "application/json"); res.send(notificationSwaggerSpec); });
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(notificationSwaggerSpec, { customSiteTitle: "Notification Service API", swaggerOptions: { persistAuthorization: true } }));
 
 /**
  * @description Metrics endpoint for my Prometheus server

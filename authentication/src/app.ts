@@ -10,7 +10,8 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, userRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-
+import swaggerUi from "swagger-ui-express";
+import { authSwaggerSpec } from "./config/swagger";
 const app = express();
 /** MIDDLEWARE */
 if (!process.env.WEB_ORIGIN) {
@@ -48,6 +49,16 @@ app.get("/health", (_req, res) => {
 
 /** ROUTES */
 app.use("/api/v1/auth", authRoutes);
+
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(authSwaggerSpec);
+});
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(authSwaggerSpec, {
+  customSiteTitle: "Auth Service API",
+  swaggerOptions: { persistAuthorization: true },
+}));
+
 
 app.get("/metrics", async (req, res) => {
   try {

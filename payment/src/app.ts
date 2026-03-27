@@ -1,12 +1,12 @@
-'./utils/otel'
+"./utils/otel";
 import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import paymentRoute from "./routes/payment.routes"
-import walletRoute from "./routes/wallet.routes"
-import webhookRoute from "./routes/webhook.routes"
-import payoutRoute from "./routes/payout.routes"
+import paymentRoute from "./routes/payment.routes";
+import walletRoute from "./routes/wallet.routes";
+import webhookRoute from "./routes/webhook.routes";
+import payoutRoute from "./routes/payout.routes";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,7 +14,8 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, paymentRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-
+import swaggerUi from "swagger-ui-express";
+import { paymentSwaggerSpec } from "./config/swagger";
 const app = express();
 
 /** MIDDLEWARE */
@@ -24,11 +25,9 @@ if (!process.env.WEB_ORIGIN) {
 app.use(helmet());
 app.use(
   cors({
-    origin: [
-      process.env.WEB_ORIGIN!,
-    ],
+    origin: [process.env.WEB_ORIGIN!],
     credentials: true,
-  })
+  }),
 );
 
 /** LOGS REQUEST */
@@ -54,6 +53,19 @@ app.use("/api/v1/payments", paymentRoute);
 app.use("/api/v1/wallets", walletRoute);
 app.use("/api/v1/webhooks", webhookRoute);
 app.use("/api/v1/payouts", payoutRoute);
+
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(paymentSwaggerSpec);
+});
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(paymentSwaggerSpec, {
+    customSiteTitle: "Payment Service API",
+    swaggerOptions: { persistAuthorization: true },
+  }),
+);
 
 /**
  * @description Metrics endpoint for my Prometheus server

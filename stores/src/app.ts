@@ -11,7 +11,8 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, productRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-
+import swaggerUi from 'swagger-ui-express'
+import { storesSwaggerSpec } from "./config/swagger";
 const app = express();
 
 /** MIDDLEWARE */
@@ -47,6 +48,8 @@ app.get("/health", (_req, res) => {
 /** ROUTE */
 app.use("/api/v1/stores", storeRoute);
 
+app.get("/openapi.json", (_req, res) => { res.setHeader("Content-Type", "application/json"); res.send(storesSwaggerSpec); });
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(storesSwaggerSpec, { customSiteTitle: "Stores Service API", swaggerOptions: { persistAuthorization: true } }));
 /**
  * @description Metrics endpoint for my Prometheus server
  */
