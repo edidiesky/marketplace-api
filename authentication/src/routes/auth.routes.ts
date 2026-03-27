@@ -122,127 +122,219 @@ router.post(
 
 export default router;
 /**
- * @swagger
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *         email:
- *           type: string
- *           format: email
- *         fullName:
- *           type: string
- *         username:
- *           type: string
- *         password:
- *           type: string
- *         createdAt:
- *           type: string
- *           format: date-time
- *         updatedAt:
- *           type: string
- *           format: date-time
- *
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *
- * /api/v1/auth/signup:
+ * @openapi
+ * /api/v1/auth/register:
  *   post:
- *     tags: [Authentication]
+ *     tags: [Auth]
  *     summary: Register a new user
- *     description: |
- *       Creates new user and sends credentials via email.
- *
- *       Email Template:
- *       Subject: "Your Selleasy Backend Test Account Credentials"
- *
- *       Format:
- *
- *       Welcome to Selleasy Backend Test!
- *
- *       Your account has been created successfully.
- *
- *       Username: {username}
- *
- *       Password: {password}
- *
- *       Please login and change your password for security purposes.
- *
- *       Best regards,
- *
- *       Selleasy Backend Test Team
- *
+ *     description: Creates a new user account and sends an OTP verification email.
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - role
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               role:
- *                 type: string
- *                 enum: [ADMIN, CLIENT]
+ *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User registered, OTP sent to email
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *                 credentials:
- *                   type: object
- *                   properties:
- *                     username:
- *                       type: string
- *                     password:
- *                       type: string
- *                 token:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
  *                   type: string
- *
+ *                   example: Registration successful. Check your email for OTP.
+ *       400:
+ *         description: Validation error or email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @openapi
  * /api/v1/auth/login:
  *   post:
- *     tags: [Authentication]
- *     summary: Authenticate user
+ *     tags: [Auth]
+ *     summary: Login with email and password
+ *     description: Returns access and refresh tokens on successful authentication.
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
+ *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
  *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Email not verified
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Logout current user
+ *     description: Invalidates the refresh token stored in Redis.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/verify-otp:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verify email with OTP
+ *     description: Verifies the OTP sent to the user email during registration.
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OtpRequest'
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/resend-otp:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Resend OTP verification email
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResendOtpRequest'
+ *     responses:
+ *       200:
+ *         description: OTP resent successfully
+ *       400:
+ *         description: Email already verified or not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/refresh-token:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Refresh access token
+ *     description: Uses the refresh token from cookie or body to issue a new access token.
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: New access token issued
+ *         content:
+ *           application/json:
+ *             schema:
  *               type: object
  *               properties:
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *                 token:
- *                   type: string
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     accessToken:
+ *                       type: string
+ *       401:
+ *         description: Invalid or expired refresh token
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Request password reset email
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ForgotPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Reset email sent if account exists
+ *       400:
+ *         description: Invalid email
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Reset password using token
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResetPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired reset token
+ */
+
+/**
+ * @openapi
+ * /api/v1/auth/me:
+ *   get:
+ *     tags: [Profile]
+ *     summary: Get current authenticated user
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *       401:
+ *         description: Unauthorized
  */
