@@ -12,6 +12,8 @@ import redisClient from "../config/redis";
 import logger from "../utils/logger";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import { fulfillmentTransitions } from "../utils/fulfillmentTransitions";
+import { generateReceiptBuffer } from "../utils/generateReceipt";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4009";
 const INVENTORY_SERVICE_URL =
@@ -550,6 +552,47 @@ export class OrderService {
     logger.info("Order marked PAYMENT_INITIATED", { orderId, transactionId });
     return order;
   }
+
+  async generateAndPersistReceipt(
+  orderId: string,
+  transactionId: string,
+  paymentDate: Date,
+  storeName: string
+): Promise<string | null> {
+  const order = await this.repo.getOrderById(orderId);
+  if (!order) {
+    logger.error("Order not found for receipt generation", { orderId });
+    return null;
+  }
+
+  try {
+    const buffer = await generateReceiptBuffer({
+      order,
+      storeName,
+      transactionId,
+      paymentDate,
+    });
+
+    const publicId = `receipt_${orderId}_${Date.now()}`;
+    const receiptUrl = await uploadToCloudinary(buffer, publicId);
+
+    await this.repo.updateReceiptUrl(orderId, receiptUrl);
+    await this.invalidateCache(orderId);
+
+    logger.info("Receipt generated and persisted", {
+      orderId,
+      receiptUrl,
+    });
+
+    return receiptUrl;
+  } catch (err: any) {
+    logger.error("Receipt generation failed", {
+      orderId,
+      error: err.message,
+    });
+    return null;
+  }
+}
 }
 
 export const orderService = new OrderService();

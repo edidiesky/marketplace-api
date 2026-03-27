@@ -16,66 +16,76 @@ import { sendOrderMessage } from "./producer";
 import { OrderStatus } from "../models/Order";
 
 export const OrderTopic = {
-  [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
-    const { orderId, transactionId, paymentDate, sagaId } = data;
+ [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
+  const { orderId, transactionId, paymentDate, sagaId, storeId, storeName } = data;
 
-    const idempotencyKey = `payment-success-${sagaId}`;
-    if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
-      logger.info("Duplicate payment success ignored", { orderId, sagaId });
-      return;
-    }
+  const idempotencyKey = `payment-success-${sagaId}`;
+  if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
+    logger.info("Duplicate payment success ignored", { orderId, sagaId });
+    return;
+  }
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      try {
-        const order = await orderService.confirmPaymentSuccess(
-          orderId,
-          transactionId,
-          new Date(paymentDate)
-        );
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const order = await orderService.confirmPaymentSuccess(
+        orderId,
+        transactionId,
+        new Date(paymentDate)
+      );
 
-        if (!order) {
-          logger.error("Order not found during payment completion", {
-            orderId,
-            transactionId,
-            sagaId,
-          });
-          return;
-        }
-
-        await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
-          orderId: order._id.toString(),
-          userId: order.userId.toString(),
-          cartId: order.cartId.toString(),
-          storeId: order.storeId.toString(),
-          sagaId,
-          completedAt: new Date().toISOString(),
-        });
-
-        logger.info("Order completed and event emitted", {
-          event: "order_completed_emitted",
+      if (!order) {
+        logger.error("Order not found during payment completion", {
           orderId,
           transactionId,
           sagaId,
         });
         return;
-      } catch (error: any) {
-        logger.error(`Payment success handling failed (attempt ${attempt + 1})`, {
+      }
+
+      // Generate receipt async - failure does not block order completion
+      const receiptUrl = await orderService.generateAndPersistReceipt(
+        orderId,
+        transactionId,
+        new Date(paymentDate),
+        storeName ?? "Selleasi Store"
+      );
+
+      await sendOrderMessage(ORDER_COMPLETED_TOPIC, {
+        orderId: order._id.toString(),
+        userId: order.userId.toString(),
+        cartId: order.cartId.toString(),
+        storeId: order.storeId.toString(),
+        sagaId,
+        receiptUrl: receiptUrl ?? null,
+        completedAt: new Date().toISOString(),
+      });
+
+      logger.info("Order completed, receipt generated, event emitted", {
+        event: "order_completed_emitted",
+        orderId,
+        transactionId,
+        sagaId,
+        receiptUrl,
+      });
+      return;
+    } catch (error: any) {
+      logger.error(`Payment success handling failed (attempt ${attempt + 1})`, {
+        orderId,
+        sagaId,
+        error: error.message,
+      });
+      if (attempt === MAX_RETRIES - 1) {
+        logger.error("All retries exhausted for payment success handling", {
           orderId,
           sagaId,
-          error: error.message,
         });
-        if (attempt === MAX_RETRIES - 1) {
-          logger.error("All retries exhausted for payment success handling", {
-            orderId,
-            sagaId,
-          });
-          return;
-        }
-        const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
-        await new Promise((r) => setTimeout(r, delay));
+        return;
       }
+      const delay = Math.pow(2, attempt) * BASE_DELAY_MS + JITTER;
+      await new Promise((r) => setTimeout(r, delay));
     }
-  },
+  }
+},
 
   [ORDER_PAYMENT_INITIATED_TOPIC]: async (data: {
     orderId: string;

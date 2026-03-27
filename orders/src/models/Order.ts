@@ -73,6 +73,8 @@ export interface IOrder extends Document {
   fulfillmentStatus: FulfillmentStatus;
   trackingNumber?: string;
   courierName?: string;
+  receiptUrl?: string;
+  receiptGeneratedAt?: Date;
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -130,6 +132,8 @@ const OrderSchema = new Schema<IOrder>(
     },
     trackingNumber: { type: String },
     courierName: { type: String },
+    receiptUrl: { type: String },
+    receiptGeneratedAt: { type: Date },
   },
   { timestamps: true },
 );

@@ -40,7 +40,7 @@ export class OrderRepository implements IOrderRepository {
   async getUserOrders(
     query: FilterQuery<IOrder>,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<IOrder[] | null> {
     const cacheKey = this.getSearchCacheKey(query, skip, limit);
 
@@ -63,7 +63,7 @@ export class OrderRepository implements IOrderRepository {
         .limit(limit)
         .sort({ createdAt: -1 })
         .lean()
-        .exec()
+        .exec(),
     );
 
     try {
@@ -71,7 +71,7 @@ export class OrderRepository implements IOrderRepository {
         cacheKey,
         JSON.stringify(orders),
         "EX",
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
     } catch (error) {
       logger.warn("Cache write failed", { error, cacheKey });
@@ -97,7 +97,7 @@ export class OrderRepository implements IOrderRepository {
     }
 
     const order = await measureDatabaseQuery("fetch_single_order", () =>
-      Order.findOne({_id: orderId}).lean().exec()
+      Order.findOne({ _id: orderId }).lean().exec(),
     );
 
     if (order) {
@@ -106,7 +106,7 @@ export class OrderRepository implements IOrderRepository {
           cacheKey,
           JSON.stringify(order),
           "EX",
-          this.CACHE_TTL
+          this.CACHE_TTL,
         );
       } catch (error) {
         logger.warn("Cache write failed", { error, cacheKey });
@@ -118,7 +118,7 @@ export class OrderRepository implements IOrderRepository {
 
   async getOrderByCartId(cartId: string): Promise<IOrder | null> {
     const order = await measureDatabaseQuery("fetch_order_by_cart", () =>
-      Order.findOne({ cartId }).lean().exec()
+      Order.findOne({ cartId }).lean().exec(),
     );
     return order;
   }
@@ -128,11 +128,14 @@ export class OrderRepository implements IOrderRepository {
    */
   async getOrderByRequestId(requestId: string): Promise<IOrder | null> {
     const order = await measureDatabaseQuery("fetch_order_by_request_id", () =>
-      Order.findOne({ requestId }).lean().exec()
+      Order.findOne({ requestId }).lean().exec(),
     );
 
     if (order) {
-      logger.debug("Order found by requestId", { requestId, orderId: order._id });
+      logger.debug("Order found by requestId", {
+        requestId,
+        orderId: order._id,
+      });
     }
 
     return order;
@@ -141,7 +144,7 @@ export class OrderRepository implements IOrderRepository {
   async updateOrderStatus(
     orderId: string,
     status: OrderStatus,
-    updates: Partial<IOrder> = {}
+    updates: Partial<IOrder> = {},
   ): Promise<IOrder | null> {
     const order = await Order.findByIdAndUpdate(
       orderId,
@@ -151,7 +154,7 @@ export class OrderRepository implements IOrderRepository {
           ...updates,
         },
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).exec();
 
     if (order) {
@@ -174,7 +177,7 @@ export class OrderRepository implements IOrderRepository {
 
   async createOrder(
     data: Partial<IOrder>,
-    session?: mongoose.ClientSession
+    session?: mongoose.ClientSession,
   ): Promise<IOrder> {
     try {
       const [order] = await Order.create([data], { session });
@@ -195,7 +198,25 @@ export class OrderRepository implements IOrderRepository {
         data: { requestId: data.requestId },
       });
 
-      throw error instanceof Error ? error : new Error("Failed to create order");
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to create order");
     }
+  }
+
+  async updateReceiptUrl(
+    orderId: string,
+    receiptUrl: string,
+  ): Promise<IOrder | null> {
+    return Order.findByIdAndUpdate(
+      orderId,
+      {
+        $set: {
+          receiptUrl,
+          receiptGeneratedAt: new Date(),
+        },
+      },
+      { new: true },
+    ).exec();
   }
 }

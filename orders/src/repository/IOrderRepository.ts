@@ -18,5 +18,9 @@ export interface IOrderRepository {
     status: OrderStatus,
     updates?: Partial<IOrder>,
   ) => Promise<IOrder | null>;
+  updateReceiptUrl: (
+    orderId: string,
+    receiptUrl: string
+  ) => Promise<IOrder | null>;
   getOrderByCartId: (cartId: string) => Promise<IOrder | null>;
 }
