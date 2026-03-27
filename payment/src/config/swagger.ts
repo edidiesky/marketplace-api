@@ -1,96 +1,125 @@
-import swaggerJSDoc from "swagger-jsdoc";
+import swaggerJsdoc from "swagger-jsdoc";
 
-const swaggerDefinition = {
-  openapi: "3.0.3",
-  info: {
-    title: "SellEazy Payment API",
-    version: "1.0.0",
-    description:
-      "API documentation for the Payment microservice. Handles payment initialization, history, webhooks, and refunds.",
-    contact: {
-      name: "Your Name",
-      email: "dev@yourcompany.com",
+const options: swaggerJsdoc.Options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Payment Service",
+      version: "1.0.0",
+      description: "Payment initialization, webhook processing, wallet, ledger, and payouts",
     },
-  },
-  servers: [
-    {
-      url: "http://localhost:5000/api/payments",
-      description: "Local Development Server",
-    },
-    {
-      url: "https://api.yourproduction.com/api/payments",
-      description: "Production Server",
-    },
-  ],
-  components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
-        description: "Enter your JWT token (from /auth/login)",
+    servers: [
+      {
+        url: process.env.NODE_ENV === "production"
+          ? "https://api.selleasi.com/payment"
+          : "http://localhost:8000/payment",
       },
-    },
-    schemas: {
-      InitializePaymentRequest: {
-        type: "object",
-        required: ["orderId", "gateway", "customerEmail", "customerName", "amount"],
-        properties: {
-          orderId: { type: "string", example: "67a8b9c0d1e2f3g4h5i6j7k8" },
-          gateway: {
-            type: "string",
-            enum: ["paystack", "flutterwave"],
-            example: "paystack",
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+      schemas: {
+        InitializePaymentRequest: {
+          type: "object",
+          required: ["orderId", "gateway", "customerEmail", "customerName", "amount"],
+          properties: {
+            orderId: { type: "string", example: "69c572f77b95832e7af4cca2" },
+            gateway: {
+              type: "string",
+              enum: ["paystack", "flutterwave"],
+              example: "paystack",
+            },
+            customerEmail: { type: "string", format: "email", example: "victor@selleasi.com" },
+            customerName: { type: "string", example: "Victor Essien" },
+            amount: { type: "number", example: 135000 },
+            phone: { type: "string", example: "+2348012345678" },
+            currency: { type: "string", default: "NGN", example: "NGN" },
+            metadata: { type: "object" },
           },
-          customerEmail: { type: "string", format: "email", example: "john@example.com" },
-          customerName: { type: "string", example: "John Doe" },
-          amount: { type: "number", example: 50000.00 },
-          phone: { type: "string", example: "+2348012345678" },
-          currency: { type: "string", example: "NGN", default: "NGN" },
-          metadata: { type: "object" },
         },
-      },
-      PaymentResponse: {
-        type: "object",
-        properties: {
-          paymentId: { type: "string" },
-          redirectUrl: { type: "string", format: "url" },
+        PaymentResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            message: { type: "string", example: "Payment initialized successfully" },
+            data: {
+              type: "object",
+              properties: {
+                paymentId: { type: "string", example: "pay_1774547780909_lf0keoqrv" },
+                redirectUrl: {
+                  type: "string",
+                  example: "https://checkout.paystack.com/access_code_here",
+                },
+              },
+            },
+          },
         },
-      },
-      RefundRequest: {
-        type: "object",
-        properties: {
-          amount: { type: "number", example: 30000.00 },
-          reason: { type: "string", example: "Customer changed mind" },
+        Payment: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            paymentId: { type: "string" },
+            orderId: { type: "string" },
+            customerId: { type: "string" },
+            amount: { type: "number" },
+            currency: { type: "string" },
+            status: {
+              type: "string",
+              enum: ["pending", "success", "failed", "refunded"],
+            },
+            gateway: { type: "string", enum: ["paystack", "flutterwave"] },
+            customerEmail: { type: "string" },
+            paidAt: { type: "string", format: "date-time" },
+            createdAt: { type: "string", format: "date-time" },
+          },
         },
-      },
-      ErrorResponse: {
-        type: "object",
-        properties: {
-          success: { type: "boolean", example: false },
-          error: { type: "string" },
+        RefundRequest: {
+          type: "object",
+          properties: {
+            amount: { type: "number", example: 45000 },
+            reason: { type: "string", example: "Customer requested refund" },
+          },
+        },
+        Wallet: {
+          type: "object",
+          properties: {
+            _id: { type: "string" },
+            sellerId: { type: "string" },
+            storeId: { type: "string" },
+            balance: { type: "number", example: 1370.85 },
+            currency: { type: "string", example: "NGN" },
+          },
+        },
+        PayoutRequest: {
+          type: "object",
+          required: ["amount", "bankCode", "accountNumber"],
+          properties: {
+            amount: { type: "number", example: 50000 },
+            bankCode: { type: "string", example: "044" },
+            accountNumber: { type: "string", example: "0123456789" },
+            accountName: { type: "string", example: "Victor Essien" },
+            reason: { type: "string", example: "Weekly payout" },
+          },
+        },
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            status: { type: "string", example: "error" },
+            error: { type: "string" },
+          },
         },
       },
     },
+    security: [{ BearerAuth: [] }],
+    tags: [
+      { name: "Payments", description: "Payment initialization and history" },
+      { name: "Webhooks", description: "PSP webhook callbacks" },
+      { name: "Wallet", description: "Seller wallet and balance" },
+      { name: "Payouts", description: "Seller payout requests" },
+    ],
   },
-  tags: [
-    {
-      name: "Payments",
-      description: "Payment operations",
-    },
-    {
-      name: "Webhooks",
-      description: "Gateway callbacks (public)",
-    },
-  ],
+  apis: ["./src/routes/*.ts"],
 };
 
-const options = {
-  swaggerDefinition,
-  apis: [
-    "./src/routes/payment.routes.ts",           // For route-level comments
-    "./src/controllers/payment.controller.ts", // For handler-level comments
-  ],
-};
-
-export const swaggerSpec = swaggerJSDoc(options);
+export const paymentSwaggerSpec = swaggerJsdoc(options);
