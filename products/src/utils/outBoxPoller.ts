@@ -47,7 +47,6 @@ async function pollOnce(): Promise<void> {
         );
         continue;
       }
-
       await sendProductMessage(topic, event.payload);
       await outboxRepository.markOutboxAsProccessed(event._id.toString());
 

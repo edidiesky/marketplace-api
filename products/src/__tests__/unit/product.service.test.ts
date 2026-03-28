@@ -4,7 +4,6 @@ import Product, { IProduct } from "../../models/Product";
 import mongoose, { FilterQuery } from "mongoose";
 import { beforeEach, describe, expect, jest, it, afterEach } from "@jest/globals";
 import * as withTransactionModule from "../../utils/withTransaction";
-
 const objectId = () => new mongoose.Types.ObjectId();
 
 function makeProduct(overrides: Partial<IProduct> = {}): IProduct {
@@ -34,7 +33,6 @@ function makeMockRepo(): jest.Mocked<IProductRepository> {
   return {
     createProduct: jest.fn(),
     findAllProduct: jest.fn(),
-    // countproducts: jest.fn(),
     findProductById: jest.fn(),
     updateProduct: jest.fn(),
     deleteproductById: jest.fn(),

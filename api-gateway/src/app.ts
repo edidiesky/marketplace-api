@@ -19,7 +19,6 @@ import axios, { AxiosResponse } from "axios";
 import { authenticate } from "./middleware/authentication";
 import { rateLimiter } from "./middleware/rateLimiter";
 import { getBreaker } from "./utils/createBreaker";
-import { Readable } from "stream";
 
 declare module "express" {
   interface Request {
@@ -125,6 +124,57 @@ app.use("/:service/*", (req: Request, res: Response, next: NextFunction) => {
 
   return authenticate(req, res, next);
 });
+
+// Serving aggregated spec fetched fresh on each request in dev,
+// cached in prod via the 60s interval below
+let cachedSpec: any = null;
+let cacheTime = 0;
+const CACHE_TTL_MS = 60_000;
+
+app.get("/api-docs/swagger.json", async (_req: Request, res: Response) => {
+  try {
+    const now = Date.now();
+    if (!cachedSpec || now - cacheTime > CACHE_TTL_MS) {
+      cachedSpec = await aggregateSpecs();
+      cacheTime = now;
+    }
+    res.setHeader("Content-Type", "application/json");
+    res.send(cachedSpec);
+  } catch (err) {
+    logger.error("Failed to aggregate swagger specs", { err });
+    res.status(500).json({ error: "Failed to load API documentation" });
+  }
+});
+
+// Serve Swagger UI pointing at the aggregated spec
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(undefined, {
+    customSiteTitle: "Selleasi API Docs",
+    customCss: `
+      .swagger-ui .topbar { background-color: #1a1a2e; }
+      .swagger-ui .topbar-wrapper img { display: none; }
+      .swagger-ui .topbar-wrapper::before {
+        content: 'Selleasi Marketplace API';
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        padding-left: 16px;
+      }
+    `,
+    swaggerOptions: {
+      url: "/api-docs/swagger.json",
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      deepLinking: true,
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
+      docExpansion: "none",
+    },
+  })
+);
 
 // Rate limiting
 app.use("/:service/*", (req: Request, res: Response, next: NextFunction) => {
@@ -236,56 +286,7 @@ app.use(
   },
 );
 
-// Serving aggregated spec fetched fresh on each request in dev,
-// cached in prod via the 60s interval below
-let cachedSpec: any = null;
-let cacheTime = 0;
-const CACHE_TTL_MS = 60_000;
 
-app.get("/api-docs/swagger.json", async (_req: Request, res: Response) => {
-  try {
-    const now = Date.now();
-    if (!cachedSpec || now - cacheTime > CACHE_TTL_MS) {
-      cachedSpec = await aggregateSpecs();
-      cacheTime = now;
-    }
-    res.setHeader("Content-Type", "application/json");
-    res.send(cachedSpec);
-  } catch (err) {
-    logger.error("Failed to aggregate swagger specs", { err });
-    res.status(500).json({ error: "Failed to load API documentation" });
-  }
-});
-
-// Serve Swagger UI pointing at the aggregated spec
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(undefined, {
-    customSiteTitle: "Selleasi API Docs",
-    customCss: `
-      .swagger-ui .topbar { background-color: #1a1a2e; }
-      .swagger-ui .topbar-wrapper img { display: none; }
-      .swagger-ui .topbar-wrapper::before {
-        content: 'Selleasi Marketplace API';
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
-        padding-left: 16px;
-      }
-    `,
-    swaggerOptions: {
-      url: "/api-docs/swagger.json",
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      filter: true,
-      deepLinking: true,
-      defaultModelsExpandDepth: 1,
-      defaultModelExpandDepth: 1,
-      docExpansion: "none",
-    },
-  })
-);
 app.use(NotFound);
 app.use(errorHandler);
 

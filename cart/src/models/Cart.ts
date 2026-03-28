@@ -19,7 +19,7 @@ export interface ICartItems {
   unavailabilityReason?: string;
 }
 
-export interface ICart extends Document {
+export interface ICart {
   _id: any;
   userId: Types.ObjectId;
   sellerId: Types.ObjectId;

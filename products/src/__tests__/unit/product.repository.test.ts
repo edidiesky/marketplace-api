@@ -13,9 +13,6 @@ import * as redisModule from "../../config/redis";
 
 //  objectId helpe
 const objectId = () => new mongoose.Types.ObjectId();
-
-//  makeProduct fixture
-
 function makeProduct(overrides: Partial<IProduct> = {}): IProduct {
   return {
     _id: objectId(),
@@ -478,7 +475,6 @@ describe("ProductRepository", () => {
   });
 
   //  invalidateSearchCache edge cases
-
   describe("invalidateSearchCache", () => {
     it("does not throw when del throws after keys returns results", async () => {
       const product = makeProduct();
