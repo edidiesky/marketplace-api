@@ -5,6 +5,7 @@ import { withTransaction } from "../utils/withTransaction";
 import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import Product from "../models/Product";
 import logger from "../utils/logger";
+import OutboxEvent, { IOutboxEventType } from "../models/OutboxEvent";
 
 export class ProductService {
   private productRepo: IProductRepository;
@@ -57,27 +58,58 @@ export class ProductService {
     return this.productRepo.findProductById(id);
   }
 
-  async updateProduct(
-    id: string,
-    body: Partial<IProduct>,
-  ): Promise<IProduct | null> {
-    return this.productRepo.updateProduct(id, body);
-  }
-
-  async deleteProduct(id: string): Promise<void> {
-    return this.productRepo.deleteproductById(id);
-  }
-
-  async softDeleteProduct(id: string, deletedBy: string): Promise<IProduct> {
-    return withTransaction(async (session) => {
-      await this.productRepo.softDeleteProduct(id, deletedBy, session);
-      const prod = await this.productRepo.findProductById(id);
-      if (!prod) {
-        logger.error(`Product with id ${id} not found`);
-        throw new Error(`Product with id ${id} not found after soft delete`);
-      }
-      return prod;
+  async updateProduct(id: string, body: Partial<IProduct>) {
+    const session = await mongoose.startSession();
+    let result: IProduct | null = null;
+    await session.withTransaction(async () => {
+      result = await Product.findByIdAndUpdate(id, body, {
+        new: true,
+        session,
+      });
+      if (!result) throw new Error("Product not found");
+      await OutboxEvent.create(
+        [
+          {
+            type: IOutboxEventType.PRODUCT_UPDATED_TOPIC,
+            payload: {
+              productId: result._id.toString(),
+              storeId: result.store.toString(),
+              name: result.name,
+              description: result.description,
+              price: result.price,
+              images: result.images,
+              isDeleted: result.isDeleted,
+              updatedAt: result.updatedAt,
+            },
+          },
+        ],
+        { session },
+      );
     });
+    session.endSession();
+    return result;
+  }
+
+  async softDeleteProduct(id: string, deletedBy: string) {
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      await Product.findByIdAndUpdate(
+        id,
+        { isDeleted: true, deletedBy, deletedAt: new Date() },
+        { session },
+      );
+      await OutboxEvent.create(
+        [
+          {
+            type: IOutboxEventType.PRODUCT_DELETED_TOPIC,
+            payload: { productId: id },
+          },
+        ],
+        { session },
+      );
+    });
+    session.endSession();
+    return { message: "Product deleted" };
   }
 
   async restoreProduct(id: string): Promise<IProduct> {

@@ -48,6 +48,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
     "@jest/globals": "^30.0.0-beta.3",
     "@jest/types": "^29.6.3",
     "@types/bcrypt": "^5.0.2",

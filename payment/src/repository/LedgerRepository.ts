@@ -32,7 +32,13 @@ export class LedgerRepository {
     const net = parseFloat((data.grossAmount - fee).toFixed(2));
 
     const wallet = await Wallet.findById(data.walletId).session(session);
-    if (!wallet) throw new Error("Wallet not found");
+    if (!wallet) {
+      logger.warn("Wallet was not found for this information:", {
+        walletId: data.walletId,
+        sellerId: data.sellerId,
+      });
+      throw new Error("Wallet not found");
+    }
 
     const balanceAfterCredit = parseFloat((wallet.balance + net).toFixed(2));
 
@@ -101,9 +107,21 @@ export class LedgerRepository {
   }): Promise<ILedgerEntry> {
     return withTransaction(async (session) => {
       const wallet = await Wallet.findById(data.walletId).session(session);
-      if (!wallet) throw new Error("Wallet not found");
+      if (!wallet) {
+        logger.warn("Wallet was not found for this information:", {
+          walletId: data.walletId,
+          sellerId: data.sellerId,
+        });
+        throw new Error("Wallet not found");
+      }
 
       if (wallet.balance < data.refundAmount) {
+         logger.warn("Wallet balance was not sufficient for this information:", {
+          walletId: data.walletId,
+          sellerId: data.sellerId,
+          refundAmount: data.refundAmount,
+          balance: wallet.balance,
+        });
         throw new Error("INSUFFICIENT_WALLET_BALANCE");
       }
 
@@ -149,9 +167,22 @@ export class LedgerRepository {
   }): Promise<ILedgerEntry> {
     return withTransaction(async (session) => {
       const wallet = await Wallet.findById(data.walletId).session(session);
-      if (!wallet) throw new Error("Wallet not found");
+      if (!wallet) {
+        logger.warn("Wallet was not found for this information:", {
+          walletId: data.walletId,
+          sellerId: data.sellerId,
+          amount: data.amount,
+        });
+        throw new Error("Wallet not found");
+      }
 
       if (wallet.balance < data.amount) {
+         logger.warn("Wallet balance was not sufficient for this information:", {
+          walletId: data.walletId,
+          sellerId: data.sellerId,
+          refundAmount: data.amount,
+          balance: wallet.balance,
+        });
         throw new Error("INSUFFICIENT_WALLET_BALANCE");
       }
 

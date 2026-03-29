@@ -3,6 +3,28 @@ networks:
     driver: bridge
 
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: selleasi-elasticsearch
+    hostname: elasticsearch
+    networks:
+      - selleasi-network
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - cluster.routing.allocation.disk.threshold_enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
   redis:
     image: redis:7.0-alpine
     container_name: redis
@@ -643,41 +665,6 @@ services:
       - grafana_data:/var/lib/grafana
       - ../../grafana/provisioning/datasources/tempo.yaml:/etc/grafana/provisioning/datasources/tempo.yaml
 
-  # elasticsearch:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-  #   container_name: selleasi-elasticsearch
-  #   hostname: elasticsearch
-  #   networks:
-  #     - selleasi-network
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   environment:
-  #     - discovery.type=single-node       
-  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m 
-  #     - xpack.security.enabled=false      
-  #     - xpack.security.http.ssl.enabled=false
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 10
-  #     start_period: 60s
-  #   volumes:
-  #     - es-data:/usr/share/elasticsearch/data
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:8.11.0
-  #   container_name: selleasi-kibana
-  #   networks:
-  #     - selleasi-network
-  #   ports:
-  #     - "5601:5601"
-  #   environment:
-  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-  #   depends_on:
-  #     elasticsearch:
-  #       condition: service_healthy
-
 volumes:
   prom_data:
   redis-data:
@@ -687,5 +674,4 @@ volumes:
   kafka2_data:
   kafka3_data:
   tempo-data:
-  # kafka-connect-data:
-  # es-data:
+  es-data:

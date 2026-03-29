@@ -66,7 +66,7 @@ export class WebhookService {
     // Redis lock outside transaction
     // Lock prevents concurrent processing of the same transaction
     // before the idempotency record is written
-    const lockKey = `webhook:lock:${transactionId}`;
+    const lockKey = `webhook:lock:${transactionId}`;k
     const locked = await redisClient.getClient().setnx(lockKey, "1");
     if (!locked) {
       logger.warn("Webhook already being processed", { transactionId });
@@ -79,6 +79,9 @@ export class WebhookService {
       const payment =
         await paymentRepository.getPaymentByPaymentId(transactionId);
       if (!payment) {
+        logger.warn((
+          `Payment not found for transaction: ${transactionId}`
+        ))
         throw new Error(
           `Payment not found for transaction: ${transactionId}`
         );
@@ -156,7 +159,7 @@ export class WebhookService {
 
         // Single transaction spanning all success writes
         await withTransaction(async (session) => {
-          // 7a: Update payment status
+          // Update payment status
           await paymentRepository.updatePaymentStatus(
             transactionId,
             PaymentStatus.SUCCESS,
@@ -174,15 +177,14 @@ export class WebhookService {
             session
           );
 
-          // 7b: Get or create wallet inside same transaction
+          // Get or create wallet inside same transaction
           const wallet = await walletRepository.getOrCreate(
             new Types.ObjectId(payment.ownerId.toString()),
             new Types.ObjectId(payment.storeId.toString()),
             session
           );
 
-          // 7c: Write ledger CREDIT + FEE + update wallet balance
-          // creditOnPaymentConfirmed now accepts session, no nested tx
+          // Write ledger CREDIT + FEE + update wallet balance
           await ledgerRepository.creditOnPaymentConfirmed(
             {
               sellerId: payment.ownerId,
@@ -195,7 +197,7 @@ export class WebhookService {
             session
           );
 
-          // 7d: Write outbox event (replaces direct Kafka publish)
+          // Write outbox even
           await outboxRepository.create(
             OutboxEventType.PAYMENT_CONFIRMED,
             {
@@ -210,7 +212,7 @@ export class WebhookService {
             session
           );
 
-          // 7e: Write idempotency record
+          // Write idempotency record
           await idempotencyRepository.save(
             {
               requestHash: idempotencyHash,

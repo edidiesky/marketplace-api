@@ -17,14 +17,21 @@
  */
 
 import { outboxRepository } from "../repository/OutboxRepository";
-import { PRODUCT_ONBOARDING_COMPLETED_TOPIC } from "../constants";
 import { IOutboxEventType } from "../models/OutboxEvent";
 import logger from "./logger";
 import { sendProductMessage } from "../messaging/producer";
 const POLL_INTERVAL_MS = 5_000;
+// utils/outboxPoller.ts
+import {
+  PRODUCT_ONBOARDING_COMPLETED_TOPIC,
+  PRODUCT_UPDATED_TOPIC,
+  PRODUCT_DELETED_TOPIC,
+} from "../constants";
+
 const TOPIC_MAP: Record<IOutboxEventType, string> = {
-  [IOutboxEventType.PRODUCT_ONBOARDING_COMPLETED_TOPIC]:
-    PRODUCT_ONBOARDING_COMPLETED_TOPIC,
+  [IOutboxEventType.PRODUCT_ONBOARDING_COMPLETED_TOPIC]: PRODUCT_ONBOARDING_COMPLETED_TOPIC,
+  [IOutboxEventType.PRODUCT_UPDATED_TOPIC]: PRODUCT_UPDATED_TOPIC,
+  [IOutboxEventType.PRODUCT_DELETED_TOPIC]: PRODUCT_DELETED_TOPIC,
 };
 
 

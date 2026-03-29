@@ -247,7 +247,12 @@ class PaymentService {
 
   async getPaymentById(id: string): Promise<IPayment> {
     const payment = await this.repo.getPaymentById(id);
-    if (!payment) throw new Error("Payment not found");
+    if (!payment) {
+      logger.warn("Payment was not found for the payment id:", {
+        id,
+      });
+      throw new Error("Payment not found");
+    }
     return payment;
   }
 
@@ -263,7 +268,12 @@ class PaymentService {
     reason = "Customer requested refund",
   ): Promise<IPayment> {
     const payment = await this.repo.getPaymentByPaymentId(paymentId);
-    if (!payment) throw new Error("Payment not found");
+    if (!payment) {
+      logger.warn("Payment was not found for the payment id:", {
+        paymentId,
+      });
+      throw new Error("Payment not found");
+    }
     if (payment.status !== PaymentStatus.SUCCESS) {
       throw new Error("Only successful payments can be refunded");
     }
@@ -316,11 +326,14 @@ class PaymentService {
     });
     if (!payment) return;
 
-    await Payment.updateOne({ orderId: new Types.ObjectId(orderId) }, {
-      $set:{
-        status: PaymentStatus.FAILED
-      }
-    });
+    await Payment.updateOne(
+      { orderId: new Types.ObjectId(orderId) },
+      {
+        $set: {
+          status: PaymentStatus.FAILED,
+        },
+      },
+    );
 
     logger.info("Payment marked as cancelled", { orderId });
   }

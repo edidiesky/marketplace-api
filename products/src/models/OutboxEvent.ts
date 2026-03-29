@@ -8,6 +8,8 @@ export enum IOutboxEventStatus {
 
 export enum IOutboxEventType {
   PRODUCT_ONBOARDING_COMPLETED_TOPIC = "product.onboarding.completed.topic",
+  PRODUCT_UPDATED_TOPIC =  "product.updated.completed.topic",
+  PRODUCT_DELETED_TOPIC =  "product.deleted.completed.topic",
 }
 
 export interface IOutboxEvent {
