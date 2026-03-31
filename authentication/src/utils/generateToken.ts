@@ -1,49 +1,52 @@
 import jwt from "jsonwebtoken";
-import { Types } from "mongoose";
 import logger from "./logger";
 import redisClient from "../config/redis";
 import { nanoid } from "nanoid";
 import { PermissionService } from "../services/permission.service";
-export const signJwt = async (userId: string, role: string, name: string) => {
-  try {
-    const permissions = await PermissionService.getUserPermissions(userId);
-    const roleLevel = await PermissionService.getUserRoleLevel(userId);
-    const payload = {
-      user: {
-        userId,
-        role,
-        name,
-        permissions,
-        roleLevel,
-      },
-    };
+export const signJwt = async (
+  userId: string,
+  role: string,
+  name: string,
+  tenantId: string,
+  tenantType: string,
+  tenantPlan: string,
+): Promise<string> => {
+  const permissions = await PermissionService.getUserPermissions(userId);
+  const roleLevel = await PermissionService.getUserRoleLevel(userId);
 
-    return jwt.sign(payload, process.env.JWT_CODE!, {
-      expiresIn: "7d",
-    });
-  } catch (error) {
-    logger.error("Error generating JWT", {
+  const payload = {
+    user: {
       userId,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    throw error;
-  }
+      role,
+      name,
+      tenantId,
+      tenantType,
+      tenantPlan,
+      permissions,
+      roleLevel,
+    },
+  };
+
+  return jwt.sign(payload, process.env.JWT_CODE!, { expiresIn: "15m" });
 };
 
 export const generateToken = async (
   res: import("express").Response,
   userId: string,
   role: string,
-  name: string
+  name: string,
+  tenantId: string,
+  tenantType: string,
+  tenantPlan: string,
 ) => {
   try {
-    const accessToken = await signJwt(userId, role, name);
+    const accessToken = await signJwt(userId, role, name, tenantId, tenantType, tenantPlan);
     const refreshToken = nanoid(32);
     await redisClient.set(
       `refresh:${refreshToken}`,
       JSON.stringify({ userId, role, name }),
       "EX",
-      7 * 24 * 60 * 60
+      7 * 24 * 60 * 60,
     );
     res.cookie("jwt", accessToken, {
       httpOnly: true,

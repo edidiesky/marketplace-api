@@ -1,5 +1,4 @@
 import { esClient, PRODUCT_INDEX } from "../config/elasticSearch";
-import logger from "../utils/logger";
 
 export interface ESProductDoc {
   productId: string;
@@ -76,7 +75,7 @@ export const esProductRepository = {
 
     const result = await esClient.search({
       index: PRODUCT_INDEX,
-      from,
+      // from,
       size: params.limit,
       query: { bool: { must, filter } },
       sort: params.q ? ["_score"] : [{ createdAt: "desc" }],

@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
@@ -61,7 +62,7 @@ export const HandleEmailOnboardingStep = asyncHandler(
       const link = `${
         process.env.WEB_ORIGIN
       }/onboarding/verify-email?token=${token}&email=${encodeURIComponent(
-        normalizedEmail
+        normalizedEmail,
       )}`;
 
       const expiresAt = Date.now() + ONBOARDING_EXPIRATION_SEC;
@@ -85,7 +86,7 @@ export const HandleEmailOnboardingStep = asyncHandler(
           lastName,
           notificationId,
           verification_url: link,
-        }
+        },
       );
 
       res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
@@ -115,7 +116,7 @@ export const HandleEmailOnboardingStep = asyncHandler(
             : "An unknown has occurred during email onboarding",
       });
     }
-  }
+  },
 );
 
 /**
@@ -135,7 +136,7 @@ export const HandleConfirmEmailToken = asyncHandler(
           state,
         });
         throw new Error(
-          "No onboarding session found for this process. Please kindly restart"
+          "No onboarding session found for this process. Please kindly restart",
         );
       }
       let existingOnboardingData: IOnboarding = JSON.parse(state);
@@ -153,7 +154,7 @@ export const HandleConfirmEmailToken = asyncHandler(
           expiresAt: existingOnboardingData.tokenObject.expiresAt,
         });
         throw new Error(
-          "The token provided has already expired please can u retry the onboarding flow again"
+          "The token provided has already expired please can u retry the onboarding flow again",
         );
       }
 
@@ -184,7 +185,7 @@ export const HandleConfirmEmailToken = asyncHandler(
             : "An unknown has occurred during email onboarding",
       });
     }
-  }
+  },
 );
 
 /**
@@ -204,7 +205,7 @@ export const HandlePasswordOnboardingStep = asyncHandler(
           state,
         });
         throw new Error(
-          "No onboarding session found for this process. Please kindly restart"
+          "No onboarding session found for this process. Please kindly restart",
         );
       }
       let salt = await bcrypt.genSalt(12);
@@ -245,7 +246,7 @@ export const HandlePasswordOnboardingStep = asyncHandler(
             : "An unknown has occurred during email onboarding",
       });
     }
-  }
+  },
 );
 
 /**
@@ -284,7 +285,7 @@ const RegisterUser = asyncHandler(
           email,
         });
         throw new Error(
-          "Please, kindly login rather than creating an account since you have an existing account with us. "
+          "Please, kindly login rather than creating an account since you have an existing account with us. ",
         );
       }
 
@@ -303,7 +304,7 @@ const RegisterUser = asyncHandler(
             gender,
           },
         ],
-        { session }
+        { session },
       );
 
       if (user && user.userType !== UserType.CUSTOMER) {
@@ -374,7 +375,7 @@ const RegisterUser = asyncHandler(
     } finally {
       session.endSession();
     }
-  }
+  },
 );
 
 /**
@@ -399,15 +400,15 @@ const LoginUser = asyncHandler(
       trackCacheMiss("redis", "user_lookup");
       user = await measureDatabaseQuery("login", async () =>
         User.findOne({ email }).select(
-          "+passwordHash +phone +email +userType +firstName +lastName"
-        )
+          "+passwordHash +phone +email +userType +firstName +lastName",
+        ),
       );
 
       if (user) {
         await redisClient.setex(
           cacheKey,
           BASE_EXPIRATION_SEC,
-          JSON.stringify(user.toObject())
+          JSON.stringify(user.toObject()),
         );
       }
     }
@@ -420,7 +421,7 @@ const LoginUser = asyncHandler(
       });
       res.status(NOT_FOUND_STATUS_CODE);
       throw new Error(
-        "This user does not have any record with us. Please sign up."
+        "This user does not have any record with us. Please sign up.",
       );
     }
 
@@ -444,7 +445,7 @@ const LoginUser = asyncHandler(
       });
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error(
-        "Invalid password credentials provided. Please kindly try again."
+        "Invalid password credentials provided. Please kindly try again.",
       );
     }
     const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
@@ -461,7 +462,7 @@ const LoginUser = asyncHandler(
       JSON.stringify({
         token: twoFAToken,
         expiresAt: new Date(Date.now() + 900000).toISOString(),
-      })
+      }),
     );
 
     // // REPORTING EVENT
@@ -490,7 +491,7 @@ const LoginUser = asyncHandler(
         "A 2FA token has been sent to your registered email. Please verify to complete login.",
       email: user.email,
     });
-  }
+  },
 );
 
 /**
@@ -499,61 +500,51 @@ const LoginUser = asyncHandler(
  * @access Public
  * @param {object} req.body - { email, otp }
  */
-const Verify2FA = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { email, otp } = req.body;
-    // Find user
-    const user = await measureDatabaseQuery(
-      "2FA",
-      async () => await User.findOne({ email }).select("-passwordHash")
-    );
+const Verify2FA = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
 
-    if (!user) {
-      logger.error("This user does not exists", { email });
-      res.status(NOT_FOUND_STATUS_CODE);
-      throw new Error("This user does not have any record with us");
-    }
-
-    // Retrieve 2FA token from Redis
-    const cachedTokenStr = await redisClient.get(`2fa:${email}`);
-    if (!cachedTokenStr) {
-      logger.error("No 2FA token found in cache", { email });
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("You provided an invalid or expired 2FA token");
-    }
-
-    const cachedToken = JSON.parse(cachedTokenStr);
-    if (
-      cachedToken.token !== otp ||
-      Date.now() > Number(cachedToken.expiresAt)
-    ) {
-      logger.error("Invalid or expired 2FA token", { email });
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("You provided an invalid or expired 2FA token");
-    }
-
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
-    const { accessToken, refreshToken } = await generateToken(
-      res,
-      user._id.toString(),
-      user.userType,
-      fullName
-    );
-
-    await User.updateOne({ email }, { $set: { lastActiveAt: new Date() } });
-    logger.info("User signed in succesfully using 2FA", {
+  const user = await User.findOne({ email }).select(
+    "-passwordHash +tenantId +tenantType +tenantPlan +tenantStatus",
+  );
+  if (!user) {
+    logger.warn("The user is not found for this email:", {
       email,
-      service: "auth_service",
     });
-    await redisClient.del(`2fa:${email}`);
-
-    res.status(200).json({
-      accessToken,
-      refreshToken,
-      user,
-    });
+    throw new Error("User not found");
   }
-);
+
+  const cachedTokenStr = await redisClient.get(`2fa:${email}`);
+  if (!cachedTokenStr) throw new Error("Invalid or expired 2FA token");
+
+  const cachedToken = JSON.parse(cachedTokenStr);
+  if (cachedToken.token !== otp || Date.now() > Number(cachedToken.expiresAt)) {
+    throw new Error("Invalid or expired 2FA token");
+  }
+
+  // tenantId may not be set yet if tenant creation saga is still in-flight
+  // block login until tenantStatus is ACTIVE
+  if (user.tenantId && user.tenantStatus !== "ACTIVE") {
+    res.status(403).json({
+      message:
+        "Your account setup is still processing. Please try again in a moment.",
+    });
+    return;
+  }
+
+  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  const { accessToken, refreshToken } = await generateToken(
+    res,
+    user._id.toString(),
+    user.userType,
+    fullName,
+    user.tenantId ?? "",
+    user.tenantType ?? "",
+    user.tenantPlan ?? "FREE",
+  );
+
+  await redisClient.del(`2fa:${email}`);
+  res.status(200).json({ accessToken, refreshToken, user });
+});
 
 /**
  * @description It reset the password of a user
@@ -595,7 +586,7 @@ const RequestPasswordResetHandler = asyncHandler(
       message:
         "A password reset link has been sent to your registered email address. Please check your inbox or spam folder.",
     });
-  }
+  },
 );
 
 /**
@@ -621,8 +612,26 @@ const RefreshToken = asyncHandler(
 
     const { email, userType, name } = JSON.parse(cachedRefreshToken);
 
+    const user = await User.findOne({ email }).select(
+      "-passwordHash +tenantId +tenantType +tenantPlan +tenantStatus",
+    );
+    if (!user) {
+      logger.warn("The user is not found for this email:", {
+        email,
+      });
+      throw new Error("User not found");
+    }
+
     // Generate new access token
-    const newAccessToken = signJwt(email, userType, name);
+    const newAccessToken = signJwt(
+      email,
+      userType,
+      name,
+      user.tenantId ?? "",
+      user.tenantType ?? "",
+      user.tenantPlan ?? "FREE",
+    );
+
     // Generate new refresh otken
     const newRefreshToken = await generateSecureToken(email, "refresh");
     // persist the new refresh token in redis.
@@ -630,7 +639,7 @@ const RefreshToken = asyncHandler(
       `refresh:${newRefreshToken}`,
       JSON.stringify({ email, userType, name }),
       "EX",
-      BASE_EXPIRATION_SEC
+      BASE_EXPIRATION_SEC,
     );
     // Set new access token in cookie
     res.cookie("jwt", newAccessToken, {
@@ -649,7 +658,7 @@ const RefreshToken = asyncHandler(
     res
       .status(200)
       .json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-  }
+  },
 );
 
 /**
@@ -676,7 +685,7 @@ const ResetPasswordHandler = asyncHandler(
     if (!resetToken) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error(
-        "The provided password reset token is not valid. Please request for a new token"
+        "The provided password reset token is not valid. Please request for a new token",
       );
     }
 
@@ -685,7 +694,7 @@ const ResetPasswordHandler = asyncHandler(
       await resetToken.deleteOne();
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error(
-        "The password reset token has expired. Please request a new reset link."
+        "The password reset token has expired. Please request a new reset link.",
       );
     }
 
@@ -694,7 +703,7 @@ const ResetPasswordHandler = asyncHandler(
     if (!user) {
       res.status(NOT_FOUND_STATUS_CODE);
       throw new Error(
-        "No account found for the provided token. Please verify your details or register a new account"
+        "No account found for the provided token. Please verify your details or register a new account",
       );
     }
 
@@ -716,7 +725,7 @@ const ResetPasswordHandler = asyncHandler(
       await redisClient.setex(
         cacheKey,
         BASE_EXPIRATION_SEC,
-        JSON.stringify(userObject)
+        JSON.stringify(userObject),
       );
 
       logger.info("Password reset successfully", { email: user.email });
@@ -741,7 +750,7 @@ const ResetPasswordHandler = asyncHandler(
       res.status(500);
       throw new Error("An error occurred while resetting the password");
     }
-  }
+  },
 );
 
 /**
@@ -759,28 +768,46 @@ const ChangePasswordHandler = asyncHandler(
       { email },
       {
         passwordHash,
-      }
+      },
     );
     res.status(200).json({ message: "Password reset successfully" });
-  }
+  },
 );
 
 /**
  * @description Handler to logout user
  * @returns
  */
-const LogoutUserHandler = asyncHandler(
-  async (_req: Request, res: Response): Promise<void> => {
-    res.cookie("jwt", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production" || false,
-    });
-    logger.info("User logged out successfully:");
-    res.status(200).json({ message: "Logged out succesfully!!" });
+const LogoutUserHandler = asyncHandler(async (req, res) => {
+  const token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_CODE!) as any;
+      const remainingTTL = decoded.exp - Math.floor(Date.now() / 1000);
+      if (remainingTTL > 0) {
+        // blocklist for remaining lifetime only
+        await redisClient.set(
+          `blocklist:${decoded.user.userId}`,
+          "1",
+          "EX",
+          remainingTTL
+        );
+      }
+    } catch {
+      // token already expired, nothing to blocklist
+    }
   }
-);
 
+  // delete refresh token from Redis
+  const { refreshToken } = req.body;
+  if (refreshToken) {
+    await redisClient.del(`refresh:${refreshToken}`);
+  }
 
+  res.cookie("jwt", "", { httpOnly: true, secure: process.env.NODE_ENV === "production" });
+  res.status(200).json({ message: "Logged out successfully" });
+});
 
 export {
   RegisterUser,

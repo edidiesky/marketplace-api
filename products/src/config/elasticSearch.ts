@@ -2,7 +2,7 @@ import { Client } from "@elastic/elasticsearch";
 import logger from "../utils/logger";
 
 export const esClient = new Client({
-  node: process.env.ELASTICSEARCH_URL || "http://localhost:9200",
+  node: process.env.ELASTICSEARCH_URL || "http://elasticsearch:9200",
   requestTimeout: 10_000,
   maxRetries: 3,
 });
@@ -21,6 +21,7 @@ export async function bootstrapProductIndex(): Promise<void> {
     settings: {
       number_of_shards: 2,
       number_of_replicas: 1,
+      max_ngram_diff:7,
       analysis: {
         tokenizer: {
           ngram_tokenizer: {

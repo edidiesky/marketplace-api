@@ -21,6 +21,9 @@ docker exec development-kafka-1-1 bash -c "
   kafka-topics --create --if-not-exists --topic inventory.reservation.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic inventory.stock.committed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   kafka-topics --create --if-not-exists --topic cart.item.outOfStock.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
+  kafka-topics --create --if-not-exists --topic product.onboarding.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
+  kafka-topics --create --if-not-exists --topic product.updated.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
+  kafka-topics --create --if-not-exists --topic product.deleted.completed.topic --partitions 6 --replication-factor 3 --config min.insync.replicas=2 --bootstrap-server kafka-1:9092,kafka-2:9092,kafka-3:9092 &&
   echo 'All 19 topics created successfully!'
 "
 

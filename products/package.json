@@ -45,10 +45,10 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "@elastic/elasticsearch": "^8.17.0"
   },
   "devDependencies": {
-    "@elastic/elasticsearch": "^9.3.4",
     "@jest/globals": "^30.0.0-beta.3",
     "@jest/types": "^29.6.3",
     "@types/bcrypt": "^5.0.2",

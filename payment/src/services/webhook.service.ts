@@ -66,7 +66,7 @@ export class WebhookService {
     // Redis lock outside transaction
     // Lock prevents concurrent processing of the same transaction
     // before the idempotency record is written
-    const lockKey = `webhook:lock:${transactionId}`;k
+    const lockKey = `webhook:lock:${transactionId}`;
     const locked = await redisClient.getClient().setnx(lockKey, "1");
     if (!locked) {
       logger.warn("Webhook already being processed", { transactionId });

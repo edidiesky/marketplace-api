@@ -40,6 +40,9 @@ export const authenticate = async (
       name: decoded.name,
       permissions: decoded.permissions || [],
       roleLevel: decoded.roleLevel,
+      tenantId: decoded.tenantId,
+      tenantPlan: decoded.tenantPlan,
+      tenantType: decoded.tenantType,
     };
 
     logger.info("User authenticated", {});

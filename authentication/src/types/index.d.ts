@@ -1,4 +1,4 @@
-import {  Permission, RoleLevel } from "../models/User";
+import { Permission, RoleLevel } from "../models/User";
 import { JwtPayload } from "jsonwebtoken";
 
 declare global {
@@ -8,8 +8,11 @@ declare global {
         userId: string;
         role: string;
         name: string;
+        tenantId: string;
+        tenantType: string;
+        tenantPlan: string;
         permissions: Permission[];
-        roleLevel?: RoleLevel;
+        roleLevel: RoleLevel;
       };
     }
   }
