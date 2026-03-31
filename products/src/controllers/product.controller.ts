@@ -32,32 +32,7 @@ const CreateProductHandler = asyncHandler(
       ...productBody,
       store: new Types.ObjectId(req.params.storeid),
     });
-
-    if (product) {
-      await sendProductMessage(PRODUCT_ONBOARDING_COMPLETED_TOPIC, {
-        productId: product._id,
-        storeId: req.params.storeid,
-        ownerId: userId,
-        sku:
-          productBody.sku ||
-          `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        title: productBody.name,
-        image: productBody.images[0],
-        availableStock: productBody.availableStock,
-        thresholdStock: productBody.thresholdStock || 10,
-        trackInventory: productBody.trackInventory ?? true,
-        createdAt: new Date(),
-        idempotencyId: productBody.idempotencyId || `${userId}-${product._id}`,
-        storeName: productBody.storeName,
-        storeDomain: product.storeDomain,
-        ownerName: `${(req as AuthenticatedRequest).user.name}`,
-      }).catch((error) => {
-        logger.error("Failed to send product onboarding completed message:", {
-          error: error.message,
-          productId: product._id,
-        });
-      });
-    }
+    
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(product);
   }
 );

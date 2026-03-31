@@ -7,10 +7,17 @@ import {
   DeleteProductHandler,
   RestoreProductHandler
 } from "../controllers/product.controller";
+import { esController } from "../controllers/es.controller";
 import { authenticate } from "../middleware/auth.middleware";
 import { productSchema } from "../validators/product.validation";
 import { validateRequest } from "../middleware/validate.middleware";
 const router = express.Router();
+
+// GET /api/v1/products/search?q=shoe&storeId=x&minPrice=10&maxPrice=500&page=1&limit=20
+router.get("/search", esController.search);
+
+// GET /api/v1/products/autocomplete?q=sne&storeId=x
+router.get("/autocomplete", esController.autoComplete);
 
 router
   .route("/:storeid/store")

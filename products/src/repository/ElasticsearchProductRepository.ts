@@ -23,7 +23,10 @@ export const esProductRepository = {
     });
   },
 
-  async partialUpdate(productId: string, fields: Partial<ESProductDoc>): Promise<void> {
+  async partialUpdate(
+    productId: string,
+    fields: Partial<ESProductDoc>,
+  ): Promise<void> {
     await esClient.update({
       index: PRODUCT_INDEX,
       id: productId,
@@ -58,7 +61,7 @@ export const esProductRepository = {
       must.push({
         multi_match: {
           query: params.q,
-          fields: ["name^3", "description"], 
+          fields: ["name^3", "description"],
           analyzer: "search_analyzer",
         },
       });
@@ -86,7 +89,7 @@ export const esProductRepository = {
     const total =
       typeof result.hits.total === "number"
         ? result.hits.total
-        : result.hits.total?.value ?? 0;
+        : (result.hits.total?.value ?? 0);
 
     return { hits, total };
   },
@@ -100,13 +103,25 @@ export const esProductRepository = {
       size: 10,
       query: {
         bool: {
-          must: [{ match_phrase_prefix: { "name": { query: q, max_expansions: 20 } } }],
+          must: [
+            {
+              match_phrase_prefix: {
+                name: {
+                  query: q,
+                  max_expansions: 10, // was 20, reduce to cut timeout risk
+                  analyzer: "search_analyzer", // explicitly use standard tokenizer
+                },
+              },
+            },
+          ],
           filter,
         },
       },
       _source: ["name"],
     });
 
-    return result.hits.hits.map((h: any) => h._source.name as string);
+    return result.hits.hits
+      .map((h: any) => h._source?.name as string)
+      .filter(Boolean);
   },
 };

@@ -27,6 +27,35 @@ export class ProductService {
         productData,
         session,
       );
+      await OutboxEvent.create(
+        [
+          {
+            type: IOutboxEventType.PRODUCT_ONBOARDING_COMPLETED_TOPIC,
+            payload: {
+              productId: product._id.toString(),
+              storeId: body.store?.toString(),
+              ownerId: userId,
+              sku:
+                body.sku ||
+                `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              title: body.name,
+              image: body.images?.[0],
+              availableStock: body.availableStock,
+              thresholdStock: body.thresholdStock || 10,
+              trackInventory: body.trackInventory ?? true,
+              category: body.category,
+              colors: body.colors,
+              size: body.size,
+              createdAt: new Date(),
+              idempotencyId: `${userId}-${product._id}`,
+              storeName: body.storeName,
+              storeDomain: body.storeDomain,
+              ownerName: body.ownerName,
+            },
+          },
+        ],
+        { session },
+      );
       if (!product) {
         logger.error("Failed to create product");
         throw new Error("Failed to create product");
