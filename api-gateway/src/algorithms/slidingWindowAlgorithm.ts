@@ -12,38 +12,24 @@
  *   4. PEXPIRE key windowMs                      -> garbage collect key
  *
  * All 4 ops run in a single Lua script for atomicity.
- *
- * Hot Key Problem:
- *   At 1M rps with 10k users, some users will generate 100 rps each.
- *   ZADD + ZREMRANGEBYSCORE on a single key at 100 rps = fine.
- *   But if 1 user sends 50k rps (abuse/bot), that's a hot key.
- *   Solution: We detect abuse in the circuit breaker layer and shadow-ban
- *   the key before it saturates Redis. See circuit-breaker.ts.
- *
- * Tradeoffs vs Token Bucket:
- *   + Precise: no boundary burst allowed
- *   + Per-request audit log in the sorted set (good for debugging)
- *   - O(N) space per user where N = requests in window
- *   - Slightly higher latency under load (ZREMRANGEBYSCORE is O(log N + M))
- *   - At 1M rps across 10k users: ~100 entries/set avg = manageable
- *     but at 10k rps per user: 10k entries per ZADD = problematic
- *     -> Mitigation: use token bucket for high-frequency users (see rules engine)
- *
- * Memory estimate:
- *   Each sorted set entry = ~64 bytes (UUID 36 + score 8 + overhead)
- *   At 1000 req/window per user, 10k users = 10M entries = 640MB
- *   This is the primary reason to use token bucket at scale, not sliding log.
- *   Sliding log is ideal for strict per-IP rate limiting at lower rates.
  */
 
-import { v4 as uuidv4 } from 'uuid';
-import { RateLimitResult } from './tokenBucketAlgorithm';
-import Redis from 'ioredis';
+import { v4 as uuidv4 } from "uuid";
+import { RateLimitResult } from "./tokenBucketAlgorithm";
+import Redis from "ioredis";
 
 export interface SlidingWindowLogConfig {
-  limit: number;   
+  limit: number;
   windowMs: number;
   keyPrefix: string;
+}
+
+/**
+ * Per-call override. Shadows instance config for a single consume() call.
+ */
+export interface SlidingWindowCallOverride {
+  limit?: number;
+  windowMs?: number;
 }
 
 const SLIDING_WINDOW_LUA = `
@@ -88,46 +74,66 @@ export class SlidingWindowLogLimiter {
 
   private async loadScript(): Promise<string> {
     if (this.scriptSha) return this.scriptSha;
-    this.scriptSha = await (this.redis as any).script('LOAD', SLIDING_WINDOW_LUA) as string;
+    this.scriptSha = (await (this.redis as any).script(
+      "LOAD",
+      SLIDING_WINDOW_LUA,
+    )) as string;
     return this.scriptSha;
   }
 
-  async consume(userId: string): Promise<RateLimitResult> {
-    const key = `${this.config.keyPrefix}:swl:${userId}`;
+  /**
+   * consume a slot for the given key.
+   *
+   * override.limit    - shadows instance config.limit for this call only
+   * override.windowMs - shadows instance config.windowMs for this call only
+   *
+   * The key is a composite (userId:ruleId) built by the caller.
+   */
+  async consume(
+    key: string,
+    override: SlidingWindowCallOverride = {},
+  ): Promise<RateLimitResult> {
+    const limit = override.limit ?? this.config.limit;
+    const windowMs = override.windowMs ?? this.config.windowMs;
+
+    const redisKey = `${this.config.keyPrefix}:swl:${key}`;
     const now = Date.now();
     const requestId = uuidv4();
 
     try {
       const sha = await this.loadScript();
-      const result = await (this.redis as any).evalsha(
-        sha, 1, key,
+      const result = (await (this.redis as any).evalsha(
+        sha,
+        1,
+        redisKey,
         now,
-        this.config.windowMs,
-        this.config.limit,
+        windowMs,
+        limit,
         requestId,
-      ) as [number, number, number];
+      )) as [number, number, number];
 
       return {
         allowed: result[0] === 1,
         remaining: result[1],
         retryAfterMs: result[2],
-        algorithm: 'sliding-window-log',
+        algorithm: "sliding-window-log",
         consumedTokens: 1,
       };
     } catch (err: any) {
-      if (err.message?.includes('NOSCRIPT')) {
+      if (err.message?.includes("NOSCRIPT")) {
         this.scriptSha = null;
-        return this.consume(userId);
+        return this.consume(key, override);
       }
       throw err;
     }
   }
 
-  async inspect(userId: string): Promise<number> {
-    const key = `${this.config.keyPrefix}:swl:${userId}`;
+  async inspect(key: string, windowMsOverride?: number): Promise<number> {
+    const windowMs = windowMsOverride ?? this.config.windowMs;
+    const redisKey = `${this.config.keyPrefix}:swl:${key}`;
     const now = Date.now();
-    const windowStart = now - this.config.windowMs;
-    await (this.redis as any).zremrangebyscore(key, '-inf', windowStart);
-    return (this.redis as any).zcard(key) as Promise<number>;
+    const windowStart = now - windowMs;
+    await (this.redis as any).zremrangebyscore(redisKey, "-inf", windowStart);
+    return (this.redis as any).zcard(redisKey) as Promise<number>;
   }
 }

@@ -9,14 +9,14 @@ import mongoose from "mongoose";
 
 export interface CreateRuleDTO {
   id_type: RulesIDType;
-  id_value: string; 
-  resource: string; // route pattern e.g. "/auth/*"
+  id_value: string;
+  resource: string;
   limits: {
     algorithm: Algorithm;
     max_req: number;
     windowMs: number;
-    refillRate?: number; // TB only
-    burstMultiplier?: number; // TB only
+    refillRate?: number;
+    burstMultiplier?: number;
   };
   enabled?: boolean;
 }
@@ -43,21 +43,17 @@ export class RulesService {
 
   /**
    * Map IRules (Mongoose doc) to RateLimitRule (engine shape).
-   * The engine needs a flat structure that matches the algorithm interface.
-   * The DB model stores the same data but with different field names.
+   * inferTier lives here only. Removed from RulesEngine to avoid duplication.
    */
   private toEngineRule(rule: IRules): RateLimitRule {
     return {
       id: rule._id.toString(),
-      // id_type USER_ID -> tier-based matching uses id_value as userId
-      // id_type IP -> route wildcard match
-      // id_type API_KEY -> treated as pro/enterprise tier
       route: rule.resource,
       tier: this.inferTier(rule.id_type) as UserTier,
       algorithm: (rule.limits.algorithm as Algorithm) ?? "token-bucket",
       limit: rule.limits.max_req,
       windowMs: rule.limits.windowMs,
-      refillRate: undefined, // extend IRules.limits if needed
+      refillRate: undefined,
       burstMultiplier: undefined,
       enabled: rule.enabled ?? true,
     };
@@ -68,7 +64,7 @@ export class RulesService {
       case RulesIDType.API_KEY:
         return "pro";
       case RulesIDType.USER_ID:
-        return "*"; // matched by userId override
+        return "*";
       case RulesIDType.IP:
         return "free";
       default:
@@ -80,14 +76,11 @@ export class RulesService {
     data: CreateRuleDTO,
     session?: mongoose.ClientSession,
   ): Promise<IRules> {
-    // Check for duplicate before creating
     const existing = await this.repo.RulesExists(data.id_value, data.resource);
     if (existing) {
       logger.error(
         `Rule already exists for id_value=${data.id_value} resource=${data.resource}`,
-        {
-          ...data,
-        },
+        { ...data },
       );
       throw new Error(
         `Rule already exists for id_value=${data.id_value} resource=${data.resource}`,
@@ -108,9 +101,8 @@ export class RulesService {
       },
       session,
     );
-    logger.info("Rule has been created succesfully:", {
-      id: rule._id,
-    });
+
+    logger.info("Rule created successfully", { id: rule._id });
     await this.syncToEngine(rule, "upsert");
     return rule;
   }
@@ -118,9 +110,7 @@ export class RulesService {
   async updateRule(ruleId: string, data: UpdateRuleDTO): Promise<IRules> {
     const existing = await this.repo.getSingleRules(ruleId);
     if (!existing) {
-      logger.error(`Rule not found: ${ruleId}`, {
-        ruleId,
-      });
+      logger.error(`Rule not found: ${ruleId}`, { ruleId });
       throw new Error(`Rule not found: ${ruleId}`);
     }
 
@@ -132,9 +122,8 @@ export class RulesService {
       logger.error(`Update failed for rule: ${ruleId}`);
       throw new Error(`Update failed for rule: ${ruleId}`);
     }
-    logger.info("Rule has been created succesfully:", {
-      id: updated._id,
-    });
+
+    logger.info("Rule updated successfully", { id: updated._id });
     await this.syncToEngine(updated, "upsert");
     return updated;
   }
@@ -174,10 +163,13 @@ export class RulesService {
 
   /**
    * Sync a DB rule change to the in-memory RulesEngine and broadcast to
-   * all other gateway instances via PubSub.
+   * all gateway instances via PubSub.
    *
-   * Both operations are fire-and-forget after the DB write succeeds.
-   * The DB is the source of truth. Engine + PubSub are best-effort sync.
+   * Execution order matters:
+   *   1. Apply to local engine immediately (zero latency on publishing instance).
+   *   2. Broadcast via PubSub so other instances reload from DB.
+   *
+   * Both are fire-and-forget after the DB write. DB is source of truth.
    */
   private async syncToEngine(
     rule: IRules,
@@ -188,10 +180,12 @@ export class RulesService {
     try {
       if (action === "upsert") {
         await this.rulesEngine.upsertRule(engineRule);
+      } else {
+        // Immediately evict from in-memory map. Without this, the deleted rule
+        // stays active on the publishing instance until the next periodic reload
+        // or PubSub reload completes. Other instances will reload via PubSub.
+        await this.rulesEngine.deleteRule(rule._id.toString());
       }
-      // For delete: engine will pick it up on next Redis reload
-      // We do not need an explicit deleteFromEngine method because
-      // the reload reads the DB state (rule no longer there)
     } catch (err: any) {
       logger.error(
         "[RulesService] failed to sync rule to engine (non-fatal):",
@@ -208,8 +202,6 @@ export class RulesService {
       );
     }
 
-    // For USER_ID type rules: also set as a per-user override in the engine
-    // This gives immediate effect without waiting for the rule match logic
     if (rule.id_type === RulesIDType.USER_ID && action === "upsert") {
       try {
         await this.rulesEngine.setUserOverride(rule.id_value, engineRule);

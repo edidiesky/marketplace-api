@@ -88,10 +88,6 @@ export const Verify2FA = asyncHandler(
 export const RefreshToken = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { refreshToken } = req.body;
-    if (!refreshToken) {
-      res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error("Refresh token is required");
-    }
     const tokens = await authService.refreshToken({
       refreshToken,
       ip:        req.headers["x-forwarded-for"] as string,
@@ -110,10 +106,6 @@ export const RefreshToken = asyncHandler(
 export const RequestPasswordResetHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body;
-    if (!email) {
-      res.status(BAD_REQUEST_STATUS_CODE).json({ message: "Email is required." });
-      return;
-    }
     await authService.requestPasswordReset(email);
     res.status(200).json({
       message: "A password reset link has been sent to your email.",

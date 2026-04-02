@@ -12,6 +12,11 @@ import {
   serverHealthGauge,
   businessOperationCounter,
 } from "./utils/metrics";
+
+app.use(NotFound);
+app.use(errorHandler);
+
+
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
   serverHealthGauge.set(0);

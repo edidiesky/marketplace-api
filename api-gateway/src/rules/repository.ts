@@ -2,10 +2,12 @@ export type Algorithm = "token-bucket" | "sliding-window-log";
 
 export type UserTier = "free" | "pro" | "enterprise" | "*";
 
+
 export interface RateLimitRule {
   id: string;
   route: string;
-  tier: UserTier;
+  tier: string;
+  // tier: UserTier;
   algorithm: Algorithm;
   limit: number;
   windowMs: number;

@@ -5,7 +5,8 @@
     "dev": "ts-node-dev src/server.ts",
     "build": "tsc",
     "test": "jest",
-    "test:watch": "jest --watch --coverage"
+    "test:watch": "jest --watch --coverage",
+    "data:import": "ts-node-dev src/scripts/seeders/001-rules-migration.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",

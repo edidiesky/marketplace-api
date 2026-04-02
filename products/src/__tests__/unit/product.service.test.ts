@@ -238,7 +238,7 @@ describe("ProductService", () => {
       expect(repo.softDeleteProduct).toHaveBeenCalledWith(
         product._id.toString(),
         userId,
-        expect.anything(), // session
+        expect.anything(),
       );
     });
 

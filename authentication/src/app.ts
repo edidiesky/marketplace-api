@@ -70,7 +70,6 @@ app.get("/metrics", async (req, res) => {
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
-app.use(NotFound);
-app.use(errorHandler);
+
 
 export { app };

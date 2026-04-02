@@ -30,7 +30,6 @@ import { Gender, UserType } from "../models/User";
 import { Response } from "express";
 
 //  ONBOARDING
-
 export const authService = {
   async initiateEmailOnboarding(params: {
     email: string;
@@ -287,7 +286,7 @@ export const authService = {
       });
       throw Object.assign(
         new Error("No account found with this email. Please sign up."),
-        { statusCode: 404 },
+        { statusCode: 401 },
       );
     }
 
@@ -502,7 +501,7 @@ export const authService = {
         email,
       });
       throw Object.assign(new Error("No account found for this email."), {
-        statusCode: 404,
+        statusCode: 401,
       });
     }
 
@@ -552,7 +551,7 @@ export const authService = {
         userId: resetToken.userId?.toString(),
       });
       throw Object.assign(new Error("No account found for this token."), {
-        statusCode: 404,
+        statusCode: 401,
       });
     }
 
@@ -631,3 +630,4 @@ export const authService = {
     }
   },
 };
+

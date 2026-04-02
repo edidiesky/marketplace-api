@@ -8,7 +8,7 @@ export const SERVER_ERROR_STATUS_CODE = 500;
 
 
 export const services: Services = {
-  auth: process.env.AUTH_SERVICE_URL || "http://auth:4001",
+  auth: process.env.AUTH_SERVICE_URL || "http://authentication:4001",
   products: process.env.PRODUCT_SERVICE_URL || "http://products:4003",
   audit: process.env.AUDIT_SERVICE_URL || "http://audit:4002",
   payment: process.env.PAYMENT_SERVICE_URL || "http://payment:4004",

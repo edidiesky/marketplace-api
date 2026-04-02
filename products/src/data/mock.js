@@ -52,23 +52,23 @@ const clothesData = [
 
 const deodorantData = [
   {
-    name: "Shea Butter Body Lotion",
-    price: 3200,
-    availableStock: 100,
-    thresholdStock: 20,
-    storeName: "GlowSkin",
-    storeDomain: "glowskin.selleasi.dev",
-    description:
+    "name": "Shea Butter Body Lotion",
+    "price": 3200,
+    "availableStock": 100,
+    "thresholdStock": 20,
+    "storeName": "GlowSkin",
+    "storeDomain": "glowskin.selleasi.dev",
+    "description":
       "Deep moisturising shea butter lotion enriched with vitamin E and aloe vera. Fragrance-free.",
-    images: [
-      "https://res.cloudinary.com/selleasi/image/upload/v1738000020/products/lotion-500ml.jpg",
+    "images": [
+      "https://res.cloudinary.com/selleasi/image/upload/v1738000020/products/lotion-500ml.jpg"
     ],
-    trackInventory: true,
-    category: ["Beauty", "Skincare", "Body Lotion"],
-    colors: [{ name: "Natural", value: "#F5DEB3" }],
-    size: [
-      { name: "250ml", value: "250ml" },
-      { name: "500ml", value: "500ml" },
+    "trackInventory": true,
+    "category": ["Beauty", "Skincare", "Body Lotion"],
+    "colors": [{ "name": "Natural", "value": "#F5DEB3" }],
+    "size": [
+      { "name": "250ml", "value": "250ml" },
+      { "name": "500ml", "value": "500ml" }
     ],
   },
 ];
