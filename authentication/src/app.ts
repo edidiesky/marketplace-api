@@ -6,7 +6,6 @@ import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes";
 import cookieParser from "cookie-parser";
-import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, userRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
@@ -55,7 +54,7 @@ app.get("/openapi.json", (_req, res) => {
   res.send(authSwaggerSpec);
 });
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(authSwaggerSpec, {
-  customSiteTitle: "Auth Service API",
+  customSiteTitle: "Authentication Service API",
   swaggerOptions: { persistAuthorization: true },
 }));
 

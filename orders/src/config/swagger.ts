@@ -1,3 +1,4 @@
+import path from "path";
 import swaggerJsdoc from "swagger-jsdoc";
 
 const options: swaggerJsdoc.Options = {
@@ -6,7 +7,8 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: "Orders Service",
       version: "1.0.0",
-      description: "Handles checkout, order lifecycle, fulfillment, and shipping",
+      description:
+        "Handles checkout, order lifecycle, fulfillment, and shipping",
     },
     servers: [
       {
@@ -151,7 +153,10 @@ const options: swaggerJsdoc.Options = {
                   type: "object",
                   required: ["cartId", "requestId"],
                   properties: {
-                    cartId: { type: "string", example: "69bdadb4c5979ae29c7519f3" },
+                    cartId: {
+                      type: "string",
+                      example: "69bdadb4c5979ae29c7519f3",
+                    },
                     requestId: {
                       type: "string",
                       format: "uuid",
@@ -271,7 +276,8 @@ const options: swaggerJsdoc.Options = {
         get: {
           tags: ["Orders"],
           summary: "Get all orders for a store",
-          description: "Returns paginated orders for a given store. Seller-scoped.",
+          description:
+            "Returns paginated orders for a given store. Seller-scoped.",
           security: [{ BearerAuth: [] }],
           parameters: [
             {
@@ -426,7 +432,7 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: [],
+  apis: [path.resolve(__dirname, "../routes/*.ts")],
 };
 
 export const ordersSwaggerSpec = swaggerJsdoc(options);

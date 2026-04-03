@@ -1,12 +1,10 @@
 import mongoose from "mongoose";
 import { app } from "./app";
-const PORT = process.env.PORT || 4001;
+const PORT = process.env.PORT || 4016;
 import logger from "./utils/logger";
 import redisClient from "./config/redis";
 import { connectMongoDB } from "./utils/connectDB";
-import {
-  trackError,
-} from "./utils/metrics";
+import { trackError } from "./utils/metrics";
 async function GracefulShutdown() {
   logger.info("Shutting down gracefully!!");
   try {

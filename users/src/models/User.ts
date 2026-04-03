@@ -45,7 +45,6 @@ export enum RoleLevel {
 }
 
 export enum Permission {
-
   MANAGE_ROLES = "MANAGE_ROLES",
   READ_USER = "READ_USER",
   UPDATE_USER = "UPDATE_USER",
@@ -54,36 +53,36 @@ export enum Permission {
   // Platform-level
   PLATFORM_ADMIN = "PLATFORM_ADMIN",
   MANAGE_TENANTS = "MANAGE_TENANTS",
-  
+
   // Tenant-level
   TENANT_OWNER = "TENANT_OWNER",
   MANAGE_TEAM = "MANAGE_TEAM",
-  
+
   // Store-level
   STORE_CREATE = "STORE_CREATE",
   STORE_UPDATE = "STORE_UPDATE",
   STORE_DELETE = "STORE_DELETE",
   STORE_SETTINGS = "STORE_SETTINGS",
-  
+
   // Product management
   PRODUCT_CREATE = "PRODUCT_CREATE",
   PRODUCT_UPDATE = "PRODUCT_UPDATE",
   PRODUCT_DELETE = "PRODUCT_DELETE",
   PRODUCT_VIEW = "PRODUCT_VIEW",
-  
+
   // Inventory
   INVENTORY_MANAGE = "INVENTORY_MANAGE",
   INVENTORY_VIEW = "INVENTORY_VIEW",
-  
+
   // Orders
   ORDER_VIEW = "ORDER_VIEW",
   ORDER_FULFILL = "ORDER_FULFILL",
   ORDER_REFUND = "ORDER_REFUND",
-  
+
   // Analytics
   ANALYTICS_VIEW = "ANALYTICS_VIEW",
   FINANCIAL_VIEW = "FINANCIAL_VIEW",
-  
+
   // Customer-facing
   CUSTOMER_BROWSE = "CUSTOMER_BROWSE",
   CUSTOMER_PURCHASE = "CUSTOMER_PURCHASE",
@@ -102,7 +101,8 @@ export enum TWOFA {
   APP = "APP",
 }
 
-export interface IUser extends Document {
+export interface IUser {
+  _id:string;
   userType: UserType;
   email: string;
   phone: string;
@@ -129,7 +129,8 @@ export interface IUser extends Document {
   trialEndsAt?: Date;
   currentPeriodEndsAt?: Date;
   cancelAtPeriodEnd: boolean;
-
+  isArchived:boolean;
+  __v: number;
   limits: {
     stores: number;
     products: number;
@@ -183,7 +184,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(TenantType),
     },
-    tenantId:String,
+    tenantId: String,
     tenantStatus: {
       type: String,
       enum: Object.values(TenantStatus),
@@ -213,25 +214,17 @@ const UserSchema = new Schema<IUser>(
     lastActiveAt: {
       type: Date,
     },
+    isArchived: Boolean,
     falseIdentificationFlag: Boolean,
     isEmailVerified: Boolean,
   },
-  { timestamps: true }
+  { timestamps: true, versionKey:"__v" },
 );
 UserSchema.index({
   createdAt: -1,
   userType: 1,
   institutionType: 1,
 });
-UserSchema.index({ createdAt: -1, firstName: 1 });
-UserSchema.index({ createdAt: -1, email: 1 });
-UserSchema.index({ createdAt: -1, role: 1 });
-
-UserSchema.pre<IUser>("save", function (next) {
-  if (this.isModified() || this.isNew) {
-    this.lastActiveAt = new Date();
-  }
-  next();
-});
-
+UserSchema.index({ userType: 1, email: 1, createdAt: -1 });
+UserSchema.index({ email: 1});
 export default mongoose.model<IUser>("User", UserSchema);

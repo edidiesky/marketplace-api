@@ -24,6 +24,7 @@ export const services: Services = {
   color: process.env.COLOR_SERVICE_URL || "http://color:4013",
   view: process.env.VIEW_SERVICE_URL || "http://view:4014",
   size: process.env.VIEW_SERVICE_URL || "http://size:4015",
+  users: process.env.VIEW_SERVICE_URL || "http://users:4016",
 };
 
 /**
@@ -45,4 +46,5 @@ export interface Services {
   color: string;
   view: string;
   size:string;
+  users:string;
 }

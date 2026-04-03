@@ -1,447 +1,261 @@
-import bcrypt from "bcryptjs";
-import User, { IUser, UserType } from "../models/User";
-import mongoose, { FilterQuery } from "mongoose";
+import { UserRequestDTO, UserResponseDTO } from "../types";
+import { userRepository } from "../respository/user.repository";
 import logger from "../utils/logger";
-import redisClient from "../config/redis";
-import {
-  databaseQueryTimeHistogram,
-  measureDatabaseQuery,
-  trackCacheHit,
-} from "../utils/metrics";
-import { BASE_EXPIRATION_SEC } from "../constants";
-interface ChartDataPoint {
-  date: string;
-  totalUsers: number;
-  customer: number;
-  sellers: number;
-}
 
-
-interface UserChartData {
-  totalUsers: number;
-  customer: number;
-  sellers: number;
-  adminUsers: number;
-  payeUsers: number;
-  chartData: ChartDataPoint[];
+export interface PaginatedUsers {
+  data: Partial<UserResponseDTO>[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 /**
- * @description Get list of User Document of a also perform filtering options
- * @param queryObject FilterQuery<IUser>
- * @returns
+ * Builds a safe MongoDB filter from the validated query object.
+ *
+ * firstName and lastName are converted to case-insensitive regex so partial
+ * matches work (e.g. "vic" matches "Victor"). All other fields are passed as
+ * exact match values. Internal fields that must never reach the DB filter are
+ * stripped regardless of what the validator passed through.
  */
-export const GetAllUserService = async (
-  queryObject: FilterQuery<IUser>,
-  skip: number = 0,
-  limit: number = 10
-): Promise<{
-  users: IUser[];
-  totalPages: number;
-  totalCount: number;
-}> => {
-  const users = await measureDatabaseQuery(
-    "get_all_user_service",
-    () =>
-      User.find(queryObject)
-        .skip(skip)
-        .limit(limit)
-        .sort("-createdAt")
-        .select("-passwordHash")
-        .lean(),
-    "auth"
-  );
+function buildUserFilter(
+  query: Partial<UserRequestDTO> & { firstName?: string; lastName?: string },
+): Record<string, unknown> {
+  const {
+    passwordHash,
+    __v,
+    _id,
+    ...rest
+  } = query as any;
 
-  const totalCount = await measureDatabaseQuery(
-    "count_all_user",
-    () => User.countDocuments(queryObject),
-    "auth"
-  );
-  const totalPages = Math.ceil(totalCount / limit);
-  return { users, totalCount, totalPages };
-};
+  const filter: Record<string, unknown> = {};
 
-// Get A Single User Document
-export const GetASingleUserService = async (
-  id: string
-): Promise<IUser | null> => {
-  try {
-    const redisKey = `user:${id}`;
-    if (!id) {
-      logger.error(`Invalid id`);
-      throw new Error("Invalid id");
+  for (const [key, value] of Object.entries(rest)) {
+    if (value === undefined || value === null) continue;
+
+    if (key === "firstName" || key === "lastName") {
+      filter[key] = { $regex: value, $options: "i" };
+    } else {
+      filter[key] = value;
     }
+  }
 
-    const userExists = await redisClient.get(redisKey);
-    if (userExists) {
-      trackCacheHit("redis", "get_single_user");
-      return JSON.parse(userExists);
-    }
+  return filter;
+}
 
-    const user = await measureDatabaseQuery(
-      "get_single_user_service",
-      () => User.findOne({ _id: id }).select("-passwordHash").lean(),
-      "auth"
-    );
+export class UserService {
+  getAllUsers = async (
+    requesterId: string,
+    rawQuery: Partial<UserRequestDTO>,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedUsers> => {
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const safePage = Math.max(page, 1);
+    const skip = (safePage - 1) * safeLimit;
+
+    const filter = buildUserFilter(rawQuery);
+
+    logger.info("user.list.started", {
+      event: "user.list.started",
+      requesterId,
+      filter,
+      page: safePage,
+      limit: safeLimit,
+    });
+
+    const [data, total] = await Promise.all([
+      userRepository.findAllUsers(filter, skip, safeLimit),
+      userRepository.countAllUsers(filter),
+    ]);
+
+    const totalPages = Math.ceil(total / safeLimit);
+
+    logger.info("user.list.completed", {
+      event: "user.list.completed",
+      requesterId,
+      total,
+      returned: data.length,
+      page: safePage,
+      totalPages,
+    });
+
+    return {
+      data,
+      pagination: { page: safePage, limit: safeLimit, total, totalPages },
+    };
+  };
+
+  getUserById = async (
+    requesterId: string,
+    targetId: string,
+  ): Promise<Partial<UserResponseDTO>> => {
+    logger.info("user.get.started", {
+      event: "user.get.started",
+      requesterId,
+      targetId,
+    });
+
+    const user = await userRepository.findUserById(targetId);
 
     if (!user) {
-      logger.error(`User not found for ID: ${id}`, {
-        data: user,
+      logger.warn("user.get.not_found", {
+        event: "user.get.not_found",
+        requesterId,
+        targetId,
       });
-      throw new Error(`User not found for ID: ${id}`);
+      const err = new Error("User not found") as any;
+      err.statusCode = 404;
+      throw err;
     }
-    logger.info("User details fetched sucessfully!", {
-      // data: user,
+
+    logger.info("user.get.completed", {
+      event: "user.get.completed",
+      requesterId,
+      targetId,
     });
-    await redisClient.set(redisKey, JSON.stringify(user), "EX", 3000);
+
     return user;
-  } catch (error) {
-    logger.error("GetASingleUserService: Failed to get a single user", {
-      error,
+  };
+
+  updateUser = async (
+    requesterId: string,
+    targetId: string,
+    dto: Partial<UserRequestDTO>,
+  ): Promise<Partial<UserResponseDTO>> => {
+    logger.info("user.update.started", {
+      event: "user.update.started",
+      requesterId,
+      targetId,
+      fields: Object.keys(dto),
     });
-    throw error;
-  }
-};
 
-/**
- * Updates a User document in the database
- * @param userID - TIN of the user
- * @param body - Partial user data
- * @returns Updated user document
- */
-export const UpdateUserService = async (
-  userID: string,
-  body: Partial<IUser>
-): Promise<IUser | null> => {
-  logger.info("Updating user", { userID, data: Object.keys(body) });
+    const existing = await userRepository.findUserById(targetId);
 
-  const { password, ...otherFields } = body;
+    if (!existing) {
+      logger.warn("user.update.not_found", {
+        event: "user.update.not_found",
+        requesterId,
+        targetId,
+      });
+      const err = new Error("User not found") as any;
+      err.statusCode = 404;
+      throw err;
+    }
 
-  let updateData: Partial<IUser> = otherFields;
+    // Strip fields that must never be updated via this endpoint
+    const {
+      passwordHash,
+      email,
+      tenantId,
+      tenantType,
+      tenantStatus,
+      tenantPlan,
+      __v,
+      _id,
+      ...safeUpdate
+    } = dto as any;
 
-  if (password) {
-    const salt = await bcrypt.genSalt(10);
-    const newPasswordHash = await bcrypt.hash(password, salt);
-    updateData = {
-      ...otherFields,
-      passwordHash: newPasswordHash,
-    };
-  }
-  try {
-    const updatedUser = await measureDatabaseQuery(
-      "update_user_service",
-      () =>
-        User.findOneAndUpdate(
-          { _id: userID },
-          { $set: updateData },
-          { new: true }
-        )
-          .lean()
-          .select("-passwordHash"),
-      "auth"
+    const currentVersion = (existing as any).__v ?? 0;
+
+    const updated = await userRepository.updateUser(
+      targetId,
+      safeUpdate,
+      currentVersion,
     );
-    const redisKey = `user:${updatedUser?._id}`;
 
-    await redisClient.setex(
-      redisKey,
-      BASE_EXPIRATION_SEC,
-      JSON.stringify(updatedUser?.toObject())
-    );
-    logger.info("User updated successfully", { _id: userID });
-    return updatedUser;
-  } catch (error) {
-    logger.error("Error updating user", { error });
-    throw error;
-  }
-};
+    if (!updated) {
+      logger.warn("user.update.version_conflict", {
+        event: "user.update.version_conflict",
+        requesterId,
+        targetId,
+        expectedVersion: currentVersion,
+      });
+      const err = new Error(
+        "Update conflict: document was modified by another request. Retry.",
+      ) as any;
+      err.statusCode = 409;
+      throw err;
+    }
 
-/**
- * @description Service handker to delete a User
- * @param id 
- * @returns 
- */
-export const DeleteUserService = async (id: string): Promise<string> => {
-  const metricLabels = {
-    operation: "Delete_single_user",
-    success: "true",
-  };
-  const end = databaseQueryTimeHistogram.startTimer();
-  await GetASingleUserService(id);
-  await User.findOneAndDelete({ _id: id });
-  end(metricLabels);
-  return "User has been deleted";
-};
+    logger.info("user.update.completed", {
+      event: "user.update.completed",
+      requesterId,
+      targetId,
+      updatedFields: Object.keys(safeUpdate),
+    });
 
-
-/**
- * 
- * @param userId 
- * @param role 
- * @returns 
- */
-export const getAggregatedUserService = async (
-  userId: string,
-  role: string,
-  timeFrameDays: number = 60,
-  activeTimeFrameDays: number = 60,
-  corporateTimeFrameDays: number = 60,
-  individualFrameDays: number = 60
-): Promise<any> => {
-  const queryParameter: FilterQuery<IUser> = {};
-  if (role === "MDA" || role === "COMPANY") {
-    queryParameter.userId = userId;
-  }
-
-  // Calculate date ranges
-  const timeFrameDate = new Date();
-  timeFrameDate.setUTCDate(timeFrameDate.getUTCDate() - timeFrameDays);
-
-  const activeTimeFrameDate = new Date();
-  activeTimeFrameDate.setUTCDate(
-    activeTimeFrameDate.getUTCDate() - activeTimeFrameDays
-  );
-
-  const corporateTimeFrameDate = new Date();
-  corporateTimeFrameDate.setUTCDate(
-    corporateTimeFrameDate.getUTCDate() - corporateTimeFrameDays
-  );
-
-  const individualTimeFrameDate = new Date();
-  individualTimeFrameDate.setUTCDate(
-    individualTimeFrameDate.getUTCDate() - individualFrameDays
-  );
-
-  const aggregation = await measureDatabaseQuery(
-    "get_aggregated_user_service",
-    () =>
-      User.aggregate([
-        {
-          $match: {
-            ...queryParameter,
-            createdAt: { $gte: timeFrameDate },
-          },
-        },
-        {
-          $facet: {
-            // Total users by type
-            totalUsersByType: [
-              {
-                $group: {
-                  _id: "$userType",
-                  count: { $sum: 1 },
-                },
-              },
-              {
-                $project: {
-                  userType: "$_id",
-                  count: 1,
-                  _id: 0,
-                },
-              },
-            ],
-            // Active users by type
-            activeUsersByType: [
-              {
-                $group: {
-                  _id: "$userType",
-                  count: { $sum: 1 },
-                },
-              },
-              {
-                $project: {
-                  userType: "$_id",
-                  count: 1,
-                  _id: 0,
-                },
-              },
-            ],
-            // Gender breakdown (total)
-            totalMaleEmployees: [
-              { $match: { gender: "Male" } },
-              { $count: "total" },
-            ],
-            totalFemaleEmployees: [
-              { $match: { gender: "Female" } },
-              { $count: "total" },
-            ],
-          },
-        },
-        {
-          $project: {
-            totalIndividuals: {
-              $arrayElemAt: [
-                "$totalUsersByType.count",
-                { $indexOfArray: ["$totalUsersByType.userType", "INDIVIDUAL"] },
-              ],
-            },
-            totalCompanies: {
-              $arrayElemAt: [
-                "$totalUsersByType.count",
-                { $indexOfArray: ["$totalUsersByType.userType", "COMPANY"] },
-              ],
-            },
-            totalAdmins: {
-              $arrayElemAt: [
-                "$totalUsersByType.count",
-                { $indexOfArray: ["$totalUsersByType.userType", "ADMIN"] },
-              ],
-            },
-            totalUsers: { $sum: ["$totalIndividuals", "$totalCompanies"] },
-          },
-        },
-      ]),
-    "auth"
-  );
-
-  const result = aggregation[0] || {};
-
-  logger.info("Employer tax payers aggregated successfully", {
-    userId,
-    timeFrameDays,
-    totalEmployees: result.totalUsers || 0,
-  });
-  return {
-    totalIndividuals: result.totalIndividuals || 0,
-    totalCompanies: result.totalCompanies || 0,
-    totalAdmins: result.totalAdmins || 0,
-    totalMaleEmployees: result.totalMaleEmployees || 0,
-    totalFemaleEmployees: result.totalFemaleEmployees || 0,
-    totalUsers: result.totalUsers || 0,
-  };
-};
-
-export const getUserChartDataService = async (
-  userId: string,
-  timeFrameDays: number,
-  granularity: "day" | "week" | "month" = "day"
-): Promise<UserChartData> => {
-  const metricLabels = {
-    operation: "get_user_chart_",
-    success: "true",
-  };
-  const end = databaseQueryTimeHistogram.startTimer();
-  // Validate role and timeFrameDays
-  if (timeFrameDays <= 0 || timeFrameDays > 365) {
-    throw new Error("Invalid timeFrameDays: Must be between 1 and 365");
-  }
-
-  // Generate cache key
-  const cacheKey = `user:chart:${userId}:${timeFrameDays}:${granularity}`;
-  const cached = await redisClient.get(cacheKey);
-  if (cached) {
-    logger.info("Returning cached user chart data", { cacheKey });
-    return JSON.parse(cached);
-  }
-
-  // Calculate date range
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - timeFrameDays);
-
-  // Define date format based on granularity
-  const dateFormat =
-    granularity === "day"
-      ? "%Y-%m-%d"
-      : granularity === "week"
-      ? "%Y-%W"
-      : "%Y-%m";
-
-  // MongoDB aggregation pipeline
-  const pipeline = [
-    {
-      $match: {
-        createdAt: { $gte: startDate },
-      },
-    },
-
-    {
-      $group: {
-        _id: {
-          date: { $dateToString: { format: dateFormat, date: "$createdAt" } },
-          userType: "$userType",
-        },
-        count: { $sum: 1 },
-      },
-    },
-    {
-      $group: {
-        _id: "$_id.date",
-        adminUsers: {
-          $sum: {
-            $cond: [{ $eq: ["$_id.userType", UserType.ADMIN] }, "$count", 0],
-          },
-        },
-        customer: {
-          $sum: {
-            $cond: [
-              { $eq: ["$_id.userType", UserType.CUSTOMER] },
-              "$count",
-              0,
-            ],
-          },
-        },
-        sellers: {
-          $sum: {
-            $cond: [{ $eq: ["$_id.userType", UserType.SELLERS] }, "$count", 0],
-          },
-        },
-      },
-    },
-    // {
-    //   $sort: { _id: 1 },
-    // },
-    {
-      $project: {
-        date: "$_id",
-        totalUsers: { $add: ["$customer", "$sellers"] },
-        totalAdminstrators: { $add: ["$adminUsers", "$payeUsers"] },
-        customer: 1,
-        adminUsers: 1,
-        payeUsers: 1,
-        sellers: 1,
-        _id: 0,
-      },
-    },
-  ];
-
-  const chartData = await measureDatabaseQuery(
-    "user-chart-service",
-    () => User.aggregate(pipeline).exec(),
-    "auth"
-  );
-
-  // Calculate totals
-  const totalUsers = chartData.reduce(
-    (sum, point) => sum + point.totalUsers,
-    0
-  );
-  const customer = chartData.reduce(
-    (sum, point) => sum + point.customer,
-    0
-  );
-  const sellers = chartData.reduce(
-    (sum, point) => sum + point.sellers,
-    0
-  );
-
-  const adminUsers = chartData.reduce(
-    (sum, point) => sum + point.adminUsers,
-    0
-  );
-
-  const payeUsers = chartData.reduce((sum, point) => sum + point.payeUsers, 0);
-
-  const result: UserChartData = {
-    totalUsers,
-    customer,
-    sellers,
-    chartData,
-    adminUsers,
-    payeUsers,
+    return updated;
   };
 
-  // Cache for 5 minutes
-  await redisClient.set(cacheKey, JSON.stringify(result), "EX", 300);
-  logger.info("User chart data calculated and cached", { cacheKey });
-  end(metricLabels);
-  return result;
-};
+  deleteUser = async (
+    requesterId: string,
+    targetId: string,
+  ): Promise<void> => {
+    logger.info("user.delete.started", {
+      event: "user.delete.started",
+      requesterId,
+      targetId,
+    });
+
+    const existing = await userRepository.findUserById(targetId);
+
+    if (!existing) {
+      logger.warn("user.delete.not_found", {
+        event: "user.delete.not_found",
+        requesterId,
+        targetId,
+      });
+      const err = new Error("User not found") as any;
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const currentVersion = (existing as any).__v ?? 0;
+
+    const deleted = await userRepository.deleteUser(targetId, currentVersion);
+
+    if (!deleted) {
+      logger.warn("user.delete.version_conflict", {
+        event: "user.delete.version_conflict",
+        requesterId,
+        targetId,
+        expectedVersion: currentVersion,
+      });
+      const err = new Error(
+        "Delete conflict: document was modified by another request. Retry.",
+      ) as any;
+      err.statusCode = 409;
+      throw err;
+    }
+
+    logger.info("user.delete.completed", {
+      event: "user.delete.completed",
+      requesterId,
+      targetId,
+      deletedEmail: (existing as any).email,
+    });
+  };
+
+  getAggregatedUsers = async (
+    requesterId: string,
+  ): Promise<Record<string, unknown>[]> => {
+    logger.info("user.aggregate.started", {
+      event: "user.aggregate.started",
+      requesterId,
+    });
+
+    const result = await userRepository.aggregateUsers();
+
+    logger.info("user.aggregate.completed", {
+      event: "user.aggregate.completed",
+      requesterId,
+    });
+
+    return result;
+  };
+}
+
+export const userService = new UserService();

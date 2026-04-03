@@ -84,8 +84,6 @@ export const getPaymentById = asyncHandler(
   }
 );
 
-// 
-
 /**
  * @description Handle Webhook Payment Notifications
  * @routesGET POST /api/v1/payments/:paymentId/refund

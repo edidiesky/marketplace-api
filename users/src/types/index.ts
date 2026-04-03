@@ -1,4 +1,4 @@
-import { Permission, RoleLevel } from "../models/User";
+import { IUser, Permission, RoleLevel } from "../models/User";
 import { Response, Request } from "express";
 
 
@@ -24,3 +24,7 @@ export interface AuthenticatedRequest extends Request {
     roleLevel?: RoleLevel;
   };
 }
+
+
+export type UserRequestDTO = IUser;
+export type UserResponseDTO = IUser;

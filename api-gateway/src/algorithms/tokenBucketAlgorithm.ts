@@ -1,20 +1,15 @@
 import Redis from "ioredis";
 
 export interface TokenBucketConfig {
-  capacity: number;    // max tokens (burst limit)
-  refillRate: number;  // tokens per second
-  windowMs: number;    // refill window in ms (used for TTL)
+  capacity: number;    
+  refillRate: number; 
+  windowMs: number; 
   keyPrefix: string;
 }
 
-/**
- * Per-call override. Only the fields you provide will shadow the instance config.
- * refillRate here is tokens/second, same unit as TokenBucketConfig.refillRate.
- * The middleware computes it as: limit / (windowMs / 1000).
- */
 export interface TokenBucketCallOverride {
   capacity?: number;
-  refillRate?: number; // tokens/second
+  refillRate?: number;
   windowMs?: number;
 }
 
@@ -79,16 +74,6 @@ export class TokenBucketLimiter {
     return this.scriptSha;
   }
 
-  /**
-   * consume a token for the given key.
-   *
-   * override.capacity   - shadows instance config.capacity for this call only
-   * override.refillRate - tokens/second, shadows instance config.refillRate
-   * override.windowMs   - shadows instance config.windowMs (affects TTL)
-   *
-   * The key is intentionally a composite (userId:ruleId) built by the caller.
-   * We do not prepend userId semantics here; the caller owns the key shape.
-   */
   async consume(
     key: string,
     tokens = 1,

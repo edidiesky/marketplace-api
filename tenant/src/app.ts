@@ -1,65 +1,56 @@
+import "./utils/otel";
 import helmet from "helmet";
 import dotenv from "dotenv";
 dotenv.config();
 import morgan from "morgan";
-import tenantRoute from "./routes/tenant.routes"
+import tenantRoute from "./routes/tenant.routes";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, tenantRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
+import { tenantSwaggerSpec } from "./config/swagger";
+import swaggerUi from "swagger-ui-express";
 
 const app = express();
 
-/** MIDDLEWARE */
 if (!process.env.WEB_ORIGIN) {
   throw new Error("No WEB_ORIGIN");
 }
-app.use(helmet());
-app.use(
-  cors({
-    origin: [
-      process.env.WEB_ORIGIN!,
-      process.env.WEB_ORIGIN2!,
-      process.env.WEB_ORIGIN3!,
-    ],
-    credentials: true,
-  })
-);
 
-/** LOGS REQUEST */
+app.use(helmet());
+app.use(cors({ origin: [process.env.WEB_ORIGIN!], credentials: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// LATENCY METRICS MIDDLEWARE
-app.use((req, res, next) => {
-  const startTime = process.hrtime();
-  res.on("finish", () => reqReplyTime(req, res, startTime));
-  next();
-});
-
-/** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Order route is Fine!" });
+  res.json({ status: "Tenant service is running." });
 });
 
-/** ROUTES */
 app.use("/api/v1/tenants", tenantRoute);
 
-/**
- * @description Metrics endpoint for my Prometheus server
- */
-app.get("/metrics", async (req, res) => {
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(tenantSwaggerSpec);
+});
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(tenantSwaggerSpec, {
+    customSiteTitle: "Tenant Service API",
+    swaggerOptions: { persistAuthorization: true },
+  })
+);
+
+app.get("/metrics", async (_req, res) => {
   try {
-    res.set("Content-Type", tenantRegistry.contentType);
-    res.end(await tenantRegistry.metrics());
-    logger.info("Order Metrics has been scraped successfully!");
+    res.status(200).json({ message: "metrics endpoint" });
   } catch (error) {
-    logger.error("Order Metrics scraping error:", { error });
+    logger.error("Tenant Metrics scraping error:", { error });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });

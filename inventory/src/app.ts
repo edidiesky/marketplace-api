@@ -11,6 +11,8 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, InventoryRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
+import { inventorySwaggerSpec } from "./config/swagger";
+import swaggerUi from 'swagger-ui-express'
 
 const app = express();
 
@@ -49,6 +51,20 @@ app.get("/health", (_req, res) => {
 /** ROUTES */
 app.use("/api/v1/inventories", inventoryRoute);
 
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(inventorySwaggerSpec);
+});
+ 
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(inventorySwaggerSpec, {
+    customSiteTitle: "Inventory MicroService API",
+    swaggerOptions: { persistAuthorization: true },
+  })
+);
+ 
 /**
  * @description Metrics endpoint for my Prometheus server
  */

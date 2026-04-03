@@ -15,6 +15,53 @@ interface OpenAPISpec {
 
 const FETCH_TIMEOUT = 5000;
 
+function rewriteRefs(node: any, prefix: string): any {
+  if (Array.isArray(node)) {
+    return node.map((item) => rewriteRefs(item, prefix));
+  }
+
+  if (node !== null && typeof node === "object") {
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(node)) {
+      if (
+        key === "$ref" &&
+        typeof value === "string" &&
+        value.startsWith("#/components/schemas/")
+      ) {
+        const schemaName = value.replace("#/components/schemas/", "");
+        result[key] = `#/components/schemas/${prefix}_${schemaName}`;
+      } else {
+        result[key] = rewriteRefs(value, prefix);
+      }
+    }
+    return result;
+  }
+
+  return node;
+}
+
+function rewriteTags(node: any, servicePrefix: string): any {
+  if (Array.isArray(node)) {
+    return node.map((item) => rewriteTags(item, servicePrefix));
+  }
+
+  if (node !== null && typeof node === "object") {
+    const result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "tags" && Array.isArray(value)) {
+        result[key] = (value as string[]).map(
+          (t) => `${servicePrefix} - ${t}`
+        );
+      } else {
+        result[key] = rewriteTags(value, servicePrefix);
+      }
+    }
+    return result;
+  }
+
+  return node;
+}
+
 export async function aggregateSpecs(): Promise<OpenAPISpec> {
   const serviceEntries = Object.entries(services) as [string, string][];
 
@@ -60,30 +107,30 @@ export async function aggregateSpecs(): Promise<OpenAPISpec> {
     }
 
     const { serviceName, spec } = result.value;
-    // prefixing
-    for (const [path, pathItem] of Object.entries(spec.paths ?? {})) {
-      const prefixedPath = `/${serviceName}${path}`;
-      merged.paths[prefixedPath] = pathItem;
-    }
-
-    // Merging schemas with service prefix to avoid name collisions
+    const servicePrefix = capitalize(serviceName);
     for (const [schemaName, schema] of Object.entries(
       spec.components?.schemas ?? {}
     )) {
-      const prefixedName = `${capitalize(serviceName)}_${schemaName}`;
-      merged.components!.schemas![prefixedName] = schema;
+      const prefixedName = `${servicePrefix}_${schemaName}`;
+      merged.components!.schemas![prefixedName] = rewriteRefs(
+        schema,
+        servicePrefix
+      );
+    }
+    for (const [path, pathItem] of Object.entries(spec.paths ?? {})) {
+      const prefixedPath = `/${serviceName}${path}`;
+      const refRewritten = rewriteRefs(pathItem, servicePrefix);
+      const tagRewritten = rewriteTags(refRewritten, servicePrefix);
+      merged.paths[prefixedPath] = tagRewritten;
     }
 
-    // Merging tags
-    if (spec.tags) {
-      for (const tag of spec.tags) {
-        const prefixedTag = {
-          name: `${capitalize(serviceName)} - ${tag.name}`,
-          description: tag.description,
-        };
-        if (!merged.tags!.find((t) => t.name === prefixedTag.name)) {
-          merged.tags!.push(prefixedTag);
-        }
+    for (const tag of spec.tags ?? []) {
+      const prefixedTag = {
+        name: `${servicePrefix} - ${tag.name}`,
+        ...(tag.description ? { description: tag.description } : {}),
+      };
+      if (!merged.tags!.find((t) => t.name === prefixedTag.name)) {
+        merged.tags!.push(prefixedTag);
       }
     }
   }

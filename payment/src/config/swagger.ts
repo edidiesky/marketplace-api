@@ -1,5 +1,5 @@
 import swaggerJsdoc from "swagger-jsdoc";
-
+import path from 'path'
 const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
@@ -119,7 +119,7 @@ const options: swaggerJsdoc.Options = {
       { name: "Payouts", description: "Seller payout requests" },
     ],
   },
-  apis: ["./src/routes/*.ts"],
+  apis: [path.join(__dirname, "../routes/*.js")]
 };
 
 export const paymentSwaggerSpec = swaggerJsdoc(options);

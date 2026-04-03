@@ -231,6 +231,34 @@ services:
     build:
       context: ../../../authentication
       dockerfile: Dockerfile
+
+  users:
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+      kafka-2:
+        condition: service_healthy
+      kafka-3:
+        condition: service_healthy
+    container_name: selleasi-users
+    env_file:
+      - ../../../users/.env
+    networks:
+      - selleasi-network
+    ports:
+      - "4016:4016"
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:4016/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    build:
+      context: ../../../users
+      dockerfile: Dockerfile
   # audit
   # audit:
   #   depends_on:
