@@ -88,7 +88,7 @@ jest.mock("../../controllers/es.controller", () => ({
 }));
 
 jest.mock("../../utils/buildQuery", () => ({
-  buildQuery: jest.fn<()=> Promise<{ isDeleted: false }>>().mockResolvedValue({ isDeleted: false }),
+  buildQuery: jest.fn<()=> Promise<{}>>().mockResolvedValue({ isDeleted: false }),
 }));
 
 import request from "supertest";
@@ -97,6 +97,7 @@ import mongoose from "mongoose";
 import productRouter from "../../routes/product.routes";
 import * as productServiceModule from "../../services/product.service";
 import { IProduct } from "../../models/Product";
+import { json } from "stream/consumers";
 
 const objectId = () => new mongoose.Types.ObjectId().toString();
 
@@ -186,7 +187,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  Object.values(serviceSpy).forEach((s) => s.mockReset());
 });
 
 const resolve = (spy: Spy, value: unknown) =>

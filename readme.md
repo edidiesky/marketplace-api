@@ -1,6 +1,6 @@
 # Selleasi, Production-Grade Distributed Marketplace
 
-A Shopify-style multi-tenant marketplace built on Node.js 20, TypeScript 5, MongoDB, Apache Kafka, and the full Grafana observability stack. Every engineering decision prioritises correctness under failure over simplicity under ideal conditions.
+A Shopify-style multi-tenant marketplace built on Node.js 20, TypeScript 5, MongoDB, Apache Kafka, and the full Grafana observability stack. Every engineering decision prioritises correctness under failure over simplicity under ideal conditions. The systen in turn gives more favour to correctness (consistency) over Availability under intense load or traffic. 
 
 ---
 
@@ -32,7 +32,7 @@ This project demonstrates how to design and operate an event-driven microservice
 
 **Observability-first design.** Every service ships structured JSON logs via Winston to Loki, Prometheus metrics, and distributed traces via OpenTelemetry to Tempo. `trace_id` and `span_id` are injected into every log line. Cross-service trace context propagates through HTTP headers (`traceparent`/`tracestate`) and Kafka message headers via the W3C + B3 composite propagator.
 
-**Resilience engineering.** The API gateway uses Opossum circuit breakers with a tuned `errorFilter`: 4xx responses do not count as failures (client error, not service degradation), only 5xx and timeouts open the breaker. Kafka consumers use exponential backoff with jitter, Redis NX idempotency keys, manual offset commit after handler success, and a dead-letter queue after `MAX_RETRIES`.
+**Resilience engineering.** The API gateway uses Opossum circuit breakers with a tuned `errorFilter`: It mostly does not consider 4xx responses (client error, not service degradation), only 5xx and timeouts open the breaker. Kafka consumers use exponential backoff with jitter, Redis NX idempotency keys, manual offset commit after handler success, and a dead-letter queue after `MAX_RETRIES`.
 
 **Security depth.** JWT with refresh-token rotation (old token deleted on issue of new), OTP-based 2FA with short TTL, HMAC signature verification on all PSP webhooks, SHA-256 deduplication of webhook payloads, and RBAC enforced at the gateway.
 
