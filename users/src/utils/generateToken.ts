@@ -19,7 +19,7 @@ export const signJwt = async (userId: string, role: string, name: string) => {
     };
 
     return jwt.sign(payload, process.env.JWT_CODE!, {
-      expiresIn: "7d",
+      expiresIn: "15m",
     });
   } catch (error) {
     logger.error("Error generating JWT", {
@@ -34,7 +34,7 @@ export const generateToken = async (
   res: import("express").Response,
   userId: string,
   role: string,
-  name: string
+  name: string,
 ) => {
   try {
     const accessToken = await signJwt(userId, role, name);
@@ -43,12 +43,12 @@ export const generateToken = async (
       `refresh:${refreshToken}`,
       JSON.stringify({ userId, role, name }),
       "EX",
-      7 * 24 * 60 * 60
+      7 * 24 * 60 * 60,
     );
     res.cookie("jwt", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expires: new Date(Date.now() + 15 * 60 * 1000),
       path: "/",
     });
 

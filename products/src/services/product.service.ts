@@ -9,6 +9,7 @@ import OutboxEvent, { IOutboxEventType } from "../models/OutboxEvent";
 
 export class ProductService {
   private productRepo: IProductRepository;
+
   constructor(productRepo: IProductRepository) {
     this.productRepo = productRepo;
   }
@@ -18,15 +19,21 @@ export class ProductService {
     body: Partial<IProduct>,
   ): Promise<IProduct> {
     return withTransaction(async (session) => {
-      const productData = {
-        ownerId: new mongoose.Types.ObjectId(userId),
+      const productData: Partial<IProduct> = {
         ...body,
+        ownerId: new mongoose.Types.ObjectId(userId),
       };
 
       const product = await this.productRepo.createProduct(
         productData,
         session,
       );
+
+      if (!product) {
+        logger.error("Failed to create product");
+        throw new Error("Failed to create product");
+      }
+
       await OutboxEvent.create(
         [
           {
@@ -56,10 +63,7 @@ export class ProductService {
         ],
         { session },
       );
-      if (!product) {
-        logger.error("Failed to create product");
-        throw new Error("Failed to create product");
-      }
+
       return product;
     });
   }
@@ -87,15 +91,15 @@ export class ProductService {
     return this.productRepo.findProductById(id);
   }
 
-  async updateProduct(id: string, body: Partial<IProduct>) {
-    const session = await mongoose.startSession();
-    let result: IProduct | null = null;
-    await session.withTransaction(async () => {
-      result = await Product.findByIdAndUpdate(id, body, {
-        new: true,
-        session,
-      });
-      if (!result) throw new Error("Product not found");
+  async updateProduct(
+    id: string,
+    body: Partial<IProduct>,
+  ): Promise<IProduct | null> {
+    return withTransaction(async (session) => {
+      const result = await this.productRepo.updateProduct(id, body);
+
+      if (!result) return null;
+
       await OutboxEvent.create(
         [
           {
@@ -114,19 +118,23 @@ export class ProductService {
         ],
         { session },
       );
+
+      return result;
     });
-    session.endSession();
-    return result;
   }
 
-  async softDeleteProduct(id: string, deletedBy: string) {
-    const session = await mongoose.startSession();
-    await session.withTransaction(async () => {
-      await Product.findByIdAndUpdate(
-        id,
-        { isDeleted: true, deletedBy, deletedAt: new Date() },
-        { session },
-      );
+  /**
+   * Soft delete via repository. Sets isDeleted, deletedAt, deletedBy.
+   * Emits PRODUCT_DELETED_TOPIC via outbox in the same transaction.
+   * Returns the updated product so callers can inspect isDeleted: true.
+   */
+  async softDeleteProduct(
+    id: string,
+    deletedBy: string,
+  ): Promise<IProduct> {
+    return withTransaction(async (session) => {
+      await this.productRepo.softDeleteProduct(id, deletedBy, session);
+
       await OutboxEvent.create(
         [
           {
@@ -136,9 +144,15 @@ export class ProductService {
         ],
         { session },
       );
+
+      const updated = await this.productRepo.findProductById(id);
+
+      if (!updated) {
+        throw new Error(`Product with id ${id} not found after soft delete`);
+      }
+
+      return updated;
     });
-    session.endSession();
-    return { message: "Product deleted" };
   }
 
   async restoreProduct(id: string): Promise<IProduct> {
@@ -147,12 +161,24 @@ export class ProductService {
         id,
         session,
       );
+
       if (!restoredProduct) {
         logger.error(`Product with id ${id} not found`);
         throw new Error(`Product with id ${id} not found`);
       }
+
       return restoredProduct;
     });
+  }
+
+  /**
+   * Hard delete. Delegates entirely to the repository.
+   * No outbox event — hard deletes are admin-only operations
+   * and do not need downstream sync since softDelete already
+   * propagated isDeleted: true to ES and inventory.
+   */
+  async deleteProduct(id: string): Promise<void> {
+    return this.productRepo.deleteproductById(id);
   }
 }
 

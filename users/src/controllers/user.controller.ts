@@ -2,8 +2,6 @@ import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "../types";
 import { userService } from "../services/user.service";
 import { UserRequestDTO } from "../types";
-import { userListQuerySchema } from "../validators/user.validator";
-
 export const GetAllUsersHandler = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -90,7 +88,6 @@ export const GetAggregatedUserHandler = async (
 ): Promise<void> => {
   try {
     const requesterId = req.user.userId;
-
     const data = await userService.getAggregatedUsers(requesterId);
 
     res.status(200).json({ success: true, data });

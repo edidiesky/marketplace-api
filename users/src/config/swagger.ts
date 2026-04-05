@@ -9,8 +9,7 @@ const options: swaggerJsdoc.Options = {
       version: "1.0.0",
       description:
         "Platform user management and role-based access control. " +
-        "All routes require a valid JWT. tenantId is always scoped from the JWT — " +
-        "never trusted from the request body. " +
+        "All routes require a valid JWT. tenantId is always scoped from the JWT. " +
         "User list supports partial name search, enum filters, and boolean filters. " +
         "Role assignments take effect on the next login for the affected user.",
     },
@@ -127,11 +126,7 @@ const options: swaggerJsdoc.Options = {
           properties: {
             firstName: { type: "string", example: "Victor" },
             lastName: { type: "string", example: "Essien" },
-            phone: {
-              type: "string",
-              example: "+2348012345678",
-              description: "Must include country code.",
-            },
+            phone: { type: "string", example: "+2348012345678" },
             address: { type: "string", example: "14 Lagos Street, Victoria Island" },
             profileImage: { type: "string", format: "uri" },
             gender: { type: "string", enum: ["Male", "Female"] },
@@ -143,10 +138,7 @@ const options: swaggerJsdoc.Options = {
           required: ["name", "permissions"],
           properties: {
             name: { type: "string", example: "Store Manager" },
-            description: {
-              type: "string",
-              example: "Can manage products and orders within the store.",
-            },
+            description: { type: "string", example: "Can manage products and orders." },
             permissions: {
               type: "array",
               items: { $ref: "#/components/schemas/Permission" },
@@ -164,7 +156,7 @@ const options: swaggerJsdoc.Options = {
         },
         UpdateRoleRequest: {
           type: "object",
-          description: "All fields optional. Changes take effect on the next login for affected users.",
+          description: "All fields optional. Changes take effect on the next login.",
           properties: {
             name: { type: "string", example: "Senior Store Manager" },
             description: { type: "string" },
@@ -218,11 +210,7 @@ const options: swaggerJsdoc.Options = {
     },
     security: [{ BearerAuth: [] }],
   },
-  // Scoped to user and role routes only — auth routes have their own spec
-  apis: [
-    path.join(__dirname, "../routes/user.routes.js"),
-    // path.join(__dirname, "../routes/role.routes.js"),
-  ],
+  apis: [path.join(__dirname, "../routes/*.js")],
 };
 
 export const usersSwaggerSpec = swaggerJsdoc(options);

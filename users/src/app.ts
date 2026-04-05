@@ -10,26 +10,22 @@ import { errorHandler, NotFound } from "./middleware/error-handler";
 import { reqReplyTime, userRegistry } from "./utils/metrics";
 import logger from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
+import swaggerUi from "swagger-ui-express";
+import { usersSwaggerSpec } from "./config/swagger";
 
 const app = express();
-/** MIDDLEWARE */
+
 if (!process.env.WEB_ORIGIN) {
   throw new Error("No WEB_ORIGIN");
 }
 
 app.use(helmet());
-
 app.use(
   cors({
-    origin: [
-      process.env.WEB_ORIGIN!,
-    ],
+    origin: [process.env.WEB_ORIGIN!],
     credentials: true,
-  })
+  }),
 );
-
-
-/** LOGS REQUEST */
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
@@ -41,15 +37,27 @@ app.use((req, res, next) => {
   next();
 });
 
-/** HEALTH CHECK */
 app.get("/health", (_req, res) => {
   res.json({ status: "Good" });
 });
 
-/** ROUTES */
 app.use("/api/v1/users", userRoutes);
 
-app.get("/metrics", async (req, res) => {
+app.get("/openapi.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(usersSwaggerSpec);
+});
+
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(usersSwaggerSpec, {
+    customSiteTitle: "Users and Roles API",
+    swaggerOptions: { persistAuthorization: true },
+  }),
+);
+
+app.get("/metrics", async (_req, res) => {
   try {
     res.set("Content-Type", userRegistry.contentType);
     res.end(await userRegistry.metrics());

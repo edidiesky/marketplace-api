@@ -13,14 +13,20 @@ const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  const statuscode = res.statusCode === 200 ? 500 : res.statusCode;
-  const errMessage = err.message;
-  logger.error("Error message:", errMessage);
-  res.status(statuscode);
-  res.json({
-    message: errMessage,
+  const statuscode = res.statusCode;
+  const errMessage = err instanceof Error ? err.message : String(err);
+  logger.error("Request failed", {
+    method: req.method,
+    url: req.originalUrl,
+    statuscode,
+    error: errMessage,
+    stack: process.env.NODE_ENV !== "production" ? err.stack : undefined,
+  });
+  res.status(statuscode).json({
+    error: errMessage,
+    success: false,
   });
 };
 
