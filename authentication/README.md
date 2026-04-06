@@ -1,9 +1,11 @@
-# Authentication Service
-The authentication service is responsible for ahndling authentication deemed featuwres like registration, login, 2fa, password reset request, and change
-**Port:** `4001`  
-**Database:** MongoDB (`auth_db`)  
-**Cache:** Redis (2FA tokens, onboarding state, user cache, refresh tokens)  
-**Kafka:** Producer + Consumer (choreography-based saga participant)
+# Auth Service
+
+I built the auth service to handle every identity concern on the platform: multi-step registration, login with mandatory 2FA, JWT issuance and rotation, password reset, role-based access control, and tenant metadata sync via Kafka. Every other service trusts the JWT this service issues. Nothing else in the system issues tokens.
+
+**Port:** `4001`
+**Database:** MongoDB (`auth_db`)
+**Cache:** Redis (OTP tokens, onboarding state, refresh tokens, blocklist)
+**Kafka:** Producer and consumer (choreography-based saga participant)
 
 ---
 
@@ -17,182 +19,136 @@ The authentication service is responsible for ahndling authentication deemed fea
 6. [Data Flows](#data-flows)
 7. [Kafka Topics](#kafka-topics)
 8. [OTEL Integration](#otel-integration)
-9. [Tradeoffs](#tradeoffs)
+9. [Architecture Decisions](#architecture-decisions)
 10. [Tests](#tests)
 
 ---
 
 ## Functional Requirements
 
-- The user should be able to carryout multi-step email onboarding with magic-link email verification
-- The user should have a secure password hashing (bcrypt, cost factor 12)
-- The user should be able to opt in for 2FA via email/SMS OTP on every login
-- The user authorization, and authentication shoild be via JWT access token + refresh token with rotation
-- The user should have role creation, assignment, revocation with hierarchical level enforcement
-- Password reset via secure token (email flow)
-- Tenant metadata sync via Kafka (tenantId, plan, status written to User document)
-- User rollback (soft-delete) on downstream saga failure
-- User profile CRUD with Redis cache invalidation
+- I support multi-step email onboarding with magic-link verification across four sequential steps
+- I hash all passwords with bcrypt at cost factor 12
+- I enforce 2FA on every login via a 6-digit OTP sent by email or SMS
+- I issue a short-lived stateless JWT access token (15 minutes) and a long-lived stateful refresh token (7 days) with rotation on every use
+- I support role creation, assignment, and revocation with hierarchical level enforcement
+- I support password reset via a secure single-use token sent by email
+- I sync tenant metadata (tenantId, plan, status) onto the User document via Kafka when the tenant provisioning saga completes
+- I roll back (delete) the User document if the tenant provisioning saga fails downstream
+- I block login for sellers if `tenantStatus` is not `ACTIVE`
+
+---
 
 ## Non-Functional Requirements
 
-- **Authentication latency:** P95 < 100ms (excluding bcrypt hash time ~80ms at cost 12)
-- **2FA token TTL:** 15 minutes (900 seconds)
-- **Onboarding session TTL:** Configurable via `ONBOARDING_EXPIRATION_SEC`
-- **Refresh token TTL:** `BASE_EXPIRATION_SEC` (set in constants — recommended 7 days)
-- **Availability:** Stateless app layer; Redis + MongoDB must be HA for the service to function
-- **Idempotency:** Login and 2FA verification are idempotent via Redis-backed token checks
+- Authentication latency: P95 < 100ms excluding bcrypt hash time (~80ms at cost 12)
+- 2FA token TTL: 15 minutes (900 seconds), stored in Redis
+- Onboarding session TTL: configurable via `ONBOARDING_EXPIRATION_SEC`
+- Refresh token TTL: 7 days, configurable via `BASE_EXPIRATION_SEC`
+- Availability: the app layer is stateless. Redis and MongoDB must be highly available for this service to function
+- Idempotency: login and 2FA verification are idempotent via Redis-backed token checks
 
 ---
 
 ## Capacity Estimation
 
-Baseline assumptions: 100k registered users, 10k DAU, peak 500 logins/min.
+Baseline assumptions: 100k registered users, 10k DAU, peak 500 logins per minute.
 
-| Operation | Frequency | DB Hit | Cache Hit |
-|-----------|-----------|--------|-----------|
-| Login | 500/min peak | Fallback only | ~90% warm cache |
+| Operation | Frequency | DB hit | Cache hit |
+|---|---|---|---|
+| Login | 500/min peak | Always (findByEmail) | OTP from Redis |
 | 2FA verify | 500/min peak | Always (User lookup) | Token from Redis |
 | Token refresh | 1k/min peak | None | 100% Redis |
-| Register | 50/min peak | Always | — |
+| Register | 50/min peak | Always | None |
 
-**Redis memory footprint (2FA + sessions):**
-- 2FA tokens: 500 active × 200 bytes = ~100KB
-- Onboarding sessions: 50 active × 500 bytes = ~25KB
-- User cache: 10k entries × 1KB = ~10MB
-- Refresh tokens: 10k active × 200 bytes = ~2MB
+**Redis memory footprint:**
 
-Total Redis footprint: ~12MB — negligible.
+| Key space | Active entries | Size per entry | Total |
+|---|---|---|---|
+| OTP tokens (`2fa:<email>`) | 500 | ~200 bytes | ~100 KB |
+| Onboarding sessions (`onboarding:<email>`) | 50 | ~500 bytes | ~25 KB |
+| Refresh tokens (`refresh:<userId>`) | 10k | ~200 bytes | ~2 MB |
+| Blocklist (`blocklist:<userId>`) | Low (post-logout only) | ~50 bytes | Negligible |
+
+Total Redis footprint: ~2.1 MB. No memory concern at this scale.
 
 **MongoDB write throughput:**
-- Registrations: 50/min = <1 write/sec — trivially handled by a single replica set.
+Registrations at 50 per minute is less than 1 write per second. Trivially handled by a single replica set.
 
 ---
 
 ## API Reference
 
-All routes prefixed with `/api/v1/auth` (accessed via gateway as `/auth/api/v1/auth`).
+All routes are prefixed `/api/v1/auth`. Via the gateway they are accessed as `/auth/api/v1/auth`.
 
-### Onboarding Flow (3 steps)
+Full request/response shapes, error codes, and cookie documentation are in [`api/contracts.md`](./api/contracts.md).
+
+### Onboarding (4 steps, sequential)
+
+Each step depends on the previous one completing. I track progress in Redis under `onboarding:<email>`. If the key expires or a step is skipped, the flow must restart from step 1.
 
 ```
-POST /api/v1/auth/verify-email     Step 1: Send magic link
-GET  /api/v1/auth/email/confirmation     Step 2: Verify email token (query: email, token)
-POST /api/v1/auth/verify-password  Step 3: Set password
-POST /api/v1/auth/signup                 Step 4: Complete registration
+POST /api/v1/auth/verify-email          Step 1: submit email, receive magic link
+GET  /api/v1/auth/email/confirmation    Step 2: verify magic link token
+POST /api/v1/auth/verify-password       Step 3: set password
+POST /api/v1/auth/signup                Step 4: complete profile, create user
 ```
 
-#### POST /api/v1/auth/verify-email
-```json
-Request:  { "email": "string", "firstName": "string", "lastName": "string", "notificationId": "string" }
-Response: { "success": true, "message": "Verification email sent..." }
+### Session management
+
 ```
-Side effects: Saves `{ email, firstName, lastName, token, expiresAt, step: 'email' }` to Redis key `onboarding:<email>`. Fires `NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC` to Kafka.
-
-#### GET /api/v1/auth/email/confirmation?token=1234&email=example@gamil.com
-```json
-Response: { "success": true, "nextStep": "password" }
-```
-Validates token against Redis. Does not mutate state.
-
-#### POST /api/v1/auth/password/confirmation
-```json
-Request:  { "email": "string", "password": "string" }
-Response: { "success": true, "data": { "email": "..." } }
-```
-Bcrypt-hashes password and it then updates Redis onboarding state.
-
-#### POST /api/v1/auth/signup
-```json
-Request:  { "email": "string", "userType": "SELLERS|CUSTOMER|ADMIN|INVESTORS", "phone": "string", "address": "string", "gender": "Male|Female", "plan": "FREE|PRO|ENTERPRISE", "tenantType": "string" }
-Response: { "success": true, "data": "<userId>" }
-```
-Runs inside a MongoDB session (transaction). Creates User document. For non-CUSTOMER users, fires `USER_ONBOARDING_COMPLETED_TOPIC` * Tenant service.
-
----
-
-### Authentication
-
-#### POST /api/v1/auth/login
-```json
-Request:  { "email": "string", "password": "string", "idempotencyKey": "string (optional)" }
-Response: { "message": "2FA token sent...", "email": "string" }
-```
-Validates password, generates 6-character 2FA OTP, stores in Redis `2fa:<email>` with 15-min TTL, fires `NOTIFICATION_AUTHENTICATION_2FA_TOPIC`.
-
-#### POST /api/v1/auth/verify-otp
-```json
-Request:  { "email": "string", "otp": "string" }
-Response: { "accessToken": "string", "refreshToken": "string", "user": { ... } }
-```
-Validates OTP against Redis. On success: generates JWT pair, updates `lastActiveAt`, deletes `2fa:<email>` key.
-
-#### POST /api/v1/auth/refresh-token
-```json
-Request:  { "refreshToken": "string" }
-Response: { "accessToken": "string", "refreshToken": "string" }
-```
-Full rotation: old refresh token is deleted, new pair issued.
-
-#### POST /api/v1/auth/request-reset
-```json
-Request:  { "email": "string" }
-Response: { "message": "Reset link sent..." }
+POST /api/v1/auth/login                 Validate credentials, send OTP
+POST /api/v1/auth/verify-otp            Validate OTP, issue JWT + refresh token
+POST /api/v1/auth/refresh-token         Rotate refresh token, issue new access token
+POST /api/v1/auth/logout                Invalidate tokens, write blocklist key
 ```
 
-#### POST /api/v1/auth/reset-password
-```json
-Request:  { "token": "string", "newPassword": "string" }
-Response: { "message": "Password reset successfully" }
+### Password management
+
 ```
-
-#### POST /api/v1/auth/logout
-Clears `jwt` cookie.
-
----
+POST /api/v1/auth/request-reset         Send reset link (always 200, anti-enumeration)
+POST /api/v1/auth/password-reset        Reset password with token from email
+POST /api/v1/auth/password-change       Change password while authenticated
+```
 
 ### RBAC
 
-All role endpoints require authenticated JWT.
+All role endpoints require a valid Bearer JWT. Role operations are restricted by the caller's `roleLevel`. I do not allow assigning or revoking a role at an equal or higher level than the caller's own.
 
-| Method | Path | Permission Required |
-|--------|------|---------------------|
-| POST | `/roles` | SUPER_ADMIN or EXECUTIVE |
-| POST | `/roles/assign-role` | MANAGE_ROLES |
-| DELETE | `/roles/revoke-role` | MANAGE_ROLES |
-| PUT | `/roles/update-role` | MANAGE_ROLES |
-| GET | `/roles/user-roles/:userId` | READ_USER |
-| GET | `/roles/available-roles` | MANAGE_ROLES |
-
-Role levels are hierarchical, you cannot assign/revoke/update a role at an equal or higher level than your own.
+| Method | Path | Permission required |
+|---|---|---|
+| POST | `/api/v1/auth/roles` | `SUPER_ADMIN` or `EXECUTIVE` |
+| POST | `/api/v1/auth/roles/assign-role` | `MANAGE_ROLES` |
+| DELETE | `/api/v1/auth/roles/revoke-role` | `MANAGE_ROLES` |
+| PUT | `/api/v1/auth/roles/update-role` | `MANAGE_ROLES` |
+| GET | `/api/v1/auth/roles/user-roles/:userId` | `READ_USER` |
+| GET | `/api/v1/auth/roles/available-roles` | `MANAGE_ROLES` |
 
 ---
 
 ## Data Model
 
-### User Collection
+### User collection
 
 ```typescript
 {
   _id: ObjectId,
-  email: string,       
-  phone: string,     
+  email: string,
+  phone: string,
   passwordHash: string,
-  userType: enum,          // SELLERS | ADMIN | INVESTORS | CUSTOMER
+  userType: 'SELLERS' | 'ADMIN' | 'INVESTORS' | 'CUSTOMER',
   firstName?: string,
   lastName?: string,
   profileImage?: string,
-  gender?: enum,
+  gender?: 'Male' | 'Female',
   address?: string,
   isEmailVerified: boolean,
   falseIdentificationFlag: boolean,
   lastActiveAt: Date,
 
-  // Tenant metadata (mostly written by Kafka consumer)
   tenantId?: string,
   tenantType?: TenantType,
-  tenantStatus: TenantStatus,   // DRAFT | ACTIVE | SUSPENDED | DELETED
-  tenantPlan: BillingPlan,      // FREE | PRO | ENTERPRISE
+  tenantStatus: 'DRAFT' | 'ACTIVE' | 'SUSPENDED' | 'DELETED',
+  tenantPlan: 'FREE' | 'PRO' | 'ENTERPRISE',
   trialEndsAt?: Date,
   currentPeriodEndsAt?: Date,
   cancelAtPeriodEnd: boolean,
@@ -203,21 +159,22 @@ Role levels are hierarchical, you cannot assign/revoke/update a role at an equal
 ```
 
 **Indexes:**
+
 ```typescript
-{ createdAt: -1, userType: 1 }
-{ createdAt: -1, firstName: 1 }
-{ createdAt: -1, email: 1 }
-{ email: 1 }  
+{ email: 1 }                          // unique, primary lookup
+{ createdAt: -1, userType: 1 }        // admin user listing
+{ createdAt: -1, firstName: 1 }       // name search
+{ createdAt: -1, email: 1 }           // time-ranged email queries
 ```
 
-### Role Collection
+### Role collection
 
 ```typescript
 {
   _id: ObjectId,
-  roleCode: string,      
+  roleCode: string,
   roleName: string,
-  level: RoleLevel,       // 1=SUPER_ADMIN, 2=EXECUTIVE, 3=HEAD, 4=MEMBER
+  level: 1 | 2 | 3 | 4,   // 1=SUPER_ADMIN, 2=EXECUTIVE, 3=HEAD, 4=MEMBER
   permissions: Permission[],
   description: string,
   parentRole?: ObjectId,
@@ -226,7 +183,7 @@ Role levels are hierarchical, you cannot assign/revoke/update a role at an equal
 }
 ```
 
-### UserRole Collection (join table)
+### UserRole collection
 
 ```typescript
 {
@@ -246,48 +203,82 @@ Role levels are hierarchical, you cannot assign/revoke/update a role at an equal
 
 ## Data Flows
 
-### Registration Saga
+### Registration saga
 
 ```
-Client * POST /api/v1/auth/signup
-  * MongoDB transaction: create User (status: DRAFT)
-  * Kafka: USER_ONBOARDING_COMPLETED_TOPIC { ownerId, ownerEmail, tenantType, billingPlan }
-  * Redis: delete onboarding:<email>
-  * Return 201
+Client > POST /api/v1/auth/signup
+  MongoDB transaction:
+    create User { tenantStatus: DRAFT }
+  Kafka > USER_ONBOARDING_COMPLETED_TOPIC { ownerId, ownerEmail, tenantType, billingPlan }
+  Redis  > DEL onboarding:<email>
+  Return 201
 
-Tenant Service (consumer):
-  * Create Tenant document
-  * Kafka: TENANT_ONBOARDING_COMPLETED_TOPIC { tenantId, ownerId, plan, status: ACTIVE }
+Tenant service (consumer):
+  Create Tenant document
+  Kafka > TENANT_ONBOARDING_COMPLETED_TOPIC { tenantId, ownerId, plan, status: ACTIVE }
 
-Auth Service (consumer — TENANT_ONBOARDING_COMPLETED_TOPIC):
-  * User.findOneAndUpdate({ _id: ownerId }, { tenantId, tenantPlan, tenantStatus: ACTIVE })
-  * Kafka: NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC
+Auth service (consumer: TENANT_ONBOARDING_COMPLETED_TOPIC):
+  User.findOneAndUpdate({ _id: ownerId }, { tenantId, tenantPlan, tenantStatus: ACTIVE })
+  Kafka > NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC
 
-Compensation (if Tenant creation fails):
-  * Tenant: Kafka: USER_ROLLBACK_TOPIC { email }
-  * Auth consumer: User.findOneAndDelete({ email })
+Compensation (if tenant creation fails):
+  Tenant service > Kafka: USER_ROLLBACK_TOPIC { email }
+  Auth consumer  > User.findOneAndDelete({ email })
 ```
 
-### Login + 2FA Flow
+### Login and 2FA flow
 
 ```
 POST /api/v1/auth/login
-  * Redis GET user:<email>  (cache hit: ~90%)
-  * bcrypt.compare(password, hash)  (~80ms)
-  * Generate OTP (6-char alphanumeric)
-  * Redis SETEX 2fa:<email> 900 { token, expiresAt }
-  * Kafka: NOTIFICATION_AUTHENTICATION_2FA_TOPIC
-  * Return 200
+  MongoDB > findByEmail(email)
+  bcrypt.compare(password, hash)         ~80ms at cost 12
+  if tenantStatus !== ACTIVE > 403
+  Redis  > SETEX 2fa:<email> 900 { otp, expiresAt }
+  Kafka  > NOTIFICATION_AUTHENTICATION_2FA_TOPIC
+  Return 200 { message: "OTP sent" }
 
 POST /api/v1/auth/verify-otp
-  * MongoDB: User.findOne({ email }) 
-  * Redis GET 2fa:<email>
-  * Validate OTP + expiry
-  * generateToken() * JWT access (15min) + refresh (7d)
-  * Redis SETEX refresh:<token> BASE_EXPIRATION_SEC { email, userType, name }
-  * Redis DEL 2fa:<email>
-  * User.updateOne lastActiveAt
-  * Return { accessToken, refreshToken, user }
+  MongoDB > findByEmail(email)
+  Redis   > GET 2fa:<email>
+  validate OTP and expiry
+  if invalid > 401
+  sign JWT access token (15min)
+  Redis  > SETEX refresh:<userId> 7d nanoid(32)
+  Redis  > DEL 2fa:<email>
+  MongoDB > updateOne lastActiveAt
+  Return 200 { accessToken, refreshToken, user }
+```
+
+### Token refresh
+
+```
+POST /api/v1/auth/refresh-token
+  Redis > GET refresh:<userId>
+  if not found or mismatch > 401
+  Redis pipeline:
+    DEL refresh:<userId>
+    SETEX refresh:<userId> 7d newToken
+  Return 200 { accessToken, refreshToken }
+```
+
+### Logout
+
+```
+POST /api/v1/auth/logout
+  Redis > DEL refresh:<userId>
+  Redis > SETEX blocklist:<userId> <remaining_access_ttl> 1
+  Return 200
+```
+
+### authenticate middleware (every protected route)
+
+```
+Verify JWT signature
+  if invalid or expired > 401
+Redis > GET blocklist:<userId>
+  if found > 401
+Inject req.user from JWT payload
+next()
 ```
 
 ---
@@ -296,68 +287,62 @@ POST /api/v1/auth/verify-otp
 
 ### Produces
 
-| Topic | Trigger | Payload |
-|-------|---------|---------|
-| `NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC` | Email step | `{ email, firstName, lastName, verification_url }` |
-| `USER_ONBOARDING_COMPLETED_TOPIC` | Signup complete (non-customer) | `{ ownerId, ownerEmail, ownerName, type, billingPlan }` |
-| `NOTIFICATION_AUTHENTICATION_2FA_TOPIC` | Login | `{ token, phone, email, fullName, message }` |
-| `Authentication.dlq` | Consumer error | Original message + error metadata |
+| Topic | Trigger | Key payload fields |
+|---|---|---|
+| `USER_ONBOARDING_COMPLETED_TOPIC` | `POST /signup` (non-customer) | `ownerId`, `ownerEmail`, `ownerName`, `tenantType`, `billingPlan` |
+| `NOTIFICATION_ONBOARDING_EMAIL_CONFIRMATION_TOPIC` | Step 1 of onboarding | `email`, `firstName`, `lastName`, `verification_url` |
+| `NOTIFICATION_AUTHENTICATION_2FA_TOPIC` | `POST /login` success | `otp`, `phone`, `email`, `fullName` |
+| `NOTIFICATION_TENANT_ONBOARDING_COMPLETED_TOPIC` | Tenant saga callback processed | `userId`, `tenantId` |
+| `Authentication.dlq` | Consumer error after max retries | Original message + error metadata |
 
 ### Consumes
 
-| Topic | Handler | Action |
-|-------|---------|--------|
-| `TENANT_ONBOARDING_COMPLETED_TOPIC` | `AuthenticationTopic` | Update User with tenantId, plan, status |
-| `USER_ROLLBACK_TOPIC` | `AuthenticationTopic` | Delete User by email (saga compensation) |
+| Topic | Published by | Action |
+|---|---|---|
+| `TENANT_ONBOARDING_COMPLETED_TOPIC` | Tenant service | Patch User with `tenantId`, `tenantPlan`, `tenantStatus: ACTIVE` |
+| `USER_ROLLBACK_TOPIC` | Tenant service | Delete User by email (saga compensation) |
 
-### Consumer Configuration
+### Consumer configuration
 
 ```typescript
 groupId: 'Authentication-group'
-autoCommit: false   
+autoCommit: false
 partitionsConsumedConcurrently: 3
 sessionTimeout: 30000
-heartbeatInterval: 3000  
-maxBytesPerPartition: 1MB
+heartbeatInterval: 3000
+maxBytesPerPartition: 1048576  // 1MB
 ```
 
-Manual commit ensures messages are not acknowledged until processing completes. Failed messages go to DLQ, then the offset is committed to prevent infinite reprocessing.
+I use manual commit (`autoCommit: false`) so a message is only acknowledged after my handler completes successfully. If the handler throws, I retry with exponential backoff. After `MAX_RETRIES` the message goes to the DLQ and I commit the offset to avoid blocking the partition.
 
 ---
 
 ## OTEL Integration
 
-Import `"./utils/otel"` as the **first line** of `server.ts` (before Express, before Mongoose):
+I import `./utils/otel` as the first line of `server.ts`, before Express and before Mongoose. The SDK must initialise before any instrumented library loads or spans will be missed.
 
 ```typescript
-// server.ts: Please always add it at the top of the server.ts file
+// server.ts — otel must be the first import
 import "./utils/otel";
 import express from "express";
-// ...
 ```
 
-The OTEL SDK auto-instruments:
-- HTTP incoming/outgoing requests * spans
-- Mongoose operations * spans with db.statement
-- Redis commands * spans
-- Kafka producer/consumer * spans
+The SDK auto-instruments HTTP requests, Mongoose operations, Redis commands, and Kafka producer/consumer calls. Winston instrumentation reads the active span and injects `trace_id`, `span_id`, and `trace_flags` into every log record:
 
-Winston instrumentation injects trace context into every log:
 ```json
 {
   "message": "User signed in successfully using 2FA",
   "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
   "span_id": "00f067aa0ba902b7",
-  "service": "auth_service"
+  "trace_flags": "01",
+  "service": "auth-service"
 }
 ```
 
-This basically enables log-to-trace correlation in Grafana: click a log line * jump to the associated Tempo trace.
-
-### `utils/otel.ts` (full implementation)
+This gives me log-to-trace correlation in Grafana. Clicking a `trace_id` in the Loki log explorer jumps directly to the Tempo trace for that request.
 
 ```typescript
-import "./utils/otel";
+// utils/otel.ts
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
@@ -373,7 +358,7 @@ const traceExporter = new OTLPTraceExporter({
 });
 
 const sdk = new NodeSDK({
-  serviceName: "auth-service",
+  serviceName: process.env.OTEL_SERVICE_NAME || "auth-service",
   traceExporter,
   instrumentations: [
     getNodeAutoInstrumentations({
@@ -382,8 +367,8 @@ const sdk = new NodeSDK({
     new WinstonInstrumentation({
       logHook: (span, record) => {
         record["trace_id"] = span.spanContext().traceId;
-        record["trace_flags"] = `0${span.spanContext().traceFlags.toString(16)}`;
         record["span_id"] = span.spanContext().spanId;
+        record["trace_flags"] = `0${span.spanContext().traceFlags.toString(16)}`;
       },
     }),
   ],
@@ -392,9 +377,10 @@ const sdk = new NodeSDK({
 sdk.start();
 
 process.on("SIGTERM", () => {
-  sdk.shutdown()
-    .then(() => console.log("Auth service tracing terminated"))
-    .catch((error) => console.error("Error terminating tracing", error))
+  sdk
+    .shutdown()
+    .then(() => console.log("Auth service tracing shut down"))
+    .catch((err) => console.error("Error shutting down tracing", err))
     .finally(() => process.exit(0));
 });
 
@@ -403,14 +389,56 @@ export default sdk;
 
 ---
 
-## Tradeoffs
-For tradeoffs and design choices please refer to the documentation link attached here: [→ Tradeoff Docs](../tradeoffs/auth.tradeoffs.md) 
+## Architecture Decisions
+
+I document every design decision I made for this service as ADRs in
+[`architecture/decision/`](./architecture/decision/). Each one covers the context I was in, the decision I made, and what I gave up.
+
+| ADR | Decision summary |
+|---|---|
+| ADR-AUTH-001 | Hybrid JWT: stateless access token + stateful refresh token |
+| ADR-AUTH-002 | OTP 2FA on every login via email or SMS |
+| ADR-AUTH-003 | Refresh token rotation on every use |
+| ADR-AUTH-004 | Logout blocklist via Redis key with remaining TTL |
+| ADR-AUTH-005 | Four-step registration with magic link email verification |
+| ADR-AUTH-006 | Block login if tenant status is not ACTIVE |
+| ADR-AUTH-007 | tenantId always injected from JWT, never from request |
+| ADR-AUTH-008 | Permissions array and roleLevel embedded in JWT payload |
+
+---
 
 ## Tests
 
-See [`../../tests/authentication/`](../../tests/authentication/) for:
+I organise tests by tier. The unit suite covers service and repository logic in isolation. The integration suite covers controllers end-to-end through real middleware against a real MongoDB instance.
 
-- `unit/auth.controller.test.ts` — handler logic with mocked DB and Redis
-- `unit/user.service.test.ts` — service layer with mocked Mongoose
-- `integration/auth.integration.test.ts` — full HTTP flow with mongodb-memory-server
-- `../../tests/k6/auth-load.js` — login + 2FA k6 load test
+```
+tests/authentication/
+  unit/
+    auth.service.test.ts        business logic: token generation, OTP validation, bcrypt
+    user.repository.test.ts     repository methods with mocked Mongoose
+  integration/
+    auth.integration.test.ts    full HTTP flow: onboarding, login, 2FA, refresh, logout
+  k6/
+    auth-load.js                login + 2FA load test, ramp 10 to 100 VUs, p95 < 100ms
+```
+
+Run unit tests:
+
+```bash
+cd auth
+npm test
+npm run test:coverage
+```
+
+Run integration tests (requires Docker Compose stack running):
+
+```bash
+npm run test:integration
+```
+
+Run load test:
+
+```bash
+cd _infrastructure/k6
+k6 run auth-load.js
+```
