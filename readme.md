@@ -25,7 +25,7 @@ The API is built with the stack on Node.js 20, TypeScript 5, MongoDB Atlas, Apac
 ---
 ## System Architecture
 
-I route all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
+I route all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka basicaLLY sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
 
 ![System Architecture](./_documentation/architecture/architecture.png)
 
@@ -57,13 +57,13 @@ I route all client traffic through the API Gateway at port 8000, where I enforce
 
 ## Technology Stack
 
-**Runtime.** I run every service on Node.js 20 and TypeScript 5 with Express 4. All Dockerfiles use `node:20-alpine` as the base image and `npm ci --omit=dev` to keep production images lean.
+**Runtime.** Basically I run every service on Node.js 20 and TypeScript 5 with Express 4. All Dockerfiles use `node:20-alpine` as the base image and `npm ci --omit=dev` to keep production images lean.
 
-**Databases.** I use MongoDB Atlas via Mongoose with a dedicated database per service. There are no cross-service joins. I use multi-document ACID transactions via `withSession`/`withTransaction` for operations that must be atomic across multiple collections. All indexes are declared on the schema.
+**Databases.** For the DB, i make use of MongoDB Atlas via Mongoose with a dedicated database per service. There are no cross-service joins. I use multi-document ACID transactions via `withSession`/`withTransaction` for operations that must be atomic across multiple collections. All indexes are declared on the schema.
 
 **Caching and coordination.** I use Redis 7 via ioredis for rate-limit counters, OTP TTL storage, refresh-token storage, Redlock distributed mutexes for inventory writes, idempotency NX keys for Kafka consumers, cart versioned cache, and pub/sub for rules-engine cache invalidation.
 
-**Event streaming.** I run Apache Kafka 3 in KRaft mode with no ZooKeeper. In dev I run a 3-broker Docker Compose cluster. In prod I use Confluent Cloud to avoid the ~6 GB broker RAM overhead on a 4 GB VPS. I configure `acks=-1`, `idempotent: true`, `MIN_INSYNC_REPLICAS=2`, and `AUTO_CREATE_TOPICS_ENABLE=false`. Partition counts are derived from the LCM of each topic's consumer group sizes for even distribution.
+**Event streaming.** Apache Kafka 3 in KRaft mode with no ZooKeeper is what ia m using. In dev I run a 3-broker Docker Compose cluster. In prod I basicalluy use Confluent Cloud to avoid the ~6 GB broker RAM overhead on a 4 GB VPS. I configure `acks=-1`, `idempotent: true`, `MIN_INSYNC_REPLICAS=2`, and `AUTO_CREATE_TOPICS_ENABLE=false`. Partition counts are derived from the LCM of each topic's consumer group sizes for even distribution.
 
 **Search.** I use Elasticsearch 8.11 with `@elastic/elasticsearch` v8.19.1. In dev I run a single node with a 512m heap and `xpack.security=false`. In prod I run a cluster. I use an ngram tokenizer (min=3, max=10) at index time for partial match and a standard tokenizer at query time to avoid over-matching. MongoDB is my source of truth. ES is an eventually consistent read replica I sync via Kafka outbox events.
 
