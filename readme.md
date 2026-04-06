@@ -9,6 +9,9 @@ The API is built with the stack on Node.js 20, TypeScript 5, MongoDB Atlas, Apac
 ## Buyer journey
 ![Buyer journey](./_documentation/architecture/buyer_flow_1.png)
 
+## Seller journey
+![Seller journey](./_documentation/architecture/seller_flow_1.png)
+
 ## Table of Contents
 
 1. [System Architecture](#system-architecture)
