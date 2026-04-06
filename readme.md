@@ -23,47 +23,11 @@ The API is built with the stack on Node.js 20, TypeScript 5, MongoDB Atlas, Apac
 13. [Roadmap](#roadmap)
 
 ---
-
 ## System Architecture
 
-I have detailed flow diagrams for both the buyer journey and seller journey in [`_documentation/architecture/`](./_documentation/architecture/).
+I route all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
 
-```
-                    ┌──────────────────────────────────────────────────────────┐
-                    │                    API Gateway :8000                      │
-                    │   token-bucket rate limiter · circuit breaker (Opossum)   │
-                    │   rules engine (Redis pub/sub, 60s reload)                │
-                    │   Swagger UI aggregator · OTEL traceparent propagation    │
-                    └──────────────────────────┬───────────────────────────────┘
-                                               │ HTTP proxy (axios, validateStatus < 500)
-       ┌──────────────┬───────────────┬────────┴──────────┬──────────────────┐
-       │              │               │                   │                  │
-  Auth :4001    Products :4003   Stores :4007        Cart :4009       Orders :4012
-  JWT/OTP/RBAC  catalog+ES sync  tenant mgmt         Redis lock       checkout saga
-  refresh rot.  outbox pattern   TenantScoped         versioned        PDF receipt
-  blocklist     ngram index      Repository           cache            Cloudinary
-       │              │               │                   │                  │
-       └──────────────┴───────────────┴──────────┬────────┴──────────────────┘
-                                                  │ sync HTTP (fail-fast)
-                                     ┌────────────┴────────────┐
-                                     │                         │
-                              Inventory :4008           Payment :4004
-                              3-field accounting         Paystack + Flutterwave
-                              Redlock + $gte guard       HMAC webhook verify
-                              onHand=available+reserved  ledger + wallet
-                              Reserve/Commit/Release     outbox poller (5s)
-                                     │                         │
-                                     └────────────┬────────────┘
-                                                  │ Kafka (acks=-1, ISR≥2)
-                              ┌───────────────────┼───────────────────────┐
-                              │                   │                       │
-                       Notification :4006    Tenant :4010           Review :4011
-                       email + in-app        provisioning saga      product reviews
-                                             billing plans
-
-  Supporting services (internal / admin):
-  Audit :4002 · Categories :4005 · Color :4013 · Size :4015 · View :4014 · Users :4016
-```
+![System Architecture](./_documentation/architecture/architecture.png)
 
 ---
 
@@ -314,7 +278,7 @@ Common across all services:
 
 ```bash
 NODE_ENV=development
-PORT=                          # see service catalogue
+PORT=                   
 MONGO_URI=mongodb://localhost:27017/<service-db>
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=
