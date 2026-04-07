@@ -9,8 +9,8 @@ import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 export class InventoryService {
   private InventoryRepo: IInventoryRepository;
   private readonly RESERVATION_TTL = 600;
-  private readonly MAX_RETRIES = 5;
-  private readonly BASE_DELAY_MS = 20;
+  private readonly MAX_RETRIES = 8;
+  private readonly BASE_DELAY_MS = 15;
 
   constructor() {
     this.InventoryRepo = new InventoryRepository();

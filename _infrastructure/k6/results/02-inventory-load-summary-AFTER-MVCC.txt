@@ -1,0 +1,2522 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: scripts/inventory/01-inventory-load.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 8m30s max duration (incl. graceful stop):
+              * default: Up to 100 looping VUs for 8m0s over 4 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+running (0m00.9s), 001/100 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 001/100 VUs  0m00.9s/8m00.0s
+
+running (0m01.9s), 001/100 VUs, 2 complete and 0 interrupted iterations
+default   [   0% ] 001/100 VUs  0m01.9s/8m00.0s
+
+running (0m02.9s), 001/100 VUs, 3 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m02.9s/8m00.0s
+
+running (0m03.9s), 001/100 VUs, 5 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m03.9s/8m00.0s
+
+running (0m04.9s), 001/100 VUs, 6 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m04.9s/8m00.0s
+
+running (0m05.9s), 001/100 VUs, 6 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m05.9s/8m00.0s
+
+running (0m06.9s), 002/100 VUs, 7 complete and 0 interrupted iterations
+default   [   1% ] 002/100 VUs  0m06.9s/8m00.0s
+
+running (0m07.9s), 002/100 VUs, 9 complete and 0 interrupted iterations
+default   [   2% ] 002/100 VUs  0m07.9s/8m00.0s
+
+running (0m08.9s), 002/100 VUs, 11 complete and 0 interrupted iterations
+default   [   2% ] 002/100 VUs  0m08.9s/8m00.0s
+
+running (0m09.9s), 002/100 VUs, 14 complete and 0 interrupted iterations
+default   [   2% ] 002/100 VUs  0m09.9s/8m00.0s
+
+running (0m10.9s), 002/100 VUs, 15 complete and 0 interrupted iterations
+default   [   2% ] 002/100 VUs  0m10.9s/8m00.0s
+
+running (0m11.9s), 002/100 VUs, 16 complete and 0 interrupted iterations
+default   [   2% ] 002/100 VUs  0m11.9s/8m00.0s
+
+running (0m12.9s), 002/100 VUs, 19 complete and 0 interrupted iterations
+default   [   3% ] 002/100 VUs  0m12.9s/8m00.0s
+
+running (0m13.9s), 003/100 VUs, 19 complete and 0 interrupted iterations
+default   [   3% ] 003/100 VUs  0m13.9s/8m00.0s
+
+running (0m14.9s), 003/100 VUs, 22 complete and 0 interrupted iterations
+default   [   3% ] 003/100 VUs  0m14.9s/8m00.0s
+
+running (0m15.9s), 003/100 VUs, 25 complete and 0 interrupted iterations
+default   [   3% ] 003/100 VUs  0m15.9s/8m00.0s
+
+running (0m16.9s), 003/100 VUs, 28 complete and 0 interrupted iterations
+default   [   4% ] 003/100 VUs  0m16.9s/8m00.0s
+
+running (0m17.9s), 003/100 VUs, 31 complete and 0 interrupted iterations
+default   [   4% ] 003/100 VUs  0m17.9s/8m00.0s
+
+running (0m18.9s), 003/100 VUs, 32 complete and 0 interrupted iterations
+default   [   4% ] 003/100 VUs  0m18.9s/8m00.0s
+
+running (0m19.9s), 003/100 VUs, 37 complete and 0 interrupted iterations
+default   [   4% ] 003/100 VUs  0m19.9s/8m00.0s
+
+running (0m20.9s), 004/100 VUs, 39 complete and 0 interrupted iterations
+default   [   4% ] 004/100 VUs  0m20.9s/8m00.0s
+
+running (0m21.9s), 004/100 VUs, 42 complete and 0 interrupted iterations
+default   [   5% ] 004/100 VUs  0m21.9s/8m00.0s
+
+running (0m23.0s), 004/100 VUs, 47 complete and 0 interrupted iterations
+default   [   5% ] 004/100 VUs  0m23.0s/8m00.0s
+
+running (0m23.9s), 004/100 VUs, 51 complete and 0 interrupted iterations
+default   [   5% ] 004/100 VUs  0m23.9s/8m00.0s
+
+running (0m24.9s), 004/100 VUs, 53 complete and 0 interrupted iterations
+default   [   5% ] 004/100 VUs  0m24.9s/8m00.0s
+
+running (0m25.9s), 004/100 VUs, 57 complete and 0 interrupted iterations
+default   [   5% ] 004/100 VUs  0m25.9s/8m00.0s
+
+running (0m26.9s), 005/100 VUs, 57 complete and 0 interrupted iterations
+default   [   6% ] 005/100 VUs  0m26.9s/8m00.0s
+
+running (0m27.9s), 005/100 VUs, 63 complete and 0 interrupted iterations
+default   [   6% ] 005/100 VUs  0m27.9s/8m00.0s
+
+running (0m28.9s), 005/100 VUs, 70 complete and 0 interrupted iterations
+default   [   6% ] 005/100 VUs  0m28.9s/8m00.0s
+
+running (0m29.9s), 005/100 VUs, 71 complete and 0 interrupted iterations
+default   [   6% ] 005/100 VUs  0m29.9s/8m00.0s
+
+running (0m30.9s), 005/100 VUs, 76 complete and 0 interrupted iterations
+default   [   6% ] 005/100 VUs  0m30.9s/8m00.0s
+
+running (0m31.9s), 005/100 VUs, 79 complete and 0 interrupted iterations
+default   [   7% ] 005/100 VUs  0m31.9s/8m00.0s
+
+running (0m32.9s), 005/100 VUs, 81 complete and 0 interrupted iterations
+default   [   7% ] 005/100 VUs  0m32.9s/8m00.0s
+
+running (0m33.9s), 006/100 VUs, 82 complete and 0 interrupted iterations
+default   [   7% ] 006/100 VUs  0m33.9s/8m00.0s
+
+running (0m34.9s), 006/100 VUs, 87 complete and 0 interrupted iterations
+default   [   7% ] 006/100 VUs  0m34.9s/8m00.0s
+
+running (0m35.9s), 006/100 VUs, 92 complete and 0 interrupted iterations
+default   [   7% ] 006/100 VUs  0m35.9s/8m00.0s
+
+running (0m36.9s), 006/100 VUs, 94 complete and 0 interrupted iterations
+default   [   8% ] 006/100 VUs  0m36.9s/8m00.0s
+
+running (0m37.9s), 006/100 VUs, 96 complete and 0 interrupted iterations
+default   [   8% ] 006/100 VUs  0m37.9s/8m00.0s
+
+running (0m39.0s), 006/100 VUs, 102 complete and 0 interrupted iterations
+default   [   8% ] 006/100 VUs  0m39.0s/8m00.0s
+
+running (0m39.9s), 006/100 VUs, 103 complete and 0 interrupted iterations
+default   [   8% ] 006/100 VUs  0m39.9s/8m00.0s
+
+running (0m40.9s), 007/100 VUs, 104 complete and 0 interrupted iterations
+default   [   9% ] 007/100 VUs  0m40.9s/8m00.0s
+
+running (0m41.9s), 007/100 VUs, 111 complete and 0 interrupted iterations
+default   [   9% ] 007/100 VUs  0m41.9s/8m00.0s
+
+running (0m42.9s), 007/100 VUs, 111 complete and 0 interrupted iterations
+default   [   9% ] 007/100 VUs  0m42.9s/8m00.0s
+
+running (0m43.9s), 007/100 VUs, 111 complete and 0 interrupted iterations
+default   [   9% ] 007/100 VUs  0m43.9s/8m00.0s
+
+running (0m44.9s), 007/100 VUs, 111 complete and 0 interrupted iterations
+default   [   9% ] 007/100 VUs  0m44.9s/8m00.0s
+
+running (0m45.9s), 007/100 VUs, 115 complete and 0 interrupted iterations
+default   [  10% ] 007/100 VUs  0m45.9s/8m00.0s
+
+running (0m46.9s), 008/100 VUs, 118 complete and 0 interrupted iterations
+default   [  10% ] 008/100 VUs  0m46.9s/8m00.0s
+
+running (0m47.9s), 008/100 VUs, 125 complete and 0 interrupted iterations
+default   [  10% ] 008/100 VUs  0m47.9s/8m00.0s
+
+running (0m48.9s), 008/100 VUs, 127 complete and 0 interrupted iterations
+default   [  10% ] 008/100 VUs  0m48.9s/8m00.0s
+
+running (0m49.9s), 008/100 VUs, 134 complete and 0 interrupted iterations
+default   [  10% ] 008/100 VUs  0m49.9s/8m00.0s
+
+running (0m50.9s), 008/100 VUs, 139 complete and 0 interrupted iterations
+default   [  11% ] 008/100 VUs  0m50.9s/8m00.0s
+
+running (0m51.9s), 008/100 VUs, 150 complete and 0 interrupted iterations
+default   [  11% ] 008/100 VUs  0m51.9s/8m00.0s
+
+running (0m52.9s), 008/100 VUs, 157 complete and 0 interrupted iterations
+default   [  11% ] 008/100 VUs  0m52.9s/8m00.0s
+
+running (0m53.9s), 009/100 VUs, 165 complete and 0 interrupted iterations
+default   [  11% ] 009/100 VUs  0m53.9s/8m00.0s
+
+running (0m54.9s), 009/100 VUs, 173 complete and 0 interrupted iterations
+default   [  11% ] 009/100 VUs  0m54.9s/8m00.0s
+
+running (0m55.9s), 009/100 VUs, 175 complete and 0 interrupted iterations
+default   [  12% ] 009/100 VUs  0m55.9s/8m00.0s
+
+running (0m56.9s), 009/100 VUs, 179 complete and 0 interrupted iterations
+default   [  12% ] 009/100 VUs  0m56.9s/8m00.0s
+
+running (0m57.9s), 009/100 VUs, 188 complete and 0 interrupted iterations
+default   [  12% ] 009/100 VUs  0m57.9s/8m00.0s
+
+running (0m58.9s), 009/100 VUs, 188 complete and 0 interrupted iterations
+default   [  12% ] 009/100 VUs  0m58.9s/8m00.0s
+
+running (0m59.9s), 009/100 VUs, 188 complete and 0 interrupted iterations
+default   [  12% ] 009/100 VUs  0m59.9s/8m00.0s
+
+running (1m01.0s), 010/100 VUs, 188 complete and 0 interrupted iterations
+default   [  13% ] 010/100 VUs  1m01.0s/8m00.0s
+
+running (1m01.9s), 010/100 VUs, 190 complete and 0 interrupted iterations
+default   [  13% ] 010/100 VUs  1m01.9s/8m00.0s
+
+running (1m02.9s), 010/100 VUs, 195 complete and 0 interrupted iterations
+default   [  13% ] 010/100 VUs  1m02.9s/8m00.0s
+
+running (1m03.9s), 010/100 VUs, 198 complete and 0 interrupted iterations
+default   [  13% ] 010/100 VUs  1m03.9s/8m00.0s
+
+running (1m04.9s), 011/100 VUs, 200 complete and 0 interrupted iterations
+default   [  14% ] 011/100 VUs  1m04.9s/8m00.0s
+
+running (1m05.9s), 011/100 VUs, 210 complete and 0 interrupted iterations
+default   [  14% ] 011/100 VUs  1m05.9s/8m00.0s
+
+running (1m07.0s), 011/100 VUs, 217 complete and 0 interrupted iterations
+default   [  14% ] 011/100 VUs  1m07.0s/8m00.0s
+
+running (1m07.9s), 011/100 VUs, 219 complete and 0 interrupted iterations
+default   [  14% ] 011/100 VUs  1m07.9s/8m00.0s
+
+running (1m08.9s), 011/100 VUs, 222 complete and 0 interrupted iterations
+default   [  14% ] 011/100 VUs  1m08.9s/8m00.0s
+
+running (1m09.9s), 012/100 VUs, 228 complete and 0 interrupted iterations
+default   [  15% ] 012/100 VUs  1m09.9s/8m00.0s
+
+running (1m11.0s), 012/100 VUs, 231 complete and 0 interrupted iterations
+default   [  15% ] 012/100 VUs  1m11.0s/8m00.0s
+
+running (1m11.9s), 012/100 VUs, 235 complete and 0 interrupted iterations
+default   [  15% ] 012/100 VUs  1m11.9s/8m00.0s
+
+running (1m12.9s), 012/100 VUs, 245 complete and 0 interrupted iterations
+default   [  15% ] 012/100 VUs  1m12.9s/8m00.0s
+
+running (1m13.9s), 013/100 VUs, 254 complete and 0 interrupted iterations
+default   [  15% ] 013/100 VUs  1m13.9s/8m00.0s
+
+running (1m14.9s), 013/100 VUs, 258 complete and 0 interrupted iterations
+default   [  16% ] 013/100 VUs  1m14.9s/8m00.0s
+
+running (1m15.9s), 013/100 VUs, 267 complete and 0 interrupted iterations
+default   [  16% ] 013/100 VUs  1m15.9s/8m00.0s
+
+running (1m16.9s), 013/100 VUs, 277 complete and 0 interrupted iterations
+default   [  16% ] 013/100 VUs  1m16.9s/8m00.0s
+
+running (1m17.9s), 013/100 VUs, 283 complete and 0 interrupted iterations
+default   [  16% ] 013/100 VUs  1m17.9s/8m00.0s
+
+running (1m18.9s), 014/100 VUs, 293 complete and 0 interrupted iterations
+default   [  16% ] 014/100 VUs  1m18.9s/8m00.0s
+
+running (1m20.0s), 014/100 VUs, 296 complete and 0 interrupted iterations
+default   [  17% ] 014/100 VUs  1m20.0s/8m00.0s
+
+running (1m21.0s), 014/100 VUs, 301 complete and 0 interrupted iterations
+default   [  17% ] 014/100 VUs  1m21.0s/8m00.0s
+
+running (1m21.9s), 014/100 VUs, 309 complete and 0 interrupted iterations
+default   [  17% ] 014/100 VUs  1m21.9s/8m00.0s
+
+running (1m22.9s), 015/100 VUs, 311 complete and 0 interrupted iterations
+default   [  17% ] 015/100 VUs  1m22.9s/8m00.0s
+
+running (1m23.9s), 015/100 VUs, 311 complete and 0 interrupted iterations
+default   [  17% ] 015/100 VUs  1m23.9s/8m00.0s
+
+running (1m24.9s), 015/100 VUs, 327 complete and 0 interrupted iterations
+default   [  18% ] 015/100 VUs  1m24.9s/8m00.0s
+
+running (1m25.9s), 015/100 VUs, 331 complete and 0 interrupted iterations
+default   [  18% ] 015/100 VUs  1m25.9s/8m00.0s
+
+running (1m26.9s), 015/100 VUs, 340 complete and 0 interrupted iterations
+default   [  18% ] 015/100 VUs  1m26.9s/8m00.0s
+
+running (1m28.0s), 016/100 VUs, 346 complete and 0 interrupted iterations
+default   [  18% ] 016/100 VUs  1m28.0s/8m00.0s
+
+running (1m28.9s), 016/100 VUs, 347 complete and 0 interrupted iterations
+default   [  19% ] 016/100 VUs  1m28.9s/8m00.0s
+
+running (1m29.9s), 016/100 VUs, 356 complete and 0 interrupted iterations
+default   [  19% ] 016/100 VUs  1m29.9s/8m00.0s
+
+running (1m31.0s), 016/100 VUs, 359 complete and 0 interrupted iterations
+default   [  19% ] 016/100 VUs  1m31.0s/8m00.0s
+
+running (1m31.9s), 017/100 VUs, 363 complete and 0 interrupted iterations
+default   [  19% ] 017/100 VUs  1m31.9s/8m00.0s
+
+running (1m32.9s), 017/100 VUs, 371 complete and 0 interrupted iterations
+default   [  19% ] 017/100 VUs  1m32.9s/8m00.0s
+
+running (1m34.0s), 017/100 VUs, 375 complete and 0 interrupted iterations
+default   [  20% ] 017/100 VUs  1m34.0s/8m00.0s
+
+running (1m34.9s), 017/100 VUs, 379 complete and 0 interrupted iterations
+default   [  20% ] 017/100 VUs  1m34.9s/8m00.0s
+
+running (1m35.9s), 017/100 VUs, 380 complete and 0 interrupted iterations
+default   [  20% ] 017/100 VUs  1m35.9s/8m00.0s
+
+running (1m36.9s), 018/100 VUs, 396 complete and 0 interrupted iterations
+default   [  20% ] 018/100 VUs  1m36.9s/8m00.0s
+
+running (1m38.0s), 018/100 VUs, 401 complete and 0 interrupted iterations
+default   [  20% ] 018/100 VUs  1m38.0s/8m00.0s
+
+running (1m38.9s), 018/100 VUs, 406 complete and 0 interrupted iterations
+default   [  21% ] 018/100 VUs  1m38.9s/8m00.0s
+
+running (1m39.9s), 018/100 VUs, 414 complete and 0 interrupted iterations
+default   [  21% ] 018/100 VUs  1m39.9s/8m00.0s
+
+running (1m40.9s), 019/100 VUs, 420 complete and 0 interrupted iterations
+default   [  21% ] 019/100 VUs  1m40.9s/8m00.0s
+
+running (1m42.0s), 019/100 VUs, 430 complete and 0 interrupted iterations
+default   [  21% ] 019/100 VUs  1m42.0s/8m00.0s
+
+running (1m42.9s), 019/100 VUs, 432 complete and 0 interrupted iterations
+default   [  21% ] 019/100 VUs  1m42.9s/8m00.0s
+
+running (1m43.9s), 019/100 VUs, 432 complete and 0 interrupted iterations
+default   [  22% ] 019/100 VUs  1m43.9s/8m00.0s
+
+running (1m45.0s), 019/100 VUs, 438 complete and 0 interrupted iterations
+default   [  22% ] 019/100 VUs  1m45.0s/8m00.0s
+
+running (1m46.0s), 020/100 VUs, 449 complete and 0 interrupted iterations
+default   [  22% ] 020/100 VUs  1m46.0s/8m00.0s
+
+running (1m46.9s), 020/100 VUs, 451 complete and 0 interrupted iterations
+default   [  22% ] 020/100 VUs  1m46.9s/8m00.0s
+
+running (1m47.9s), 020/100 VUs, 451 complete and 0 interrupted iterations
+default   [  22% ] 020/100 VUs  1m47.9s/8m00.0s
+
+running (1m48.9s), 020/100 VUs, 463 complete and 0 interrupted iterations
+default   [  23% ] 020/100 VUs  1m48.9s/8m00.0s
+
+running (1m50.0s), 021/100 VUs, 476 complete and 0 interrupted iterations
+default   [  23% ] 021/100 VUs  1m50.0s/8m00.0s
+
+running (1m50.9s), 021/100 VUs, 488 complete and 0 interrupted iterations
+default   [  23% ] 021/100 VUs  1m50.9s/8m00.0s
+
+running (1m52.0s), 021/100 VUs, 504 complete and 0 interrupted iterations
+default   [  23% ] 021/100 VUs  1m52.0s/8m00.0s
+
+running (1m53.0s), 021/100 VUs, 508 complete and 0 interrupted iterations
+default   [  24% ] 021/100 VUs  1m53.0s/8m00.0s
+
+running (1m54.0s), 021/100 VUs, 509 complete and 0 interrupted iterations
+default   [  24% ] 021/100 VUs  1m54.0s/8m00.0s
+
+running (1m55.0s), 022/100 VUs, 513 complete and 0 interrupted iterations
+default   [  24% ] 022/100 VUs  1m55.0s/8m00.0s
+
+running (1m56.0s), 022/100 VUs, 513 complete and 0 interrupted iterations
+default   [  24% ] 022/100 VUs  1m56.0s/8m00.0s
+
+running (1m57.0s), 022/100 VUs, 518 complete and 0 interrupted iterations
+default   [  24% ] 022/100 VUs  1m57.0s/8m00.0s
+
+running (1m57.9s), 022/100 VUs, 518 complete and 0 interrupted iterations
+default   [  25% ] 022/100 VUs  1m57.9s/8m00.0s
+
+running (1m59.1s), 023/100 VUs, 518 complete and 0 interrupted iterations
+default   [  25% ] 023/100 VUs  1m59.1s/8m00.0s
+
+running (1m59.9s), 023/100 VUs, 519 complete and 0 interrupted iterations
+default   [  25% ] 023/100 VUs  1m59.9s/8m00.0s
+
+running (2m00.9s), 023/100 VUs, 519 complete and 0 interrupted iterations
+default   [  25% ] 023/100 VUs  2m00.9s/8m00.0s
+
+running (2m01.9s), 023/100 VUs, 520 complete and 0 interrupted iterations
+default   [  25% ] 023/100 VUs  2m01.9s/8m00.0s
+
+running (2m03.0s), 023/100 VUs, 528 complete and 0 interrupted iterations
+default   [  26% ] 023/100 VUs  2m03.0s/8m00.0s
+
+running (2m03.9s), 024/100 VUs, 530 complete and 0 interrupted iterations
+default   [  26% ] 024/100 VUs  2m03.9s/8m00.0s
+
+running (2m04.9s), 024/100 VUs, 534 complete and 0 interrupted iterations
+default   [  26% ] 024/100 VUs  2m04.9s/8m00.0s
+
+running (2m05.9s), 024/100 VUs, 539 complete and 0 interrupted iterations
+default   [  26% ] 024/100 VUs  2m05.9s/8m00.0s
+
+running (2m06.9s), 024/100 VUs, 542 complete and 0 interrupted iterations
+default   [  26% ] 024/100 VUs  2m06.9s/8m00.0s
+
+running (2m07.9s), 025/100 VUs, 550 complete and 0 interrupted iterations
+default   [  27% ] 025/100 VUs  2m07.9s/8m00.0s
+
+running (2m08.9s), 025/100 VUs, 551 complete and 0 interrupted iterations
+default   [  27% ] 025/100 VUs  2m08.9s/8m00.0s
+
+running (2m09.9s), 025/100 VUs, 557 complete and 0 interrupted iterations
+default   [  27% ] 025/100 VUs  2m09.9s/8m00.0s
+
+running (2m11.0s), 025/100 VUs, 563 complete and 0 interrupted iterations
+default   [  27% ] 025/100 VUs  2m11.0s/8m00.0s
+
+running (2m11.9s), 025/100 VUs, 563 complete and 0 interrupted iterations
+default   [  27% ] 025/100 VUs  2m11.9s/8m00.0s
+
+running (2m13.0s), 026/100 VUs, 563 complete and 0 interrupted iterations
+default   [  28% ] 026/100 VUs  2m13.0s/8m00.0s
+
+running (2m14.0s), 026/100 VUs, 564 complete and 0 interrupted iterations
+default   [  28% ] 026/100 VUs  2m14.0s/8m00.0s
+
+running (2m15.0s), 026/100 VUs, 572 complete and 0 interrupted iterations
+default   [  28% ] 026/100 VUs  2m15.0s/8m00.0s
+
+running (2m15.9s), 026/100 VUs, 579 complete and 0 interrupted iterations
+default   [  28% ] 026/100 VUs  2m15.9s/8m00.0s
+
+running (2m17.0s), 027/100 VUs, 586 complete and 0 interrupted iterations
+default   [  29% ] 027/100 VUs  2m17.0s/8m00.0s
+
+running (2m18.0s), 027/100 VUs, 588 complete and 0 interrupted iterations
+default   [  29% ] 027/100 VUs  2m18.0s/8m00.0s
+
+running (2m18.9s), 027/100 VUs, 592 complete and 0 interrupted iterations
+default   [  29% ] 027/100 VUs  2m18.9s/8m00.0s
+
+running (2m19.9s), 027/100 VUs, 598 complete and 0 interrupted iterations
+default   [  29% ] 027/100 VUs  2m19.9s/8m00.0s
+
+running (2m21.0s), 027/100 VUs, 607 complete and 0 interrupted iterations
+default   [  29% ] 027/100 VUs  2m21.0s/8m00.0s
+
+running (2m21.9s), 028/100 VUs, 611 complete and 0 interrupted iterations
+default   [  30% ] 028/100 VUs  2m21.9s/8m00.0s
+
+running (2m23.0s), 028/100 VUs, 614 complete and 0 interrupted iterations
+default   [  30% ] 028/100 VUs  2m23.0s/8m00.0s
+
+running (2m23.9s), 028/100 VUs, 622 complete and 0 interrupted iterations
+default   [  30% ] 028/100 VUs  2m23.9s/8m00.0s
+
+running (2m24.9s), 028/100 VUs, 627 complete and 0 interrupted iterations
+default   [  30% ] 028/100 VUs  2m24.9s/8m00.0s
+
+running (2m26.0s), 029/100 VUs, 632 complete and 0 interrupted iterations
+default   [  30% ] 029/100 VUs  2m26.0s/8m00.0s
+
+running (2m26.9s), 029/100 VUs, 638 complete and 0 interrupted iterations
+default   [  31% ] 029/100 VUs  2m26.9s/8m00.0s
+
+running (2m27.9s), 029/100 VUs, 641 complete and 0 interrupted iterations
+default   [  31% ] 029/100 VUs  2m27.9s/8m00.0s
+
+running (2m29.0s), 029/100 VUs, 647 complete and 0 interrupted iterations
+default   [  31% ] 029/100 VUs  2m29.0s/8m00.0s
+
+running (2m29.9s), 029/100 VUs, 653 complete and 0 interrupted iterations
+default   [  31% ] 029/100 VUs  2m29.9s/8m00.0s
+
+running (2m31.0s), 030/100 VUs, 665 complete and 0 interrupted iterations
+default   [  31% ] 030/100 VUs  2m31.0s/8m00.0s
+
+running (2m32.0s), 030/100 VUs, 676 complete and 0 interrupted iterations
+default   [  32% ] 030/100 VUs  2m32.0s/8m00.0s
+
+running (2m32.9s), 030/100 VUs, 681 complete and 0 interrupted iterations
+default   [  32% ] 030/100 VUs  2m32.9s/8m00.0s
+
+running (2m34.0s), 030/100 VUs, 683 complete and 0 interrupted iterations
+default   [  32% ] 030/100 VUs  2m34.0s/8m00.0s
+
+running (2m34.9s), 031/100 VUs, 689 complete and 0 interrupted iterations
+default   [  32% ] 031/100 VUs  2m34.9s/8m00.0s
+
+running (2m35.9s), 031/100 VUs, 689 complete and 0 interrupted iterations
+default   [  32% ] 031/100 VUs  2m35.9s/8m00.0s
+
+running (2m36.9s), 031/100 VUs, 692 complete and 0 interrupted iterations
+default   [  33% ] 031/100 VUs  2m36.9s/8m00.0s
+
+running (2m37.9s), 031/100 VUs, 692 complete and 0 interrupted iterations
+default   [  33% ] 031/100 VUs  2m37.9s/8m00.0s
+
+running (2m38.9s), 031/100 VUs, 696 complete and 0 interrupted iterations
+default   [  33% ] 031/100 VUs  2m38.9s/8m00.0s
+
+running (2m39.9s), 032/100 VUs, 698 complete and 0 interrupted iterations
+default   [  33% ] 032/100 VUs  2m39.9s/8m00.0s
+
+running (2m40.9s), 032/100 VUs, 704 complete and 0 interrupted iterations
+default   [  34% ] 032/100 VUs  2m40.9s/8m00.0s
+
+running (2m41.9s), 032/100 VUs, 706 complete and 0 interrupted iterations
+default   [  34% ] 032/100 VUs  2m41.9s/8m00.0s
+
+running (2m42.9s), 032/100 VUs, 713 complete and 0 interrupted iterations
+default   [  34% ] 032/100 VUs  2m42.9s/8m00.0s
+
+running (2m43.9s), 033/100 VUs, 713 complete and 0 interrupted iterations
+default   [  34% ] 033/100 VUs  2m43.9s/8m00.0s
+
+running (2m45.0s), 033/100 VUs, 714 complete and 0 interrupted iterations
+default   [  34% ] 033/100 VUs  2m45.0s/8m00.0s
+
+running (2m45.9s), 033/100 VUs, 718 complete and 0 interrupted iterations
+default   [  35% ] 033/100 VUs  2m45.9s/8m00.0s
+
+running (2m46.9s), 033/100 VUs, 719 complete and 0 interrupted iterations
+default   [  35% ] 033/100 VUs  2m46.9s/8m00.0s
+
+running (2m48.0s), 033/100 VUs, 719 complete and 0 interrupted iterations
+default   [  35% ] 033/100 VUs  2m48.0s/8m00.0s
+
+running (2m48.9s), 034/100 VUs, 721 complete and 0 interrupted iterations
+default   [  35% ] 034/100 VUs  2m48.9s/8m00.0s
+
+running (2m49.9s), 034/100 VUs, 723 complete and 0 interrupted iterations
+default   [  35% ] 034/100 VUs  2m49.9s/8m00.0s
+
+running (2m50.9s), 034/100 VUs, 737 complete and 0 interrupted iterations
+default   [  36% ] 034/100 VUs  2m50.9s/8m00.0s
+
+running (2m51.9s), 034/100 VUs, 745 complete and 0 interrupted iterations
+default   [  36% ] 034/100 VUs  2m51.9s/8m00.0s
+
+running (2m53.0s), 035/100 VUs, 745 complete and 0 interrupted iterations
+default   [  36% ] 035/100 VUs  2m53.0s/8m00.0s
+
+running (2m53.9s), 035/100 VUs, 752 complete and 0 interrupted iterations
+default   [  36% ] 035/100 VUs  2m53.9s/8m00.0s
+
+running (2m54.9s), 035/100 VUs, 752 complete and 0 interrupted iterations
+default   [  36% ] 035/100 VUs  2m54.9s/8m00.0s
+
+running (2m55.9s), 035/100 VUs, 756 complete and 0 interrupted iterations
+default   [  37% ] 035/100 VUs  2m55.9s/8m00.0s
+
+running (2m56.9s), 035/100 VUs, 756 complete and 0 interrupted iterations
+default   [  37% ] 035/100 VUs  2m56.9s/8m00.0s
+
+running (2m57.9s), 036/100 VUs, 756 complete and 0 interrupted iterations
+default   [  37% ] 036/100 VUs  2m57.9s/8m00.0s
+
+running (2m58.9s), 036/100 VUs, 756 complete and 0 interrupted iterations
+default   [  37% ] 036/100 VUs  2m58.9s/8m00.0s
+
+running (2m59.9s), 036/100 VUs, 760 complete and 0 interrupted iterations
+default   [  37% ] 036/100 VUs  2m59.9s/8m00.0s
+
+running (3m00.9s), 036/100 VUs, 769 complete and 0 interrupted iterations
+default   [  38% ] 036/100 VUs  3m00.9s/8m00.0s
+
+running (3m01.9s), 037/100 VUs, 771 complete and 0 interrupted iterations
+default   [  38% ] 037/100 VUs  3m01.9s/8m00.0s
+
+running (3m02.9s), 037/100 VUs, 779 complete and 0 interrupted iterations
+default   [  38% ] 037/100 VUs  3m02.9s/8m00.0s
+
+running (3m04.0s), 037/100 VUs, 783 complete and 0 interrupted iterations
+default   [  38% ] 037/100 VUs  3m04.0s/8m00.0s
+
+running (3m04.9s), 037/100 VUs, 787 complete and 0 interrupted iterations
+default   [  39% ] 037/100 VUs  3m04.9s/8m00.0s
+
+running (3m05.9s), 037/100 VUs, 791 complete and 0 interrupted iterations
+default   [  39% ] 037/100 VUs  3m05.9s/8m00.0s
+
+running (3m07.0s), 038/100 VUs, 795 complete and 0 interrupted iterations
+default   [  39% ] 038/100 VUs  3m07.0s/8m00.0s
+
+running (3m07.9s), 038/100 VUs, 800 complete and 0 interrupted iterations
+default   [  39% ] 038/100 VUs  3m07.9s/8m00.0s
+
+running (3m08.9s), 038/100 VUs, 800 complete and 0 interrupted iterations
+default   [  39% ] 038/100 VUs  3m08.9s/8m00.0s
+
+running (3m10.0s), 038/100 VUs, 805 complete and 0 interrupted iterations
+default   [  40% ] 038/100 VUs  3m10.0s/8m00.0s
+
+running (3m10.9s), 039/100 VUs, 814 complete and 0 interrupted iterations
+default   [  40% ] 039/100 VUs  3m10.9s/8m00.0s
+
+running (3m11.9s), 039/100 VUs, 815 complete and 0 interrupted iterations
+default   [  40% ] 039/100 VUs  3m11.9s/8m00.0s
+
+running (3m12.9s), 039/100 VUs, 824 complete and 0 interrupted iterations
+default   [  40% ] 039/100 VUs  3m12.9s/8m00.0s
+
+running (3m13.9s), 039/100 VUs, 824 complete and 0 interrupted iterations
+default   [  40% ] 039/100 VUs  3m13.9s/8m00.0s
+
+running (3m14.9s), 039/100 VUs, 824 complete and 0 interrupted iterations
+default   [  41% ] 039/100 VUs  3m14.9s/8m00.0s
+
+running (3m16.0s), 040/100 VUs, 824 complete and 0 interrupted iterations
+default   [  41% ] 040/100 VUs  3m16.0s/8m00.0s
+time="2026-04-07T12:54:38+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:54:38+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=10" source=console
+
+running (3m16.9s), 040/100 VUs, 824 complete and 0 interrupted iterations
+default   [  41% ] 040/100 VUs  3m16.9s/8m00.0s
+
+running (3m17.9s), 040/100 VUs, 825 complete and 0 interrupted iterations
+default   [  41% ] 040/100 VUs  3m17.9s/8m00.0s
+
+running (3m18.9s), 040/100 VUs, 825 complete and 0 interrupted iterations
+default   [  41% ] 040/100 VUs  3m18.9s/8m00.0s
+
+running (3m19.9s), 041/100 VUs, 832 complete and 0 interrupted iterations
+default   [  42% ] 041/100 VUs  3m19.9s/8m00.0s
+
+running (3m20.9s), 041/100 VUs, 839 complete and 0 interrupted iterations
+default   [  42% ] 041/100 VUs  3m20.9s/8m00.0s
+
+running (3m21.9s), 041/100 VUs, 844 complete and 0 interrupted iterations
+default   [  42% ] 041/100 VUs  3m21.9s/8m00.0s
+
+running (3m22.9s), 041/100 VUs, 850 complete and 0 interrupted iterations
+default   [  42% ] 041/100 VUs  3m22.9s/8m00.0s
+
+running (3m23.9s), 041/100 VUs, 861 complete and 0 interrupted iterations
+default   [  42% ] 041/100 VUs  3m23.9s/8m00.0s
+
+running (3m24.9s), 042/100 VUs, 862 complete and 0 interrupted iterations
+default   [  43% ] 042/100 VUs  3m24.9s/8m00.0s
+
+running (3m25.9s), 042/100 VUs, 863 complete and 0 interrupted iterations
+default   [  43% ] 042/100 VUs  3m25.9s/8m00.0s
+
+running (3m26.9s), 042/100 VUs, 863 complete and 0 interrupted iterations
+default   [  43% ] 042/100 VUs  3m26.9s/8m00.0s
+
+running (3m27.9s), 042/100 VUs, 863 complete and 0 interrupted iterations
+default   [  43% ] 042/100 VUs  3m27.9s/8m00.0s
+
+running (3m28.9s), 043/100 VUs, 863 complete and 0 interrupted iterations
+default   [  44% ] 043/100 VUs  3m28.9s/8m00.0s
+
+running (3m29.9s), 043/100 VUs, 868 complete and 0 interrupted iterations
+default   [  44% ] 043/100 VUs  3m29.9s/8m00.0s
+
+running (3m30.9s), 043/100 VUs, 873 complete and 0 interrupted iterations
+default   [  44% ] 043/100 VUs  3m30.9s/8m00.0s
+
+running (3m31.9s), 043/100 VUs, 873 complete and 0 interrupted iterations
+default   [  44% ] 043/100 VUs  3m31.9s/8m00.0s
+
+running (3m32.9s), 043/100 VUs, 873 complete and 0 interrupted iterations
+default   [  44% ] 043/100 VUs  3m32.9s/8m00.0s
+
+running (3m33.9s), 044/100 VUs, 873 complete and 0 interrupted iterations
+default   [  45% ] 044/100 VUs  3m33.9s/8m00.0s
+
+running (3m34.9s), 044/100 VUs, 876 complete and 0 interrupted iterations
+default   [  45% ] 044/100 VUs  3m34.9s/8m00.0s
+
+running (3m35.9s), 044/100 VUs, 882 complete and 0 interrupted iterations
+default   [  45% ] 044/100 VUs  3m35.9s/8m00.0s
+
+running (3m36.9s), 044/100 VUs, 884 complete and 0 interrupted iterations
+default   [  45% ] 044/100 VUs  3m36.9s/8m00.0s
+
+running (3m37.9s), 045/100 VUs, 885 complete and 0 interrupted iterations
+default   [  45% ] 045/100 VUs  3m37.9s/8m00.0s
+
+running (3m38.9s), 045/100 VUs, 891 complete and 0 interrupted iterations
+default   [  46% ] 045/100 VUs  3m38.9s/8m00.0s
+
+running (3m39.9s), 045/100 VUs, 896 complete and 0 interrupted iterations
+default   [  46% ] 045/100 VUs  3m39.9s/8m00.0s
+
+running (3m40.9s), 045/100 VUs, 903 complete and 0 interrupted iterations
+default   [  46% ] 045/100 VUs  3m40.9s/8m00.0s
+
+running (3m41.9s), 045/100 VUs, 903 complete and 0 interrupted iterations
+default   [  46% ] 045/100 VUs  3m41.9s/8m00.0s
+
+running (3m42.9s), 046/100 VUs, 903 complete and 0 interrupted iterations
+default   [  46% ] 046/100 VUs  3m42.9s/8m00.0s
+
+running (3m43.9s), 046/100 VUs, 903 complete and 0 interrupted iterations
+default   [  47% ] 046/100 VUs  3m43.9s/8m00.0s
+
+running (3m44.9s), 046/100 VUs, 906 complete and 0 interrupted iterations
+default   [  47% ] 046/100 VUs  3m44.9s/8m00.0s
+
+running (3m45.9s), 046/100 VUs, 907 complete and 0 interrupted iterations
+default   [  47% ] 046/100 VUs  3m45.9s/8m00.0s
+
+running (3m46.9s), 047/100 VUs, 916 complete and 0 interrupted iterations
+default   [  47% ] 047/100 VUs  3m46.9s/8m00.0s
+
+running (3m47.9s), 047/100 VUs, 940 complete and 0 interrupted iterations
+default   [  47% ] 047/100 VUs  3m47.9s/8m00.0s
+
+running (3m48.9s), 047/100 VUs, 947 complete and 0 interrupted iterations
+default   [  48% ] 047/100 VUs  3m48.9s/8m00.0s
+
+running (3m49.9s), 047/100 VUs, 950 complete and 0 interrupted iterations
+default   [  48% ] 047/100 VUs  3m49.9s/8m00.0s
+
+running (3m50.9s), 047/100 VUs, 950 complete and 0 interrupted iterations
+default   [  48% ] 047/100 VUs  3m50.9s/8m00.0s
+
+running (3m51.9s), 048/100 VUs, 961 complete and 0 interrupted iterations
+default   [  48% ] 048/100 VUs  3m51.9s/8m00.0s
+
+running (3m52.9s), 048/100 VUs, 962 complete and 0 interrupted iterations
+default   [  49% ] 048/100 VUs  3m52.9s/8m00.0s
+
+running (3m53.9s), 048/100 VUs, 962 complete and 0 interrupted iterations
+default   [  49% ] 048/100 VUs  3m53.9s/8m00.0s
+
+running (3m54.9s), 048/100 VUs, 962 complete and 0 interrupted iterations
+default   [  49% ] 048/100 VUs  3m54.9s/8m00.0s
+
+running (3m55.9s), 049/100 VUs, 962 complete and 0 interrupted iterations
+default   [  49% ] 049/100 VUs  3m55.9s/8m00.0s
+
+running (3m56.9s), 049/100 VUs, 962 complete and 0 interrupted iterations
+default   [  49% ] 049/100 VUs  3m56.9s/8m00.0s
+
+running (3m58.0s), 049/100 VUs, 972 complete and 0 interrupted iterations
+default   [  50% ] 049/100 VUs  3m58.0s/8m00.0s
+
+running (3m58.9s), 049/100 VUs, 981 complete and 0 interrupted iterations
+default   [  50% ] 049/100 VUs  3m58.9s/8m00.0s
+
+running (3m59.9s), 049/100 VUs, 989 complete and 0 interrupted iterations
+default   [  50% ] 049/100 VUs  3m59.9s/8m00.0s
+
+running (4m00.9s), 050/100 VUs, 989 complete and 0 interrupted iterations
+default   [  50% ] 050/100 VUs  4m00.9s/8m00.0s
+
+running (4m02.0s), 050/100 VUs, 989 complete and 0 interrupted iterations
+default   [  50% ] 050/100 VUs  4m02.0s/8m00.0s
+
+running (4m02.9s), 050/100 VUs, 997 complete and 0 interrupted iterations
+default   [  51% ] 050/100 VUs  4m02.9s/8m00.0s
+
+running (4m03.9s), 051/100 VUs, 997 complete and 0 interrupted iterations
+default   [  51% ] 051/100 VUs  4m03.9s/8m00.0s
+
+running (4m04.9s), 051/100 VUs, 997 complete and 0 interrupted iterations
+default   [  51% ] 051/100 VUs  4m04.9s/8m00.0s
+
+running (4m05.9s), 051/100 VUs, 997 complete and 0 interrupted iterations
+default   [  51% ] 051/100 VUs  4m05.9s/8m00.0s
+
+running (4m07.0s), 051/100 VUs, 997 complete and 0 interrupted iterations
+default   [  51% ] 051/100 VUs  4m07.0s/8m00.0s
+
+running (4m08.0s), 052/100 VUs, 997 complete and 0 interrupted iterations
+default   [  52% ] 052/100 VUs  4m08.0s/8m00.0s
+
+running (4m08.9s), 052/100 VUs, 997 complete and 0 interrupted iterations
+default   [  52% ] 052/100 VUs  4m08.9s/8m00.0s
+
+running (4m10.0s), 052/100 VUs, 997 complete and 0 interrupted iterations
+default   [  52% ] 052/100 VUs  4m10.0s/8m00.0s
+
+running (4m11.0s), 053/100 VUs, 997 complete and 0 interrupted iterations
+default   [  52% ] 053/100 VUs  4m11.0s/8m00.0s
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=24" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=3" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=14" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=5" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=47" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=6" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=3" source=console
+time="2026-04-07T12:55:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": EOF"
+time="2026-04-07T12:55:32+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=18" source=console
+
+running (4m11.9s), 053/100 VUs, 998 complete and 0 interrupted iterations
+default   [  52% ] 053/100 VUs  4m11.9s/8m00.0s
+
+running (4m12.9s), 053/100 VUs, 1016 complete and 0 interrupted iterations
+default   [  53% ] 053/100 VUs  4m12.9s/8m00.0s
+
+running (4m13.9s), 053/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  53% ] 053/100 VUs  4m13.9s/8m00.0s
+
+running (4m14.9s), 054/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  53% ] 054/100 VUs  4m14.9s/8m00.0s
+
+running (4m15.9s), 054/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  53% ] 054/100 VUs  4m15.9s/8m00.0s
+
+running (4m16.9s), 054/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  54% ] 054/100 VUs  4m16.9s/8m00.0s
+
+running (4m17.9s), 054/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  54% ] 054/100 VUs  4m17.9s/8m00.0s
+
+running (4m18.9s), 055/100 VUs, 1017 complete and 0 interrupted iterations
+default   [  54% ] 055/100 VUs  4m18.9s/8m00.0s
+
+running (4m20.0s), 055/100 VUs, 1022 complete and 0 interrupted iterations
+default   [  54% ] 055/100 VUs  4m20.0s/8m00.0s
+
+running (4m20.9s), 055/100 VUs, 1022 complete and 0 interrupted iterations
+default   [  54% ] 055/100 VUs  4m20.9s/8m00.0s
+time="2026-04-07T12:55:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:55:42+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=0" source=console
+
+running (4m21.9s), 056/100 VUs, 1022 complete and 0 interrupted iterations
+default   [  55% ] 056/100 VUs  4m21.9s/8m00.0s
+
+running (4m22.9s), 056/100 VUs, 1023 complete and 0 interrupted iterations
+default   [  55% ] 056/100 VUs  4m22.9s/8m00.0s
+
+running (4m23.9s), 056/100 VUs, 1024 complete and 0 interrupted iterations
+default   [  55% ] 056/100 VUs  4m23.9s/8m00.0s
+
+running (4m24.9s), 056/100 VUs, 1046 complete and 0 interrupted iterations
+default   [  55% ] 056/100 VUs  4m24.9s/8m00.0s
+
+running (4m25.9s), 057/100 VUs, 1051 complete and 0 interrupted iterations
+default   [  55% ] 057/100 VUs  4m25.9s/8m00.0s
+
+running (4m26.9s), 057/100 VUs, 1062 complete and 0 interrupted iterations
+default   [  56% ] 057/100 VUs  4m26.9s/8m00.0s
+time="2026-04-07T12:55:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:55:49+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=3" source=console
+time="2026-04-07T12:55:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:55:49+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=28" source=console
+
+running (4m27.9s), 057/100 VUs, 1066 complete and 0 interrupted iterations
+default   [  56% ] 057/100 VUs  4m27.9s/8m00.0s
+
+running (4m28.9s), 058/100 VUs, 1070 complete and 0 interrupted iterations
+default   [  56% ] 058/100 VUs  4m28.9s/8m00.0s
+
+running (4m29.9s), 058/100 VUs, 1070 complete and 0 interrupted iterations
+default   [  56% ] 058/100 VUs  4m29.9s/8m00.0s
+
+running (4m30.9s), 058/100 VUs, 1070 complete and 0 interrupted iterations
+default   [  56% ] 058/100 VUs  4m30.9s/8m00.0s
+
+running (4m31.9s), 058/100 VUs, 1070 complete and 0 interrupted iterations
+default   [  57% ] 058/100 VUs  4m31.9s/8m00.0s
+
+running (4m32.9s), 059/100 VUs, 1076 complete and 0 interrupted iterations
+default   [  57% ] 059/100 VUs  4m32.9s/8m00.0s
+
+running (4m33.9s), 059/100 VUs, 1076 complete and 0 interrupted iterations
+default   [  57% ] 059/100 VUs  4m33.9s/8m00.0s
+
+running (4m34.9s), 059/100 VUs, 1079 complete and 0 interrupted iterations
+default   [  57% ] 059/100 VUs  4m34.9s/8m00.0s
+
+running (4m35.9s), 059/100 VUs, 1114 complete and 0 interrupted iterations
+default   [  57% ] 059/100 VUs  4m35.9s/8m00.0s
+
+running (4m36.9s), 060/100 VUs, 1131 complete and 0 interrupted iterations
+default   [  58% ] 060/100 VUs  4m36.9s/8m00.0s
+
+running (4m37.9s), 060/100 VUs, 1166 complete and 0 interrupted iterations
+default   [  58% ] 060/100 VUs  4m37.9s/8m00.0s
+
+running (4m38.9s), 060/100 VUs, 1185 complete and 0 interrupted iterations
+default   [  58% ] 060/100 VUs  4m38.9s/8m00.0s
+
+running (4m39.9s), 061/100 VUs, 1185 complete and 0 interrupted iterations
+default   [  58% ] 061/100 VUs  4m39.9s/8m00.0s
+
+running (4m40.9s), 061/100 VUs, 1195 complete and 0 interrupted iterations
+default   [  59% ] 061/100 VUs  4m40.9s/8m00.0s
+
+running (4m41.9s), 061/100 VUs, 1195 complete and 0 interrupted iterations
+default   [  59% ] 061/100 VUs  4m41.9s/8m00.0s
+
+running (4m42.9s), 061/100 VUs, 1242 complete and 0 interrupted iterations
+default   [  59% ] 061/100 VUs  4m42.9s/8m00.0s
+
+running (4m43.9s), 062/100 VUs, 1256 complete and 0 interrupted iterations
+default   [  59% ] 062/100 VUs  4m43.9s/8m00.0s
+
+running (4m44.9s), 062/100 VUs, 1282 complete and 0 interrupted iterations
+default   [  59% ] 062/100 VUs  4m44.9s/8m00.0s
+
+running (4m45.9s), 062/100 VUs, 1306 complete and 0 interrupted iterations
+default   [  60% ] 062/100 VUs  4m45.9s/8m00.0s
+
+running (4m46.9s), 063/100 VUs, 1318 complete and 0 interrupted iterations
+default   [  60% ] 063/100 VUs  4m46.9s/8m00.0s
+
+running (4m47.9s), 063/100 VUs, 1344 complete and 0 interrupted iterations
+default   [  60% ] 063/100 VUs  4m47.9s/8m00.0s
+
+running (4m48.9s), 063/100 VUs, 1361 complete and 0 interrupted iterations
+default   [  60% ] 063/100 VUs  4m48.9s/8m00.0s
+
+running (4m49.9s), 063/100 VUs, 1367 complete and 0 interrupted iterations
+default   [  60% ] 063/100 VUs  4m49.9s/8m00.0s
+
+running (4m50.9s), 064/100 VUs, 1369 complete and 0 interrupted iterations
+default   [  61% ] 064/100 VUs  4m50.9s/8m00.0s
+
+running (4m51.9s), 064/100 VUs, 1369 complete and 0 interrupted iterations
+default   [  61% ] 064/100 VUs  4m51.9s/8m00.0s
+
+running (4m52.9s), 064/100 VUs, 1380 complete and 0 interrupted iterations
+default   [  61% ] 064/100 VUs  4m52.9s/8m00.0s
+
+running (4m53.9s), 064/100 VUs, 1381 complete and 0 interrupted iterations
+default   [  61% ] 064/100 VUs  4m53.9s/8m00.0s
+
+running (4m54.9s), 065/100 VUs, 1405 complete and 0 interrupted iterations
+default   [  61% ] 065/100 VUs  4m54.9s/8m00.0s
+
+running (4m55.9s), 065/100 VUs, 1406 complete and 0 interrupted iterations
+default   [  62% ] 065/100 VUs  4m55.9s/8m00.0s
+
+running (4m56.9s), 065/100 VUs, 1406 complete and 0 interrupted iterations
+default   [  62% ] 065/100 VUs  4m56.9s/8m00.0s
+
+running (4m57.9s), 066/100 VUs, 1408 complete and 0 interrupted iterations
+default   [  62% ] 066/100 VUs  4m57.9s/8m00.0s
+
+running (4m58.9s), 066/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  62% ] 066/100 VUs  4m58.9s/8m00.0s
+
+running (4m59.9s), 066/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  62% ] 066/100 VUs  4m59.9s/8m00.0s
+
+running (5m00.9s), 066/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  63% ] 066/100 VUs  5m00.9s/8m00.0s
+
+running (5m01.9s), 067/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  63% ] 067/100 VUs  5m01.9s/8m00.0s
+
+running (5m02.9s), 067/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  63% ] 067/100 VUs  5m02.9s/8m00.0s
+
+running (5m03.9s), 067/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  63% ] 067/100 VUs  5m03.9s/8m00.0s
+
+running (5m05.0s), 068/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  64% ] 068/100 VUs  5m05.0s/8m00.0s
+
+running (5m05.9s), 068/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  64% ] 068/100 VUs  5m05.9s/8m00.0s
+
+running (5m06.9s), 068/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  64% ] 068/100 VUs  5m06.9s/8m00.0s
+
+running (5m07.9s), 068/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  64% ] 068/100 VUs  5m07.9s/8m00.0s
+
+running (5m08.9s), 069/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  64% ] 069/100 VUs  5m08.9s/8m00.0s
+
+running (5m09.9s), 069/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  65% ] 069/100 VUs  5m09.9s/8m00.0s
+
+running (5m10.9s), 069/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  65% ] 069/100 VUs  5m10.9s/8m00.0s
+
+running (5m11.9s), 069/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  65% ] 069/100 VUs  5m11.9s/8m00.0s
+
+running (5m12.9s), 070/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  65% ] 070/100 VUs  5m12.9s/8m00.0s
+
+running (5m13.9s), 070/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  65% ] 070/100 VUs  5m13.9s/8m00.0s
+
+running (5m14.9s), 070/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  66% ] 070/100 VUs  5m14.9s/8m00.0s
+
+running (5m15.9s), 071/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  66% ] 071/100 VUs  5m15.9s/8m00.0s
+
+running (5m17.0s), 071/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  66% ] 071/100 VUs  5m17.0s/8m00.0s
+time="2026-04-07T12:56:39+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:39+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=10" source=console
+
+running (5m17.9s), 071/100 VUs, 1413 complete and 0 interrupted iterations
+default   [  66% ] 071/100 VUs  5m17.9s/8m00.0s
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=13" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=25" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=6" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=5" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=8" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=31" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=18" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=17" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=13" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=23" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=5" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=6" source=console
+
+running (5m18.9s), 071/100 VUs, 1414 complete and 0 interrupted iterations
+default   [  66% ] 071/100 VUs  5m18.9s/8m00.0s
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=5" source=console
+time="2026-04-07T12:56:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:40+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=74" source=console
+time="2026-04-07T12:56:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:41+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=20" source=console
+time="2026-04-07T12:56:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:41+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=4" source=console
+
+running (5m19.9s), 072/100 VUs, 1426 complete and 0 interrupted iterations
+default   [  67% ] 072/100 VUs  5m19.9s/8m00.0s
+time="2026-04-07T12:56:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:41+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=8" source=console
+time="2026-04-07T12:56:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:42+01:00" level=error msg="RESERVE TIMEOUT vu=65 iter=0" source=console
+time="2026-04-07T12:56:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:42+01:00" level=error msg="RESERVE TIMEOUT vu=62 iter=3" source=console
+
+running (5m20.9s), 072/100 VUs, 1430 complete and 0 interrupted iterations
+default   [  67% ] 072/100 VUs  5m20.9s/8m00.0s
+
+running (5m21.9s), 072/100 VUs, 1433 complete and 0 interrupted iterations
+default   [  67% ] 072/100 VUs  5m21.9s/8m00.0s
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=6" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=19 iter=5" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=55 iter=5" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=34" source=console
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=9" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=43" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=45" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=43" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=63 iter=2" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=12" source=console
+time="2026-04-07T12:56:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:44+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=7" source=console
+
+running (5m23.0s), 073/100 VUs, 1433 complete and 0 interrupted iterations
+default   [  67% ] 073/100 VUs  5m23.0s/8m00.0s
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=57" source=console
+
+running (5m23.9s), 073/100 VUs, 1444 complete and 0 interrupted iterations
+default   [  67% ] 073/100 VUs  5m23.9s/8m00.0s
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=13" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=61 iter=0" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=15" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=29" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=14" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=18" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=19" source=console
+time="2026-04-07T12:56:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:45+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=15" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=7" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=52" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=28" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=40" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=11" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=60 iter=7" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=11" source=console
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=33" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=62" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=70" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=17" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=9" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=78" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=26" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=64 iter=1" source=console
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=38" source=console
+time="2026-04-07T12:56:46+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=7" source=console
+
+running (5m25.0s), 073/100 VUs, 1445 complete and 0 interrupted iterations
+default   [  68% ] 073/100 VUs  5m25.0s/8m00.0s
+time="2026-04-07T12:56:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:47+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=13" source=console
+
+running (5m26.0s), 073/100 VUs, 1470 complete and 0 interrupted iterations
+default   [  68% ] 073/100 VUs  5m26.0s/8m00.0s
+
+running (5m26.9s), 074/100 VUs, 1471 complete and 0 interrupted iterations
+default   [  68% ] 074/100 VUs  5m26.9s/8m00.0s
+time="2026-04-07T12:56:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:49+01:00" level=error msg="RESERVE TIMEOUT vu=66 iter=0" source=console
+time="2026-04-07T12:56:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:49+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=90" source=console
+time="2026-04-07T12:56:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:49+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=55" source=console
+
+running (5m27.9s), 074/100 VUs, 1471 complete and 0 interrupted iterations
+default   [  68% ] 074/100 VUs  5m27.9s/8m00.0s
+time="2026-04-07T12:56:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:49+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=11" source=console
+time="2026-04-07T12:56:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:50+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=22" source=console
+time="2026-04-07T12:56:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:50+01:00" level=error msg="RESERVE TIMEOUT vu=11 iter=8" source=console
+time="2026-04-07T12:56:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:50+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=21" source=console
+time="2026-04-07T12:56:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:50+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=11" source=console
+
+running (5m28.9s), 074/100 VUs, 1474 complete and 0 interrupted iterations
+default   [  69% ] 074/100 VUs  5m28.9s/8m00.0s
+
+running (5m29.9s), 074/100 VUs, 1479 complete and 0 interrupted iterations
+default   [  69% ] 074/100 VUs  5m29.9s/8m00.0s
+
+running (5m30.9s), 075/100 VUs, 1479 complete and 0 interrupted iterations
+default   [  69% ] 075/100 VUs  5m30.9s/8m00.0s
+time="2026-04-07T12:56:53+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:53+01:00" level=error msg="RESERVE TIMEOUT vu=68 iter=0" source=console
+
+running (5m31.9s), 075/100 VUs, 1479 complete and 0 interrupted iterations
+default   [  69% ] 075/100 VUs  5m31.9s/8m00.0s
+
+running (5m32.9s), 075/100 VUs, 1480 complete and 0 interrupted iterations
+default   [  69% ] 075/100 VUs  5m32.9s/8m00.0s
+
+running (5m33.9s), 076/100 VUs, 1480 complete and 0 interrupted iterations
+default   [  70% ] 076/100 VUs  5m33.9s/8m00.0s
+time="2026-04-07T12:56:56+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:56:56+01:00" level=error msg="RESERVE TIMEOUT vu=69 iter=0" source=console
+
+running (5m34.9s), 076/100 VUs, 1480 complete and 0 interrupted iterations
+default   [  70% ] 076/100 VUs  5m34.9s/8m00.0s
+
+running (5m35.9s), 076/100 VUs, 1481 complete and 0 interrupted iterations
+default   [  70% ] 076/100 VUs  5m35.9s/8m00.0s
+
+running (5m36.9s), 076/100 VUs, 1481 complete and 0 interrupted iterations
+default   [  70% ] 076/100 VUs  5m36.9s/8m00.0s
+
+running (5m38.0s), 077/100 VUs, 1481 complete and 0 interrupted iterations
+default   [  70% ] 077/100 VUs  5m38.0s/8m00.0s
+time="2026-04-07T12:57:00+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:00+01:00" level=error msg="RESERVE TIMEOUT vu=71 iter=0" source=console
+
+running (5m38.9s), 077/100 VUs, 1481 complete and 0 interrupted iterations
+default   [  71% ] 077/100 VUs  5m38.9s/8m00.0s
+
+running (5m39.9s), 077/100 VUs, 1482 complete and 0 interrupted iterations
+default   [  71% ] 077/100 VUs  5m39.9s/8m00.0s
+
+running (5m40.9s), 078/100 VUs, 1482 complete and 0 interrupted iterations
+default   [  71% ] 078/100 VUs  5m40.9s/8m00.0s
+
+running (5m42.0s), 078/100 VUs, 1482 complete and 0 interrupted iterations
+default   [  71% ] 078/100 VUs  5m42.0s/8m00.0s
+time="2026-04-07T12:57:03+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:03+01:00" level=error msg="RESERVE TIMEOUT vu=70 iter=0" source=console
+
+running (5m42.9s), 078/100 VUs, 1482 complete and 0 interrupted iterations
+default   [  71% ] 078/100 VUs  5m42.9s/8m00.0s
+
+running (5m43.9s), 078/100 VUs, 1483 complete and 0 interrupted iterations
+default   [  72% ] 078/100 VUs  5m43.9s/8m00.0s
+
+running (5m44.9s), 079/100 VUs, 1483 complete and 0 interrupted iterations
+default   [  72% ] 079/100 VUs  5m44.9s/8m00.0s
+time="2026-04-07T12:57:07+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:07+01:00" level=error msg="RESERVE TIMEOUT vu=67 iter=0" source=console
+
+running (5m45.9s), 079/100 VUs, 1483 complete and 0 interrupted iterations
+default   [  72% ] 079/100 VUs  5m45.9s/8m00.0s
+
+running (5m46.9s), 079/100 VUs, 1484 complete and 0 interrupted iterations
+default   [  72% ] 079/100 VUs  5m46.9s/8m00.0s
+
+running (5m47.9s), 079/100 VUs, 1484 complete and 0 interrupted iterations
+default   [  72% ] 079/100 VUs  5m47.9s/8m00.0s
+time="2026-04-07T12:57:10+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:10+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=11" source=console
+
+running (5m48.9s), 080/100 VUs, 1484 complete and 0 interrupted iterations
+default   [  73% ] 080/100 VUs  5m48.9s/8m00.0s
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=73 iter=0" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=14" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=26" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=7" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=6" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=9" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=32" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=19" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=18" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=14" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=24" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=6" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=7" source=console
+
+running (5m49.9s), 080/100 VUs, 1485 complete and 0 interrupted iterations
+default   [  73% ] 080/100 VUs  5m49.9s/8m00.0s
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=6" source=console
+time="2026-04-07T12:57:11+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:11+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=75" source=console
+time="2026-04-07T12:57:12+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:12+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=21" source=console
+time="2026-04-07T12:57:12+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:12+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=5" source=console
+
+running (5m50.9s), 080/100 VUs, 1498 complete and 0 interrupted iterations
+default   [  73% ] 080/100 VUs  5m50.9s/8m00.0s
+time="2026-04-07T12:57:12+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:12+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=9" source=console
+time="2026-04-07T12:57:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:13+01:00" level=error msg="RESERVE TIMEOUT vu=65 iter=1" source=console
+time="2026-04-07T12:57:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:13+01:00" level=error msg="RESERVE TIMEOUT vu=62 iter=4" source=console
+
+running (5m52.0s), 081/100 VUs, 1502 complete and 0 interrupted iterations
+default   [  73% ] 081/100 VUs  5m52.0s/8m00.0s
+time="2026-04-07T12:57:14+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:14+01:00" level=error msg="RESERVE TIMEOUT vu=74 iter=0" source=console
+
+running (5m53.0s), 081/100 VUs, 1505 complete and 0 interrupted iterations
+default   [  74% ] 081/100 VUs  5m53.0s/8m00.0s
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=19 iter=6" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=55 iter=6" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=7" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=10" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=35" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=44" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=46" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=44" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=63 iter=3" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=8" source=console
+time="2026-04-07T12:57:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:15+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=13" source=console
+
+running (5m53.9s), 081/100 VUs, 1506 complete and 0 interrupted iterations
+default   [  74% ] 081/100 VUs  5m53.9s/8m00.0s
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=58" source=console
+
+running (5m55.0s), 081/100 VUs, 1517 complete and 0 interrupted iterations
+default   [  74% ] 081/100 VUs  5m55.0s/8m00.0s
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=14" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=61 iter=1" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=16" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=15" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=30" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=19" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=16" source=console
+time="2026-04-07T12:57:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:16+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=20" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=8" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=53" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=29" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=41" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=12" source=console
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=34" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=12" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=63" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=60 iter=8" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=71" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=10" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=18" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=79" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=64 iter=2" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=8" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=39" source=console
+time="2026-04-07T12:57:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:17+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=27" source=console
+
+running (5m55.9s), 082/100 VUs, 1518 complete and 0 interrupted iterations
+default   [  74% ] 082/100 VUs  5m55.9s/8m00.0s
+time="2026-04-07T12:57:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:18+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=14" source=console
+time="2026-04-07T12:57:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:18+01:00" level=error msg="RESERVE TIMEOUT vu=75 iter=0" source=console
+
+running (5m57.0s), 082/100 VUs, 1543 complete and 0 interrupted iterations
+default   [  74% ] 082/100 VUs  5m57.0s/8m00.0s
+
+running (5m58.0s), 082/100 VUs, 1545 complete and 0 interrupted iterations
+default   [  75% ] 082/100 VUs  5m58.0s/8m00.0s
+time="2026-04-07T12:57:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:20+01:00" level=error msg="RESERVE TIMEOUT vu=66 iter=1" source=console
+time="2026-04-07T12:57:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:20+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=91" source=console
+time="2026-04-07T12:57:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:20+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=56" source=console
+
+running (5m59.0s), 083/100 VUs, 1545 complete and 0 interrupted iterations
+default   [  75% ] 083/100 VUs  5m59.0s/8m00.0s
+time="2026-04-07T12:57:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:20+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=12" source=console
+time="2026-04-07T12:57:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:21+01:00" level=error msg="RESERVE TIMEOUT vu=11 iter=9" source=console
+time="2026-04-07T12:57:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:21+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=23" source=console
+time="2026-04-07T12:57:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:21+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=22" source=console
+time="2026-04-07T12:57:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:21+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=12" source=console
+
+running (5m59.9s), 083/100 VUs, 1548 complete and 0 interrupted iterations
+default   [  75% ] 083/100 VUs  5m59.9s/8m00.0s
+time="2026-04-07T12:57:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:21+01:00" level=error msg="RESERVE TIMEOUT vu=72 iter=0" source=console
+
+running (6m01.0s), 083/100 VUs, 1553 complete and 0 interrupted iterations
+default   [  75% ] 083/100 VUs  6m01.0s/8m00.0s
+
+running (6m01.9s), 083/100 VUs, 1554 complete and 0 interrupted iterations
+default   [  75% ] 083/100 VUs  6m01.9s/8m00.0s
+time="2026-04-07T12:57:24+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:24+01:00" level=error msg="RESERVE TIMEOUT vu=68 iter=1" source=console
+
+running (6m02.9s), 084/100 VUs, 1554 complete and 0 interrupted iterations
+default   [  76% ] 084/100 VUs  6m02.9s/8m00.0s
+time="2026-04-07T12:57:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:25+01:00" level=error msg="RESERVE TIMEOUT vu=80 iter=0" source=console
+
+running (6m03.9s), 084/100 VUs, 1555 complete and 0 interrupted iterations
+default   [  76% ] 084/100 VUs  6m03.9s/8m00.0s
+
+running (6m04.9s), 084/100 VUs, 1556 complete and 0 interrupted iterations
+default   [  76% ] 084/100 VUs  6m04.9s/8m00.0s
+time="2026-04-07T12:57:27+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:27+01:00" level=error msg="RESERVE TIMEOUT vu=69 iter=1" source=console
+
+running (6m05.9s), 084/100 VUs, 1556 complete and 0 interrupted iterations
+default   [  76% ] 084/100 VUs  6m05.9s/8m00.0s
+
+running (6m06.9s), 085/100 VUs, 1557 complete and 0 interrupted iterations
+default   [  76% ] 085/100 VUs  6m06.9s/8m00.0s
+time="2026-04-07T12:57:29+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:29+01:00" level=error msg="RESERVE TIMEOUT vu=86 iter=0" source=console
+
+running (6m08.0s), 085/100 VUs, 1557 complete and 0 interrupted iterations
+default   [  77% ] 085/100 VUs  6m08.0s/8m00.0s
+
+running (6m08.9s), 085/100 VUs, 1558 complete and 0 interrupted iterations
+default   [  77% ] 085/100 VUs  6m08.9s/8m00.0s
+time="2026-04-07T12:57:31+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:31+01:00" level=error msg="RESERVE TIMEOUT vu=71 iter=1" source=console
+
+running (6m09.9s), 086/100 VUs, 1558 complete and 0 interrupted iterations
+default   [  77% ] 086/100 VUs  6m09.9s/8m00.0s
+time="2026-04-07T12:57:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:32+01:00" level=error msg="RESERVE TIMEOUT vu=79 iter=0" source=console
+
+running (6m10.9s), 086/100 VUs, 1559 complete and 0 interrupted iterations
+default   [  77% ] 086/100 VUs  6m10.9s/8m00.0s
+
+running (6m11.9s), 086/100 VUs, 1560 complete and 0 interrupted iterations
+default   [  77% ] 086/100 VUs  6m11.9s/8m00.0s
+
+running (6m12.9s), 086/100 VUs, 1560 complete and 0 interrupted iterations
+default   [  78% ] 086/100 VUs  6m12.9s/8m00.0s
+time="2026-04-07T12:57:34+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:34+01:00" level=error msg="RESERVE TIMEOUT vu=70 iter=1" source=console
+
+running (6m13.9s), 087/100 VUs, 1560 complete and 0 interrupted iterations
+default   [  78% ] 087/100 VUs  6m13.9s/8m00.0s
+time="2026-04-07T12:57:36+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:36+01:00" level=error msg="RESERVE TIMEOUT vu=83 iter=0" source=console
+
+running (6m14.9s), 087/100 VUs, 1561 complete and 0 interrupted iterations
+default   [  78% ] 087/100 VUs  6m14.9s/8m00.0s
+
+running (6m15.9s), 087/100 VUs, 1562 complete and 0 interrupted iterations
+default   [  78% ] 087/100 VUs  6m15.9s/8m00.0s
+time="2026-04-07T12:57:38+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:38+01:00" level=error msg="RESERVE TIMEOUT vu=67 iter=1" source=console
+
+running (6m16.9s), 088/100 VUs, 1562 complete and 0 interrupted iterations
+default   [  79% ] 088/100 VUs  6m16.9s/8m00.0s
+
+running (6m17.9s), 088/100 VUs, 1563 complete and 0 interrupted iterations
+default   [  79% ] 088/100 VUs  6m17.9s/8m00.0s
+time="2026-04-07T12:57:39+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:39+01:00" level=error msg="RESERVE TIMEOUT vu=78 iter=0" source=console
+
+running (6m18.9s), 088/100 VUs, 1563 complete and 0 interrupted iterations
+default   [  79% ] 088/100 VUs  6m18.9s/8m00.0s
+time="2026-04-07T12:57:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:41+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=12" source=console
+
+running (6m19.9s), 088/100 VUs, 1564 complete and 0 interrupted iterations
+default   [  79% ] 088/100 VUs  6m19.9s/8m00.0s
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=73 iter=1" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=15" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=27" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=8" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=7" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=10" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=33" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=20" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=19" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=15" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=25" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=8" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=7" source=console
+
+running (6m20.9s), 089/100 VUs, 1565 complete and 0 interrupted iterations
+default   [  79% ] 089/100 VUs  6m20.9s/8m00.0s
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=76" source=console
+time="2026-04-07T12:57:42+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:42+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=7" source=console
+time="2026-04-07T12:57:43+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:43+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=22" source=console
+time="2026-04-07T12:57:43+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:43+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=6" source=console
+time="2026-04-07T12:57:43+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:43+01:00" level=error msg="RESERVE TIMEOUT vu=84 iter=0" source=console
+
+running (6m21.9s), 089/100 VUs, 1578 complete and 0 interrupted iterations
+default   [  80% ] 089/100 VUs  6m21.9s/8m00.0s
+time="2026-04-07T12:57:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:44+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=10" source=console
+time="2026-04-07T12:57:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:44+01:00" level=error msg="RESERVE TIMEOUT vu=65 iter=2" source=console
+time="2026-04-07T12:57:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:44+01:00" level=error msg="RESERVE TIMEOUT vu=62 iter=5" source=console
+
+running (6m22.9s), 089/100 VUs, 1583 complete and 0 interrupted iterations
+default   [  80% ] 089/100 VUs  6m22.9s/8m00.0s
+time="2026-04-07T12:57:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:45+01:00" level=error msg="RESERVE TIMEOUT vu=74 iter=1" source=console
+
+running (6m23.9s), 089/100 VUs, 1586 complete and 0 interrupted iterations
+default   [  80% ] 089/100 VUs  6m23.9s/8m00.0s
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=55 iter=7" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=19 iter=7" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=8" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=11" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=36" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=45" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=45" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=47" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=9" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=14" source=console
+time="2026-04-07T12:57:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:46+01:00" level=error msg="RESERVE TIMEOUT vu=63 iter=4" source=console
+
+running (6m24.9s), 090/100 VUs, 1587 complete and 0 interrupted iterations
+default   [  80% ] 090/100 VUs  6m24.9s/8m00.0s
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=91 iter=0" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=59" source=console
+
+running (6m25.9s), 090/100 VUs, 1598 complete and 0 interrupted iterations
+default   [  80% ] 090/100 VUs  6m25.9s/8m00.0s
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=15" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=61 iter=2" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=31" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=17" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=16" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=20" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=17" source=console
+time="2026-04-07T12:57:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:47+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=21" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=9" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=54" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=30" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=42" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=13" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=35" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=64" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=60 iter=9" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=13" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=72" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=19" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=11" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=80" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=64 iter=3" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=9" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=40" source=console
+time="2026-04-07T12:57:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:48+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=28" source=console
+
+running (6m26.9s), 090/100 VUs, 1600 complete and 0 interrupted iterations
+default   [  81% ] 090/100 VUs  6m26.9s/8m00.0s
+time="2026-04-07T12:57:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:49+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=15" source=console
+time="2026-04-07T12:57:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:49+01:00" level=error msg="RESERVE TIMEOUT vu=75 iter=1" source=console
+
+running (6m27.9s), 091/100 VUs, 1625 complete and 0 interrupted iterations
+default   [  81% ] 091/100 VUs  6m27.9s/8m00.0s
+time="2026-04-07T12:57:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:50+01:00" level=error msg="RESERVE TIMEOUT vu=89 iter=0" source=console
+
+running (6m29.0s), 091/100 VUs, 1627 complete and 0 interrupted iterations
+default   [  81% ] 091/100 VUs  6m29.0s/8m00.0s
+time="2026-04-07T12:57:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:51+01:00" level=error msg="RESERVE TIMEOUT vu=66 iter=2" source=console
+time="2026-04-07T12:57:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:51+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=92" source=console
+time="2026-04-07T12:57:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:51+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=57" source=console
+
+running (6m29.9s), 091/100 VUs, 1628 complete and 0 interrupted iterations
+default   [  81% ] 091/100 VUs  6m29.9s/8m00.0s
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=13" source=console
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=24" source=console
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=23" source=console
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=11 iter=10" source=console
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=13" source=console
+
+running (6m30.9s), 091/100 VUs, 1631 complete and 0 interrupted iterations
+default   [  81% ] 091/100 VUs  6m30.9s/8m00.0s
+time="2026-04-07T12:57:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:52+01:00" level=error msg="RESERVE TIMEOUT vu=72 iter=1" source=console
+
+running (6m31.9s), 092/100 VUs, 1636 complete and 0 interrupted iterations
+default   [  82% ] 092/100 VUs  6m31.9s/8m00.0s
+time="2026-04-07T12:57:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:54+01:00" level=error msg="RESERVE TIMEOUT vu=92 iter=0" source=console
+
+running (6m32.9s), 092/100 VUs, 1637 complete and 0 interrupted iterations
+default   [  82% ] 092/100 VUs  6m32.9s/8m00.0s
+time="2026-04-07T12:57:55+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:55+01:00" level=error msg="RESERVE TIMEOUT vu=68 iter=2" source=console
+
+running (6m33.9s), 092/100 VUs, 1638 complete and 0 interrupted iterations
+default   [  82% ] 092/100 VUs  6m33.9s/8m00.0s
+time="2026-04-07T12:57:56+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:56+01:00" level=error msg="RESERVE TIMEOUT vu=80 iter=1" source=console
+
+running (6m34.9s), 093/100 VUs, 1639 complete and 0 interrupted iterations
+default   [  82% ] 093/100 VUs  6m34.9s/8m00.0s
+
+running (6m36.0s), 093/100 VUs, 1640 complete and 0 interrupted iterations
+default   [  82% ] 093/100 VUs  6m36.0s/8m00.0s
+time="2026-04-07T12:57:57+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:57+01:00" level=error msg="RESERVE TIMEOUT vu=94 iter=0" source=console
+time="2026-04-07T12:57:58+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:57:58+01:00" level=error msg="RESERVE TIMEOUT vu=69 iter=2" source=console
+
+running (6m36.9s), 093/100 VUs, 1640 complete and 0 interrupted iterations
+default   [  83% ] 093/100 VUs  6m36.9s/8m00.0s
+
+running (6m38.0s), 093/100 VUs, 1642 complete and 0 interrupted iterations
+default   [  83% ] 093/100 VUs  6m38.0s/8m00.0s
+time="2026-04-07T12:58:00+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:00+01:00" level=error msg="RESERVE TIMEOUT vu=86 iter=1" source=console
+
+running (6m38.9s), 094/100 VUs, 1642 complete and 0 interrupted iterations
+default   [  83% ] 094/100 VUs  6m38.9s/8m00.0s
+time="2026-04-07T12:58:01+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:01+01:00" level=error msg="RESERVE TIMEOUT vu=82 iter=0" source=console
+
+running (6m40.0s), 094/100 VUs, 1643 complete and 0 interrupted iterations
+default   [  83% ] 094/100 VUs  6m40.0s/8m00.0s
+time="2026-04-07T12:58:02+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:02+01:00" level=error msg="RESERVE TIMEOUT vu=71 iter=2" source=console
+
+running (6m40.9s), 094/100 VUs, 1644 complete and 0 interrupted iterations
+default   [  84% ] 094/100 VUs  6m40.9s/8m00.0s
+time="2026-04-07T12:58:03+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:03+01:00" level=error msg="RESERVE TIMEOUT vu=79 iter=1" source=console
+
+running (6m41.9s), 094/100 VUs, 1645 complete and 0 interrupted iterations
+default   [  84% ] 094/100 VUs  6m41.9s/8m00.0s
+
+running (6m42.9s), 095/100 VUs, 1646 complete and 0 interrupted iterations
+default   [  84% ] 095/100 VUs  6m42.9s/8m00.0s
+time="2026-04-07T12:58:05+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:05+01:00" level=error msg="RESERVE TIMEOUT vu=93 iter=0" source=console
+
+running (6m44.0s), 095/100 VUs, 1646 complete and 0 interrupted iterations
+default   [  84% ] 095/100 VUs  6m44.0s/8m00.0s
+time="2026-04-07T12:58:05+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:05+01:00" level=error msg="RESERVE TIMEOUT vu=70 iter=2" source=console
+
+running (6m45.0s), 095/100 VUs, 1647 complete and 0 interrupted iterations
+default   [  84% ] 095/100 VUs  6m45.0s/8m00.0s
+time="2026-04-07T12:58:07+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:07+01:00" level=error msg="RESERVE TIMEOUT vu=83 iter=1" source=console
+
+running (6m45.9s), 096/100 VUs, 1648 complete and 0 interrupted iterations
+default   [  85% ] 096/100 VUs  6m45.9s/8m00.0s
+time="2026-04-07T12:58:08+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:08+01:00" level=error msg="RESERVE TIMEOUT vu=77 iter=0" source=console
+
+running (6m46.9s), 096/100 VUs, 1649 complete and 0 interrupted iterations
+default   [  85% ] 096/100 VUs  6m46.9s/8m00.0s
+time="2026-04-07T12:58:09+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:09+01:00" level=error msg="RESERVE TIMEOUT vu=67 iter=2" source=console
+
+running (6m47.9s), 096/100 VUs, 1650 complete and 0 interrupted iterations
+default   [  85% ] 096/100 VUs  6m47.9s/8m00.0s
+
+running (6m49.0s), 096/100 VUs, 1651 complete and 0 interrupted iterations
+default   [  85% ] 096/100 VUs  6m49.0s/8m00.0s
+time="2026-04-07T12:58:10+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:10+01:00" level=error msg="RESERVE TIMEOUT vu=78 iter=1" source=console
+
+running (6m49.9s), 097/100 VUs, 1651 complete and 0 interrupted iterations
+default   [  85% ] 097/100 VUs  6m49.9s/8m00.0s
+time="2026-04-07T12:58:12+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:12+01:00" level=error msg="RESERVE TIMEOUT vu=96 iter=0" source=console
+time="2026-04-07T12:58:12+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:12+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=13" source=console
+
+running (6m50.9s), 097/100 VUs, 1652 complete and 0 interrupted iterations
+default   [  86% ] 097/100 VUs  6m50.9s/8m00.0s
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=73 iter=2" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=16" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=28" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=9" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=11" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=8" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=34" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=21" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=20" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=16" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=26" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=9" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=8" source=console
+
+running (6m51.9s), 097/100 VUs, 1654 complete and 0 interrupted iterations
+default   [  86% ] 097/100 VUs  6m51.9s/8m00.0s
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=77" source=console
+time="2026-04-07T12:58:13+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:13+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=8" source=console
+time="2026-04-07T12:58:14+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:14+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=23" source=console
+time="2026-04-07T12:58:14+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:14+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=7" source=console
+time="2026-04-07T12:58:14+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:14+01:00" level=error msg="RESERVE TIMEOUT vu=84 iter=1" source=console
+
+running (6m53.0s), 098/100 VUs, 1667 complete and 0 interrupted iterations
+default   [  86% ] 098/100 VUs  6m53.0s/8m00.0s
+time="2026-04-07T12:58:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:15+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=11" source=console
+time="2026-04-07T12:58:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:15+01:00" level=error msg="RESERVE TIMEOUT vu=65 iter=3" source=console
+time="2026-04-07T12:58:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:15+01:00" level=error msg="RESERVE TIMEOUT vu=62 iter=6" source=console
+
+running (6m53.9s), 098/100 VUs, 1672 complete and 0 interrupted iterations
+default   [  86% ] 098/100 VUs  6m53.9s/8m00.0s
+time="2026-04-07T12:58:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:15+01:00" level=error msg="RESERVE TIMEOUT vu=98 iter=0" source=console
+time="2026-04-07T12:58:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:16+01:00" level=error msg="RESERVE TIMEOUT vu=74 iter=2" source=console
+
+running (6m55.0s), 098/100 VUs, 1675 complete and 0 interrupted iterations
+default   [  86% ] 098/100 VUs  6m55.0s/8m00.0s
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=12" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=55 iter=8" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=9" source=console
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=19 iter=8" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=37" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=46" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=10" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=15" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=48" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=46" source=console
+time="2026-04-07T12:58:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:17+01:00" level=error msg="RESERVE TIMEOUT vu=63 iter=5" source=console
+
+running (6m56.0s), 098/100 VUs, 1677 complete and 0 interrupted iterations
+default   [  87% ] 098/100 VUs  6m56.0s/8m00.0s
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=91 iter=1" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=60" source=console
+
+running (6m57.0s), 099/100 VUs, 1688 complete and 0 interrupted iterations
+default   [  87% ] 099/100 VUs  6m57.0s/8m00.0s
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=16" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=61 iter=3" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=32" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=21" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=18" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=17" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=22" source=console
+time="2026-04-07T12:58:18+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:18+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=18" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=10" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=55" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=31" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=43" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=97 iter=0" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=14" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=60 iter=10" source=console
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=36" source=console
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=65" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=14" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=20" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=12" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=73" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=64 iter=4" source=console
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=81" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=41" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=10" source=console
+time="2026-04-07T12:58:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:19+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=29" source=console
+
+running (6m57.9s), 099/100 VUs, 1690 complete and 0 interrupted iterations
+default   [  87% ] 099/100 VUs  6m57.9s/8m00.0s
+time="2026-04-07T12:58:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:20+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=16" source=console
+time="2026-04-07T12:58:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:20+01:00" level=error msg="RESERVE TIMEOUT vu=75 iter=2" source=console
+
+running (6m58.9s), 099/100 VUs, 1716 complete and 0 interrupted iterations
+default   [  87% ] 099/100 VUs  6m58.9s/8m00.0s
+time="2026-04-07T12:58:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:21+01:00" level=error msg="RESERVE TIMEOUT vu=89 iter=1" source=console
+
+running (6m59.9s), 099/100 VUs, 1718 complete and 0 interrupted iterations
+default   [  87% ] 099/100 VUs  6m59.9s/8m00.0s
+time="2026-04-07T12:58:22+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:22+01:00" level=error msg="RESERVE TIMEOUT vu=66 iter=3" source=console
+time="2026-04-07T12:58:22+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:22+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=93" source=console
+time="2026-04-07T12:58:22+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:22+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=58" source=console
+
+running (7m00.9s), 100/100 VUs, 1719 complete and 0 interrupted iterations
+default   [  88% ] 100/100 VUs  7m00.9s/8m00.0s
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=14" source=console
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=81 iter=0" source=console
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=25" source=console
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=11 iter=11" source=console
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=24" source=console
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=14" source=console
+
+running (7m01.9s), 100/100 VUs, 1722 complete and 0 interrupted iterations
+default   [  88% ] 100/100 VUs  7m01.9s/8m00.0s
+time="2026-04-07T12:58:23+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:23+01:00" level=error msg="RESERVE TIMEOUT vu=72 iter=2" source=console
+
+running (7m02.9s), 100/100 VUs, 1728 complete and 0 interrupted iterations
+default   [  88% ] 100/100 VUs  7m02.9s/8m00.0s
+time="2026-04-07T12:58:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:25+01:00" level=error msg="RESERVE TIMEOUT vu=92 iter=1" source=console
+
+running (7m04.0s), 100/100 VUs, 1729 complete and 0 interrupted iterations
+default   [  88% ] 100/100 VUs  7m04.0s/8m00.0s
+time="2026-04-07T12:58:26+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:26+01:00" level=error msg="RESERVE TIMEOUT vu=68 iter=3" source=console
+time="2026-04-07T12:58:26+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:26+01:00" level=error msg="RESERVE TIMEOUT vu=88 iter=0" source=console
+
+running (7m04.9s), 100/100 VUs, 1730 complete and 0 interrupted iterations
+default   [  89% ] 100/100 VUs  7m04.9s/8m00.0s
+time="2026-04-07T12:58:27+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:27+01:00" level=error msg="RESERVE TIMEOUT vu=80 iter=2" source=console
+
+running (7m05.9s), 099/100 VUs, 1732 complete and 0 interrupted iterations
+default   [  89% ] 099/100 VUs  7m05.9s/8m00.0s
+
+running (7m06.9s), 099/100 VUs, 1733 complete and 0 interrupted iterations
+default   [  89% ] 099/100 VUs  7m06.9s/8m00.0s
+time="2026-04-07T12:58:28+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:28+01:00" level=error msg="RESERVE TIMEOUT vu=94 iter=1" source=console
+time="2026-04-07T12:58:29+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:29+01:00" level=error msg="RESERVE TIMEOUT vu=69 iter=3" source=console
+
+running (7m07.9s), 099/100 VUs, 1733 complete and 0 interrupted iterations
+default   [  89% ] 099/100 VUs  7m07.9s/8m00.0s
+time="2026-04-07T12:58:30+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:30+01:00" level=error msg="RESERVE TIMEOUT vu=99 iter=0" source=console
+
+running (7m08.9s), 099/100 VUs, 1735 complete and 0 interrupted iterations
+default   [  89% ] 099/100 VUs  7m08.9s/8m00.0s
+time="2026-04-07T12:58:31+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:31+01:00" level=error msg="RESERVE TIMEOUT vu=86 iter=2" source=console
+
+running (7m10.0s), 098/100 VUs, 1736 complete and 0 interrupted iterations
+default   [  90% ] 098/100 VUs  7m10.0s/8m00.0s
+time="2026-04-07T12:58:32+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:32+01:00" level=error msg="RESERVE TIMEOUT vu=82 iter=1" source=console
+
+running (7m10.9s), 098/100 VUs, 1737 complete and 0 interrupted iterations
+default   [  90% ] 098/100 VUs  7m10.9s/8m00.0s
+time="2026-04-07T12:58:33+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:33+01:00" level=error msg="RESERVE TIMEOUT vu=71 iter=3" source=console
+
+running (7m11.9s), 097/100 VUs, 1738 complete and 0 interrupted iterations
+default   [  90% ] 097/100 VUs  7m11.9s/8m00.0s
+time="2026-04-07T12:58:33+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:33+01:00" level=error msg="RESERVE TIMEOUT vu=95 iter=0" source=console
+time="2026-04-07T12:58:34+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:34+01:00" level=error msg="RESERVE TIMEOUT vu=79 iter=2" source=console
+
+running (7m12.9s), 097/100 VUs, 1739 complete and 0 interrupted iterations
+default   [  90% ] 097/100 VUs  7m12.9s/8m00.0s
+
+running (7m13.9s), 095/100 VUs, 1741 complete and 0 interrupted iterations
+default   [  90% ] 095/100 VUs  7m13.9s/8m00.0s
+time="2026-04-07T12:58:36+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:36+01:00" level=error msg="RESERVE TIMEOUT vu=93 iter=1" source=console
+
+running (7m14.9s), 095/100 VUs, 1741 complete and 0 interrupted iterations
+default   [  91% ] 095/100 VUs  7m14.9s/8m00.0s
+time="2026-04-07T12:58:36+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:36+01:00" level=error msg="RESERVE TIMEOUT vu=70 iter=3" source=console
+time="2026-04-07T12:58:37+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:37+01:00" level=error msg="RESERVE TIMEOUT vu=100 iter=0" source=console
+
+running (7m16.0s), 094/100 VUs, 1742 complete and 0 interrupted iterations
+default   [  91% ] 094/100 VUs  7m16.0s/8m00.0s
+time="2026-04-07T12:58:38+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:38+01:00" level=error msg="RESERVE TIMEOUT vu=83 iter=2" source=console
+
+running (7m16.9s), 093/100 VUs, 1744 complete and 0 interrupted iterations
+default   [  91% ] 093/100 VUs  7m16.9s/8m00.0s
+time="2026-04-07T12:58:39+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:39+01:00" level=error msg="RESERVE TIMEOUT vu=77 iter=1" source=console
+
+running (7m17.9s), 092/100 VUs, 1745 complete and 0 interrupted iterations
+default   [  91% ] 092/100 VUs  7m17.9s/8m00.0s
+time="2026-04-07T12:58:40+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:40+01:00" level=error msg="RESERVE TIMEOUT vu=67 iter=3" source=console
+
+running (7m18.9s), 091/100 VUs, 1746 complete and 0 interrupted iterations
+default   [  91% ] 091/100 VUs  7m18.9s/8m00.0s
+time="2026-04-07T12:58:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:41+01:00" level=error msg="RESERVE TIMEOUT vu=90 iter=0" source=console
+
+running (7m19.9s), 090/100 VUs, 1747 complete and 0 interrupted iterations
+default   [  92% ] 090/100 VUs  7m19.9s/8m00.0s
+time="2026-04-07T12:58:41+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:41+01:00" level=error msg="RESERVE TIMEOUT vu=78 iter=2" source=console
+
+running (7m21.0s), 089/100 VUs, 1748 complete and 0 interrupted iterations
+default   [  92% ] 089/100 VUs  7m21.0s/8m00.0s
+time="2026-04-07T12:58:43+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:43+01:00" level=error msg="RESERVE TIMEOUT vu=96 iter=1" source=console
+time="2026-04-07T12:58:43+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:43+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=14" source=console
+
+running (7m22.0s), 088/100 VUs, 1749 complete and 0 interrupted iterations
+default   [  92% ] 088/100 VUs  7m22.0s/8m00.0s
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=73 iter=3" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=17" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=10" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=29" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=12" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=9" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=21" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=35" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=22" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=17" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=27" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=9" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=10" source=console
+time="2026-04-07T12:58:44+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:44+01:00" level=error msg="RESERVE TIMEOUT vu=76 iter=0" source=console
+
+running (7m22.9s), 087/100 VUs, 1751 complete and 0 interrupted iterations
+default   [  92% ] 087/100 VUs  7m22.9s/8m00.0s
+time="2026-04-07T12:58:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:45+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=78" source=console
+time="2026-04-07T12:58:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:45+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=9" source=console
+time="2026-04-07T12:58:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:45+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=24" source=console
+time="2026-04-07T12:58:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:45+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=8" source=console
+time="2026-04-07T12:58:45+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:45+01:00" level=error msg="RESERVE TIMEOUT vu=84 iter=2" source=console
+
+running (7m24.0s), 085/100 VUs, 1765 complete and 0 interrupted iterations
+default   [  93% ] 085/100 VUs  7m24.0s/8m00.0s
+time="2026-04-07T12:58:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:46+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=12" source=console
+time="2026-04-07T12:58:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:46+01:00" level=error msg="RESERVE TIMEOUT vu=62 iter=7" source=console
+time="2026-04-07T12:58:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:46+01:00" level=error msg="RESERVE TIMEOUT vu=65 iter=4" source=console
+
+running (7m25.0s), 084/100 VUs, 1770 complete and 0 interrupted iterations
+default   [  93% ] 084/100 VUs  7m25.0s/8m00.0s
+time="2026-04-07T12:58:46+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:46+01:00" level=error msg="RESERVE TIMEOUT vu=98 iter=1" source=console
+time="2026-04-07T12:58:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:47+01:00" level=error msg="RESERVE TIMEOUT vu=74 iter=3" source=console
+
+running (7m25.9s), 082/100 VUs, 1773 complete and 0 interrupted iterations
+default   [  93% ] 082/100 VUs  7m25.9s/8m00.0s
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=19 iter=9" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=55 iter=9" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=10" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=38" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=13" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=47" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=11" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=16" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=47" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=49" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=63 iter=6" source=console
+time="2026-04-07T12:58:48+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:48+01:00" level=error msg="RESERVE TIMEOUT vu=87 iter=0" source=console
+
+running (7m26.9s), 080/100 VUs, 1775 complete and 0 interrupted iterations
+default   [  93% ] 080/100 VUs  7m26.9s/8m00.0s
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=91 iter=2" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=61" source=console
+
+running (7m27.9s), 076/100 VUs, 1787 complete and 0 interrupted iterations
+default   [  93% ] 076/100 VUs  7m27.9s/8m00.0s
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=17" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=61 iter=4" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=33" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=22" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=19" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=18" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=19" source=console
+time="2026-04-07T12:58:49+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:49+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=23" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=11" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=56" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=32" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=44" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=97 iter=1" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=37" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=66" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=15" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=60 iter=11" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=15" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=13" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=74" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=21" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=11" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=82" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=42" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=30" source=console
+time="2026-04-07T12:58:50+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:50+01:00" level=error msg="RESERVE TIMEOUT vu=64 iter=5" source=console
+
+running (7m28.9s), 075/100 VUs, 1789 complete and 0 interrupted iterations
+default   [  94% ] 075/100 VUs  7m28.9s/8m00.0s
+time="2026-04-07T12:58:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:51+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=17" source=console
+time="2026-04-07T12:58:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:51+01:00" level=error msg="RESERVE TIMEOUT vu=75 iter=3" source=console
+
+running (7m29.9s), 071/100 VUs, 1815 complete and 0 interrupted iterations
+default   [  94% ] 071/100 VUs  7m29.9s/8m00.0s
+time="2026-04-07T12:58:51+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:51+01:00" level=error msg="RESERVE TIMEOUT vu=85 iter=0" source=console
+time="2026-04-07T12:58:52+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:52+01:00" level=error msg="RESERVE TIMEOUT vu=89 iter=2" source=console
+
+running (7m30.9s), 069/100 VUs, 1817 complete and 1 interrupted iterations
+default   [  94% ] 069/100 VUs  7m30.9s/8m00.0s
+time="2026-04-07T12:58:53+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:53+01:00" level=error msg="RESERVE TIMEOUT vu=66 iter=4" source=console
+time="2026-04-07T12:58:53+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:53+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=94" source=console
+time="2026-04-07T12:58:53+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:53+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=59" source=console
+
+running (7m32.0s), 068/100 VUs, 1818 complete and 1 interrupted iterations
+default   [  94% ] 068/100 VUs  7m32.0s/8m00.0s
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=15" source=console
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=81 iter=1" source=console
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=26" source=console
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=25" source=console
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=11 iter=12" source=console
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=15" source=console
+
+running (7m33.0s), 067/100 VUs, 1821 complete and 1 interrupted iterations
+default   [  94% ] 067/100 VUs  7m33.0s/8m00.0s
+time="2026-04-07T12:58:54+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:54+01:00" level=error msg="RESERVE TIMEOUT vu=72 iter=3" source=console
+
+running (7m33.9s), 065/100 VUs, 1827 complete and 1 interrupted iterations
+default   [  95% ] 065/100 VUs  7m33.9s/8m00.0s
+time="2026-04-07T12:58:56+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:56+01:00" level=error msg="RESERVE TIMEOUT vu=92 iter=2" source=console
+
+running (7m34.9s), 064/100 VUs, 1828 complete and 1 interrupted iterations
+default   [  95% ] 064/100 VUs  7m34.9s/8m00.0s
+time="2026-04-07T12:58:57+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:57+01:00" level=error msg="RESERVE TIMEOUT vu=68 iter=4" source=console
+
+running (7m35.9s), 063/100 VUs, 1829 complete and 1 interrupted iterations
+default   [  95% ] 063/100 VUs  7m35.9s/8m00.0s
+time="2026-04-07T12:58:58+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:58+01:00" level=error msg="RESERVE TIMEOUT vu=80 iter=3" source=console
+
+running (7m36.9s), 062/100 VUs, 1830 complete and 1 interrupted iterations
+default   [  95% ] 062/100 VUs  7m36.9s/8m00.0s
+
+running (7m37.9s), 061/100 VUs, 1831 complete and 1 interrupted iterations
+default   [  95% ] 061/100 VUs  7m37.9s/8m00.0s
+time="2026-04-07T12:58:59+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:58:59+01:00" level=error msg="RESERVE TIMEOUT vu=94 iter=2" source=console
+time="2026-04-07T12:59:00+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:00+01:00" level=error msg="RESERVE TIMEOUT vu=69 iter=4" source=console
+
+running (7m38.9s), 061/100 VUs, 1831 complete and 1 interrupted iterations
+default   [  96% ] 061/100 VUs  7m38.9s/8m00.0s
+
+running (7m39.9s), 059/100 VUs, 1833 complete and 1 interrupted iterations
+default   [  96% ] 059/100 VUs  7m39.9s/8m00.0s
+time="2026-04-07T12:59:02+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:02+01:00" level=error msg="RESERVE TIMEOUT vu=86 iter=3" source=console
+
+running (7m40.9s), 059/100 VUs, 1833 complete and 1 interrupted iterations
+default   [  96% ] 059/100 VUs  7m40.9s/8m00.0s
+
+running (7m42.0s), 058/100 VUs, 1834 complete and 1 interrupted iterations
+default   [  96% ] 058/100 VUs  7m42.0s/8m00.0s
+time="2026-04-07T12:59:04+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:04+01:00" level=error msg="RESERVE TIMEOUT vu=71 iter=4" source=console
+
+running (7m42.9s), 058/100 VUs, 1834 complete and 1 interrupted iterations
+default   [  96% ] 058/100 VUs  7m42.9s/8m00.0s
+
+running (7m43.9s), 057/100 VUs, 1835 complete and 1 interrupted iterations
+default   [  97% ] 057/100 VUs  7m43.9s/8m00.0s
+
+running (7m44.9s), 057/100 VUs, 1835 complete and 1 interrupted iterations
+default   [  97% ] 057/100 VUs  7m44.9s/8m00.0s
+
+running (7m45.9s), 057/100 VUs, 1835 complete and 1 interrupted iterations
+default   [  97% ] 057/100 VUs  7m45.9s/8m00.0s
+time="2026-04-07T12:59:07+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:07+01:00" level=error msg="RESERVE TIMEOUT vu=70 iter=4" source=console
+
+running (7m47.0s), 057/100 VUs, 1835 complete and 1 interrupted iterations
+default   [  97% ] 057/100 VUs  7m47.0s/8m00.0s
+
+running (7m48.0s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  97% ] 056/100 VUs  7m48.0s/8m00.0s
+
+running (7m49.0s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  98% ] 056/100 VUs  7m49.0s/8m00.0s
+
+running (7m49.9s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  98% ] 056/100 VUs  7m49.9s/8m00.0s
+
+running (7m51.0s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  98% ] 056/100 VUs  7m51.0s/8m00.0s
+
+running (7m51.9s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  98% ] 056/100 VUs  7m51.9s/8m00.0s
+time="2026-04-07T12:59:14+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:14+01:00" level=error msg="RESERVE TIMEOUT vu=51 iter=15" source=console
+
+running (7m53.0s), 056/100 VUs, 1836 complete and 1 interrupted iterations
+default   [  99% ] 056/100 VUs  7m53.0s/8m00.0s
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=45 iter=18" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=59 iter=11" source=console
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=23 iter=30" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=58 iter=13" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=28 iter=36" source=console
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=39 iter=22" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=33 iter=23" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=47 iter=18" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=20 iter=10" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=31 iter=28" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=14 iter=10" source=console
+time="2026-04-07T12:59:15+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:15+01:00" level=error msg="RESERVE TIMEOUT vu=25 iter=11" source=console
+
+running (7m53.9s), 055/100 VUs, 1837 complete and 1 interrupted iterations
+default   [  99% ] 055/100 VUs  7m53.9s/8m00.0s
+time="2026-04-07T12:59:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:16+01:00" level=error msg="RESERVE TIMEOUT vu=35 iter=10" source=console
+time="2026-04-07T12:59:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:16+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=79" source=console
+time="2026-04-07T12:59:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:16+01:00" level=error msg="RESERVE TIMEOUT vu=3 iter=25" source=console
+time="2026-04-07T12:59:16+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:16+01:00" level=error msg="RESERVE TIMEOUT vu=32 iter=9" source=console
+
+running (7m54.9s), 042/100 VUs, 1849 complete and 2 interrupted iterations
+default   [  99% ] 042/100 VUs  7m54.9s/8m00.0s
+time="2026-04-07T12:59:17+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:17+01:00" level=error msg="RESERVE TIMEOUT vu=57 iter=13" source=console
+
+running (7m55.9s), 040/100 VUs, 1852 complete and 2 interrupted iterations
+default   [  99% ] 040/100 VUs  7m55.9s/8m00.0s
+
+running (7m57.0s), 039/100 VUs, 1853 complete and 2 interrupted iterations
+default   [  99% ] 039/100 VUs  7m57.0s/8m00.0s
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=38 iter=11" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=53 iter=14" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=26 iter=39" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=12 iter=48" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=13 iter=12" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=48 iter=17" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=15 iter=48" source=console
+time="2026-04-07T12:59:19+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:19+01:00" level=error msg="RESERVE TIMEOUT vu=22 iter=50" source=console
+
+running (7m57.9s), 039/100 VUs, 1853 complete and 2 interrupted iterations
+default   [ 100% ] 039/100 VUs  7m57.9s/8m00.0s
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=2 iter=62" source=console
+
+running (7m58.9s), 031/100 VUs, 1860 complete and 3 interrupted iterations
+default   [ 100% ] 031/100 VUs  7m58.9s/8m00.0s
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=46 iter=18" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=44 iter=19" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=43 iter=20" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=37 iter=23" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=24 iter=34" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=41 iter=20" source=console
+time="2026-04-07T12:59:20+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:20+01:00" level=error msg="RESERVE TIMEOUT vu=34 iter=24" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=21 iter=12" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=16 iter=57" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=27 iter=33" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=18 iter=45" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=17 iter=38" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=8 iter=67" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=54 iter=16" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=52 iter=16" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=42 iter=14" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=7 iter=75" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=6 iter=43" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=5 iter=83" source=console
+
+running (8m00.0s), 030/100 VUs, 1861 complete and 3 interrupted iterations
+default   [ 100% ] 030/100 VUs  8m00.0s/8m00.0s
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=30 iter=12" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=40 iter=22" source=console
+time="2026-04-07T12:59:21+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:21+01:00" level=error msg="RESERVE TIMEOUT vu=29 iter=31" source=console
+time="2026-04-07T12:59:22+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:22+01:00" level=error msg="RESERVE TIMEOUT vu=49 iter=18" source=console
+
+running (8m00.9s), 013/100 VUs, 1877 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m02.0s), 007/100 VUs, 1883 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+time="2026-04-07T12:59:24+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:24+01:00" level=error msg="RESERVE TIMEOUT vu=1 iter=95" source=console
+time="2026-04-07T12:59:24+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:24+01:00" level=error msg="RESERVE TIMEOUT vu=9 iter=60" source=console
+
+running (8m02.9s), 007/100 VUs, 1883 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+time="2026-04-07T12:59:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:25+01:00" level=error msg="RESERVE TIMEOUT vu=50 iter=16" source=console
+time="2026-04-07T12:59:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:25+01:00" level=error msg="RESERVE TIMEOUT vu=36 iter=27" source=console
+time="2026-04-07T12:59:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:25+01:00" level=error msg="RESERVE TIMEOUT vu=10 iter=26" source=console
+time="2026-04-07T12:59:25+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:25+01:00" level=error msg="RESERVE TIMEOUT vu=56 iter=16" source=console
+
+running (8m03.9s), 005/100 VUs, 1885 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m04.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m06.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m07.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m07.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m08.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m09.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m10.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m11.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m12.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m13.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m15.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m16.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m17.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m17.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m19.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m19.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m20.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m21.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m23.0s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m23.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m24.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+time="2026-04-07T12:59:47+01:00" level=warning msg="Request Failed" error="Post \"http://localhost:4008/api/v1/inventories/reserve\": request timeout"
+time="2026-04-07T12:59:47+01:00" level=error msg="RESERVE TIMEOUT vu=4 iter=80" source=console
+
+running (8m25.9s), 001/100 VUs, 1889 complete and 4 interrupted iterations
+default ↓ [ 100% ] 030/100 VUs  8m0s
+
+running (8m26.2s), 000/100 VUs, 1890 complete and 4 interrupted iterations
+default ✓ [ 100% ] 000/100 VUs  8m0s
+time="2026-04-07T12:59:51+01:00" level=error msg="thresholds on metrics 'reserve_duration_ms' have been crossed"
