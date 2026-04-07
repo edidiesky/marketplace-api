@@ -40,7 +40,7 @@ export class InventoryRepository implements IInventoryRepository {
   async getStoreInventory(
     query: FilterQuery<IInventory>,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<IInventory[] | null> {
     const cacheKey = this.getSearchCacheKey(query, skip, limit);
 
@@ -56,7 +56,6 @@ export class InventoryRepository implements IInventoryRepository {
         error,
       });
     }
-    
 
     const inventory = await measureDatabaseQuery("fetch_all_inventory", () =>
       Inventory.find(query)
@@ -64,7 +63,7 @@ export class InventoryRepository implements IInventoryRepository {
         .limit(limit)
         .sort({ createdAt: -1 })
         .lean()
-        .exec()
+        .exec(),
     );
 
     try {
@@ -72,7 +71,7 @@ export class InventoryRepository implements IInventoryRepository {
         cacheKey,
         JSON.stringify(inventory),
         "EX",
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
     } catch (error) {
       logger.warn("Cache write failed", { error, cacheKey });
@@ -81,12 +80,11 @@ export class InventoryRepository implements IInventoryRepository {
     return inventory;
   }
 
-  async getInventoryByProduct(productId: string, storeId: string): Promise<IInventory | null> {
-    const inventory = await measureDatabaseQuery("fetch_inventory_by_product", () =>
-      Inventory.findOne({ productId : productId, storeId: storeId }).lean().exec()
-    );
-    logger.info("Fetched inventory by productId and storeId", { productId, storeId });
-    return inventory;
+  async getInventoryByProduct(
+    productId: string,
+    storeId: string,
+  ): Promise<IInventory | null> {
+    return Inventory.findOne({ productId, storeId }).lean().exec();
   }
 
   /**
@@ -111,7 +109,7 @@ export class InventoryRepository implements IInventoryRepository {
     }
 
     const inventory = await measureDatabaseQuery("fetch_single_inventory", () =>
-      Inventory.findById(inventoryId).lean().exec()
+      Inventory.findById(inventoryId).lean().exec(),
     );
 
     if (inventory) {
@@ -120,7 +118,7 @@ export class InventoryRepository implements IInventoryRepository {
           cacheKey,
           JSON.stringify(inventory),
           "EX",
-          this.CACHE_TTL
+          this.CACHE_TTL,
         );
       } catch (error) {
         logger.warn("Cache write failed", { error, cacheKey });
@@ -138,12 +136,12 @@ export class InventoryRepository implements IInventoryRepository {
    */
   async updateInventory(
     data: Partial<IInventory>,
-    inventoryId: string
+    inventoryId: string,
   ): Promise<IInventory | null> {
     const inventory = await Inventory.findByIdAndUpdate(
       inventoryId,
       { $set: data },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).exec();
 
     if (inventory) {
@@ -196,7 +194,7 @@ export class InventoryRepository implements IInventoryRepository {
    */
   async createInventory(
     data: Partial<IInventory>,
-    session?: mongoose.ClientSession
+    session?: mongoose.ClientSession,
   ): Promise<IInventory> {
     try {
       const [inventory] = await Inventory.create([data], { session });

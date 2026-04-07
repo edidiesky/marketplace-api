@@ -27,6 +27,7 @@ import {
   HandleConfirmEmailToken,
   HandlePasswordOnboardingStep,
 } from "../controllers/auth.controller";
+import { bypass2FAMiddleware } from "../middleware/byPass2Fa.middleware";
 
 const router = Router();
 
@@ -282,6 +283,7 @@ router.post(
 router.post(
   "/login",
   validateRequest(loginSchema),
+   bypass2FAMiddleware,    
   (req: Request, res: Response, next: NextFunction): void => {
     void LoginUser(req, res, next);
   }

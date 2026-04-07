@@ -1,7 +1,6 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 export interface IInventory {
-  _id: any;
   ownerId: Types.ObjectId;
   productId: Types.ObjectId;
   warehouseId: Types.ObjectId;
@@ -20,6 +19,8 @@ export interface IInventory {
   storeDomain: string;
   createdAt: Date;
   updatedAt: Date;
+  _id: any;
+  __v: number; 
 }
 
 
@@ -72,12 +73,12 @@ const InventorySchema = new Schema<IInventory>(
       min: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey:"__v" }
 );
 
-InventorySchema.index({ storeId: 1, sku: 1 }, { unique: true });
+InventorySchema.index({ productId: 1, storeId: 1 }, { unique: true });
+InventorySchema.index({ storeId: 1, quantityAvailable: 1 });
 InventorySchema.index({ storeId: 1, isLowStock: 1 });
-InventorySchema.index({ ownerId: 1, isLowStock: 1 });
-InventorySchema.index({ productId: 1 });
+InventorySchema.index({ ownerId: 1 });
 
 export default mongoose.model<IInventory>("Inventory", InventorySchema);

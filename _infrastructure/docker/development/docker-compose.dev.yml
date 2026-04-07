@@ -3,6 +3,14 @@ networks:
     driver: bridge
 
 services:
+  mongodb-local:
+    image: mongo:7
+    networks:
+      - selleasi-network
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-local-data:/data/db
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: selleasi-elasticsearch
@@ -703,3 +711,4 @@ volumes:
   kafka3_data:
   tempo-data:
   es-data:
+  mongo-local-data:

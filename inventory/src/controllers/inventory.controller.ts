@@ -157,7 +157,8 @@ const ReserveStockHandler = asyncHandler(
         productId,
         storeId,
         quantity,
-        sagaId
+        sagaId,
+        userId
       );
 
       logger.info("Stock reservation successful via API", {
@@ -232,7 +233,8 @@ const ReleaseStockHandler = asyncHandler(
         productId,
         storeId,
         quantity,
-        sagaId
+        sagaId,
+        userId
       );
 
       logger.info("Stock release successful via API", {
@@ -298,7 +300,8 @@ const CommitStockHandler = asyncHandler(
         productId,
         storeId,
         quantity,
-        sagaId
+        sagaId,
+        userId
       );
 
       logger.info("Stock commit successful via API", {

@@ -119,11 +119,11 @@ export const OrderTopic = {
   },
 
   [ORDER_PAYMENT_FAILED_TOPIC]: async (data: any) => {
-    const { orderId, reason, sagaId } = data;
+    const { orderId, reason, sagaId, userId } = data;
 
     const idempotencyKey = `payment-failed-${sagaId}`;
     if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
-      logger.info("Duplicate payment failure event ignored", { orderId, sagaId });
+      logger.info("Duplicate payment failure event ignored", { orderId, sagaId, userId });
       return;
     }
 
@@ -137,11 +137,13 @@ export const OrderTopic = {
           orderId,
           sagaId,
           error: error.message,
+          userId
         });
         if (attempt === MAX_RETRIES - 1) {
           logger.error("All retries exhausted for payment failure handling", {
             orderId,
             sagaId,
+            userId
           });
           return;
         }

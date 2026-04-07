@@ -124,7 +124,8 @@ export const InventoryTopic = {
                     item.productId,
                     storeId,
                     item.quantity,
-                    `${sagaId}-${item.productId}`
+                    `${sagaId}-${item.productId}`,
+                    userId
                   ),
                   itemTimeoutPromise,
                 ]);
@@ -160,7 +161,8 @@ export const InventoryTopic = {
                         reserved.productId,
                         storeId,
                         reserved.quantity,
-                        `${sagaId}-rollback-${reserved.productId}`
+                        `${sagaId}-rollback-${reserved.productId}`,
+                        userId
                       );
                     } catch (rollbackError) {
                       logger.error("CRITICAL: Rollback failed for item", {
@@ -213,7 +215,8 @@ export const InventoryTopic = {
             reserved.productId,
             storeId,
             reserved.quantity,
-            `${sagaId}-timeout-rollback-${reserved.productId}`
+            `${sagaId}-timeout-rollback-${reserved.productId}`,
+            userId
           );
         } catch (rollbackError) {
           logger.error("CRITICAL: Timeout rollback failed", {
@@ -240,7 +243,7 @@ export const InventoryTopic = {
   },
 
   [ORDER_PAYMENT_COMPLETED_TOPIC]: async (data: any) => {
-    const { orderId, sagaId, items, storeId } = data;
+    const { orderId, sagaId, items, storeId, userId } = data;
 
     const idempotencyKey = `commit-${sagaId || orderId}`;
     if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
@@ -255,7 +258,8 @@ export const InventoryTopic = {
             item.productId,
             storeId,
             item.quantity,
-            `${sagaId}-${item.productId}`
+            `${sagaId}-${item.productId}`,
+            userId
           );
         }
 
@@ -294,7 +298,7 @@ export const InventoryTopic = {
   },
 
   [ORDER_PAYMENT_FAILED_TOPIC]: async (data: any) => {
-    const { orderId, sagaId, items, storeId } = data;
+    const { orderId, sagaId, items, storeId, userId } = data;
 
     const idempotencyKey = `release-${sagaId || orderId}`;
     if (!(await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX"))) {
@@ -309,7 +313,8 @@ export const InventoryTopic = {
             item.productId,
             storeId,
             item.quantity,
-            `${sagaId}-${item.productId}`
+            `${sagaId}-${item.productId}`,
+            userId
           );
         }
         logger.info("Stock released due to payment failure", {
