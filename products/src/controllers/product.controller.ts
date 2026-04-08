@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import sanitizeHtml from "sanitize-html";
 import {
   BAD_REQUEST_STATUS_CODE,
-  PRODUCT_ONBOARDING_COMPLETED_TOPIC,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../constants";
@@ -11,9 +10,9 @@ import { IProduct } from "../models/Product";
 import { Types } from "mongoose";
 import { AuthenticatedRequest } from "../types";
 import productService from "../services/product.service";
-import { sendProductMessage } from "../messaging/producer";
 import logger from "../utils/logger";
 import { buildQuery } from "../utils/buildQuery";
+import { AppError } from "../utils/AppError";
 
 // @description: Create Product handler
 // @route  POST /api/v1/products/:storeId/store
@@ -63,7 +62,7 @@ const GetSingleStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const product = await productService.getProductById(id);
-    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(product);
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(product ?? {});
   }
 );
 
@@ -78,7 +77,7 @@ const UpdateProductHandler = asyncHandler(
     if (!existingProduct) {
       logger.error(`Product with id ${id} not found for update`);
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error(`This product with id, ${id} does not exist`);
+      throw AppError.badRequest(`This product with id, ${id} does not exist`);
     }
     const product = await productService.updateProduct(
       id,
@@ -100,7 +99,7 @@ const DeleteProductHandler = asyncHandler(
     if (!existingProduct) {
       logger.error(`Product with id ${id} not found for update`);
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error(`This product with id, ${id} does not exist`);
+      throw AppError.badRequest(`This product with id, ${id} does not exist`);
     }
     const message = await productService.softDeleteProduct(
       id,
@@ -119,7 +118,7 @@ const RestoreProductHandler = asyncHandler(
     if (!existingProduct) {
       logger.error(`Product with id ${id} not found for update`);
       res.status(BAD_REQUEST_STATUS_CODE);
-      throw new Error(`This product with id, ${id} does not exist`);
+      throw AppError.badRequest(`This product with id, ${id} does not exist`);
     }
     const message = await productService.restoreProduct(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);

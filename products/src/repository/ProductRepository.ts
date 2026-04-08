@@ -15,7 +15,7 @@ export class ProductRepository implements IProductRepository {
     userId: string,
     query: Partial<IProduct>,
     skip: number,
-    limit: number
+    limit: number,
   ): string {
     return `${this.CACHE_PREFIX}:${userId}:search:${JSON.stringify({
       query,
@@ -45,17 +45,11 @@ export class ProductRepository implements IProductRepository {
   }
   async createProduct(
     data: Partial<IProduct>,
-    session: mongoose.ClientSession
+    session: mongoose.ClientSession | undefined,
   ) {
     try {
-      const [result] = await Product.create(
-        [
-          {
-            ...data,
-          },
-        ],
-        { session }
-      );
+      const options = session ? { session } : {};
+      const [result] = await Product.create([{ ...data }], options);
       await this.invalidateSearchCache(data.ownerId?.toString()!);
       logger.info("Product has been successfully created:", {
         id: result._id,
@@ -79,13 +73,13 @@ export class ProductRepository implements IProductRepository {
   async findAllProduct(
     query: FilterQuery<IProduct>,
     skip: number,
-    limit: number
+    limit: number,
   ): Promise<IProduct[]> {
     const cacheKey = this.getProductSearchKeys(
       query.ownerId,
       query,
       skip,
-      limit
+      limit,
     );
 
     try {
@@ -107,7 +101,7 @@ export class ProductRepository implements IProductRepository {
         .limit(limit)
         .sort({ createdAt: -1 })
         .lean()
-        .exec()
+        .exec(),
     );
 
     try {
@@ -115,7 +109,7 @@ export class ProductRepository implements IProductRepository {
         cacheKey,
         JSON.stringify(products),
         "EX",
-        this.CACHE_TTL
+        this.CACHE_TTL,
       );
     } catch (error) {
       logger.warn("Cache write failed", { error, cacheKey });
@@ -126,7 +120,7 @@ export class ProductRepository implements IProductRepository {
 
   async countproducts(query: FilterQuery<IProduct>): Promise<number> {
     return measureDatabaseQuery("count_products", () =>
-      Product.countDocuments(query).exec()
+      Product.countDocuments(query).exec(),
     );
   }
 
@@ -147,7 +141,7 @@ export class ProductRepository implements IProductRepository {
     }
 
     const product = await measureDatabaseQuery("fetch_single_product", () =>
-      Product.findById(id).lean().exec()
+      Product.findById(id).lean().exec(),
     );
 
     if (product) {
@@ -156,7 +150,7 @@ export class ProductRepository implements IProductRepository {
           cacheKey,
           JSON.stringify(product),
           "EX",
-          this.CACHE_TTL
+          this.CACHE_TTL,
         );
       } catch (error) {
         logger.warn("Cache write failed", { error, cacheKey });
@@ -168,12 +162,12 @@ export class ProductRepository implements IProductRepository {
 
   async updateProduct(
     id: string,
-    data: Partial<IProduct>
+    data: Partial<IProduct>,
   ): Promise<IProduct | null> {
     const product = await Product.findByIdAndUpdate(
       id,
       { $set: data },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).exec();
 
     if (product) {
@@ -219,8 +213,9 @@ export class ProductRepository implements IProductRepository {
   async softDeleteProduct(
     id: string,
     deletedBy: string,
-    session?: mongoose.ClientSession
+    session?: mongoose.ClientSession,
   ): Promise<void> {
+    const options = session ? { new: true, session } : { new: true };
     await Product.findByIdAndUpdate(
       id,
       {
@@ -228,13 +223,13 @@ export class ProductRepository implements IProductRepository {
         deletedAt: new Date(),
         deletedBy: new Types.ObjectId(deletedBy),
       },
-      { session }
+      options,
     );
   }
 
   async restoreProduct(
     id: string,
-    session?: mongoose.ClientSession
+    session?: mongoose.ClientSession,
   ): Promise<IProduct | null> {
     return Product.findByIdAndUpdate(
       id,
@@ -243,7 +238,7 @@ export class ProductRepository implements IProductRepository {
         deletedAt: null,
         deletedBy: null,
       },
-      { new: true, session }
+      { new: true, session },
     );
   }
 }
