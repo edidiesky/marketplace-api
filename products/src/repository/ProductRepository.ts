@@ -215,7 +215,7 @@ export class ProductRepository implements IProductRepository {
     deletedBy: string,
     session?: mongoose.ClientSession,
   ): Promise<void> {
-    const options = session ? { new: true, session } : { new: true };
+    const options = session ? { session } : {};
     await Product.findByIdAndUpdate(
       id,
       {
@@ -225,6 +225,16 @@ export class ProductRepository implements IProductRepository {
       },
       options,
     );
+
+    const cacheKey = this.getProductCacheKeys(id);
+    try {
+      await redisClient.del(cacheKey);
+    } catch (error) {
+      logger.warn("Cache invalidation failed after soft delete", {
+        error,
+        productId: id,
+      });
+    }
   }
 
   async restoreProduct(

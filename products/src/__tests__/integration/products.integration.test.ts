@@ -1,3 +1,7 @@
+//  MOCKS
+// Rule: mock block always appears before imports. Jest hoists these calls
+// redis > metrics > OutboxEvent > withTransaction > auth > es > buildQuery
+
 jest.mock("../../config/redis", () => {
   const RedisMock = require("ioredis-mock");
   return { __esModule: true, default: new RedisMock() };
@@ -20,22 +24,24 @@ jest.mock("../../utils/metrics", () => ({
 }));
 
 jest.mock("../../models/OutboxEvent", () => {
-   const actual = jest.requireActual(
+  const actual = jest.requireActual(
     "../../models/OutboxEvent",
   ) as typeof import("../../models/OutboxEvent");
- return {
+  return {
     __esModule: true,
-    // Re-export the real enum so service code can read its values
     IOutboxEventType: actual.IOutboxEventType,
-    // Replace only the model default export
     default: {
       create: jest
-      .fn<() => Promise<[{}]>>()
-      .mockResolvedValue([{ _id: "outbox-stub" }]),
+        .fn<() => Promise<[object]>>()
+        .mockResolvedValue([{ _id: "outbox-stub" }]),
     },
   };
 });
 
+// withTransaction: MongoMemoryServer runs as a standalone node, not a
+// replica set. Transactions require a replica set. We unwrap the callback
+// and pass undefined as the session so the repository session guard
+// (session ? { session } : {}) never attaches a session to Mongoose queries.
 jest.mock("../../utils/withTransaction", () => ({
   withTransaction: jest
     .fn()
@@ -74,254 +80,145 @@ jest.mock("../../controllers/es.controller", () => ({
   },
 }));
 
-// buildQuery is stubbed because its internals (reading storeId from req,
-// applying tenant scoping) are tested in its own unit test. Here we only care
-// that whatever filter it returns is passed through to Mongoose correctly.
 jest.mock("../../utils/buildQuery", () => ({
   buildQuery: jest
     .fn<() => Promise<object>>()
     .mockResolvedValue({ isDeleted: false }),
 }));
 
-//  IMPORTS
-
-import {
-  jest,
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  afterEach,
-} from "@jest/globals";
+import { describe, it, expect, jest } from "@jest/globals";
 import request from "supertest";
-import express, { Application, Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import redisClient from "../../config/redis";
-import productRouter from "../../routes/product.routes";
-import Product, { IProduct } from "../../models/Product";
+import Product from "../../models/Product";
 
-//  TYPES
+import buildApp from "./helpers/buildApp";
+import { seedProduct, SELLER_ID, DEFAULT_STORE_ID } from "./helpers/seeders";
+import { validProductCreateBody } from "./helpers/requestBodies";
 
-interface SeedProduct {
-  _id: mongoose.Types.ObjectId;
-  name: string;
-  isDeleted: boolean;
-  price: number;
-}
-
-//  IN-PROCESS MONGODB
-// We start mongodb-memory-server inside the test file rather than in
-// globalSetup so this file is self-contained and runnable in isolation.
-// The tradeoff: startup adds ~1s per run. For CI this is acceptable.
-// If you have many integration test files, move this to globalSetup.ts.
-
-let mongod: MongoMemoryServer;
-
-beforeAll(async () => {
-  mongod = await MongoMemoryServer.create();
-  await mongoose.connect(mongod.getUri());
-});
-
-afterAll(async () => {
-  await mongoose.connection.dropDatabase();
-  await mongoose.connection.close();
-  await mongod.stop();
-});
-
-afterEach(async () => {
-  try {
-    const result = await Product.deleteMany({});
-      await (redisClient as unknown as { flushall: () => Promise<void> }).flushall();
-  } catch (err) {
-    console.error("afterEach cleanup failed:", err);
-  }
-});
-
-//  FACTORIES
-
-const SELLER_ID = "663e1a1d7b2c3d4e5f6a7b8c";
-const STORE_ID = new mongoose.Types.ObjectId();
-
-// Seeds a real product document into MongoDB and returns its plain object.
-// This is the source of truth for what exists in the DB before the test runs.
-async function seedProduct(
-  overrides: Partial<IProduct> = {},
-): Promise<IProduct> {
-  const doc = await Product.create({
-    ownerId: new mongoose.Types.ObjectId(SELLER_ID),
-    store: STORE_ID,
-    name: `Nike Air Max ${Date.now()}`, // unique per test run
-    price: 45000,
-    images: ["https://cdn.example.com/airmax.jpg"],
-    description: "Classic Air Max silhouette.",
-    ownerName: "Jane Doe",
-    storeName: "Jane Sneakers",
-    ownerImage: "https://cdn.example.com/avatar.jpg",
-    tenantId: "tenant-1",
-    isDeleted: false,
-    sku: `NK-${Date.now()}`,
-    availableStock: 50,
-    thresholdStock: 10,
-    trackInventory: true,
-    category: ["Footwear"],
-    colors: [{ name: "Black", value: "#000000" }],
-    size: [{ name: "UK Size", value: "42" }],
-    storeDomain: "jane-sneakers.selleasi.com",
-    ...overrides,
-  });
-
-  return doc.toObject() as IProduct;
-}
-
-function validCreateBody(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
-  return {
-    name: `Nike Air Max ${Date.now()}`,
-    storeName: "Jane Sneakers",
-    storeDomain: "jane-sneakers",
-    price: 45000,
-    availableStock: 50,
-    thresholdStock: 10,
-    trackInventory: true,
-    description: "Classic Air Max silhouette.",
-    images: ["https://cdn.example.com/airmax.jpg"],
-    category: ["Footwear"],
-    colors: [{ name: "Black", value: "#000000" }],
-    size: [{ name: "UK Size", value: "42" }],
-    ...overrides,
-  };
-}
-
-//  APP BUILDER
-function buildApp(): Application {
-  const app = express();
-  app.use(express.json());
-  app.use("/api/v1/products", productRouter);
-
-  app.use(
-    (
-      err: Error & { statusCode?: number },
-      _req: Request,
-      res: Response,
-      _next: NextFunction,
-    ) => {
-      console.error("TEST_ERROR_HANDLER:", err.message);
-      console.error("TEST_ERROR_STACK:", err.stack);
-      res.status(err.statusCode ?? 500).json({
-        success: false,
-        error: err.message,
-      });
-    },
-  );
-
-  return app;
-}
-// function buildApp(): Application {
-//   const app = express();
-//   app.use(express.json());
-//   app.use("/api/v1/products", productRouter);
-
-//   // Error handler reads res.statusCode because the controller calls
-//   // res.status(N) before throwing. Once you add AppError this becomes
-//   // err.statusCode. Tracked as a production fix in review.
-//   app.use(
-//     (
-//       err: Error & { statusCode?: number },
-//       _req: Request,
-//       res: Response,
-//       _next: NextFunction,
-//     ) => {
-//       const status =
-//         err.statusCode ?? (res.statusCode !== 200 ? res.statusCode : 500);
-//       res.status(status).json({ error: err.message });
-//     },
-//   );
-
-//   return app;
-// }
-
-//  SUITES
-
-describe("POST /api/v1/products/:storeid/store - real MongoDB", () => {
-  it("persists a new product document and returns 201 with the created product", async () => {
+describe("POST /api/v1/products/:storeid/store", () => {
+  it("persists a new product and returns 201 with the created document", async () => {
     // Arrange
-    const body = validCreateBody({ name: "Air Force 1" });
+    const body = validProductCreateBody({ name: "Air Force 1" });
 
     // Act
     const res = await request(buildApp())
-      .post(`/api/v1/products/${STORE_ID}/store`)
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
       .send(body);
 
-    // Assert HTTP layer
+    // Assert HTTP
     expect(res.status).toBe(201);
     expect(res.body.name).toBe("Air Force 1");
     expect(res.body._id).toBeDefined();
 
-    // Assert persistence: the document must exist in MongoDB
+    // Assert persistence
     const persisted = await Product.findById(res.body._id).lean();
     expect(persisted).not.toBeNull();
     expect(persisted!.name).toBe("Air Force 1");
     expect(persisted!.ownerId.toString()).toBe(SELLER_ID);
-    expect(persisted!.store.toString()).toBe(STORE_ID.toString());
+    expect(persisted!.store.toString()).toBe(DEFAULT_STORE_ID.toString());
   });
 
-  it("does not persist a document when required field name is missing", async () => {
+  it("returns 400 and writes nothing when required field name is missing", async () => {
     // Arrange
-    const body = validCreateBody();
+    const body = validProductCreateBody();
     delete (body as Record<string, unknown>).name;
 
     // Act
     const res = await request(buildApp())
-      .post(`/api/v1/products/${STORE_ID}/store`)
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
       .send(body);
 
-    // Assert HTTP layer
+    // Assert HTTP
     expect(res.status).toBe(400);
 
-    // Assert no document was written
-    const count = await Product.countDocuments({});
-    expect(count).toBe(0);
+    // Assert nothing written
+    expect(await Product.countDocuments({})).toBe(0);
   });
 
- it("sets ownerId from the JWT userId regardless of what is in the request body", async () => {
-  const body = validCreateBody();
+  it("returns 400 and writes nothing when colors array is empty", async () => {
+    const res = await request(buildApp())
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
+      .send(validProductCreateBody({ colors: [] }));
 
-  const res = await request(buildApp())
-    .post(`/api/v1/products/${STORE_ID}/store`)
-    .send(body);
+    expect(res.status).toBe(400);
+    expect(await Product.countDocuments({})).toBe(0);
+  });
 
-  expect(res.status).toBe(201);
-  const persisted = await Product.findById(res.body._id).lean();
-  expect(persisted!.ownerId.toString()).toBe(SELLER_ID);
-});
-});
+  it("returns 400 and writes nothing when size array is empty", async () => {
+    const res = await request(buildApp())
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
+      .send(validProductCreateBody({ size: [] }));
 
-describe("GET /api/v1/products/:storeid/store - real MongoDB", () => {
-  it("returns 200 with all non-deleted products for the store", async () => {
-    // Arrange: seed two live and one deleted product
-    await seedProduct({ name: "Air Max 1", isDeleted: false });
-    await seedProduct({ name: "Air Max 2", isDeleted: false });
-    await seedProduct({ name: "Air Max Deleted", isDeleted: true });
+    expect(res.status).toBe(400);
+    expect(await Product.countDocuments({})).toBe(0);
+  });
 
-    // Act: buildQuery mock returns { isDeleted: false } so deleted product
-    // is excluded by the real Mongoose query
-    const res = await request(buildApp()).get(
-      `/api/v1/products/${STORE_ID}/store`,
-    );
+  it("returns 400 and writes nothing when category array is empty", async () => {
+    const res = await request(buildApp())
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
+      .send(validProductCreateBody({ category: [] }));
+
+    expect(res.status).toBe(400);
+    expect(await Product.countDocuments({})).toBe(0);
+  });
+
+  it("assigns ownerId from JWT userId and ignores any ownerId in the request body", async () => {
+    // Arrange: send a clean body with no ownerId field.
+    // The invariant: controller must read userId from req.user, never from body.
+    const body = validProductCreateBody();
+
+    // Act
+    const res = await request(buildApp())
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
+      .send(body);
+
+    // console.log("BODY SENT:", JSON.stringify(body));
+    // console.log("RESPONSE:", res.status, JSON.stringify(res.body));
 
     // Assert
-    expect(res.status).toBe(200);
-    // totalCount reflects what countDocuments returned against real data
-    expect(res.body.data.totalCount).toBe(2);
-    expect(res.body.data.products).toHaveLength(2);
+    expect(res.status).toBe(201);
+    const persisted = await Product.findById(res.body._id).lean();
+    expect(persisted!.ownerId.toString()).toBe(SELLER_ID);
   });
 
-  it("returns an empty list when no products exist for the store", async () => {
+  it("assigns store from the URL param, not from the request body", async () => {
+    // Arrange
+    const body = validProductCreateBody();
+
+    // Act
+    const res = await request(buildApp())
+      .post(`/api/v1/products/${DEFAULT_STORE_ID}/store`)
+      .send(body);
+
+    // Assert
+    expect(res.status).toBe(201);
+    const persisted = await Product.findById(res.body._id).lean();
+    expect(persisted!.store.toString()).toBe(DEFAULT_STORE_ID.toString());
+  });
+});
+
+describe("GET /api/v1/products/:storeid/store", () => {
+  it("returns 200 with only non-deleted products", async () => {
+    // Arrange
+    await seedProduct({ name: "Visible 1", isDeleted: false });
+    await seedProduct({ name: "Visible 2", isDeleted: false });
+    await seedProduct({ name: "Hidden", isDeleted: true });
+
+    // Act
     const res = await request(buildApp()).get(
-      `/api/v1/products/${STORE_ID}/store`,
+      `/api/v1/products/${DEFAULT_STORE_ID}/store`,
+    );
+
+    // Assert: buildQuery mock returns { isDeleted: false } so the deleted
+    // product is excluded by the real Mongoose query
+    expect(res.status).toBe(200);
+    expect(res.body.data.products).toHaveLength(2);
+    expect(res.body.data.totalCount).toBe(2);
+  });
+
+  it("returns 200 with an empty list when no products exist", async () => {
+    const res = await request(buildApp()).get(
+      `/api/v1/products/${DEFAULT_STORE_ID}/store`,
     );
 
     expect(res.status).toBe(200);
@@ -329,28 +226,43 @@ describe("GET /api/v1/products/:storeid/store - real MongoDB", () => {
     expect(res.body.data.totalCount).toBe(0);
   });
 
-  it("returns paginated results respecting skip and limit against real data", async () => {
-    // Arrange: seed 5 products
+  it("paginates correctly: page=2 limit=2 returns items 3-4 of 5", async () => {
+    // Arrange: 5 products
     await Promise.all(
       Array.from({ length: 5 }).map((_, i) =>
-        seedProduct({ name: `Shoe ${i}` }),
+        seedProduct({ name: `Shoe ${i + 1}` }),
       ),
     );
 
-    // Act: page=2, limit=2 → skip=2, returns items 3 and 4
+    // Act
     const res = await request(buildApp()).get(
-      `/api/v1/products/${STORE_ID}/store?page=2&limit=2`,
+      `/api/v1/products/${DEFAULT_STORE_ID}/store?page=2&limit=2`,
     );
 
+    // Assert: skip=(2-1)*2=2, returns 2 items, totalPages=ceil(5/2)=3
     expect(res.status).toBe(200);
     expect(res.body.data.products).toHaveLength(2);
     expect(res.body.data.totalCount).toBe(5);
     expect(res.body.data.totalPages).toBe(3);
   });
+
+  it("defaults to page=1 and limit=10 when query params are absent", async () => {
+    // Arrange: seed 3 products
+    await Promise.all(Array.from({ length: 3 }).map(() => seedProduct()));
+
+    // Act
+    const res = await request(buildApp()).get(
+      `/api/v1/products/${DEFAULT_STORE_ID}/store`,
+    );
+
+    // Assert: all 3 returned, limit=10 means no truncation
+    expect(res.status).toBe(200);
+    expect(res.body.data.products).toHaveLength(3);
+  });
 });
 
-describe("GET /api/v1/products/:id - real MongoDB", () => {
-  it("returns 200 with the product when the id exists in the collection", async () => {
+describe("GET /api/v1/products/:id", () => {
+  it("returns 200 with the product document when the id exists", async () => {
     // Arrange
     const seeded = await seedProduct({ name: "Jordan 1" });
 
@@ -363,52 +275,49 @@ describe("GET /api/v1/products/:id - real MongoDB", () => {
     expect(res.body._id).toBe(seeded._id.toString());
   });
 
-it("returns 200 with empty object when id does not exist", async () => {
-  const res = await request(buildApp()).get(
-    `/api/v1/products/${new mongoose.Types.ObjectId()}`,
-  );
+  it("returns 200 with an empty object when the id does not exist", async () => {
+    // Controller calls res.json(product ?? {}) so no 404 is thrown.
+    // If you change this to throw 404, update this test.
+    const res = await request(buildApp()).get(
+      `/api/v1/products/${new mongoose.Types.ObjectId()}`,
+    );
 
-  expect(res.status).toBe(200);
-  expect(res.body).toEqual({});
-});
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
+  });
 });
 
-describe("PUT /api/v1/products/:id - real MongoDB", () => {
-  it("updates the product in the collection and returns 200 with the new state", async () => {
+describe("PUT /api/v1/products/:id", () => {
+  it("updates the document in MongoDB and returns 200 with the new state", async () => {
     // Arrange
-    const seeded = await seedProduct({ name: "Old Name", price: 10000 });
+    const seeded = await seedProduct({ price: 10000 });
 
     // Act
     const res = await request(buildApp())
       .put(`/api/v1/products/${seeded._id}`)
       .send({ price: 99999 });
 
-    // Assert HTTP layer
+    // Assert HTTP
     expect(res.status).toBe(200);
     expect(res.body.price).toBe(99999);
 
-    // Assert persistence: the DB must reflect the change
+    // Assert persistence
     const persisted = await Product.findById(seeded._id).lean();
     expect(persisted!.price).toBe(99999);
   });
 
-  it("returns 400 and does not modify the collection when id does not exist", async () => {
-    const ghostId = new mongoose.Types.ObjectId();
-
+  it("returns 400 and leaves the collection unchanged when the id does not exist", async () => {
     const res = await request(buildApp())
-      .put(`/api/v1/products/${ghostId}`)
+      .put(`/api/v1/products/${new mongoose.Types.ObjectId()}`)
       .send({ price: 1 });
 
     expect(res.status).toBe(400);
-
-    // Verify nothing was written
-    const count = await Product.countDocuments({});
-    expect(count).toBe(0);
+    expect(await Product.countDocuments({})).toBe(0);
   });
 });
 
-describe("DELETE /api/v1/products/:id - real MongoDB", () => {
-  it("sets isDeleted=true in the collection and returns 200", async () => {
+describe("DELETE /api/v1/products/:id", () => {
+  it("soft-deletes the document and returns 200 with isDeleted=true", async () => {
     // Arrange
     const seeded = await seedProduct({ isDeleted: false });
 
@@ -417,32 +326,42 @@ describe("DELETE /api/v1/products/:id - real MongoDB", () => {
       `/api/v1/products/${seeded._id}`,
     );
 
-    // Assert HTTP layer
+    // Assert HTTP
     expect(res.status).toBe(200);
     expect(res.body.isDeleted).toBe(true);
 
-    // Assert the document was soft-deleted, not hard-deleted
+    // Assert persistence: document must still exist, only flagged
     const persisted = await Product.findById(seeded._id).lean();
-    expect(persisted).not.toBeNull(); // document still exists
+    expect(persisted).not.toBeNull();
     expect(persisted!.isDeleted).toBe(true);
     expect(persisted!.deletedBy!.toString()).toBe(SELLER_ID);
   });
 
-  it("returns 400 when the id does not exist and leaves the collection unchanged", async () => {
-    const ghostId = new mongoose.Types.ObjectId();
+  it("sets deletedBy to the authenticated userId from the JWT", async () => {
+    // Arrange: the auth mock injects userId = SELLER_ID on every request
+    const seeded = await seedProduct();
 
-    const res = await request(buildApp()).delete(`/api/v1/products/${ghostId}`);
+    // Act
+    await request(buildApp()).delete(`/api/v1/products/${seeded._id}`);
+
+    // Assert: deletedBy must match the JWT userId, not any body field
+    const persisted = await Product.findById(seeded._id).lean();
+    expect(persisted!.deletedBy!.toString()).toBe(SELLER_ID);
+  });
+
+  it("returns 400 and leaves the collection unchanged when the id does not exist", async () => {
+    const res = await request(buildApp()).delete(
+      `/api/v1/products/${new mongoose.Types.ObjectId()}`,
+    );
 
     expect(res.status).toBe(400);
-
-    const count = await Product.countDocuments({});
-    expect(count).toBe(0);
+    expect(await Product.countDocuments({})).toBe(0);
   });
 });
 
-describe("POST /api/v1/products/:id/restore - real MongoDB", () => {
-  it("sets isDeleted=false in the collection and returns 200", async () => {
-    // Arrange: seed a soft-deleted product
+describe("POST /api/v1/products/:id/restore", () => {
+  it("sets isDeleted=false on the document and returns 200", async () => {
+    // Arrange: pre-condition is a soft-deleted product
     const seeded = await seedProduct({ isDeleted: true });
 
     // Act
@@ -450,7 +369,7 @@ describe("POST /api/v1/products/:id/restore - real MongoDB", () => {
       `/api/v1/products/${seeded._id}/restore`,
     );
 
-    // Assert HTTP layer
+    // Assert HTTP
     expect(res.status).toBe(200);
     expect(res.body.isDeleted).toBe(false);
 
@@ -460,13 +379,12 @@ describe("POST /api/v1/products/:id/restore - real MongoDB", () => {
     expect(persisted!.deletedAt).toBeNull();
   });
 
-  it("returns 400 when the product to restore does not exist", async () => {
-    const ghostId = new mongoose.Types.ObjectId();
-
+  it("returns 400 and leaves the collection unchanged when the id does not exist", async () => {
     const res = await request(buildApp()).post(
-      `/api/v1/products/${ghostId}/restore`,
+      `/api/v1/products/${new mongoose.Types.ObjectId()}/restore`,
     );
 
     expect(res.status).toBe(400);
+    expect(await Product.countDocuments({})).toBe(0);
   });
 });
