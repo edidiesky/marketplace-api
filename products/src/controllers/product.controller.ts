@@ -43,7 +43,7 @@ const GetAllStoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { page = 1, limit = 10 } = req.query;
 
-    const queryFilter = await buildQuery(req);
+    const queryFilter = buildQuery(req);
     const skip = (Number(page) - 1) * Number(limit);
 
     const products = await productService.getAllProducts(

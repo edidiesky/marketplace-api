@@ -173,7 +173,7 @@ app.use(
       defaultModelExpandDepth: 1,
       docExpansion: "none",
     },
-  })
+  }),
 );
 
 // Rate limiting
@@ -285,7 +285,6 @@ app.use(
     }
   },
 );
-
 
 app.use(NotFound);
 app.use(errorHandler);

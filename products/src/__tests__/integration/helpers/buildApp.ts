@@ -16,11 +16,6 @@ export default function buildApp(): Application {
     ) => {
       let message = err instanceof Error ? err.message : String(err);
       let statusCode = err?.statusCode ?? 500;
-      // console.log("Request url error, and message:", {
-      //   statusCode,
-      //   message,
-      //   url: req.url,
-      // });
       res.status(err?.statusCode ?? 500).json({
         message,
       });

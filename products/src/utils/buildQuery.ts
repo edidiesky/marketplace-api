@@ -4,7 +4,7 @@ import { Request } from "express";
 import { IProduct } from "../models/Product";
 import logger from "./logger";
 
-export const buildQuery = async (
+export const buildQuery = (
   req: Request
 ): Promise<FilterQuery<Partial<IProduct>>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;

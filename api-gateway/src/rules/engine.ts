@@ -4,12 +4,7 @@ import logger from "../utils/logger";
 
 const RELOAD_INTERVAL_MS = 60_000;
 
-/**
- * Routes that should use sliding-window-log on the default fallback rule.
- * Token bucket is used for everything else.
- * Auth routes are high-abuse targets: sliding log gives precise per-IP
- * enforcement with no boundary burst, which matters for brute-force protection.
- */
+
 const SLIDING_WINDOW_DEFAULT_PREFIXES = ["/auth/"];
 
 export class RulesEngine {
@@ -38,6 +33,7 @@ export class RulesEngine {
     }
   }
 
+  
   async reload(): Promise<void> {
     await this.loadFromDB();
     logger.info("[RulesEngine] Reloaded via PubSub signal", {
@@ -88,15 +84,12 @@ export class RulesEngine {
     if (userRule && userRule.enabled) {
       return userRule;
     }
-
-    // Route-pattern match from DB rules (insertion order, first match wins).
     for (const rule of this.rules.values()) {
       if (rule.enabled && this.routeMatches(route, rule.route)) {
         return rule;
       }
     }
 
-    // Global default when no DB rule matches.
     return this.buildDefault(route);
   }
 
@@ -118,7 +111,7 @@ export class RulesEngine {
       route: "*",
       tier: "free",
       algorithm: useSlidingWindow ? "sliding-window-log" : "token-bucket",
-      limit: 60,
+      limit: 10,
       windowMs: 60_000,
       enabled: true,
     };
@@ -129,16 +122,6 @@ export class RulesEngine {
     logger.info("[RulesEngine] Rule upserted in memory", { ruleId: rule.id });
   }
 
-  /**
-   * Immediately remove the rule from the in-memory map.
-   * Without this, a deleted DB rule stays active for up to RELOAD_INTERVAL_MS
-   * (60s) because loadFromDB only runs on the interval or a PubSub signal.
-   * The PubSub signal triggers reload() which calls loadFromDB(), so after
-   * RulesService.syncToEngine emits rules:reload, the next reload will not
-   * include the deleted rule. But on the publishing instance itself there is
-   * a window between the delete and the reload signal completing. Calling
-   * deleteRule() here closes that window to zero on the publishing instance.
-   */
   async deleteRule(ruleId: string): Promise<void> {
     const deleted = this.rules.delete(ruleId);
     if (deleted) {

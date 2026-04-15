@@ -7,16 +7,6 @@ import logger from "../utils/logger";
 
 const KEY_PREFIX = "rl:gateway";
 
-/**
- * Shared limiter instances. These own the Redis connection and the Lua script
- * SHA cache. They do NOT own the rate limit parameters - those come from the
- * matched rule and are forwarded as per-call overrides on every consume() call.
- *
- * Instance-level config (capacity: 10, refillRate: 1) acts as the fallback
- * when no override is provided, which only happens if consume() is called
- * without an override object. In this middleware that never happens because
- * we always build the override from the matched rule.
- */
 const tokenBucket = new TokenBucketLimiter(redisClient.getClient(), {
   capacity: 10,    
   refillRate: 1,    
@@ -44,17 +34,6 @@ function extractUserId(req: Request): string {
   return (req as any).user?.userId ?? getRealIp(req);
 }
 
-/**
- * Compute refillRate (tokens/second) from a rule.
- *
- * If the rule carries an explicit refillRate, use it directly.
- * Otherwise derive it from limit/windowMs so the bucket refills exactly
- * once per average inter-request interval:
- *   refillRate = limit / (windowMs / 1000)
- *
- * Example: limit=4, windowMs=60_000 -> 4 / 60 = 0.0667 tokens/sec
- * At this rate a full bucket of 4 tokens refills in exactly 10 seconds.
- */
 function computeRefillRate(rule: {
   limit: number;
   windowMs: number;

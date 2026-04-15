@@ -197,7 +197,16 @@ export class InventoryRepository implements IInventoryRepository {
     session?: mongoose.ClientSession,
   ): Promise<IInventory> {
     try {
-      const [inventory] = await Inventory.create([data], { session });
+      const [inventory] = await Inventory.create(
+        [
+          {
+            ...data,
+            quantityAvailable: data.quantityOnHand ?? 0,
+            quantityReserved: 0,
+          },
+        ],
+        { session },
+      );
 
       logger.info("Inventory created successfully", {
         storeId: inventory._id,

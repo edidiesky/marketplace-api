@@ -1,7 +1,4 @@
 //  MOCKS
-// Rule: mock block always appears before imports. Jest hoists these calls
-// redis > metrics > OutboxEvent > withTransaction > auth > es > buildQuery
-
 jest.mock("../../config/redis", () => {
   const RedisMock = require("ioredis-mock");
   return { __esModule: true, default: new RedisMock() };
@@ -38,10 +35,6 @@ jest.mock("../../models/OutboxEvent", () => {
   };
 });
 
-// withTransaction: MongoMemoryServer runs as a standalone node, not a
-// replica set. Transactions require a replica set. We unwrap the callback
-// and pass undefined as the session so the repository session guard
-// (session ? { session } : {}) never attaches a session to Mongoose queries.
 jest.mock("../../utils/withTransaction", () => ({
   withTransaction: jest
     .fn()
