@@ -353,6 +353,7 @@ describe("POST /api/v1/inventories/reserve", () => {
       quantityOnHand: 50,
     });
 
+
     // Act
     const res = await request(buildApp())
       .post("/api/v1/inventories/reserve")
@@ -363,6 +364,7 @@ describe("POST /api/v1/inventories/reserve", () => {
         userId: SELLER_ID,
         sagaId: "saga-reserve-001",
       });
+      
 
     // Assert HTTP
     expect(res.status).toBe(201);
