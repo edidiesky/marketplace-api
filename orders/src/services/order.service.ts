@@ -14,6 +14,7 @@ import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import { fulfillmentTransitions } from "../utils/fulfillmentTransitions";
 import { generateReceiptBuffer } from "../utils/generateReceipt";
 import { uploadToCloudinary } from "../utils/cloudinary";
+import { AppError } from "../utils/AppError";
 
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4009";
 const INVENTORY_SERVICE_URL =
@@ -94,11 +95,25 @@ export class OrderService {
   }
 
   private async fetchCart(cartId: string): Promise<CartSnapshot> {
-    const res = await this.fetchWithTimeout(
-      `${CART_SERVICE_URL}/api/v1/carts/internal/${cartId}`,
-      { method: "GET", headers: this.internalHeaders() },
-    );
-    if (!res.ok) throw new Error(`CART_FETCH_FAILED:${res.status}`);
+    let res: Response;
+    try {
+      res = await this.fetchWithTimeout(
+        `${CART_SERVICE_URL}/api/v1/carts/internal/${cartId}`,
+        { method: "GET", headers: this.internalHeaders() },
+      );
+    } catch (err) {
+      logger.error("Cart service unreachable", { cartId, err });
+      throw AppError.serviceUnavailable("Cart service is currently unavailable");
+    }
+
+    if (res.status === 404) {
+      throw AppError.notFound(`Cart ${cartId} not found`);
+    }
+
+    if (!res.ok) {
+      throw AppError.badRequest(`CART_FETCH_FAILED:${res.status}`);
+    }
+
     return res.json() as Promise<CartSnapshot>;
   }
 
@@ -109,14 +124,21 @@ export class OrderService {
     sagaId: string,
     userId: string,
   ): Promise<void> {
-    const res = await this.fetchWithTimeout(
-      `${INVENTORY_SERVICE_URL}/api/v1/inventories/reserve`,
-      {
-        method: "POST",
-        headers: this.internalHeaders(),
-        body: JSON.stringify({ storeId, productId, quantity, userId, sagaId }),
-      },
-    );
+    let res: Response;
+    try {
+      res = await this.fetchWithTimeout(
+        `${INVENTORY_SERVICE_URL}/api/v1/inventories/reserve`,
+        {
+          method: "POST",
+          headers: this.internalHeaders(),
+          body: JSON.stringify({ storeId, productId, quantity, userId, sagaId }),
+        },
+      );
+    } catch (err) {
+      throw AppError.serviceUnavailable(
+        "Inventory service is currently unavailable",
+      );
+    }
 
     if (!res.ok) {
       const body = (await res.json()) as {
@@ -126,13 +148,7 @@ export class OrderService {
       if (res.status === 400) {
         logger.warn(
           `INSUFFICIENT_STOCK:${body.availableStock ?? 0}:${productId}`,
-          {
-            storeId,
-            productId,
-            userId,
-            sagaId,
-            quantity,
-          },
+          { storeId, productId, userId, sagaId, quantity },
         );
         throw new Error(
           `INSUFFICIENT_STOCK:${body.availableStock ?? 0}:${productId}`,
@@ -140,20 +156,12 @@ export class OrderService {
       }
       if (res.status === 409) {
         logger.warn(`STOCK_CONTENTION:${productId}`, {
-          storeId,
-          productId,
-          userId,
-          sagaId,
-          quantity,
+          storeId, productId, userId, sagaId, quantity,
         });
         throw new Error(`STOCK_CONTENTION:${productId}`);
       }
       logger.warn(`RESERVE_FAILED:${productId}`, {
-        storeId,
-        productId,
-        userId,
-        sagaId,
-        quantity,
+        storeId, productId, userId, sagaId, quantity,
       });
       throw new Error(`RESERVE_FAILED:${productId}`);
     }
@@ -172,13 +180,7 @@ export class OrderService {
         {
           method: "POST",
           headers: this.internalHeaders(),
-          body: JSON.stringify({
-            storeId,
-            productId,
-            quantity,
-            userId,
-            sagaId,
-          }),
+          body: JSON.stringify({ storeId, productId, quantity, userId, sagaId }),
         },
       );
     } catch (err) {
@@ -191,27 +193,13 @@ export class OrderService {
     }
   }
 
-  /**
-   * Checkout flow:
-   *
-   * 1. Idempotency check on requestId
-   * 2. Fetch cart from cart service (server-side, not from client)
-   * 3. Reserve inventory per item via HTTP (synchronous, fail fast)
-   * 4. Create order in PAYMENT_PENDING inside MongoDB transaction
-   * 5. Cache order
-   *
-   * State: PENDING to RESERVING to PAYMENT_PENDING
-   *
-   * The user is redirected to the order page after this returns.
-   * Payment is initiated separately when the user selects a provider.
-   */
   async checkout(
     userId: string,
     storeId: string,
     cartId: string,
     requestId: string,
   ): Promise<IOrder> {
-    // Step 1: Idempotency
+    // Idempotency check
     const existing = await this.repo.getOrderByRequestId(requestId);
     if (existing) {
       logger.info("Duplicate checkout, returning existing order", {
@@ -225,17 +213,10 @@ export class OrderService {
     const cart = await this.fetchCart(cartId);
 
     if (!cart.cartItems.length) {
-      logger.warn("Cart is empty:", {
-        userId,
-        storeId,
-        cartId,
-        requestId,
-      });
-      throw new Error("Cart is empty");
+      logger.warn("Cart is empty:", { userId, storeId, cartId, requestId });
+      throw AppError.badRequest("Cart is empty");
     }
 
-    // Reserve inventory per item
-    // Track reserved items so we can roll back on partial failure
     const reservedItems: Array<{ productId: string; quantity: number }> = [];
     const failedItems: Array<{
       productId: string;
@@ -266,6 +247,7 @@ export class OrderService {
             ? "Out of stock"
             : "Reservation failed",
         });
+
         for (const reserved of reservedItems) {
           await this.releaseItem(
             storeId,
@@ -283,15 +265,12 @@ export class OrderService {
           userId,
         });
 
-        const error = new Error("One or more items are unavailable") as any;
-        error.statusCode = 400;
+        const error = AppError.badRequest("One or more items are unavailable");
         error.failedItems = failedItems;
         throw error;
       }
     }
 
-    // Step 4: Create order in PAYMENT_PENDING inside a transaction
-    // No HTTP calls inside this block
     const order = await withTransaction(async (session) => {
       return this.repo.createOrder(
         {
@@ -318,6 +297,7 @@ export class OrderService {
         session,
       );
     });
+
     await this.writeCache(order._id.toString(), order);
 
     logger.info("Checkout complete, order in PAYMENT_PENDING", {
@@ -330,11 +310,6 @@ export class OrderService {
     return order;
   }
 
-  /**
-   * Add shipping details to an existing order.
-   * Only allowed when order is in PAYMENT_PENDING or PAYMENT_INITIATED state.
-   * Shipping is frozen once order reaches COMPLETED or FAILED.
-   */
   async addShipping(
     userId: string,
     orderId: string,
@@ -343,24 +318,13 @@ export class OrderService {
     const order = await this.repo.getOrderById(orderId);
 
     if (!order) {
-      logger.warn("Order was not found for the order id provided,", {
-        userId,
-        orderId,
-        shipping,
-      });
-      throw new Error("Order was not found for the order id provided");
+      logger.warn("Order not found", { userId, orderId });
+      throw AppError.notFound("Order was not found for the order id provided");
     }
 
     if (order.userId.toString() !== userId) {
-      logger.warn(
-        "You are not authorized to perform this operation since you are not the owner of this order item",
-        {
-          userId,
-          orderId,
-          shipping,
-        },
-      );
-      throw new Error(
+      logger.warn("Unauthorized shipping update attempt", { userId, orderId });
+      throw AppError.forbidden(
         "You are not authorized to perform this operation since you are not the owner of this order item",
       );
     }
@@ -373,13 +337,9 @@ export class OrderService {
     if (!mutableStates.includes(order.orderStatus)) {
       logger.warn(
         `Cannot update shipping for order in status: ${order.orderStatus}`,
-        {
-          userId,
-          orderId,
-          status: order.orderStatus,
-        },
+        { userId, orderId, status: order.orderStatus },
       );
-      throw new Error(
+      throw AppError.badRequest(
         `Cannot update shipping for order in status: ${order.orderStatus}`,
       );
     }
@@ -409,7 +369,11 @@ export class OrderService {
     return order;
   }
 
-  async getUserOrders(query: FilterQuery<IOrder>, skip: number, limit: number) {
+  async getUserOrders(
+    query: FilterQuery<IOrder>,
+    skip: number,
+    limit: number,
+  ) {
     const [orders, totalCount] = await Promise.all([
       this.repo.getUserOrders(query, skip, limit),
       Order.countDocuments(query),
@@ -468,30 +432,25 @@ export class OrderService {
   ): Promise<IOrder | null> {
     const order = await this.repo.getOrderById(orderId);
 
-    if (!order) throw new Error("Order not found");
+    if (!order) {
+      throw AppError.notFound("Order not found");
+    }
 
-    // Only the seller who owns this order can update fulfillment
     if (order.sellerId.toString() !== sellerId) {
-      logger.warn(`The user is not authprized to perform this action`, {
+      logger.warn("Unauthorized fulfillment update attempt", {
         sellerId,
         orderId,
         status,
-        courierName,
       });
-      throw new Error("Unauthorized");
+      throw AppError.forbidden("Unauthorized");
     }
 
     if (order.orderStatus !== OrderStatus.COMPLETED) {
       logger.warn(
         `Cannot update fulfillment for order in payment status: ${order.orderStatus}`,
-        {
-          sellerId,
-          orderId,
-          status,
-          courierName,
-        },
+        { sellerId, orderId, status },
       );
-      throw new Error(
+      throw AppError.badRequest(
         `Cannot update fulfillment for order in payment status: ${order.orderStatus}`,
       );
     }
@@ -504,14 +463,9 @@ export class OrderService {
     ) {
       logger.warn(
         `Invalid transition: ${order.fulfillmentStatus} to ${status}`,
-        {
-          sellerId,
-          orderId,
-          status,
-          courierName,
-        },
+        { sellerId, orderId, status },
       );
-      throw new Error(
+      throw AppError.badRequest(
         `Invalid transition: ${order.fulfillmentStatus} to ${status}`,
       );
     }
@@ -538,6 +492,7 @@ export class OrderService {
 
     return updated;
   }
+
   async markPaymentInitiated(
     orderId: string,
     transactionId: string,
@@ -548,51 +503,46 @@ export class OrderService {
       { transactionId },
     );
     if (order) await this.writeCache(orderId, order);
-
     logger.info("Order marked PAYMENT_INITIATED", { orderId, transactionId });
     return order;
   }
 
   async generateAndPersistReceipt(
-  orderId: string,
-  transactionId: string,
-  paymentDate: Date,
-  storeName: string
-): Promise<string | null> {
-  const order = await this.repo.getOrderById(orderId);
-  if (!order) {
-    logger.error("Order not found for receipt generation", { orderId });
-    return null;
+    orderId: string,
+    transactionId: string,
+    paymentDate: Date,
+    storeName: string,
+  ): Promise<string | null> {
+    const order = await this.repo.getOrderById(orderId);
+    if (!order) {
+      logger.error("Order not found for receipt generation", { orderId });
+      return null;
+    }
+
+    try {
+      const buffer = await generateReceiptBuffer({
+        order,
+        storeName,
+        transactionId,
+        paymentDate,
+      });
+
+      const publicId = `receipt_${orderId}_${Date.now()}`;
+      const receiptUrl = await uploadToCloudinary(buffer, publicId);
+
+      await this.repo.updateReceiptUrl(orderId, receiptUrl);
+      await this.invalidateCache(orderId);
+
+      logger.info("Receipt generated and persisted", { orderId, receiptUrl });
+      return receiptUrl;
+    } catch (err: any) {
+      logger.error("Receipt generation failed", {
+        orderId,
+        error: err.message,
+      });
+      return null;
+    }
   }
-
-  try {
-    const buffer = await generateReceiptBuffer({
-      order,
-      storeName,
-      transactionId,
-      paymentDate,
-    });
-
-    const publicId = `receipt_${orderId}_${Date.now()}`;
-    const receiptUrl = await uploadToCloudinary(buffer, publicId);
-
-    await this.repo.updateReceiptUrl(orderId, receiptUrl);
-    await this.invalidateCache(orderId);
-
-    logger.info("Receipt generated and persisted", {
-      orderId,
-      receiptUrl,
-    });
-
-    return receiptUrl;
-  } catch (err: any) {
-    logger.error("Receipt generation failed", {
-      orderId,
-      error: err.message,
-    });
-    return null;
-  }
-}
 }
 
 export const orderService = new OrderService();
