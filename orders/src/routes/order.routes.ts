@@ -8,11 +8,13 @@ import {
   GetOrderHandler,
   UpdateFulfillmentHandler,
 } from "../controllers/order.controller";
+
 import {
   CheckoutSchema,
   FulfillmentSchema,
   ShippingSchema,
 } from "../validators/order.validation";
+import { authenticateOrInternal } from "../middleware/internal";
 
 const router = express.Router();
 
@@ -229,7 +231,7 @@ router.get("/:storeId/store", authenticate, GetUserOrdersHandler);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get("/detail/:id", authenticate, GetOrderHandler);
+router.get("/detail/:id", authenticateOrInternal, GetOrderHandler);
 
 /**
  * @openapi

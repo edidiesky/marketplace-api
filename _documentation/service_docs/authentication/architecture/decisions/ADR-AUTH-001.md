@@ -16,4 +16,3 @@ What I gained: hot path requests only verify the JWT signature and check one Red
 What I gave up: a stolen access token is valid for up to 15 minutes even after logout. I accept this window. The blocklist partially closes it: on logout I write a blocklist key to Redis so even a valid JWT is rejected if the user has logged out.
  
 What I now live with: two tokens to manage on the client side, and I must make sure the refresh rotation logic is correct or I will lock users out.
- 
