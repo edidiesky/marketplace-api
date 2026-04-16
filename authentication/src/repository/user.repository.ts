@@ -6,7 +6,7 @@ export const userRepository = {
   async findByEmail(
     email: string,
     select?: string,
-    session?: ClientSession
+    session?: ClientSession,
   ): Promise<IUser | null> {
     const query = User.findOne({ email });
     if (select) query.select(select);
@@ -14,36 +14,31 @@ export const userRepository = {
     return query.lean();
   },
 
-  async findById(
-    id: string,
-    select?: string
-  ): Promise<IUser | null> {
+  async findById(id: string, select?: string): Promise<IUser | null> {
     const query = User.findById(id);
     if (select) query.select(select);
     return query.lean();
   },
 
-  async create(
-    data: Partial<IUser>[],
-    session: ClientSession
-  ): Promise<IUser[]> {
-    return User.create(data, { session });
-  },
+async create(
+  data: Partial<IUser>[],
+  session: ClientSession | undefined,
+): Promise<IUser[]> {
+  const options = session ? { session } : {};
+  return User.create(data, options) as unknown as Promise<IUser[]>;
+},
 
   async updateById(
     id: string,
     update: Partial<IUser>,
-    session?: ClientSession
+    session?: ClientSession,
   ): Promise<IUser | null> {
     const query = User.findByIdAndUpdate(id, { $set: update }, { new: true });
     if (session) query.session(session);
     return query.lean();
   },
 
-  async updateByEmail(
-    email: string,
-    update: Partial<IUser>
-  ): Promise<void> {
+  async updateByEmail(email: string, update: Partial<IUser>): Promise<void> {
     await User.updateOne({ email }, { $set: update });
   },
 

@@ -104,9 +104,6 @@ export class InventoryService {
   /**
    * Reserve stock for an order.
    * Uses MVCC (optimistic concurrency via __v version field) to handle
-   * concurrent reservations without distributed locking.
-   * The $gte guard on quantityAvailable ensures atomic insufficient stock detection.
-   * Redis reservation key provides idempotency per sagaId.
    */
   async reserveStock(
     productId: string,

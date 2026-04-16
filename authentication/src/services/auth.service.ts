@@ -28,9 +28,11 @@ import {
 } from "../constants";
 import { Gender, UserType } from "../models/User";
 import { Response } from "express";
+import { AppError } from "../utils/AppError";
 
-//  ONBOARDING
 export const authService = {
+  //  ONBOARDING
+
   async initiateEmailOnboarding(params: {
     email: string;
     firstName: string;
@@ -46,7 +48,7 @@ export const authService = {
         event: "email_onboarding_duplicate",
         email: normalizedEmail,
       });
-      throw new Error("Email already registered");
+      throw AppError.badRequest("Email already registered");
     }
 
     const token = uuidv4();
@@ -85,7 +87,7 @@ export const authService = {
         event: "email_token_confirm_no_session",
         email,
       });
-      throw new Error(
+      throw AppError.badRequest(
         "No onboarding session found. Please restart the process.",
       );
     }
@@ -97,7 +99,9 @@ export const authService = {
         event: "email_token_confirm_invalid",
         email,
       });
-      throw new Error("The token provided is not valid for onboarding");
+      throw AppError.badRequest(
+        "The token provided is not valid for onboarding",
+      );
     }
 
     if (Date.now() > (onboardingData.tokenObject?.expiresAt ?? 0)) {
@@ -106,7 +110,7 @@ export const authService = {
         email,
         expiresAt: onboardingData.tokenObject.expiresAt,
       });
-      throw new Error(
+      throw AppError.badRequest(
         "The token has expired. Please retry the onboarding flow.",
       );
     }
@@ -130,7 +134,7 @@ export const authService = {
         event: "password_step_no_session",
         email,
       });
-      throw new Error(
+      throw AppError.badRequest(
         "No onboarding session found. Please restart the process.",
       );
     }
@@ -168,7 +172,7 @@ export const authService = {
         email: normalizedEmail,
         currentStep: onboardingData?.step,
       });
-      throw new Error("Please complete all onboarding steps first");
+      throw AppError.badRequest("Please complete all onboarding steps first");
     }
 
     const { passwordHash, firstName, lastName } = onboardingData;
@@ -187,7 +191,7 @@ export const authService = {
           event: "registration_duplicate_user",
           email: normalizedEmail,
         });
-        throw new Error(
+        throw AppError.badRequest(
           "An account with this email already exists. Please login instead.",
         );
       }
@@ -284,9 +288,8 @@ export const authService = {
         ip,
         userAgent,
       });
-      throw Object.assign(
-        new Error("No account found with this email. Please sign up."),
-        { statusCode: 401 },
+      throw AppError.unauthorized(
+        "No account found with this email. Please sign up.",
       );
     }
 
@@ -297,9 +300,8 @@ export const authService = {
         email,
         ip,
       });
-      throw Object.assign(
-        new Error("Your account has been restricted. Please contact support."),
-        { statusCode: 400 },
+      throw AppError.badRequest(
+        "Your account has been restricted. Please contact support.",
       );
     }
 
@@ -310,9 +312,7 @@ export const authService = {
         userId: user._id?.toString(),
         email,
       });
-      throw Object.assign(new Error("Invalid password credentials."), {
-        statusCode: 400,
-      });
+      throw AppError.badRequest("Invalid password credentials.");
     }
 
     const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
@@ -364,7 +364,7 @@ export const authService = {
         event: "2fa_verify_user_not_found",
         email,
       });
-      throw new Error("User not found");
+      throw AppError.badRequest("User not found");
     }
 
     const cachedTokenStr = await redisClient.get(`2fa:${email}`);
@@ -374,7 +374,7 @@ export const authService = {
         userId: (user as any)._id?.toString(),
         email,
       });
-      throw new Error("Invalid or expired 2FA token");
+      throw AppError.badRequest("Invalid or expired 2FA token");
     }
 
     const cachedToken = JSON.parse(cachedTokenStr);
@@ -387,7 +387,7 @@ export const authService = {
         userId: (user as any)._id?.toString(),
         email,
       });
-      throw new Error("Invalid or expired 2FA token");
+      throw AppError.badRequest("Invalid or expired 2FA token");
     }
 
     if ((user as any).tenantId && (user as any).tenantStatus !== "ACTIVE") {
@@ -397,11 +397,8 @@ export const authService = {
         tenantId: (user as any).tenantId,
         tenantStatus: (user as any).tenantStatus,
       });
-      throw Object.assign(
-        new Error(
-          "Your account setup is still processing. Please try again in a moment.",
-        ),
-        { statusCode: 403 },
+      throw AppError.forbidden(
+        "Your account setup is still processing. Please try again in a moment.",
       );
     }
 
@@ -442,9 +439,7 @@ export const authService = {
       logger.warn("Refresh token failed: token not found in Redis", {
         event: "refresh_token_not_found",
       });
-      throw Object.assign(new Error("Invalid or expired refresh token"), {
-        statusCode: 401,
-      });
+      throw AppError.unauthorized("Invalid or expired refresh token");
     }
 
     const { userId, userType, name } = JSON.parse(cached);
@@ -455,7 +450,7 @@ export const authService = {
         event: "refresh_token_user_not_found",
         userId,
       });
-      throw new Error("User not found");
+      throw AppError.badRequest("User not found");
     }
 
     const newAccessToken = await signJwt(
@@ -500,9 +495,7 @@ export const authService = {
         event: "password_reset_request_user_not_found",
         email,
       });
-      throw Object.assign(new Error("No account found for this email."), {
-        statusCode: 401,
-      });
+      throw AppError.unauthorized("No account found for this email.");
     }
 
     const token = await generateSecureToken((user as any)._id.toString());
@@ -513,7 +506,11 @@ export const authService = {
       email,
     });
 
-    // sendAuthenticationMessage("auth.password.reset.token", { email, token, name: fullName });
+    // TODO: save token to PasswordResetToken collection and send email
+    // Currently broken: token is generated but never persisted.
+    // resetPassword will always return 400 until this is fixed.
+    // await passwordResetRepository.create({ token, userId: user._id, expiresAt });
+    // await sendAuthenticationMessage("auth.password.reset.token", { email, token });
   },
 
   async resetPassword(params: {
@@ -527,7 +524,7 @@ export const authService = {
       logger.warn("Password reset failed: token not found", {
         event: "password_reset_token_not_found",
       });
-      throw new Error(
+      throw AppError.badRequest(
         "The password reset token is not valid. Please request a new one.",
       );
     }
@@ -539,7 +536,7 @@ export const authService = {
         userId: resetToken.userId?.toString(),
         expiresAt: resetToken.expiresAt,
       });
-      throw new Error(
+      throw AppError.badRequest(
         "The password reset token has expired. Please request a new link.",
       );
     }
@@ -550,9 +547,7 @@ export const authService = {
         event: "password_reset_user_not_found",
         userId: resetToken.userId?.toString(),
       });
-      throw Object.assign(new Error("No account found for this token."), {
-        statusCode: 401,
-      });
+      throw AppError.unauthorized("No account found for this token.");
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -630,4 +625,3 @@ export const authService = {
     }
   },
 };
-
