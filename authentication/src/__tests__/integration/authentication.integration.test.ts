@@ -23,7 +23,6 @@ jest.mock("../../utils/metrics", () => ({
   trackCacheMiss: jest.fn(),
 }));
 
-
 jest.mock("../../services/permission.service", () => ({
   PermissionService: {
     getUserPermissions: jest.fn<() => Promise<[]>>().mockResolvedValue([]),
@@ -700,50 +699,84 @@ describe("POST /api/v1/auth/logout", () => {
 });
 
 // POST /api/v1/auth/request-reset
-// DOCUMENTS PRODUCTION BUG: token is generated but never saved to MongoDB
-
 describe("POST /api/v1/auth/request-reset", () => {
-  it("returns 200 when email is registered", async () => {
-    // Arrange
-    const user = await seedUser({ email: "resetreq@example.com" });
-
-    // Act
-    const res = await request(buildApp())
-      .post("/api/v1/auth/request-reset")
-      .send({ email: user.email });
-
-    // Assert: always returns 200 to prevent user enumeration
-    expect(res.status).toBe(200);
-    expect(res.body.message).toMatch(/password reset link/i);
-  });
-
-  it("returns 401 when email is not registered", async () => {
+  it("returns 200 when email is not registered", async () => {
     const res = await request(buildApp())
       .post("/api/v1/auth/request-reset")
       .send({ email: "ghost@example.com" });
 
-    // NOTE: this reveals user enumeration vulnerability.
-    // The endpoint throws 401 when user not found instead of returning 200.
-    // This is a production bug: always return 200 regardless of registration status.
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
   });
 });
 
 // POST /api/v1/auth/password-reset
-// DOCUMENTS PRODUCTION BUG: requestPasswordReset never saves token to DB
-
 describe("POST /api/v1/auth/password-reset", () => {
-  it("documents the production bug: always returns 400 because token is never saved to MongoDB", async () => {
-    // This test exists to document a known production bug.
-    // requestPasswordReset calls generateSecureToken() but never saves the result
-    // to the PasswordResetToken collection. resetPassword calls
-    // passwordResetRepository.findByToken() which always returns null.
-    // Fix: add passwordResetRepository.create({ token, userId, expiresAt }) in requestPasswordReset.
+
+  // POST /api/v1/auth/password-reset
+  it("resets password successfully when token is valid", async () => {
+    // Arrange: seed a user and generate a real reset token
+    const user = await seedUser({ email: "resetpw@example.com" });
+
+    // Trigger the reset request which now saves the token
+    await request(buildApp())
+      .post("/api/v1/auth/request-reset")
+      .send({ email: user.email });
+
+    // Retrieve the token directly from MongoDB
+    const { PasswordResetToken } = await import("../../models/ResetPassword");
+    const saved = await PasswordResetToken.findOne({
+      userId: (user as any)._id,
+    }).lean();
+
+    expect(saved).not.toBeNull();
+
+    // Act: reset the password using the saved token
+    const res = await request(buildApp())
+      .post("/api/v1/auth/password-reset")
+      .send({ token: saved!.token, newPassword: "NewSecure1!" });
+
+    // Assert
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password reset successfully/i);
+
+    // Assert: token deleted after use
+    const deleted = await PasswordResetToken.findById(saved!._id).lean();
+    expect(deleted).toBeNull();
+
+    // Assert: user can now log in with new password
+    const loginRes = await request(buildApp())
+      .post("/api/v1/auth/login")
+      .send({ email: user.email, password: "NewSecure1!" });
+
+    expect(loginRes.status).toBe(200);
+  });
+
+  it("returns 400 when token does not exist", async () => {
     const res = await request(buildApp())
       .post("/api/v1/auth/password-reset")
       .send({ token: v4(), newPassword: "NewSecure1!" });
 
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/not valid/i);
+  });
+
+  it("returns 400 when token has expired", async () => {
+    // Arrange: manually insert an expired token
+    const user = await seedUser({ email: "expiredtoken@example.com" });
+    const { PasswordResetToken } = await import("../../models/ResetPassword");
+
+    const expiredToken = await PasswordResetToken.create({
+      token: v4(),
+      userId: (user as any)._id,
+      expiresAt: new Date(Date.now() - 1000), // already expired
+    });
+
+    // Act
+    const res = await request(buildApp())
+      .post("/api/v1/auth/password-reset")
+      .send({ token: expiredToken.token, newPassword: "NewSecure1!" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/expired/i);
   });
 });

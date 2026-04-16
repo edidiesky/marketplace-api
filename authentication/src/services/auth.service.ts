@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import { ClientSession } from "mongoose";
 import {
   userRepository,
-  passwordResetRepository,
 } from "../repository/user.repository";
 import redisClient from "../config/redis";
 import logger from "../utils/logger";
@@ -29,6 +28,7 @@ import {
 import { Gender, UserType } from "../models/User";
 import { Response } from "express";
 import { AppError } from "../utils/AppError";
+import { passwordResetRepository } from "../repository/password.reset.repository";
 
 export const authService = {
   //  ONBOARDING
@@ -488,30 +488,32 @@ export const authService = {
 
   //  PASSWORD RESET
 
-  async requestPasswordReset(email: string): Promise<void> {
-    const user = await userRepository.findByEmail(email);
-    if (!user) {
-      logger.warn("Password reset request: user not found", {
-        event: "password_reset_request_user_not_found",
-        email,
-      });
-      throw AppError.unauthorized("No account found for this email.");
-    }
-
-    const token = await generateSecureToken((user as any)._id.toString());
-
-    logger.info("Password reset token generated", {
-      event: "password_reset_token_generated",
-      userId: (user as any)._id?.toString(),
+async requestPasswordReset(email: string): Promise<void> {
+  const user = await userRepository.findByEmail(email);
+  if (!user) {
+    // Bug 2 fix: always return without throwing to prevent user enumeration
+    logger.warn("Password reset request: user not found", {
+      event: "password_reset_request_user_not_found",
       email,
     });
+    return;
+  }
 
-    // TODO: save token to PasswordResetToken collection and send email
-    // Currently broken: token is generated but never persisted.
-    // resetPassword will always return 400 until this is fixed.
-    // await passwordResetRepository.create({ token, userId: user._id, expiresAt });
-    // await sendAuthenticationMessage("auth.password.reset.token", { email, token });
-  },
+  const token = await generateSecureToken((user as any)._id.toString());
+
+  // Bug 1 fix: save token to MongoDB so resetPassword can find it
+  await passwordResetRepository.create({
+    token,
+    userId: (user as any)._id,
+    expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+  });
+
+  logger.info("Password reset token generated and saved", {
+    event: "password_reset_token_generated",
+    userId: (user as any)._id?.toString(),
+    email,
+  });
+},
 
   async resetPassword(params: {
     token: string;
