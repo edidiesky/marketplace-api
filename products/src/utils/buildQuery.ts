@@ -6,7 +6,7 @@ import logger from "./logger";
 
 export const buildQuery = (
   req: Request
-): Promise<FilterQuery<Partial<IProduct>>> => {
+): FilterQuery<Partial<IProduct>> => {
   const { userId, role } = (req as AuthenticatedRequest).user;
   const {
     name,
@@ -25,7 +25,6 @@ export const buildQuery = (
   };
 
   if (role !== "ADMIN") {
-    // queryFilter.ownerId = new Types.ObjectId(userId);
     queryFilter.isDeleted = isDeleted === "true" ? true : false;
   }
 

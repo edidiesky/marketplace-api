@@ -4,11 +4,12 @@ import logger from "../utils/logger";
 import { UNAUTHORIZED_STATUS_CODE } from "../constants";
 import { Permission, RoleLevel } from "../models/User";
 import { AuthenticatedRequest } from "../types";
+import redisClient from "../config/redis";
 
 export const authenticate = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   const token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
 
@@ -32,7 +33,20 @@ export const authenticate = async (
 
   try {
     const decoded = (jwt.verify(token, jwtSecret) as AuthenticatedRequest).user;
-
+    // CHECK IF THE USER HAS BEEN blacklisted also
+    const isBlacklisted = await redisClient.get(`blocklist:${decoded.userId}`);
+    if (isBlacklisted) {
+      logger.error("Access token blocklisted on logout", {
+        event: "logout_token_blocklisted",
+        userId: decoded.userId,
+        isBlacklisted,
+      });
+      res.status(500).json({
+        error: "Forbidden",
+        message: "You don't have permission to perform this action",
+      });
+      return;
+    }
     // Now safe to assign
     (req as AuthenticatedRequest).user = {
       userId: decoded.userId,
@@ -69,7 +83,7 @@ export const requirePermissions = (requiredPermissions: Permission[]) => {
     }
 
     const hasPermission = requiredPermissions.every((perm) =>
-      user.permissions.includes(perm)
+      user.permissions.includes(perm),
     );
 
     if (!hasPermission) {

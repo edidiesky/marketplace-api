@@ -589,7 +589,6 @@ async requestPasswordReset(email: string): Promise<void> {
   },
 
   //  LOGOUT
-
   async logout(params: {
     token?: string;
     refreshToken?: string;
