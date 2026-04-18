@@ -9,9 +9,10 @@ import {
   ReserveStockHandler,
   ReleaseStockHandler,
   CommitStockHandler,
+  ExpireReservationHandler,
 } from "../controllers/inventory.controller";
 import { authenticate } from "../middleware/auth.middleware";
-import { inventorySchema } from "../validators/inventory.validation";
+import { expireReservationSchema, inventorySchema } from "../validators/inventory.validation";
 import { validateRequest } from "../middleware/validate.middleware";
 import { internalOnly } from "../middleware/internal.middleware";
 
@@ -454,5 +455,13 @@ router
   .get(authenticate, GetSingleStoreInventoryHandler)
   .put(authenticate, UpdateInventoryHandler)
   .delete(authenticate, DeleteInventoryHandler);
+
+
+router.post(
+  "/internal/reservations/:sagaId/expire",
+  internalOnly,
+  validateRequest(expireReservationSchema),
+  ExpireReservationHandler
+);
 
 export default router;

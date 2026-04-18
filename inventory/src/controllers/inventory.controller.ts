@@ -340,6 +340,23 @@ const CommitStockHandler = asyncHandler(
   }
 );
 
+
+const ExpireReservationHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { sagaId } = req.params;
+    const result = await inventoryService.expireReservation(
+      sagaId,
+      req.body.inventoryId,
+      req.body.quantity
+    );
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      success: true,
+      ...result,
+    });
+  }
+);
+
+
 export {
   CreateInventoryHandler,
   GetAllStoreInventoryHandler,
@@ -350,4 +367,5 @@ export {
   ReserveStockHandler,
   ReleaseStockHandler,
   CommitStockHandler,
+  ExpireReservationHandler
 };

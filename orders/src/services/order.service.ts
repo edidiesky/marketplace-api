@@ -10,11 +10,12 @@ import { OrderRepository } from "../repository/OrderRepository";
 import { withTransaction } from "../utils/connectDB";
 import redisClient from "../config/redis";
 import logger from "../utils/logger";
-import { SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
+import { ORDER_ABANDONED_TOPIC, SUCCESSFULLY_FETCHED_STATUS_CODE } from "../constants";
 import { fulfillmentTransitions } from "../utils/fulfillmentTransitions";
 import { generateReceiptBuffer } from "../utils/generateReceipt";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { AppError } from "../utils/AppError";
+import { sendOrderMessage } from "../messaging/producer";
 
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL ?? "http://cart:4009";
 const INVENTORY_SERVICE_URL =
@@ -506,6 +507,62 @@ export class OrderService {
     logger.info("Order marked PAYMENT_INITIATED", { orderId, transactionId });
     return order;
   }
+
+  async abandonOrder(
+  orderId: string,
+  reason?: string
+): Promise<IOrder> {
+  const order = await this.repo.getOrderById(orderId);
+
+  if (!order) {
+    throw AppError.notFound("Order not found");
+  }
+
+  const abandonableStatuses: OrderStatus[] = [
+    OrderStatus.PAYMENT_PENDING,
+    OrderStatus.PAYMENT_INITIATED,
+  ];
+
+  if (!abandonableStatuses.includes(order.orderStatus)) {
+    throw AppError.badRequest(
+      `Cannot abandon order in status: ${order.orderStatus}`
+    );
+  }
+
+  const updated = await this.repo.updateOrderStatus(
+    orderId,
+    OrderStatus.CANCELLED,
+    { failureReason: reason ?? "Abandoned by scheduler" }
+  );
+
+  if (!updated) {
+    throw AppError.notFound("Order not found during status update");
+  }
+
+  await this.invalidateCache(orderId);
+
+  await sendOrderMessage(ORDER_ABANDONED_TOPIC, {
+    orderId: updated._id.toString(),
+    userId: updated.userId.toString(),
+    storeId: updated.storeId.toString(),
+    sagaId: updated.sagaId,
+    cartItems: updated.cartItems.map((item) => ({
+      productId: item.productId.toString(),
+      quantity: item.productQuantity,
+    })),
+    abandonedAt: new Date().toISOString(),
+    reason: reason ?? "Abandoned by scheduler",
+  });
+
+  logger.info("order.abandon.success", {
+    event: "order_abandon_success",
+    orderId,
+    sagaId: updated.sagaId,
+    reason,
+  });
+
+  return updated;
+}
 
   async generateAndPersistReceipt(
     orderId: string,

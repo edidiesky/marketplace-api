@@ -7,14 +7,17 @@ import {
   GetUserOrdersHandler,
   GetOrderHandler,
   UpdateFulfillmentHandler,
+  AbandonOrderHandler,
 } from "../controllers/order.controller";
 
 import {
+  abandonOrderSchema,
   CheckoutSchema,
   FulfillmentSchema,
   ShippingSchema,
 } from "../validators/order.validation";
 import { authenticateOrInternal } from "../middleware/internal";
+import { internalOnly } from "../middleware/internal.middleware";
 
 const router = express.Router();
 
@@ -293,5 +296,13 @@ router.patch(
   validateRequest(FulfillmentSchema),
   UpdateFulfillmentHandler
 );
+
+router.post(
+  "/internal/orders/:orderId/abandon",
+  internalOnly,
+  validateRequest(abandonOrderSchema),
+  AbandonOrderHandler
+);
+
 
 export default router;

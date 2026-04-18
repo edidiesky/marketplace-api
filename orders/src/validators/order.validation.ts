@@ -39,3 +39,8 @@ export const FulfillmentSchema = Joi.object({
   trackingNumber: Joi.string().optional(),
   courierName: Joi.string().optional(),
 });
+
+
+export const abandonOrderSchema = Joi.object({
+  reason: Joi.string().optional(),
+});

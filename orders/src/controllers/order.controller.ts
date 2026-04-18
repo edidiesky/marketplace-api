@@ -84,6 +84,22 @@ const UpdateFulfillmentHandler = asyncHandler(
 );
 
 
+const AbandonOrderHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { orderId } = req.params;
+    const { reason } = req.body;
+
+    const order = await orderService.abandonOrder(orderId, reason);
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      success: true,
+      orderId: order._id,
+      orderStatus: order.orderStatus,
+      abandonedAt: new Date().toISOString(),
+    });
+  }
+);
+
 
 
 export {
@@ -91,5 +107,6 @@ export {
   AddShippingHandler,
   GetUserOrdersHandler,
   GetOrderHandler,
-  UpdateFulfillmentHandler
+  UpdateFulfillmentHandler,
+  AbandonOrderHandler
 };

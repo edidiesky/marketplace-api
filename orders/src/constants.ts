@@ -30,7 +30,8 @@ export const INVENTORY_RESERVATION_REQUEST_TOPIC = "inventory.reservation.reques
 export const INVENTORY_RESERVATION_COMPLETED_TOPIC = "inventory.reservation.completed.topic";
 export const INVENTORY_STOCK_COMMITTED_TOPIC = "inventory.stock.committed.topic";
 export const INVENTORY_RELEASE_REQUEST_TOPIC = "inventory.release.request.topic";
-export const CART_ITEM_OUT_OF_STOCK_TOPIC = "cart.item.outOfStock.topic";
+export const CART_ITEM_OUT_OF_STOCK_TOPIC = "cart.item.outOfStock.topic"; // ORDER_ABANDONED_TOPIC
+export const ORDER_ABANDONED_TOPIC = "order.abandoned.topic"; // ORDER_ABANDONED_TOPIC
 
 export const ORDER_CONSUMER_TOPICS = [
   ORDER_PAYMENT_COMPLETED_TOPIC,
