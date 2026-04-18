@@ -18,7 +18,7 @@ export class InventoryService {
 
   async createInventory(
     userId: string,
-    data: Partial<IInventory>
+    data: Partial<IInventory>,
   ): Promise<IInventory> {
     return this.InventoryRepo.createInventory(data);
   }
@@ -26,7 +26,7 @@ export class InventoryService {
   async getAllInventorys(
     query: FilterQuery<IInventory>,
     skip: number,
-    limit: number
+    limit: number,
   ) {
     const [inventories, totalCount] = await Promise.all([
       this.InventoryRepo.getStoreInventory(query, skip, limit),
@@ -49,14 +49,14 @@ export class InventoryService {
 
   async getInventoryByProduct(
     productId: string,
-    storeId: string
+    storeId: string,
   ): Promise<IInventory | null> {
     return this.InventoryRepo.getInventoryByProduct(productId, storeId);
   }
 
   async updateInventory(
     id: string,
-    data: Partial<IInventory>
+    data: Partial<IInventory>,
   ): Promise<IInventory | null> {
     return this.InventoryRepo.updateInventory(data, id);
   }
@@ -68,7 +68,7 @@ export class InventoryService {
   private async mvccRetry(
     label: string,
     fn: () => Promise<IInventory | null>,
-    context: { userId: string; productId: string; sagaId: string }
+    context: { userId: string; productId: string; sagaId: string },
   ): Promise<IInventory> {
     for (let attempt = 0; attempt < this.MAX_RETRIES; attempt++) {
       const result = await fn();
@@ -110,7 +110,7 @@ export class InventoryService {
     storeId: string,
     quantity: number,
     sagaId: string,
-    userId: string
+    userId: string,
   ): Promise<IInventory> {
     const reservationKey = `inv:reservation:${sagaId}`;
 
@@ -124,7 +124,7 @@ export class InventoryService {
       });
       const inv = await this.InventoryRepo.getInventoryByProduct(
         productId,
-        storeId
+        storeId,
       );
       if (!inv) throw new Error("INVENTORY_NOT_FOUND");
       return inv;
@@ -167,7 +167,7 @@ export class InventoryService {
               __v: 1,
             },
           },
-          { new: true }
+          { new: true },
         );
 
         if (updated) {
@@ -175,7 +175,7 @@ export class InventoryService {
             reservationKey,
             JSON.stringify({ productId, storeId, quantity, userId }),
             "EX",
-            this.RESERVATION_TTL
+            this.RESERVATION_TTL,
           );
 
           logger.info("inventory.reserve.success", {
@@ -193,7 +193,7 @@ export class InventoryService {
 
         return updated;
       },
-      { userId, productId, sagaId }
+      { userId, productId, sagaId },
     );
   }
 
@@ -207,7 +207,7 @@ export class InventoryService {
     storeId: string,
     quantity: number,
     sagaId: string,
-    userId: string
+    userId: string,
   ): Promise<IInventory> {
     const reservationKey = `inv:reservation:${sagaId}`;
 
@@ -248,7 +248,7 @@ export class InventoryService {
               __v: 1,
             },
           },
-          { new: true }
+          { new: true },
         );
 
         if (updated) {
@@ -269,7 +269,7 @@ export class InventoryService {
 
         return updated;
       },
-      { userId, productId, sagaId }
+      { userId, productId, sagaId },
     );
   }
 
@@ -284,7 +284,7 @@ export class InventoryService {
     storeId: string,
     quantity: number,
     sagaId: string,
-    userId: string
+    userId: string,
   ): Promise<IInventory> {
     const reservationKey = `inv:reservation:${sagaId}`;
 
@@ -325,7 +325,7 @@ export class InventoryService {
               __v: 1,
             },
           },
-          { new: true }
+          { new: true },
         );
 
         if (updated) {
@@ -346,8 +346,46 @@ export class InventoryService {
 
         return updated;
       },
-      { userId, productId, sagaId }
+      { userId, productId, sagaId },
     );
+  }
+
+  async expireReservation(
+    sagaId: string,
+    inventoryId: string,
+    quantity: number,
+  ): Promise<{
+    sagaId: string;
+    quantityRestored: number;
+    newQuantityAvailable: number;
+  }> {
+    const inventory = await this.InventoryRepo.getSingleInventory(inventoryId);
+
+    if (!inventory) {
+      throw new Error("INVENTORY_NOT_FOUND");
+    }
+
+    const updated = await this.releaseStock(
+      inventory.productId.toString(),
+      inventory.storeId.toString(),
+      quantity,
+      sagaId,
+      "scheduler-system",
+    );
+
+    logger.info("inventory.expire_reservation.success", {
+      event: "inventory_expire_reservation_success",
+      sagaId,
+      inventoryId,
+      quantity,
+      newQuantityAvailable: updated.quantityAvailable,
+    });
+
+    return {
+      sagaId,
+      quantityRestored: quantity,
+      newQuantityAvailable: updated.quantityAvailable,
+    };
   }
 }
 

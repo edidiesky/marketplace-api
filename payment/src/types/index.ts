@@ -3,11 +3,14 @@ import { Response, Request } from "express";
 
 export type AuthenticatedRequest = Request & {
   user: {
-    role: string;
+    role: UserType;
     userId: string;
     name: string;
     permissions: Permission[];
     roleLevel?: RoleLevel;
+    tenantId:string;
+    tenantPlan:string;
+    tenantType:string;
   };
 };
 
@@ -38,6 +41,14 @@ export interface IAdapterRequest {
   clientSecret?: string;
   merchantCode?: string;
   payItemId?: string;
+}
+
+
+export enum UserType {
+  SELLERS = "SELLERS",
+  ADMIN = "ADMIN",
+  INVESTORS = "INVESTORS",
+  CUSTOMER = "CUSTOMER",
 }
 
 export interface IClassAdapterCred {

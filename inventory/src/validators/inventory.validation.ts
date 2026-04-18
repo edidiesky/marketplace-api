@@ -12,3 +12,8 @@ export const inventorySchema = Joi.object({
   ownerEmail: Joi.string().email().optional(),
   warehouseName: Joi.string().optional(),
 });
+
+export const expireReservationSchema = Joi.object({
+  inventoryId: Joi.string().required(),
+  quantity: Joi.number().min(1).required(),
+});
