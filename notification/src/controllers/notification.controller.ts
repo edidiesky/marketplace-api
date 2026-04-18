@@ -1,13 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import {
-  CreateNotificationService,
-  GetAllStoreNotificationService,
-  GetASingleNotificationService,
-  UpdateNotificationService,
-  DeleteNotificationService,
-} from "../services/notification.service";
-import {
   BAD_REQUEST_STATUS_CODE,
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
@@ -15,41 +8,31 @@ import {
 import { INotification } from "../models/Notification";
 import { FilterQuery } from "mongoose";
 import { AuthenticatedRequest } from "../types";
+import { notificationService } from "../services/notification.service";
+import { Types } from "mongoose";
 
-// @description: Create Notification handler
-// @route  POST /notifications/
-// @access  Private
 const CreateNotificationHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const storeId = req.params.storeid;
     const { userId } = (req as AuthenticatedRequest).user;
-    const notification = await CreateNotificationService(userId, storeId, {
+    const notification = await notificationService.CreateNotificationService(userId, storeId, {
       ...req.body,
     });
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json(notification);
   }
 );
 
-// @description: Get All Notifications Handler
-// @route  GET /notifications
-// @access  Private
 const GetAllStoreNotificationHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const { page = 1, limit = 10, name, size, category, price } = req.query;
+    const { page = 1, limit = 10 } = req.query;
     const storeId = req.params.storeid;
 
-    const query: FilterQuery<INotification> = {
-      storeId,
-    };
-    if (size) query.size = size;
-    if (userId) query.userId = userId;
-    if (category) query.category = category;
-    if (name) query.name = name;
-    if (price) query.price = price;
-    const skip = (Number(page) - 1) * Number(limit);
+    const query: FilterQuery<INotification> = { storeId };
+    if (userId) query.recipientId = new Types.ObjectId(userId);
 
-    const notifications = await GetAllStoreNotificationService(
+    const skip = (Number(page) - 1) * Number(limit);
+    const notifications = await notificationService.GetAllStoreNotificationService(
       query,
       skip,
       Number(limit)
@@ -58,30 +41,24 @@ const GetAllStoreNotificationHandler = asyncHandler(
   }
 );
 
-// @description: Get A Single Notification Handler
-// @route  GET /notifications/:id
-// @access  Public
 const GetSingleStoreNotificationHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const notification = await GetASingleNotificationService(id);
+    const notification = await notificationService.GetASingleNotificationService(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(notification);
   }
 );
 
-// @description: Update A Single Notification Handler
-// @route  PUT /notifications/:id
-// @access  Private
 const UpdateNotificationHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingNotification = await GetASingleNotificationService(id);
+    const existingNotification = await notificationService.GetASingleNotificationService(id);
 
     if (!existingNotification) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This notification does not exist");
     }
-    const notification = await UpdateNotificationService(
+    const notification = await notificationService.UpdateNotificationService(
       id,
       req.body as Partial<INotification>
     );
@@ -89,20 +66,61 @@ const UpdateNotificationHandler = asyncHandler(
   }
 );
 
-// @description: Delete A Single Notification Handler
-// @route  DELETE /notifications/:id
-// @access  Private
 const DeleteNotificationHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const existingNotification = await GetASingleNotificationService(id);
+    const existingNotification = await notificationService.GetASingleNotificationService(id);
 
     if (!existingNotification) {
       res.status(BAD_REQUEST_STATUS_CODE);
       throw new Error("This notification does not exist");
     }
-    const message = await DeleteNotificationService(id);
+    const message = await notificationService.DeleteNotificationService(id);
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json(message);
+  }
+);
+
+const CartReminderHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { orderId, userId } = req.body;
+    const jobId = req.headers["x-job-id"] as string | undefined;
+    const tenantId = req.headers["x-tenant-id"] as string | undefined;
+
+    const notification = await notificationService.sendCartReminder({
+      orderId,
+      userId,
+      jobId,
+      tenantId,
+    });
+
+    res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+      success: true,
+      notificationId: notification._id,
+      status: notification.status,
+    });
+  }
+);
+
+const LowStockAlertHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { inventoryId, storeId, quantityAvailable, reorderPoint } = req.body;
+    const jobId = req.headers["x-job-id"] as string | undefined;
+    const tenantId = req.headers["x-tenant-id"] as string | undefined;
+
+    const notification = await notificationService.sendLowStockAlert({
+      inventoryId,
+      storeId,
+      quantityAvailable,
+      reorderPoint,
+      jobId,
+      tenantId,
+    });
+
+    res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+      success: true,
+      notificationId: notification._id,
+      status: notification.status,
+    });
   }
 );
 
@@ -112,4 +130,6 @@ export {
   GetSingleStoreNotificationHandler,
   UpdateNotificationHandler,
   DeleteNotificationHandler,
+  CartReminderHandler,
+  LowStockAlertHandler,
 };

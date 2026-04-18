@@ -194,6 +194,124 @@ export class EmailService {
     }
   }
 
+  async sendCartReminderEmail(
+  orderId: string,
+  userId: string
+): Promise<void> {
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">You left something behind</h2>
+        <p>Your order is waiting for payment. Complete your purchase before your reservation expires.</p>
+        <p><strong>Order ID:</strong> ${orderId}</p>
+        <a href="${process.env.WEB_ORIGIN}/orders/${orderId}/payment"
+           style="background-color: #4CAF50; color: white; padding: 14px 20px;
+                  text-decoration: none; border-radius: 4px; display: inline-block;">
+          Complete Payment
+        </a>
+        <p style="color: #999; font-size: 12px; margin-top: 20px;">
+          If you did not initiate this order, ignore this email.
+        </p>
+      </div>
+    `;
+
+    await axios.post(
+      "https://api.mailersend.com/v1/email",
+      {
+        from: { email: process.env.EMAIL_FROM! },
+        to: [{ email: process.env.EMAIL_FROM! }],
+        subject: "Complete your purchase on SellEasi",
+        html,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    logger.info("Cart reminder email sent", { orderId, userId });
+  } catch (error: any) {
+    logger.error("Failed to send cart reminder email", {
+      orderId,
+      userId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+async sendLowStockAlertEmail(
+  inventoryId: string,
+  storeId: string,
+  quantityAvailable: number,
+  reorderPoint: number
+): Promise<void> {
+  try {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #e74c3c;">Low Stock Alert</h2>
+        <p>One of your products has dropped below the reorder threshold.</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Inventory ID</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${inventoryId}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Store ID</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${storeId}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Current Stock</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd; color: #e74c3c;">
+              ${quantityAvailable} units
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Reorder Point</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${reorderPoint} units</td>
+          </tr>
+        </table>
+        <a href="${process.env.WEB_ORIGIN}/inventory/${inventoryId}"
+           style="background-color: #e74c3c; color: white; padding: 14px 20px;
+                  text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 20px;">
+          View Inventory
+        </a>
+      </div>
+    `;
+
+    await axios.post(
+      "https://api.mailersend.com/v1/email",
+      {
+        from: { email: process.env.EMAIL_FROM! },
+        to: [{ email: process.env.EMAIL_FROM! }],
+        subject: "Low Stock Alert - SellEasi",
+        html,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    logger.info("Low stock alert email sent", {
+      inventoryId,
+      storeId,
+      quantityAvailable,
+    });
+  } catch (error: any) {
+    logger.error("Failed to send low stock alert email", {
+      inventoryId,
+      storeId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
   /**
    * @description Send Verification Code Email
    * @param recipientEmail

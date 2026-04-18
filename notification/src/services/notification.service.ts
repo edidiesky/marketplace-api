@@ -1,89 +1,195 @@
-import { measureDatabaseQuery } from "../utils/metrics";
-import redisClient from "../config/redis";
-import Notification, { INotification } from "../models/Notification";
+import Notification, {
+  INotification,
+  NotificationChannel,
+  NotificationStatus,
+  NotificationType,
+} from "../models/Notification";
+import { EmailService } from "./email.service";
+import logger from "../utils/logger";
 import { FilterQuery, Types } from "mongoose";
 
-// @description Create a Notification
-const CreateNotificationService = async (
+export interface CartReminderInput {
+  orderId: string;
+  userId: string;
+  jobId?: string;
+  tenantId?: string;
+}
+
+export interface LowStockAlertInput {
+  inventoryId: string;
+  storeId: string;
+  quantityAvailable: number;
+  reorderPoint: number;
+  jobId?: string;
+  tenantId?: string;
+}
+
+export class NotificationService {
+  private emailService: EmailService;
+
+  constructor() {
+    this.emailService = new EmailService();
+  }
+
+  async sendCartReminder(input: CartReminderInput): Promise<Partial<INotification>> {
+    const notification = await Notification.create({
+      type: NotificationType.CART_REMINDER,
+      channel: NotificationChannel.EMAIL,
+      status: NotificationStatus.PENDING,
+      orderId: new Types.ObjectId(input.orderId),
+      recipientId: new Types.ObjectId(input.userId),
+      subject: "You left something in your cart",
+      message: `Your order ${input.orderId} is waiting for payment.`,
+      metadata: { orderId: input.orderId, userId: input.userId },
+      jobId: input.jobId,
+      tenantId: input.tenantId,
+    });
+
+    try {
+      await this.emailService.sendCartReminderEmail(input.orderId, input.userId);
+
+      await Notification.findByIdAndUpdate(notification._id, {
+        $set: {
+          status: NotificationStatus.SENT,
+          sentAt: new Date(),
+        },
+      });
+
+      logger.info("notification.cart_reminder.sent", {
+        event: "notification_cart_reminder_sent",
+        notificationId: notification._id,
+        orderId: input.orderId,
+        userId: input.userId,
+        jobId: input.jobId,
+      });
+
+      return { ...notification.toObject(), status: NotificationStatus.SENT };
+    } catch (error) {
+      await Notification.findByIdAndUpdate(notification._id, {
+        $set: {
+          status: NotificationStatus.FAILED,
+          errorMessage:
+            error instanceof Error ? error.message : String(error),
+        },
+      });
+
+      logger.error("notification.cart_reminder.failed", {
+        event: "notification_cart_reminder_failed",
+        notificationId: notification._id,
+        orderId: input.orderId,
+        userId: input.userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      throw error;
+    }
+  }
+
+  async sendLowStockAlert(input: LowStockAlertInput): Promise<Partial<INotification>> {
+    const notification = await Notification.create({
+      type: NotificationType.LOW_STOCK_ALERT,
+      channel: NotificationChannel.EMAIL,
+      status: NotificationStatus.PENDING,
+      inventoryId: new Types.ObjectId(input.inventoryId),
+      storeId: new Types.ObjectId(input.storeId),
+      subject: "Low stock alert for your product",
+      message: `Stock for inventory ${input.inventoryId} has dropped to ${input.quantityAvailable} units, below reorder point of ${input.reorderPoint}.`,
+      metadata: {
+        inventoryId: input.inventoryId,
+        storeId: input.storeId,
+        quantityAvailable: input.quantityAvailable,
+        reorderPoint: input.reorderPoint,
+      },
+      jobId: input.jobId,
+      tenantId: input.tenantId,
+    });
+
+    try {
+      await this.emailService.sendLowStockAlertEmail(
+        input.inventoryId,
+        input.storeId,
+        input.quantityAvailable,
+        input.reorderPoint
+      );
+
+      await Notification.findByIdAndUpdate(notification._id, {
+        $set: {
+          status: NotificationStatus.SENT,
+          sentAt: new Date(),
+        },
+      });
+
+      logger.info("notification.low_stock_alert.sent", {
+        event: "notification_low_stock_alert_sent",
+        notificationId: notification._id,
+        inventoryId: input.inventoryId,
+        storeId: input.storeId,
+        jobId: input.jobId,
+      });
+
+      return { ...notification.toObject(), status: NotificationStatus.SENT };
+    } catch (error) {
+      await Notification.findByIdAndUpdate(notification._id, {
+        $set: {
+          status: NotificationStatus.FAILED,
+          errorMessage:
+            error instanceof Error ? error.message : String(error),
+        },
+      });
+
+      logger.error("notification.low_stock_alert.failed", {
+        event: "notification_low_stock_alert_failed",
+        notificationId: notification._id,
+        inventoryId: input.inventoryId,
+        storeId: input.storeId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      throw error;
+    }
+    
+  }
+
+  CreateNotificationService = (
   user: string,
   store: string,
   body: Partial<INotification>
 ): Promise<INotification> => {
-  const NotificationData = {
-    user: new Types.ObjectId(user),
-    store: new Types.ObjectId(store),
+  return Notification.create({
     ...body,
-  };
-  const notification = await measureDatabaseQuery("create_Notification", () =>
-    Notification.create(NotificationData)
-  );
-  return notification;
+    recipientId: new Types.ObjectId(user),
+    storeId: new Types.ObjectId(store),
+    type: body.type ?? NotificationType.ORDER_CONFIRMATION,
+    channel: NotificationChannel.EMAIL,
+    subject: body.subject ?? "Notification",
+    message: body.message ?? "",
+  });
 };
 
-// @description Get All Notifications
-const GetAllStoreNotificationService = async (
+GetAllStoreNotificationService = (
   query: FilterQuery<INotification>,
   skip: number,
   limit: number
-): Promise<INotification[]> => {
-  const redisKey = `Notification:search:${JSON.stringify({
-    ...query,
-    skip,
-    limit,
-  })}`;
-  const cachedNotification = await redisClient.get(redisKey);
-  if (cachedNotification) {
-    return JSON.parse(cachedNotification);
-  }
-  const Notifications = await measureDatabaseQuery("fetch_all_Notifications", () =>
-    Notification.find(query).skip(skip).limit(limit).sort("-createdAt").lean()
-  );
-  await redisClient.set(redisKey, JSON.stringify(Notifications), "EX", 3600);
-  return Notifications;
-};
+): Promise<INotification[]> =>
+  Notification.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }).lean().exec();
 
-// @description Get A Single Notification
-const GetASingleNotificationService = async (
+GetASingleNotificationService = (
   id: string
-): Promise<INotification | null> => {
-  const redisKey = `Notification:${id}`;
-  const cachedNotification = await redisClient.get(redisKey);
-  if (cachedNotification) {
-    return JSON.parse(cachedNotification);
-  }
-  const notification = await measureDatabaseQuery("fetch_single_Notification", ()=> Notification.findById(id));
-  if (notification) {
-    await redisClient.set(redisKey, JSON.stringify(notification), "EX", 3600);
-  }
-  return notification;
-};
+): Promise<INotification | null> =>
+  Notification.findById(id).lean().exec();
 
-// @description Update a Notification
-const UpdateNotificationService = async (
-  NotificationId: string,
+UpdateNotificationService = (
+  id: string,
   body: Partial<INotification>
-): Promise<INotification | null> => {
-  const notification = await Notification.findByIdAndUpdate(
-    NotificationId,
-    { $set: body },
-    { new: true, runValidators: true }
-  );
-  return notification;
-};
+): Promise<INotification | null> =>
+  Notification.findByIdAndUpdate(id, { $set: body }, { new: true }).exec();
 
-// @description Delete a Notification
-const DeleteNotificationService = async (id: string): Promise<string> => {
-  const redisKey = `Notification:${id}`;
-  await Notification.findByIdAndDelete(id);
-  //   await sendMessage("inventory.Notification_removed", { Notification: id });
-  await redisClient.del(redisKey);
+DeleteNotificationService = async (
+  id: string
+): Promise<string> => {
+  await Notification.findByIdAndDelete(id).exec();
   return "Notification has been deleted";
 };
+}
 
-export {
-  CreateNotificationService,
-  GetAllStoreNotificationService,
-  GetASingleNotificationService,
-  UpdateNotificationService,
-  DeleteNotificationService,
-};
+export const notificationService = new NotificationService();
