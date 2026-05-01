@@ -34,7 +34,7 @@ Built on Node.js 20, TypeScript 5, MongoDB Atlas, Apache Kafka (KRaft), Redis, a
 
 ## System Architecture
 
-I route all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
+I am routing all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
 
 ![System Architecture](./_documentation/architecture/architecture.png)
 
@@ -60,7 +60,7 @@ I route all client traffic through the API Gateway at port 8000, where I enforce
 | color | 4013 | In progress | Color catalogue for product variants |
 | view | 4014 | In progress | Storefront view aggregation |
 | size | 4015 | In progress | Size catalogue for product variants |
-| users | 4016 | In progress | User profile management |
+| users | 4016 | Production | User profile management |
 
 ---
 

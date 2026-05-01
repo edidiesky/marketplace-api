@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.*
+.DS_Store
+coverage/
+.vscode/
+error.log
+combined.log
+npm-debug.log*
+/backups
+!package.json
+!package-lock.json

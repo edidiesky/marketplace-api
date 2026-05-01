@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.*
+.DS_Store
+coverage/
+.vscode/
+error.log
+combined.log
+npm-debug.log*
+# Add to existing .gitignore
+/backups
+!package.json
+!package-lock.json

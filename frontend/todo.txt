@@ -1,0 +1,10 @@
+### TEXT COLORS
+--- primary-colors-1: #92DD5F,
+--- bg-colors-1: #F8F8F8, 
+--- bg-colors-2: #F0F0F0, // navbar
+--- primary-colors-2: #245454,
+--- bg-white: #FFFFFF,
+--- bg-colors-3: #D9D9D9, // chart widget
+--- primary-colors-3: #1F4F4C, // main button
+
+
