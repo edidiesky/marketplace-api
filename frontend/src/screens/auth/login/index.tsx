@@ -1,11 +1,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import {  Mail, Lock } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import AuthLayout from "../shared/AuthLayout";
 import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginFormData } from "./schema/login.schema";
 import { useLogin } from "./hooks/useLogin";
+import { FaGoogle } from "react-icons/fa";
 
 export default function Login() {
   const { handleLogin, isLoading } = useLogin();
@@ -22,24 +23,33 @@ export default function Login() {
     <AuthLayout>
       <form
         onSubmit={handleSubmit(handleLogin)}
-        className="flex w-[80%] flex-col gap-10"
+        className="flex w-[80%] flex-col gap-8"
       >
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-3">
           <h1
             className="text-[32px] font-semibold leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Welcome back
+            <br />
+            Sign in to sell.
           </h1>
-          <p
-            className="text-[15px]"
-            style={{ color: "var(--color-muted-stone)" }}
-          >
-            Sign in to manage your stores.
+          <p className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
+            Access your stores, review your current sales, and continue shipping
+            without friction.
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            className="w-full bg-gray-100 h-12 flex items-center justify-center gap-2 border text-base font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+          >
+            <FaGoogle /> Continue with Google
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-6">
           <Input
             label="Email address"
             type="email"
@@ -75,7 +85,6 @@ export default function Login() {
           style={{
             backgroundColor: "var(--color-ink)",
             color: "var(--color-canvas)",
-            borderRadius: "9999px",
           }}
         >
           {isLoading ? "Signing in..." : "Sign in"}

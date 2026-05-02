@@ -21,9 +21,10 @@ export const dashboardRoutes = [
   {
     path: "/dashboard/store/:id",
     element: (
-      <ProtectRoute allowedRoles={["SELLER", "ADMIN"]}>
-        <DashboardLayout />
-      </ProtectRoute>
+      // <ProtectRoute allowedRoles={["SELLER", "ADMIN"]}>
+      //   <DashboardLayout />
+      // </ProtectRoute>
+      <DashboardLayout />
     ),
     children: [
       {

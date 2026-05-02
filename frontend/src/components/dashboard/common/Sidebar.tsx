@@ -5,7 +5,6 @@ import {
   LuPackage,
   LuShoppingCart,
   LuUsers,
-  ,
   LuMessageSquare,
   LuMegaphone,
   LuTag,
@@ -83,22 +82,9 @@ export default function Sidebar() {
         borderColor: "#ebebeb",
       }}
     >
-      {/* logo */}
-      <div
-        className="h-[60px] flex items-center px-5 border-b shrink-0"
-        style={{ borderColor: "#ebebeb" }}
-      >
-        <Link
-          to="/"
-          className="text-[15px] font-semibold tracking-tight"
-          style={{ color: "#17191c" }}
-        >
-          Selleasi
-        </Link>
-      </div>
 
       {/* nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
+      <nav className="flex-1 overflow-y-auto py-8 px-3">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
@@ -117,7 +103,7 @@ export default function Sidebar() {
                   end={!item.path}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm font-medium transition-colors w-full mb-0.5",
                       isActive
                         ? "bg-[#f5f5f3] text-[#17191c]"
                         : "text-[#4c4c4c] hover:bg-[#f5f5f3] hover:text-[#17191c]",
