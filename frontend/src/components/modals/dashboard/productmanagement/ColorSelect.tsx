@@ -1,51 +1,43 @@
-import Select from "react-select";
+import Select, { type MultiValue } from "react-select";
 import { useGetAllStoreColorQuery } from "@/redux/services/colorApi";
 import { useParams } from "react-router-dom";
+import type { ProductColorOrSize } from "@/types/api";
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
 
 export default function ColorSelect({
   onCheckedChange,
   formvalue,
 }: {
-  onCheckedChange: (values: { name: string; value: string }[]) => void; 
-  formvalue: { colors: { name: string; value: string }[] }; 
+  onCheckedChange: (values: ProductColorOrSize[]) => void;
+  formvalue: { colors: ProductColorOrSize[] };
 }) {
   const { id } = useParams();
   const { data: storeColor } = useGetAllStoreColorQuery({ storeid: id });
 
-  // Formatting react select options
-  const options =
-    storeColor?.map((select: { name: string; value: string }) => ({
-      label: select?.name,
-      value: select?.value,
-    })) || [];
+  const options: SelectOption[] = (storeColor ?? []).map((select: ProductColorOrSize) => ({
+    label: select.name,
+    value: select.value,
+  }));
 
-  // Match selected colors from formvalue.colors with options
-  const selectedValues = options.filter((option: { label: string; value: string }) =>
+  const selectedValues = options.filter((option) =>
     formvalue.colors.some((color) => color.value === option.value)
   );
 
-  // Handle selection change
-  const handleChange = (selectedOptions: any) => {
-    const selectedColors = selectedOptions
-      ? selectedOptions.map((option: { label: string; value: string }) => ({
-          name: option.label,
-          value: option.value,
-        }))
-      : [];
-    console.log("selectedColors", selectedColors);
+  const handleChange = (selectedOptions: MultiValue<SelectOption>) => {
+    const selectedColors: ProductColorOrSize[] = (selectedOptions ?? []).map((option) => ({
+      name: option.label,
+      value: option.value,
+    }));
     onCheckedChange(selectedColors);
   };
 
-  // Major challenge was in the color select change
-  // console.log("storeColor", storeColor)
-  // console.log("selectedValues", selectedValues)
-  // console.log("options", options)
-  // console.log("formvalue", formvalue)
   return (
     <div className="w-full relative flex flex-col gap-2 text-sm">
-      <span className="font-dashboard_normal text-sm lg:text-base">
-        Product colors
-      </span>
+      <span className="font-dashboard_normal text-sm lg:text-base">Product colors</span>
       <Select
         isMulti
         options={options}
@@ -58,9 +50,8 @@ export default function ColorSelect({
           control: (base) => ({
             ...base,
             height: "45px",
-            borderRadius: "8px",
+            borderRadius: "0px",
             fontSize: "14px",
-            fontFamily: "Light",
           }),
           menu: (base) => ({
             ...base,

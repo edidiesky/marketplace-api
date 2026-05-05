@@ -24,18 +24,10 @@ const modalSlice = createSlice({
   name: "modals",
   initialState,
   reducers: {
-    openLoginModal: (state) => {
-      state.login = true;
-    },
-    closeLoginModal: (state) => {
-      state.login = false;
-    },
-    openRegisterModal: (state) => {
-      state.register = true;
-    },
-    closeRegisterModal: (state) => {
-      state.register = false;
-    },
+    openLoginModal: (state) => { state.login = true; },
+    closeLoginModal: (state) => { state.login = false; },
+    openRegisterModal: (state) => { state.register = true; },
+    closeRegisterModal: (state) => { state.register = false; },
     openCategoryModal: (state, action: PayloadAction<string | null>) => {
       state.category = { open: true, id: action.payload };
     },
@@ -70,20 +62,13 @@ const modalSlice = createSlice({
 });
 
 export const {
-  openLoginModal,
-  closeLoginModal,
-  openRegisterModal,
-  closeRegisterModal,
-  openCategoryModal,
-  closeCategoryModal,
-  openSizeModal,
-  closeSizeModal,
-  openColorModal,
-  closeColorModal,
-  openProductModal,
-  closeProductModal,
-  openDeleteModal,
-  closeDeleteModal,
+  openLoginModal, closeLoginModal,
+  openRegisterModal, closeRegisterModal,
+  openCategoryModal, closeCategoryModal,
+  openSizeModal, closeSizeModal,
+  openColorModal, closeColorModal,
+  openProductModal, closeProductModal,
+  openDeleteModal, closeDeleteModal,
 } = modalSlice.actions;
 
 export default modalSlice.reducer;

@@ -1,277 +1,152 @@
-import React from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import {
-  
-  onCategoryModal,
-  onDeleteModal,
-  onSizeModal,
-  onColorModal,
-  onProductModal
+  openCategoryModal,
+  openDeleteModal,
+  openSizeModal,
+  openColorModal,
+  openProductModal,
 } from "@/redux/slices/modalSlice";
 import { useDispatch } from "react-redux";
+import type { Product, ProductColorOrSize } from "@/types/api";
+
+type CategoryRow = { _id: string; name: string; value: string };
+type SizeRow = { _id: string; name: string; value: string };
+type ColorRow = { _id: string; name: string; value: string };
+type CustomerRow = { _id: string; phone_number: string };
+
+type TableRow = Product | CategoryRow | SizeRow | ColorRow | CustomerRow;
+
+function isProduct(row: TableRow): row is Product {
+  return "price" in row && "images" in row;
+}
+function isCategoryOrSize(row: TableRow): row is CategoryRow {
+  return "name" in row && "value" in row && !("price" in row) && !("images" in row);
+}
+function isCustomer(row: TableRow): row is CustomerRow {
+  return "phone_number" in row;
+}
 
 export default function ProductTableList({
   tableData,
   type,
 }: {
-  tableData: any;
+  tableData: TableRow;
   type: string;
 }) {
   const dispatch = useDispatch();
 
-  // product
-  if (type === "product") {
+  if (type === "product" && isProduct(tableData)) {
     return (
-      <tr
-        key={tableData?._id}
-        className={`hover:bg-gray-100 bg-[#f2f2f2] cursor-pointer transition-colors`}
-      >
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.name}
+      <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-dashboard_regular">
+          {tableData.name}
         </td>
-
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          ${tableData?.price}
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+          ₦{tableData.price}
         </td>
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.category}
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+          {tableData.category.join(", ")}
         </td>
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {/* {tableData?.size} */}
-          <div className="w-full flex gap-1 items-center">
-            {tableData.size?.map(
-              (data: { value: any; name: string }, index: React.Key) => {
-                return (
-                  <div
-                    key={index}
-                    className="flex text-dark items-center gap-4"
-                  >
-                    <div className="w-6 text-dark h-6 rounded-full">
-                      {data?.value},
-                    </div>{" "}
-                  </div>
-                );
-              }
-            )}
+        <td className="px-5 py-3 whitespace-nowrap text-sm">
+          <div className="flex gap-1 items-center flex-wrap">
+            {tableData.size.map((s: ProductColorOrSize, index: number) => (
+              <span
+                key={index}
+                className="text-xs px-2 py-0.5 border border-[#e8e6e3] text-[#4c4c4c] font-selleasy_normal"
+              >
+                {s.value}
+              </span>
+            ))}
           </div>
         </td>
-        <td className="px-6  py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          <div className="w-full flex gap-1 items-center">
-            {tableData.colors?.map(
-              (data: { value: any; name: string }, index: React.Key) => {
-                return (
-                  <div
-                    key={index}
-                    className="flex text-dark items-center gap-4"
-                  >
-                    <div
-                      style={{
-                        backgroundColor: `${data?.value}`,
-                      }}
-                      className="w-6 h-6 rounded-full"
-                    ></div>{" "}
-                    {/* {data?.name} */}
-                  </div>
-                );
-              }
-            )}
+        <td className="px-5 py-3 whitespace-nowrap text-sm">
+          <div className="flex gap-1 items-center">
+            {tableData.colors.map((c: ProductColorOrSize, index: number) => (
+              <div
+                key={index}
+                style={{ backgroundColor: c.value }}
+                className="w-5 h-5 border border-[#e8e6e3]"
+                title={c.name}
+              />
+            ))}
           </div>
         </td>
-        <td
-          className="px-6 py-4 whitespace-nowrap  border-b bg-[#f1f1f1] text-right text-sm"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <td className="px-5 py-3 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <button
-              className="transition-colors p-3 hover:bg-[#e8e8e3d0] rounded-full"
-              onClick={() => dispatch(onProductModal(tableData?._id))}
-              aria-label="Edit tableData"
+              className="p-2 hover:bg-[#f2f0ed] transition-colors"
+              onClick={() => dispatch(openProductModal(tableData._id))}
+              aria-label="Edit product"
             >
-              <FiEdit2 className="w-4 h-4" />
+              <FiEdit2 className="w-4 h-4 text-[#4c4c4c]" />
             </button>
             <button
-              className="text-red-600 hover:text-red-900 p-3 rounded-full hover:bg-red-50 transition-colors"
-              onClick={() => dispatch(onDeleteModal(tableData?._id))}
-              aria-label="Delete tableData"
+              className="p-2 hover:bg-red-50 transition-colors"
+              onClick={() => dispatch(openDeleteModal(tableData._id))}
+              aria-label="Delete product"
             >
-              <FiTrash2 className="w-4 h-4" />
+              <FiTrash2 className="w-4 h-4 text-red-500" />
             </button>
           </div>
         </td>
       </tr>
     );
   }
-  // category
-  if (type === "category") {
-    return (
-      <tr
-        key={tableData?._id}
-        className={`hover:bg-gray-100 bg-[#f2f2f2] cursor-pointer transition-colors`}
-        
-      >
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?._id}
-        </td>
 
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.name}
+  if ((type === "category" || type === "Size" || type === "Color") && isCategoryOrSize(tableData)) {
+    const openModal =
+      type === "category"
+        ? openCategoryModal
+        : type === "Size"
+        ? openSizeModal
+        : openColorModal;
+
+    return (
+      <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+        <td className="px-5 py-3 whitespace-nowrap text-xs text-[#a3a6af] font-selleasy_normal">
+          {tableData._id}
         </td>
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.value}
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-dashboard_regular">
+          {tableData.name}
         </td>
-        <td
-          className="px-6 py-4 whitespace-nowrap  border-b bg-[#f1f1f1] text-right text-sm"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+          {type === "Color" ? (
+            <div style={{ backgroundColor: tableData.value }} className="w-5 h-5 border border-[#e8e6e3]" />
+          ) : (
+            tableData.value
+          )}
+        </td>
+        <td className="px-5 py-3 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1">
             <button
-              className="transition-colors p-3 hover:bg-[#e8e8e3d0] rounded-full"
-              onClick={() => dispatch(onCategoryModal(tableData?._id))}
-              aria-label="Edit tableData"
+              className="p-2 hover:bg-[#f2f0ed] transition-colors"
+              onClick={() => dispatch(openModal(tableData._id))}
+              aria-label={`Edit ${type}`}
             >
-              <FiEdit2 className="w-4 h-4" />
+              <FiEdit2 className="w-4 h-4 text-[#4c4c4c]" />
             </button>
             <button
-              className="text-red-600 hover:text-red-900 p-3 rounded-full hover:bg-red-50 transition-colors"
-              onClick={() => dispatch(onDeleteModal(tableData?._id))}
-              aria-label="Delete tableData"
+              className="p-2 hover:bg-red-50 transition-colors"
+              onClick={() => dispatch(openDeleteModal(tableData._id))}
+              aria-label={`Delete ${type}`}
             >
-              <FiTrash2 className="w-4 h-4" />
+              <FiTrash2 className="w-4 h-4 text-red-500" />
             </button>
           </div>
         </td>
       </tr>
     );
   }
-  // size
-  if (type === "Size") {
-    return (
-      <tr
-        key={tableData?._id}
-        className={`hover:bg-gray-100 bg-[#f2f2f2] cursor-pointer transition-colors`}
-        
-      >
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?._id}
-        </td>
 
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.name}
-        </td>
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.value}
-        </td>
-        <td
-          className="px-6 py-4 whitespace-nowrap  border-b bg-[#f1f1f1] text-right text-sm"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center gap-1">
-            <button
-              className="transition-colors p-3 hover:bg-[#e8e8e3d0] rounded-full"
-              onClick={() => dispatch(onSizeModal(tableData?._id))}
-              aria-label="Edit tableData"
-            >
-              <FiEdit2 className="w-4 h-4" />
-            </button>
-            <button
-              className="text-red-600 hover:text-red-900 p-3 rounded-full hover:bg-red-50 transition-colors"
-              onClick={() => dispatch(onDeleteModal(tableData?._id))}
-              aria-label="Delete tableData"
-            >
-              <FiTrash2 className="w-4 h-4" />
-            </button>
-          </div>
+  if (isCustomer(tableData)) {
+    return (
+      <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+          {tableData.phone_number}
         </td>
       </tr>
     );
   }
-  // color
-  if (type === "Color") {
-    return (
-      <tr
-        key={tableData?._id}
-        className={`hover:bg-gray-100 bg-[#f2f2f2] cursor-pointer transition-colors`}
-        
-      >
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?._id}
-        </td>
 
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          {tableData?.name}
-        </td>
-        <td className="px-6 py-4 border-b bg-[#f1f1f1] whitespace-nowrap text-sm text-dark">
-          <div
-            style={{
-              backgroundColor: `${tableData?.value}`,
-            }}
-            className="w-6 h-6 rounded-full"
-          ></div>
-        </td>
-        <td
-          className="px-6 py-4 whitespace-nowrap  border-b bg-[#f1f1f1] text-right text-sm"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center gap-1">
-            <button
-              className="transition-colors p-3 hover:bg-[#e8e8e3d0] rounded-full"
-              onClick={() => dispatch(onColorModal(tableData?._id))}
-              aria-label="Edit tableData"
-            >
-              <FiEdit2 className="w-4 h-4" />
-            </button>
-            <button
-              className="text-red-600 hover:text-red-900 p-3 rounded-full hover:bg-red-50 transition-colors"
-              onClick={() => dispatch(onDeleteModal(tableData?._id))}
-              aria-label="Delete tableData"
-            >
-              <FiTrash2 className="w-4 h-4" />
-            </button>
-          </div>
-        </td>
-      </tr>
-    );
-  }
-  return (
-    <tr
-      key={tableData?._id}
-      className={`hover:bg-gray-100 py-4 border-b px-3 bg-[#e8e8e3a8] cursor-pointer transition-colors`}
-      
-    >
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-dark">
-        {tableData?.phone_number}
-      </td>
-      {/* <td
-        className="px-6 py-4 whitespace-nowrap text-right text-sm"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          className="transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            setEditingUserId(tableData?._id);
-            setIsModalOpen(true);
-            onUserClick(tableData);
-            // toast.success("Edit functionality coming soon!");
-          }}
-          aria-label="Edit tableData"
-        >
-          <FiEdit2 className="w-4 h-4" />
-        </button>
-        <button
-          className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
-          onClick={(e) => {
-            setDeleteModal({
-              isOpen: true,
-              userId: tableData?._id,
-              userName: tableData?.name,
-            });
-          }}
-          aria-label="Delete tableData"
-        >
-          <FiTrash2 className="w-4 h-4" />
-        </button>
-      </td> */}
-    </tr>
-  );
+  return null;
 }

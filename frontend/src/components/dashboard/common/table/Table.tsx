@@ -1,141 +1,175 @@
 import { useState } from "react";
 import ProductTableList from "./ProductTableList";
+import type { Product } from "@/types/api";
+import { Input } from "@/components/ui/input";
 
 const DEFAULT_HEADERS = ["User Info", "Location", "Phone", "Status", "Actions"];
 
 type UserTableType = {
   headers: string[];
-  data: {
-    title: string;
-    price: number;
-    id: string;
-    category: string;
-    size: string;
-    color: string;
-  }[];
-  onDeleteUser: (a: string) => void;
-  onSort?: (a: string, b: any) => void;
+  data: Product[];
+  onDeleteUser: (id: string) => void;
+  onSort?: (key: string, direction: string) => void;
   hasMore?: boolean;
-  setDeleteModal?: () => void;
-  setIsModalOpen?: () => void;
-  onUserClick?: () => void;
   fetchNextPage?: () => void;
   fetchPrevPage?: () => void;
-  currentPage?: Number;
   type: string;
+  deleteModal: { userId: string };
 };
+
+const ROWS_PER_PAGE = 10;
+
+function Pagination({
+  total,
+  current,
+  onChange,
+}: {
+  total: number;
+  current: number;
+  onChange: (page: number) => void;
+}) {
+  if (total <= 1) return null;
+
+  const getPages = (): (number | "...")[] => {
+    const pages: (number | "...")[] = [];
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+      return pages;
+    }
+    pages.push(1);
+    if (current > 3) pages.push("...");
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (current < total - 2) pages.push("...");
+    pages.push(total);
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => onChange(current - 1)}
+        disabled={current === 1}
+        className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors font-dashboard_regular"
+      >
+        Prev
+      </button>
+      {getPages().map((page, i) =>
+        page === "..." ? (
+          <span key={`ellipsis-${i}`} className="h-8 w-8 flex items-center justify-center text-xs text-[#a3a6af]">
+            ...
+          </span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onChange(page as number)}
+            className={`h-8 w-8 text-xs font-semibold border transition-colors font-dashboard_regular ${
+              current === page
+                ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]"
+                : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"
+            }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => onChange(current + 1)}
+        disabled={current === total}
+        className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors font-dashboard_regular"
+      >
+        Next
+      </button>
+    </div>
+  );
+}
 
 export const UserTable = ({
   headers = DEFAULT_HEADERS,
   data = [],
   onSort,
-  fetchNextPage,
-  fetchPrevPage,
-  hasMore,
-  currentPage,
   type,
 }: UserTableType) => {
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleSort = (key: any) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-    onSort?.(key, direction);
+  const filtered = data.filter((row) =>
+    Object.values(row).some((val) =>
+      String(val ?? "").toLowerCase().includes(search.toLowerCase())
+    )
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE));
+  const paginated = filtered.slice(
+    (currentPage - 1) * ROWS_PER_PAGE,
+    currentPage * ROWS_PER_PAGE
+  );
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
   };
 
   return (
-    <div className="w-full min-h-[250px] items-center justify-center p-4 border py-8 bg-[#f9f9f9] rounded-lg flex flex-col">
-      <div className="overflow-auto w-full flex flex-col gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search on your store!"
-            className="w-32 lg:w-56 px-4 h-[40px] bg-[#f1f1f1] border rounded-xl font-work_font font-normal text-sm"
-          />
-        </div>
-        <table className="w-full divide-y overflow-auto divide-gray-200">
-          {/* bg-[#E8E8E3] */}
-          <thead className=" ">
-            <tr>
+    <div className="w-full flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-4">
+        <Input
+          type="text"
+          value={search}
+          onChange={handleSearch}
+          placeholder={`Search ${type}s...`}
+          className="w-48 lg:w-64 px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm font-selleasy_normal outline-none focus:border-[#17191c] transition-colors"
+        />
+        <span className="text-xs text-[#a3a6af] font-selleasy_normal">
+          {filtered.length} {type}{filtered.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      <div className="border border-[#e8e6e3] overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-[#e8e6e3]">
               {headers.map((header, index) => (
                 <th
                   key={index}
                   scope="col"
-                  className="px-4  py-4 text-left text-sm font-work_font font-normal text-[#777] capitalize tracking-wider cursor-pointer"
-                
+                  onClick={() => onSort?.(header, "asc")}
+                  className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular cursor-pointer select-none"
                 >
-                  <div className="flex items-center">
-                    {header}
-                    {/* {index < headers.length - 1 && (
-                      <span className="ml-1 flex flex-col">
-                        <IoIosArrowUp
-                          className={`h-3 w-3 ${
-                            sortConfig.key === header.toLowerCase() &&
-                            sortConfig.direction === "asc"
-                              ? "text-indigo-600"
-                              : "text-gray-400"
-                          }`}
-                        />
-                        <IoIosArrowDown
-                          className={`h-3 w-3 -mt-1 ${
-                            sortConfig.key === header.toLowerCase() &&
-                            sortConfig.direction === "desc"
-                              ? "text-indigo-600"
-                              : "text-gray-400"
-                          }`}
-                        />
-                      </span>
-                    )} */}
-                  </div>
+                  {header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="text-sm divide-y divide-gray-200">
-            {data.length > 0 ? (
-              data.map((tableData: any, rowIndex) => (
-                <ProductTableList type={type} tableData={tableData} />
+          <tbody>
+            {paginated.length > 0 ? (
+              paginated.map((tableData, rowIndex) => (
+                <ProductTableList
+                  key={tableData._id ?? rowIndex}
+                  type={type}
+                  tableData={tableData}
+                />
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={headers.length + 1}
-                  className="px-6 py-6 text-center text-base"
+                  colSpan={headers.length}
+                  className="px-5 py-10 text-center text-sm text-[#a3a6af] font-selleasy_normal"
                 >
-                  <div className="w-full font-selleasy_regular">
-                    {type === "product" ? "No Products created" : ""}
-                  </div>
+                  No {type}s found{search ? ` for "${search}"` : ""}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-        <div className="p-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">
-              Showing {data.length} {type}
-            </span>
-            <div className="flex space-x-1">
-              <button
-                onClick={fetchPrevPage}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={fetchNextPage}
-                disabled={hasMore}
-                className="px-3 py-1 border rounded text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-[#a3a6af] font-selleasy_normal">
+          Page {currentPage} of {totalPages}
+        </span>
+        <Pagination total={totalPages} current={currentPage} onChange={setCurrentPage} />
       </div>
     </div>
   );

@@ -220,6 +220,7 @@ describe("POST /api/v1/auth/verify-password", () => {
   });
 });
 
+
 // POST /api/v1/auth/signup
 describe("POST /api/v1/auth/signup", () => {
   it("creates a user document and returns 201 when all onboarding steps are complete", async () => {
@@ -778,3 +779,4 @@ describe("POST /api/v1/auth/password-reset", () => {
     expect(res.body.error).toMatch(/expired/i);
   });
 });
+

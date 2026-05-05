@@ -20,8 +20,6 @@ jest.mock("../../models/OutboxEvent", () => ({
   },
 }));
 
-//  2. Imports 
-
 import {
   beforeEach,
   afterEach,

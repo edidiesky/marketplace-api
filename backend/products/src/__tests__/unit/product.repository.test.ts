@@ -37,6 +37,7 @@ function makeProduct(overrides: Partial<IProduct> = {}): IProduct {
   } as IProduct;
 }
 
+
 //  Mongoose model mock
 jest.mock("../../models/Product", () => ({
   __esModule: true,
@@ -60,7 +61,6 @@ jest.mock("../../config/redis", () => ({
 }));
 
 // Product.find(q).skip(n).limit(n).sort().lean().exec()
-// Product.findByIdAndUpdate(id, data, opts).exec()
 function chainLeanExec<T>(value: T) {
   return {
     lean: () => ({
@@ -484,3 +484,5 @@ describe("ProductRepository", () => {
     });
   });
 });
+
+

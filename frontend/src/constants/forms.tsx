@@ -8,13 +8,7 @@ export const productFormData:ProductFormDataItem[] = [
       required: true,
       label: "Title",
     },
-    {
-      type: "textarea",
-      placeholder: "description",
-      name: "description",
-      required: true,
-      label: "Description",
-    },
+   
     {
       type: "number",
       placeholder: "Price",
@@ -35,5 +29,13 @@ export const productFormData:ProductFormDataItem[] = [
       name: "thresholdStock",
       required: false,
       label: "Threshold Stock",
+    },
+
+     {
+      type: "textarea",
+      placeholder: "description",
+      name: "description",
+      required: true,
+      label: "Description",
     },
   ];

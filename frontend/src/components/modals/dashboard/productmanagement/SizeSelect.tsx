@@ -1,46 +1,44 @@
-import Select from "react-select";
+import Select, { type MultiValue } from "react-select";
 import { useGetAllStoreSizeQuery } from "@/redux/services/sizeApi";
 import { useParams } from "react-router-dom";
+import type { ProductColorOrSize } from "@/types/api";
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
 
 export default function SizeSelect({
   onCheckedChange,
   formvalue,
 }: {
-  onCheckedChange: (values: { name: string; value: string }[]) => void; 
-  formvalue: { size: { name: string; value: string }[] }; 
+  onCheckedChange: (values: ProductColorOrSize[]) => void;
+  formvalue: { size: ProductColorOrSize[] };
 }) {
   const { id } = useParams();
   const { data: storeSize } = useGetAllStoreSizeQuery({ storeid: id });
 
-  // Formatting react select options
-  const options =
-    storeSize?.map((select: { name: string; value: string }) => ({
-      label: select?.name,
-      value: select?.value,
-    })) || [];
+  const options: SelectOption[] =
+    (storeSize ?? []).map((select: ProductColorOrSize) => ({
+      label: select.name,
+      value: select.value,
+    }));
 
-  // Matching the selected size to the form value size
-  const selectedValues = options.filter((option: { label: string; value: string }) =>
+  const selectedValues = options.filter((option) =>
     formvalue.size.some((size) => size.value === option.value)
   );
 
-  // Handling selection change
-  const handleChange = (selectedOptions: any) => {
-    const selectedSizes = selectedOptions
-      ? selectedOptions.map((option: { label: string; value: string }) => ({
-          name: option.label,
-          value: option.value,
-        }))
-      : [];
-    // console.log("selectedSizes", selectedSizes);
+  const handleChange = (selectedOptions: MultiValue<SelectOption>) => {
+    const selectedSizes: ProductColorOrSize[] = (selectedOptions ?? []).map((option) => ({
+      name: option.label,
+      value: option.value,
+    }));
     onCheckedChange(selectedSizes);
   };
 
   return (
     <div className="w-full relative flex flex-col gap-2 text-sm">
-      <span className="font-dashboard_normal text-sm lg:text-base">
-        Product size
-      </span>
+      <span className="text-sm lg:text-base">Product size</span>
       <Select
         isMulti
         options={options}
@@ -53,9 +51,8 @@ export default function SizeSelect({
           control: (base) => ({
             ...base,
             height: "45px",
-            borderRadius: "8px",
+            borderRadius: "0px",
             fontSize: "14px",
-            fontFamily: "Light",
           }),
           menu: (base) => ({
             ...base,
