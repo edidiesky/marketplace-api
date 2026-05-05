@@ -1,68 +1,57 @@
-import React from "react";
+import ReactHtmlParser from "react-html-parser";
+import sanitizeHtml from "sanitize-html";
+import type { Product } from "@/types/api";
 
-export default function ProductDescription() {
+export default function ProductDescription({ product }: { product: Product }) {
+  const sanitized = sanitizeHtml(product.description, {
+    allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
+    allowedAttributes: { a: ["href"] },
+    disallowedTagsMode: "discard",
+  });
+
   return (
-    <div className="w-full grid py-12 lg:py-28 lg:grid-cols-custom gap-12">
-      <div className="w-full">
-        {/* product description */}
-        <div className="w-full flex flex-col gap-6">
-          <h3 className="text-2xl">Description</h3>
-          <h5 className="text-base space-y-2 font-k_font">
-            <span className="block leading-loose">
-              Vestibulum tellus justo, vulputate ac nunc eu, laoreet
-              pellentesque erat. Nulla in fringilla ex. Nulla finibus rutrum
-              lorem vehicula facilisis. Sed ornare congue mi, et volutpat diam.
-              Suspendisse eget augue id magna placerat dignissim. Fusce at
-              turpis neque. Nullam commodo consequat risus et iaculis. Aenean
-              felis diam, venenatis et congue non, luctus sed velit. Curabitur
-              vel metus a tellus luctus venenatis. Praesent ultricies non arcu
-              non tincidunt.
-            </span>
-            <span className="block">Be the first to leave a review.</span>
-          </h5>
+    <div className="w-full py-12 border-t border-[#f0f0f0]">
+      <div className="grid lg:grid-cols-2 gap-12">
+        <div className="flex flex-col gap-4">
+          <h3 className="text-xl font-semibold text-[#171717]">Description</h3>
+          <div className="text-sm text-[#666] leading-relaxed font-k_font">
+            {ReactHtmlParser(sanitized)}
+          </div>
         </div>
-      </div>
-      {/* product Additional Information */}
 
-      <div className="lg:w-[450px] w-full flex flex-col gap-4">
-        <div className="w-full flex flex-col gap-6">
-          <h3 className="text-2xl">Additional Information</h3>
-          <div className="w-full flex flex-col gap-1">
-            <div className="w-full grid grid-cols-custom_2 gap-1">
-              <div className="h-[70px] w-[150px] bg-[#F6F6F6] flex items-center justify-center text-base font-semibold font-work_font">
-                Weight
+        <div className="flex flex-col gap-4">
+          <h3 className="text-xl font-semibold text-[#171717]">Additional Information</h3>
+          <div className="flex flex-col gap-px">
+            {[
+              { label: "Category", value: product.category.join(", ") || "—" },
+              {
+                label: "Colors",
+                value: product.colors.length > 0
+                  ? product.colors.map((c) => c.name).join(", ")
+                  : "—",
+              },
+              {
+                label: "Sizes",
+                value: product.size.length > 0
+                  ? product.size.map((s) => s.value).join(", ")
+                  : "—",
+              },
+              {
+                label: "Availability",
+                value: (product.availableStock ?? 0) > 0
+                  ? `${product.availableStock} in stock`
+                  : "Out of stock",
+              },
+            ].map((row) => (
+              <div key={row.label} className="grid grid-cols-2 gap-px">
+                <div className="bg-[#f6f6f6] px-4 py-3 text-sm font-semibold text-[#171717]">
+                  {row.label}
+                </div>
+                <div className="bg-[#f6f6f6] px-4 py-3 text-sm text-[#666]">
+                  {row.value}
+                </div>
               </div>
-              <div className="w-full h-[70px] bg-[#F6F6F6] flex items-center justify-center text-base font-normal font-k_font">
-                24 kg
-              </div>
-            </div>
-            {/* dimensions */}
-            <div className="w-full grid grid-cols-custom_2 gap-1">
-              <div className="h-[70px] w-[150px] bg-[#F6F6F6] flex items-center justify-center text-base font-bold font-work_font">
-                Dimensions
-              </div>
-              <div className="w-full h-[70px] bg-[#F6F6F6] flex items-center justify-center text-base font-normal font-k_font">
-                12 × 48 × 62 cm
-              </div>
-            </div>
-            {/* colors */}
-            <div className="w-full grid grid-cols-custom_2 gap-1">
-              <div className="h-[70px] w-[150px] bg-[#F6F6F6] flex items-center justify-center text-base font-bold font-work_font">
-                Color
-              </div>
-              <div className="w-full h-[70px] bg-[#F6F6F6] flex items-center justify-center text-base font-normal font-k_font">
-                Yellow, Orange, Red, Brown
-              </div>
-            </div>
-            {/* sizes */}
-            <div className="w-full grid grid-cols-custom_2 gap-1">
-              <div className="h-[70px] w-[150px] bg-[#F6F6F6] flex items-center justify-center text-base font-bold font-work_font">
-                Sizes
-              </div>
-              <div className="w-full h-[70px] bg-[#F6F6F6] flex items-center justify-center text-base font-normal font-k_font">
-                S, M, L, XL
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>

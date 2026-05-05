@@ -6,8 +6,8 @@ import { useAddToCartMutation } from "@/redux/services/cartApi";
 import { useGetProductReviewsQuery } from "@/redux/services/reviewApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/slices/authSlice";
-import { Skeleton } from "@/components/ui/skeleton";
 import toast from "react-hot-toast";
+import Skeleton from "react-loading-skeleton";
 
 export default function StoreSingleProduct() {
   const { id: storeId, productId } = useParams<{

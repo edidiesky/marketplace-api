@@ -1,10 +1,7 @@
-import React from "react";
-
 export default function ProductImage({
   data,
 }: {
   data: { images: string[] };
-  // data: { images: string[] | string };
 }) {
   console.log("images:", data?.images)
   
