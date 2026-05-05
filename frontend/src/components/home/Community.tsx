@@ -36,7 +36,7 @@ const Community = () => {
 
                                 <div className="flex flex-col gap-4">
 
-                                    <h3 className="text-2xl lg:text-3xl leading-[1] family2 text-dark family2">
+                                    <h3 className="text-xl lg:text-2xl leading-[1] family2 text-dark family2">
                                         <AnimateTextWord type='bigtext'>
                                             Jobs In Tech
                                         </AnimateTextWord>
@@ -60,7 +60,7 @@ const Community = () => {
 
                                 <div className="flex flex-col gap-4">
 
-                                    <h3 className="text-2xl lg:text-3xl leading-[1] family2 text-dark family2">
+                                    <h3 className="text-xl lg:text-2xl leading-[1] family2 text-dark family2">
                                         <AnimateTextWord type='bigtext'>
                                             Designers
                                         </AnimateTextWord>
@@ -97,7 +97,7 @@ const Community = () => {
                                            
                                         </span>
                                     </h3>
-                                    <h3 className="text-2xl lg:text-3xl leading-[1] family2 text-dark family2">
+                                    <h3 className="text-xl lg:text-2xl leading-[1] family2 text-dark family2">
                                         <AnimateTextWord type='bigtext'>
                                             Salaries in Tech
                                         </AnimateTextWord>

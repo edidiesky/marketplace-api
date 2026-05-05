@@ -1,7 +1,7 @@
-// src/routes/dashboardRoutes.tsx
 import React, { Suspense, lazy } from "react";
 import DashboardLayout from "@/screens/dashboard/layout";
 import { ProtectRoute } from "./guards/ProtectRoute";
+import Payments from "@/screens/dashboard/payments";
 
 const DashboardHome = lazy(() => import("@/screens/dashboard/home"));
 const Products = lazy(() => import("@/screens/dashboard/products"));
@@ -42,6 +42,10 @@ export const dashboardRoutes = [
       {
         path: "inventory",
         element: <Suspense fallback={<></>}><Inventory /></Suspense>,
+      },
+       {
+        path: "payments",
+        element: <Suspense fallback={<></>}><Payments /></Suspense>,
       },
       {
         path: "customers",

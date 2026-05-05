@@ -7,7 +7,7 @@ export default function Title({
 }) {
   return (
     <div>
-      <h4 className="text-2xl lg:text-3xl font-selleasy_bold text-[#17191c]">
+      <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">
         {title}
       </h4>
       <p className="text-sm font-selleasy_normal text-[#64645f] mt-1 max-w-[520px] leading-[1.6]">

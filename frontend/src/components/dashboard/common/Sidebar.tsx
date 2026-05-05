@@ -14,6 +14,7 @@ import {
   LuLogOut,
   LuWallet,
   LuBoxes,
+  LuCreditCard,
 } from "react-icons/lu";
 import { selectCurrentUser, clearCredentials } from "@/redux/slices/authSlice";
 import { useLogoutMutation } from "@/redux/services/authApi";
@@ -24,18 +25,19 @@ const NAV_GROUPS = [
     label: "Overview",
     items: [
       { icon: LuLayoutDashboard, text: "Dashboard", path: "" },
-      { icon:LuBoxes , text: "Analytics", path: "analytics" },
+      { icon: LuBoxes, text: "Analytics", path: "analytics" },
     ],
   },
   {
     label: "Store",
     items: [
       { icon: LuPackage, text: "Products", path: "products" },
+      { icon: LuCreditCard, text: "Payments", path: "payments" },
       { icon: LuBoxes, text: "Inventory", path: "inventory" },
       { icon: LuShoppingCart, text: "Orders", path: "orders" },
-      { icon: LuTag, text: "Categories", path: "categories" },
-      { icon: LuPalette, text: "Colors", path: "colors" },
-      { icon: LuRuler, text: "Sizes", path: "sizes" },
+      // { icon: LuTag, text: "Categories", path: "categories" },
+      // { icon: LuPalette, text: "Colors", path: "colors" },
+      // { icon: LuRuler, text: "Sizes", path: "sizes" },
     ],
   },
   {
@@ -48,9 +50,7 @@ const NAV_GROUPS = [
   },
   {
     label: "Finance",
-    items: [
-      { icon: LuWallet, text: "Payouts", path: "payouts" },
-    ],
+    items: [{ icon: LuWallet, text: "Payouts", path: "payouts" }],
   },
 ];
 
@@ -82,7 +82,6 @@ export default function Sidebar() {
         borderColor: "#ebebeb",
       }}
     >
-
       {/* nav */}
       <nav className="flex-1 overflow-y-auto py-8 px-3">
         {NAV_GROUPS.map((group) => (
@@ -120,10 +119,7 @@ export default function Sidebar() {
       </nav>
 
       {/* user + signout */}
-      <div
-        className="border-t p-3 shrink-0"
-        style={{ borderColor: "#ebebeb" }}
-      >
+      <div className="border-t p-3 shrink-0" style={{ borderColor: "#ebebeb" }}>
         <Link
           to={`${base}/account`}
           className="flex items-center gap-2.5 px-2 py-2 rounded-[8px] hover:bg-[#f5f5f3] transition-colors mb-1 w-full"
@@ -149,14 +145,15 @@ export default function Sidebar() {
             >
               {currentUser?.firstName} {currentUser?.lastName}
             </p>
-            <p
-              className="text-[11px] truncate"
-              style={{ color: "#a3a6af" }}
-            >
+            <p className="text-[11px] truncate" style={{ color: "#a3a6af" }}>
               {currentUser?.email}
             </p>
           </div>
-          <LuSettings size={13} style={{ color: "#a3a6af" }} className="shrink-0" />
+          <LuSettings
+            size={13}
+            style={{ color: "#a3a6af" }}
+            className="shrink-0"
+          />
         </Link>
 
         <button
