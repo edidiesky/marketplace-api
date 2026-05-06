@@ -5,7 +5,7 @@ import { HiMiniCamera } from "react-icons/hi2";
 export default function Account() {
   return (
     <>
-      <div className="w-full lg:w-[90%] max-w-custom_dashboard p-4 lg:p-12 mx-auto">
+      <div className="w-full  p-4 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-8">
           <div className="w-full">
             <h4 className="text-3xl font-work_font font-semibold">

@@ -1,7 +1,6 @@
-// src/components/store/common/Header.tsx
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, User } from "lucide-react";
 import { selectCurrentUser } from "@/redux/slices/authSlice";
 import { useGetStoreQuery } from "@/redux/services/storeApi";
 import { useGetUserCartQuery } from "@/redux/services/cartApi";
@@ -29,30 +28,33 @@ export default function StoreHeader() {
           {store?.name ?? "Store"}
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {currentUser ? (
-            <button
-              onClick={() =>
-                navigate(`/store/${id}/cart/${cartData?.data?._id ?? ""}`)
-              }
-              className="relative flex items-center gap-2 h-10 px-4 rounded-full border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
-            >
-              <ShoppingCart size={16} />
-              Cart
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#171717] text-white text-xs flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            <>
+              <button
+                onClick={() => navigate(`/store/${id}/profile`)}
+                className="flex items-center gap-2 h-10 px-4 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
+              >
+                <User size={15} />
+                {currentUser.firstName}
+              </button>
+              <button
+                onClick={() => navigate(`/store/${id}/cart/${cartData?.data?._id ?? ""}`)}
+                className="relative flex items-center gap-2 h-10 px-4 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
+              >
+                <ShoppingCart size={15} />
+                Cart
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#171717] text-white text-xs flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            </>
           ) : (
             <button
-              onClick={() =>
-                navigate("/login", {
-                  state: { from: { pathname: `/store/${id}` } },
-                })
-              }
-              className="h-10 px-4 rounded-full bg-[#171717] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+              onClick={() => navigate("/login", { state: { from: { pathname: `/store/${id}` } } })}
+              className="h-10 px-5 bg-[#171717] text-white text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Sign in
             </button>

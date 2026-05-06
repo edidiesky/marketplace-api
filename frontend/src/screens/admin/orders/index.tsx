@@ -2,7 +2,7 @@ import { GoPlus } from "react-icons/go";
 export default function Orders() {
   return (
     <>
-      <div className="w-full lg:w-[90%] max-w-custom_dashboard p-4 py-8 lg:p-12 mx-auto">
+      <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-8">
           <div className="w-full flex items-center justify-between gap-4">
             <h4 className="text-xl lg:text-2xl font-dashboard_regular flex-1">

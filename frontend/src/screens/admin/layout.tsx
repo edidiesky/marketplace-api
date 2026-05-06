@@ -1,24 +1,19 @@
 import Header from "@/components/dashboard/common/Header";
-import Sidebar from "@/components/dashboard/common/Sidebar";
+import AdminSidebar from "@/components/admin/common/AdminSidebar";
 import { Outlet } from "react-router-dom";
-const DashboardLayout = () => {
+
+const AdminLayout = () => {
   return (
-    <div className="w-full py-2 pr-2 h-screen family2 overflow-hidden bg-[#f9f9f9]">
-      <div className="flex w-full h-full items-start relative">
-        <Sidebar />
-      
-        <div className="flex-1 h-full rounded-xl overflow-hidden bg-[#fff] relative flex flex-col gap-4">
-          <div className="w-full flex h-full flex-col overflow-auto">
-            {/* header */}
-            <Header />
-            <div className="w-full">
-              <Outlet />
-            </div>
-          </div>
-        </div>
+    <div className="w-full h-screen flex flex-col overflow-hidden bg-white">
+      <Header />
+      <div className="flex flex-1 w-full max-w-[1280px] mx-auto overflow-hidden">
+        <AdminSidebar />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
 };
 
-export default DashboardLayout;
+export default AdminLayout;

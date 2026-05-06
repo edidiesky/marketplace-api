@@ -26,7 +26,7 @@ export default function Category() {
       <AnimatePresence mode="wait">
         {isDeleteModal && <DeleteCategoryModal />}
       </AnimatePresence>
-      <div className="w-full lg:w-[90%] max-w-custom_dashboard p-4 py-8 lg:p-12 mx-auto">
+      <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-start lg:flex-row flex-col md:items-center justify-between gap-4">
             <h4 className="text-2xl md:text-3xl font-selleasy_bold flex-1">
