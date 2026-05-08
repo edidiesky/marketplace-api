@@ -1,8 +1,8 @@
-// src/screens/auth/onboarding/steps/StepCreateStore.tsx
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Store } from "lucide-react";
+import { Store } from "lucide-react";
 import { storeSchema, type StoreFormData } from "../schema/onboarding.schema";
 
 interface Props {
@@ -20,8 +20,6 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
   } = useForm<StoreFormData>({
     resolver: zodResolver(storeSchema),
   });
-
-  const name = watch("name") ?? "";
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -120,11 +118,9 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
         style={{
           backgroundColor: "var(--color-ink)",
           color: "var(--color-canvas)",
-          borderRadius: "9999px",
         }}
       >
         {isLoading ? "Creating store..." : "Launch my store"}
-        {!isLoading && <ArrowRight size={14} />}
       </button>
     </form>
   );

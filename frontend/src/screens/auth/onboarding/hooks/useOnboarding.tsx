@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setOnboardingEmail } from "@/redux/slices/authSlice";
@@ -8,54 +9,68 @@ import {
 } from "@/redux/services/authApi";
 import { useCreateStoreMutation } from "@/redux/services/storeApi";
 import toast from "react-hot-toast";
-import type {
-  EmailFormData,
-  PasswordFormData,
-  DetailsFormData,
-  StoreFormData,
-} from "../schema/onboarding.schema";
+import type { AccountFormData } from "../steps/StepAccount";
+import type { DetailsFormData, StoreFormData } from "../schema/onboarding.schema";
 
-export function useOnboarding(email: string, onNext: () => void) {
+export function useOnboarding(onNext: () => void) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [verifyEmail, { isLoading: sendingEmail }] = useVerifyEmailMutation();
-  const [verifyPassword, { isLoading: settingPassword }] =
-    useVerifyPasswordMutation();
-  const [register, { isLoading: registering }] = useRegisterMutation();
-  const [createStore, { isLoading: creatingStore }] = useCreateStoreMutation();
+  const [pendingEmail, setPendingEmail]   = useState("");
+  const [showVerify,   setShowVerify]     = useState(false);
+  const [userType,     setUserType]       = useState<"SELLER" | "BUYER">("SELLER");
 
-  const handleEmail = async (data: EmailFormData) => {
+  const [verifyEmail,    { isLoading: sendingEmail    }] = useVerifyEmailMutation();
+  const [verifyPassword, { isLoading: settingPassword }] = useVerifyPasswordMutation();
+  const [register,       { isLoading: registering     }] = useRegisterMutation();
+  const [createStore,    { isLoading: creatingStore   }] = useCreateStoreMutation();
+
+  const handleAccount = async (data: AccountFormData) => {
     try {
-      const result = await verifyEmail({ email: data.email }).unwrap();
+      await verifyEmail({ email: data.email }).unwrap();
+      await verifyPassword({ email: data.email, password: data.password }).unwrap();
       dispatch(setOnboardingEmail(data.email));
-      toast.success(result.message);
-      onNext();
-    } catch {
-      // error handled by rtkQueryErrorMiddleware
+      setPendingEmail(data.email);
+      setShowVerify(true);
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string[] }; error?: string };
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
     }
   };
 
-  const handlePassword = async (data: PasswordFormData) => {
+  const handleResend = async () => {
+    if (!pendingEmail) return;
     try {
-      await verifyPassword({ email, password: data.password }).unwrap();
-      onNext();
+      await verifyEmail({ email: pendingEmail }).unwrap();
+      toast.success("Verification email resent.");
     } catch {
-      // error handled by rtkQueryErrorMiddleware
+      toast.error("Failed to resend. Please try again.");
     }
+  };
+
+  const handleVerified = () => {
+    setShowVerify(false);
+    onNext();
   };
 
   const handleDetails = async (data: DetailsFormData) => {
     try {
       await register({
-        email,
+        email: pendingEmail,
         firstName: data.firstName,
         lastName: data.lastName,
         userType: data.userType,
       }).unwrap();
+      setUserType(data.userType);
+      if (data.userType === "BUYER") {
+        toast.success("Account created! Welcome to Selleasi.");
+        navigate("/");
+        return;
+      }
       onNext();
-    } catch {
-      // error handled by rtkQueryErrorMiddleware
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string[] }; error?: string };
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
     }
   };
 
@@ -66,22 +81,23 @@ export function useOnboarding(email: string, onNext: () => void) {
         subdomain: data.subdomain,
         description: data.description,
       }).unwrap();
-      toast.success("Store created. Welcome to Selleasi.");
+      toast.success("Store created! Let's start selling.");
       navigate(`/dashboard/store/${result.data._id}`);
-    } catch {
-      // error handled by rtkQueryErrorMiddleware
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string[] }; error?: string };
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
     }
   };
 
   return {
-    handleEmail,
-    handlePassword,
+    showVerify,
+    pendingEmail,
+    handleAccount,
+    handleVerified,
     handleDetails,
     handleCreateStore,
-    isLoading:
-      sendingEmail || settingPassword || registering || creatingStore,
-    sendingEmail,
-    settingPassword,
+    handleResend,
+    isAccountLoading: sendingEmail || settingPassword,
     registering,
     creatingStore,
   };

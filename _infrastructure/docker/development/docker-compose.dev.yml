@@ -185,17 +185,17 @@ services:
       kafka-1:
         condition: service_healthy
 
-  frontend:
-    build:
-      context: ../../../../selleasi-frontend
-      dockerfile: Dockerfile
-    container_name: selleasi_frontend
-    volumes:
-      - ui_dist:/srv/ui
-    networks:
-      - selleasi-network
-    restart: "no"
-
+  # frontend:
+  #   build:
+  #     context: ../../../../backend/selleasi-frontend
+  #     dockerfile: Dockerfile
+  #   container_name: selleasi_frontend
+  #   volumes:
+  #     - ui_dist:/srv/ui
+  #   networks:
+  #     - selleasi-network
+  #   restart: "no"
+# IND-2NK9CPY
   api-gateway:
     depends_on:
       redis:
@@ -209,7 +209,7 @@ services:
       tempo:
         condition: service_started
     env_file:
-      - ../../../../api-gateway/.env
+      - ../../../../backend/api-gateway/.env
     ports:
       - "127.0.0.1:8000:8000"
     networks:
@@ -221,7 +221,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../api-gateway
+      context: ../../../../backend/api-gateway
       dockerfile: Dockerfile
 
   authentication:
@@ -236,7 +236,7 @@ services:
         condition: service_healthy
     container_name: selleasi-authentication
     env_file:
-      - ../../../../authentication/.env
+      - ../../../../backend/authentication/.env
     networks:
       - selleasi-network
       - app-tier
@@ -249,7 +249,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../authentication
+      context: ../../../../backend/authentication
       dockerfile: Dockerfile
 
   users:
@@ -264,7 +264,7 @@ services:
         condition: service_healthy
     container_name: selleasi-users
     env_file:
-      - ../../../../users/.env
+      - ../../../../backend/users/.env
     networks:
       - selleasi-network
     ports:
@@ -276,7 +276,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../users
+      context: ../../../../backend/users
       dockerfile: Dockerfile
 
   products:
@@ -293,7 +293,7 @@ services:
     ports:
       - "4003:4003"
     env_file:
-      - ../../../../products/.env
+      - ../../../../backend/products/.env
     networks:
       - selleasi-network
     healthcheck:
@@ -303,7 +303,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../products
+      context: ../../../../backend/products
       dockerfile: Dockerfile
 
   payment:
@@ -318,7 +318,7 @@ services:
         condition: service_healthy
     container_name: payment
     env_file:
-      - ../../../../payment/.env
+      - ../../../../backend/payment/.env
     networks:
       - selleasi-network
       - app-tier
@@ -331,7 +331,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../payment
+      context: ../../../../backend/payment
       dockerfile: Dockerfile
 
   notification:
@@ -346,7 +346,7 @@ services:
         condition: service_healthy
     container_name: selleasi-notification
     env_file:
-      - ../../../../notification/.env
+      - ../../../../backend/notification/.env
     ports:
       - "4006:4006"
     networks:
@@ -359,7 +359,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../notification
+      context: ../../../../backend/notification
       dockerfile: Dockerfile
 
   stores:
@@ -374,7 +374,7 @@ services:
         condition: service_healthy
     container_name: selleasi-stores
     env_file:
-      - ../../../../stores/.env
+      - ../../../../backend/stores/.env
     ports:
       - "4007:4007"
     networks:
@@ -386,7 +386,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../stores
+      context: ../../../../backend/stores
       dockerfile: Dockerfile
 
   inventory:
@@ -401,7 +401,7 @@ services:
         condition: service_healthy
     container_name: inventory
     env_file:
-      - ../../../../inventory/.env
+      - ../../../../backend/inventory/.env
     networks:
       - selleasi-network
       - app-tier
@@ -414,7 +414,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../inventory
+      context: ../../../../backend/inventory
       dockerfile: Dockerfile
 
   cart:
@@ -429,7 +429,7 @@ services:
         condition: service_healthy
     container_name: cart
     env_file:
-      - ../../../../cart/.env
+      - ../../../../backend/cart/.env
     ports:
       - "4009:4009"
     networks:
@@ -441,7 +441,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../cart
+      context: ../../../../backend/cart
       dockerfile: Dockerfile
 
   tenant:
@@ -458,7 +458,7 @@ services:
     ports:
       - "4010:4010"
     env_file:
-      - ../../../../tenant/.env
+      - ../../../../backend/tenant/.env
     networks:
       - selleasi-network
     healthcheck:
@@ -468,7 +468,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../tenant
+      context: ../../../../backend/tenant
       dockerfile: Dockerfile
 
   review:
@@ -483,7 +483,7 @@ services:
         condition: service_healthy
     container_name: selleasi-review
     env_file:
-      - ../../../../review/.env
+      - ../../../../backend/review/.env
     ports:
       - "4011:4011"
     networks:
@@ -495,7 +495,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../review
+      context: ../../../../backend/review
       dockerfile: Dockerfile
 
   orders:
@@ -510,7 +510,7 @@ services:
         condition: service_healthy
     container_name: orders
     env_file:
-      - ../../../../orders/.env
+      - ../../../../backend/orders/.env
     networks:
       - selleasi-network
       - app-tier
@@ -523,7 +523,7 @@ services:
       retries: 5
       start_period: 30s
     build:
-      context: ../../../../orders
+      context: ../../../../backend/orders
       dockerfile: Dockerfile
 
   prometheus:

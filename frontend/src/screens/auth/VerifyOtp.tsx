@@ -99,7 +99,7 @@ export default function VerifyOtp() {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col items-start w-full gap-6">
         <div className="flex flex-col gap-1">
           <h1
             className="text-[32px] font-semibold leading-[1.1]"
@@ -121,7 +121,7 @@ export default function VerifyOtp() {
           </p>
         </div>
 
-        <div className="flex gap-2" onPaste={handlePaste}>
+        <div className="flex gap-2 max-w-[400px]" onPaste={handlePaste}>
           {otp.map((digit, i) => (
             <motion.input
               key={i}
@@ -132,7 +132,7 @@ export default function VerifyOtp() {
               value={digit}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="flex-1 h-14 text-center text-xl font-bold rounded-[12px] border-2 transition-all outline-none focus:ring-0"
+              className="flex-1 h-14 text-center text-xl w-full font-bold rounded-[12px] border-2 transition-all outline-none focus:ring-0"
               style={{
                 borderColor: digit
                   ? "var(--color-ink)"
@@ -160,7 +160,7 @@ export default function VerifyOtp() {
         <button
           onClick={() => handleResend()}
           disabled={countdown > 0 || resending}
-          className="text-sm text-center transition-opacity disabled:opacity-40"
+          className="text-sm transition-opacity disabled:opacity-40"
           style={{ color: "var(--color-muted-stone)" }}
         >
           {countdown > 0
@@ -171,7 +171,7 @@ export default function VerifyOtp() {
         </button>
 
         <p
-          className="text-sm text-center"
+          className="text-sm"
           style={{ color: "var(--color-muted-stone)" }}
         >
           Wrong email?{" "}

@@ -78,10 +78,10 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
                 style={{
                   borderColor: isSelected
                     ? "var(--color-ink)"
-                    : "var(--color-stone-surface)",
+                    : "",
                   backgroundColor: isSelected
                     ? "var(--color-fog)"
-                    : "var(--color-canvas)",
+                    : "",
                 }}
               >
                 <div

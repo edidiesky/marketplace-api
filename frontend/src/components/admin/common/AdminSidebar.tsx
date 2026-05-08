@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LuLayoutDashboard, LuPackage, LuShoppingCart, LuUsers,
-  LuStore, LuTag, LuPalette, LuRuler,
+  LuStore,
   LuWallet, LuSettings, LuLogOut, LuCreditCard, LuShield,
 } from "react-icons/lu";
 import { selectCurrentUser, clearCredentials } from "@/redux/slices/authSlice";

@@ -15,7 +15,7 @@ export default function AuthProgress({
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
             key={i}
-            className="h-1 flex-1 rounded-full transition-all duration-300"
+            className="h-2 flex-1 rounded-full transition-all duration-300"
             style={{
               backgroundColor:
                 i < currentStep
