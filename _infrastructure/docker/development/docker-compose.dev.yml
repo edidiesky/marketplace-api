@@ -1,38 +1,107 @@
+name: selleasi-dev
+
 networks:
-  selleasi-network:
+  selleasi-frontend:
     driver: bridge
-  app-tier:
-    external: true
-    name: hyperscale-job-scheduler_app-tier
+  selleasi-gateway:
+    driver: bridge
+  selleasi-services:
+    driver: bridge
+  selleasi-data:
+    driver: bridge
+  selleasi-monitoring:
+    driver: bridge
 
 volumes:
   prom_data:
   redis-data:
   grafana_data:
   loki_data:
-  kafka1_data:
-  kafka2_data:
-  kafka3_data:
+  rabbitmq_data:
   tempo-data:
   es-data:
   mongo-local-data:
+  ui_dist:
 
 services:
-  mongodb-local:
+
+  # DATA LAYER
+
+  mongodb:
     image: mongo:7
+    container_name: selleasi_mongodb
     networks:
-      - selleasi-network
+      - selleasi-data
     ports:
       - "27018:27017"
     volumes:
       - mongo-local-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: selleasi_redis
+    networks:
+      - selleasi-data
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --save 60 1
+      --loglevel warning
+      --requirepass ${REDIS_PASSWORD}
+      --bind 0.0.0.0
+      --protected-mode yes
+      --appendonly yes
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: selleasi_rabbitmq
+    hostname: selleasi-rabbit
+    networks:
+      - selleasi-data
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_DEFAULT_VHOST: selleasi
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ../../rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ../../rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ../../rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    restart: unless-stopped
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: selleasi-elasticsearch
+    container_name: selleasi_elasticsearch
     hostname: elasticsearch
     networks:
-      - selleasi-network
+      - selleasi-data
     ports:
       - "9200:9200"
     environment:
@@ -49,517 +118,586 @@ services:
       start_period: 60s
     volumes:
       - es-data:/usr/share/elasticsearch/data
+    restart: unless-stopped
 
-  redis:
-    image: redis:7.0-alpine
-    container_name: selleasi_redis
-    networks:
-      - selleasi-network
+  # FRONTEND
+
+  frontend:
+    build:
+      context: ../../../../frontend
+      dockerfile: Dockerfile
+    container_name: selleasi_frontend
     volumes:
-      - redis-data:/data
-    command: redis-server --save 60 1 --loglevel warning
-    ports:
-      - "6380:6379"
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-
-  kafka-1:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-1
+      - ui_dist:/srv/ui
     networks:
-      - selleasi-network
+      - selleasi-frontend
+    restart: "no"
+
+  # GATEWAY
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: selleasi_caddy
     ports:
-      - "9092:9092"
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:19092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:19092,2@kafka-2:19092,3@kafka-3:19092
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_MIN_INSYNC_REPLICAS: 2
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_HEAP_OPTS: -Xmx2G -Xms1G
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 40s
+      - "80:80"
+      - "443:443"
+      - "2019:2019"
     volumes:
-      - kafka1_data:/var/lib/kafka/data
-
-  kafka-2:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-2
+      - ../../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ui_dist:/srv/ui:ro
     networks:
-      - selleasi-network
-    ports:
-      - "9093:9093"
-    environment:
-      KAFKA_NODE_ID: 2
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,CONTROLLER://0.0.0.0:19092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:19092,2@kafka-2:19092,3@kafka-3:19092
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_MIN_INSYNC_REPLICAS: 2
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_HEAP_OPTS: -Xmx2G -Xms1G
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9093 || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 40s
-    volumes:
-      - kafka2_data:/var/lib/kafka/data
-
-  kafka-3:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-3
-    networks:
-      - selleasi-network
-    ports:
-      - "9094:9094"
-    environment:
-      KAFKA_NODE_ID: 3
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,CONTROLLER://0.0.0.0:19092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:19092,2@kafka-2:19092,3@kafka-3:19092
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
-      KAFKA_MIN_INSYNC_REPLICAS: 2
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      KAFKA_LOG_DIRS: /var/lib/kafka/data
-      KAFKA_HEAP_OPTS: -Xmx2G -Xms1G
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9094 || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-      start_period: 40s
-    volumes:
-      - kafka3_data:/var/lib/kafka/data
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    networks:
-      - selleasi-network
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: selleasi-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9093,kafka-3:9094
-      DYNAMIC_CONFIG_ENABLED: true
+      - selleasi-frontend
+      - selleasi-gateway
     depends_on:
-      redis:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-
-  # frontend:
-  #   build:
-  #     context: ../../../../backend/selleasi-frontend
-  #     dockerfile: Dockerfile
-  #   container_name: selleasi_frontend
-  #   volumes:
-  #     - ui_dist:/srv/ui
-  #   networks:
-  #     - selleasi-network
-  #   restart: "no"
-# IND-2NK9CPY
-  api-gateway:
-    depends_on:
-      redis:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-      tempo:
+      frontend:
+        condition: service_completed_successfully
+      api-gateway:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/caddy/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ../../../../backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: selleasi_api_gateway
     env_file:
       - ../../../../backend/api-gateway/.env
     ports:
       - "127.0.0.1:8000:8000"
     networks:
-      - selleasi-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ../../../../backend/api-gateway
-      dockerfile: Dockerfile
-
-  authentication:
+      - selleasi-gateway
+      - selleasi-services
+      - selleasi-data
     depends_on:
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-authentication
-    env_file:
-      - ../../../../backend/authentication/.env
-    networks:
-      - selleasi-network
-      - app-tier
-    ports:
-      - "4001:4001"
+      tempo:
+        condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
+    restart: unless-stopped
+
+  # CORE SERVICES
+
+  authentication:
     build:
       context: ../../../../backend/authentication
       dockerfile: Dockerfile
-
-  users:
+    container_name: selleasi_authentication
+    env_file:
+      - ../../../../backend/authentication/.env
+    ports:
+      - "4001:4001"
+    networks:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-users
-    env_file:
-      - ../../../../backend/users/.env
-    networks:
-      - selleasi-network
-    ports:
-      - "4016:4016"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4016/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
+    restart: unless-stopped
+
+  audit:
     build:
-      context: ../../../../backend/users
+      context: ../../../../backend/audit
       dockerfile: Dockerfile
+    container_name: selleasi_audit
+    env_file:
+      - ../../../../backend/audit/.env
+    ports:
+      - "4002:4002"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   products:
-    depends_on:
-      redis:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-products
-    ports:
-      - "4003:4003"
-    env_file:
-      - ../../../../backend/products/.env
-    networks:
-      - selleasi-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
     build:
       context: ../../../../backend/products
       dockerfile: Dockerfile
-
-  payment:
+    container_name: selleasi_products
+    env_file:
+      - ../../../../backend/products/.env
+    ports:
+      - "4003:4003"
+    networks:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
+      elasticsearch:
         condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: payment
-    env_file:
-      - ../../../../backend/payment/.env
-    networks:
-      - selleasi-network
-      - app-tier
-    ports:
-      - "4004:4004"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
+    restart: unless-stopped
+
+  payment:
     build:
       context: ../../../../backend/payment
       dockerfile: Dockerfile
-
-  notification:
+    container_name: selleasi_payment
+    env_file:
+      - ../../../../backend/payment/.env
+    ports:
+      - "4004:4004"
+    networks:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  categories:
+    build:
+      context: ../../../../backend/categories
+      dockerfile: Dockerfile
+    container_name: selleasi_categories
+    env_file:
+      - ../../../../backend/categories/.env
+    ports:
+      - "4005:4005"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
         condition: service_healthy
-      kafka-3:
+      redis:
         condition: service_healthy
-    container_name: selleasi-notification
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  notification:
+    build:
+      context: ../../../../backend/notification
+      dockerfile: Dockerfile
+    container_name: selleasi_notification
     env_file:
       - ../../../../backend/notification/.env
     ports:
       - "4006:4006"
     networks:
-      - selleasi-network
-      - app-tier
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4006/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ../../../../backend/notification
-      dockerfile: Dockerfile
-
-  stores:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-stores
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  stores:
+    build:
+      context: ../../../../backend/stores
+      dockerfile: Dockerfile
+    container_name: selleasi_stores
     env_file:
       - ../../../../backend/stores/.env
     ports:
       - "4007:4007"
     networks:
-      - selleasi-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4007/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ../../../../backend/stores
-      dockerfile: Dockerfile
-
-  inventory:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: inventory
-    env_file:
-      - ../../../../backend/inventory/.env
-    networks:
-      - selleasi-network
-      - app-tier
-    ports:
-      - "4008:4008"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4008/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:4007/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
+    restart: unless-stopped
+
+  inventory:
     build:
       context: ../../../../backend/inventory
       dockerfile: Dockerfile
-
-  cart:
+    container_name: selleasi_inventory
+    env_file:
+      - ../../../../backend/inventory/.env
+    ports:
+      - "4008:4008"
+    networks:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: cart
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  cart:
+    build:
+      context: ../../../../backend/cart
+      dockerfile: Dockerfile
+    container_name: selleasi_cart
     env_file:
       - ../../../../backend/cart/.env
     ports:
       - "4009:4009"
     networks:
-      - selleasi-network
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4009/health"]
-      interval: 1m30s
-      timeout: 30s
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
-    build:
-      context: ../../../../backend/cart
-      dockerfile: Dockerfile
+    restart: unless-stopped
 
-  tenant:
-    depends_on:
-      redis:
-        condition: service_healthy
-      kafka-1:
-        condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-tenant
+  organization:
+    build:
+      context: ../../../../backend/organization
+      dockerfile: Dockerfile
+    container_name: selleasi_organization
+    env_file:
+      - ../../../../backend/organization/.env
     ports:
       - "4010:4010"
-    env_file:
-      - ../../../../backend/tenant/.env
     networks:
-      - selleasi-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ../../../../backend/tenant
-      dockerfile: Dockerfile
-
-  review:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: selleasi-review
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  review:
+    build:
+      context: ../../../../backend/review
+      dockerfile: Dockerfile
+    container_name: selleasi_review
     env_file:
       - ../../../../backend/review/.env
     ports:
       - "4011:4011"
     networks:
-      - selleasi-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4011/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-    build:
-      context: ../../../../backend/review
-      dockerfile: Dockerfile
-
-  orders:
+      - selleasi-services
+      - selleasi-data
     depends_on:
+      mongodb:
+        condition: service_healthy
       redis:
         condition: service_healthy
-      kafka-1:
+      rabbitmq:
         condition: service_healthy
-      kafka-2:
-        condition: service_healthy
-      kafka-3:
-        condition: service_healthy
-    container_name: orders
-    env_file:
-      - ../../../../backend/orders/.env
-    networks:
-      - selleasi-network
-      - app-tier
-    ports:
-      - "4012:4012"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4012/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:4011/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
       start_period: 30s
+    restart: unless-stopped
+
+  orders:
     build:
       context: ../../../../backend/orders
       dockerfile: Dockerfile
+    container_name: selleasi_orders
+    env_file:
+      - ../../../../backend/orders/.env
+    ports:
+      - "4012:4012"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  color:
+    build:
+      context: ../../../../backend/color
+      dockerfile: Dockerfile
+    container_name: selleasi_color
+    env_file:
+      - ../../../../backend/color/.env
+    ports:
+      - "4013:4013"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  view:
+    build:
+      context: ../../../../backend/view
+      dockerfile: Dockerfile
+    container_name: selleasi_view
+    env_file:
+      - ../../../../backend/view/.env
+    ports:
+      - "4014:4014"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4014/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  size:
+    build:
+      context: ../../../../backend/size
+      dockerfile: Dockerfile
+    container_name: selleasi_size
+    env_file:
+      - ../../../../backend/size/.env
+    ports:
+      - "4015:4015"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4015/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  users:
+    build:
+      context: ../../../../backend/users
+      dockerfile: Dockerfile
+    container_name: selleasi_users
+    env_file:
+      - ../../../../backend/users/.env
+    ports:
+      - "4016:4016"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4016/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  subscription:
+    build:
+      context: ../../../../backend/subscription
+      dockerfile: Dockerfile
+    container_name: selleasi_subscription
+    env_file:
+      - ../../../../backend/subscription/.env
+    ports:
+      - "4017:4017"
+    networks:
+      - selleasi-services
+      - selleasi-data
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4017/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # MONITORING
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.51.0
     container_name: selleasi_prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=3d"
+      - "--web.enable-lifecycle"
     ports:
       - "9091:9090"
     networks:
-      - selleasi-network
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
+      - selleasi-monitoring
+      - selleasi-services
     volumes:
       - ../../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prom_data:/prometheus
+    restart: unless-stopped
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:2.9.4
     container_name: selleasi_loki
     ports:
       - "3101:3100"
     networks:
-      - selleasi-network
+      - selleasi-monitoring
     command: -config.file=/etc/loki/loki-config.yml -config.expand-env=true
     volumes:
       - loki_data:/loki
-      - ../../loki/loki-config.yml:/etc/loki/loki-config.yml
+      - ../../loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+    restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    image: grafana/promtail:2.9.4
+    container_name: selleasi_promtail
     networks:
-      - selleasi-network
+      - selleasi-monitoring
     command: -config.file=/etc/promtail/promtail-config.yml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ../../promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ../../promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+    restart: unless-stopped
+    depends_on:
+      - loki
 
   tempo:
     image: grafana/tempo:latest
@@ -570,19 +708,21 @@ services:
       - "4319:4318"
       - "4320:4317"
     networks:
-      - selleasi-network
+      - selleasi-monitoring
+      - selleasi-services
     command: ["-config.file=/etc/tempo/tempo.yaml"]
     volumes:
       - ../../tempo/tempo-config.yaml:/etc/tempo/tempo.yaml:ro
       - tempo-data:/tmp/tempo
+    restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.3.1
     container_name: selleasi_grafana
     ports:
       - "3001:3000"
     networks:
-      - selleasi-network
+      - selleasi-monitoring
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -590,28 +730,14 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=grafana-exploretraces-app
       - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=5s
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-        - name: Loki
-          type: loki
-          access: proxy
-          orgId: 1
-          url: http://loki:3100
-          basicAuth: false
-          isDefault: true
-          version: 1
-          editable: false
-        EOF
-        /run.sh
     volumes:
       - grafana_data:/var/lib/grafana
-      - ../../grafana/provisioning/datasources/tempo.yaml:/etc/grafana/provisioning/datasources/tempo.yaml
+      - ../../grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    restart: unless-stopped

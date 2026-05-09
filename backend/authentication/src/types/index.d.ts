@@ -4,15 +4,13 @@ import { JwtPayload } from "jsonwebtoken";
 declare global {
   namespace Express {
     interface Request {
-      user?: {
+      user: {
         userId: string;
-        role: string;
-        name: string;
-        tenantId: string;
-        tenantType: string;
-        tenantPlan: string;
-        permissions: Permission[];
-        roleLevel: RoleLevel;
+        organizationId?: string;
+        storeId?: string;
+        roles: string[];
+        permissionIds: string[];
+        userType: string;
       };
     }
   }

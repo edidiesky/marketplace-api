@@ -1,37 +1,38 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export enum UserType {
-  SELLER_ADMIN = "seller:admin",
-  SELLER_MEMBER = "seller:member",
-  SELLER_VIEWER = "seller:viewer",
-  PLATFORM_ADMIN = "ADMIN",
-  INVESTORS = "INVESTORS",
-  CUSTOMER = "CUSTOMER",
-}
-
 export enum UserStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   SUSPENDED = "suspended",
 }
 
-export enum TenantType {
-  SELLER_INDIVIDUAL = "SELLER_INDIVIDUAL",
-  SELLER_BUSINESS = "SELLER_BUSINESS",
-  MARKETPLACE = "MARKETPLACE",
-  FRANCHISE = "FRANCHISE",
-  ADMIN_PLATFORM = "ADMIN_PLATFORM",
-  ADMIN_PARTNER = "ADMIN_PARTNER",
-  CUSTOMER_B2C = "CUSTOMER_B2C",
-  CUSTOMER_B2B = "CUSTOMER_B2B",
-  INVESTOR_ANGEL = "INVESTOR_ANGEL",
-  INVESTOR_VC = "INVESTOR_VC",
-  ADVISOR = "ADVISOR",
-  SYSTEM_INTERNAL = "SYSTEM_INTERNAL",
-  DEMO = "DEMO",
-  TEST = "TEST",
+export enum UserType {
+  SELLER_ADMIN   = "seller:admin", 
+  SELLER_MEMBER  = "seller:member",  
+  SELLER_VIEWER  = "seller:viewer", 
+  PLATFORM_ADMIN = "platform:admin", 
+  PLATFORM_STAFF = "platform:staff", 
+  CUSTOMER       = "customer", 
+  INVESTOR       = "investor",
+  ADVISOR        = "advisor",
+  SYSTEM         = "system",
 }
 
+// OrganizationType
+export enum OrganizationType {
+  SELLER_INDIVIDUAL = "SELLER_INDIVIDUAL",
+  SELLER_BUSINESS   = "SELLER_BUSINESS",  
+  MARKETPLACE       = "MARKETPLACE",    
+  FRANCHISE         = "FRANCHISE",   
+  ADMIN_PLATFORM    = "ADMIN_PLATFORM",
+  ADMIN_PARTNER     = "ADMIN_PARTNER", 
+  CUSTOMER_B2C      = "CUSTOMER_B2C",   
+  CUSTOMER_B2B      = "CUSTOMER_B2B", 
+  INVESTOR_ANGEL    = "INVESTOR_ANGEL",
+  INVESTOR_VC       = "INVESTOR_VC",
+  ADVISOR           = "ADVISOR",
+  SYSTEM_INTERNAL   = "SYSTEM_INTERNAL",
+}
 export enum BillingPlan {
   FREE = "FREE",
   PRO = "PRO",

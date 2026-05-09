@@ -16,12 +16,10 @@ export interface IOnboarding {
 export interface AuthenticatedRequest extends Request {
   user: {
     userId: string;
-    role: string;
-    name: string;
-    tenantId: string;
-    tenantType: string;
-    tenantPlan: string;
-    permissions: Permission[];
-    roleLevel: RoleLevel;
+    organizationId?: string;
+    storeId?: string;
+    roles: string[];
+    permissionIds: string[];
+    userType: string;
   };
 }
