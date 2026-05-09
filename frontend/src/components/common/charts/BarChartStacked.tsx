@@ -36,7 +36,7 @@ const DEFAULT_FILTERS: FilterOption[] = [
 function formatDate(value: number | string): string {
   const date = new Date(value);
   if (isNaN(date.getTime())) return String(value);
-  return date.toLocaleDateString("en-NG", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("en-NG", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function formatCurrency(value: number): string {
@@ -57,24 +57,115 @@ interface TooltipProps {
 
 function CustomTooltip({ active, payload, label, dataKeys, chartConfig, isCurrency }: TooltipProps) {
   if (!active || !payload?.length) return null;
+
+  const total = payload.reduce((sum, p) => sum + (p?.value ?? 0), 0);
+
   return (
-    <div className="border border-[#e8e6e3] bg-white p-3 shadow-sm flex flex-col gap-2 min-w-[160px]">
-      <p className="text-xs font-semibold text-[#17191c] font-dashboard_regular">
+    <div
+      style={{
+        background: "white",
+        border: "0.5px solid #e8e6e3",
+        borderRadius: "10px",
+        padding: "14px 16px",
+        minWidth: "210px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
+      }}
+    >
+      {/* Date */}
+      <p
+        style={{
+          fontSize: "11px",
+          color: "#777b86",
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          margin: 0,
+          textTransform: "uppercase",
+        }}
+      >
         {formatDate(label ?? "")}
       </p>
-      <div className="flex flex-col gap-1">
+
+      {/* Total row */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          borderBottom: "0.5px solid #f2f0ed",
+          paddingBottom: "10px",
+        }}
+      >
+        <span style={{ fontSize: "12px", color: "#777b86" }}>
+          {isCurrency ? "Total revenue" : "Total"}
+        </span>
+        <span style={{ fontSize: "20px", fontWeight: 600, color: "#17191c", lineHeight: 1 }}>
+          {isCurrency ? formatCurrency(total) : total.toLocaleString("en-NG")}
+        </span>
+      </div>
+
+      {/* Per-series rows with percentage bars */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {dataKeys.map((key, i) => {
           const val = payload[i]?.value ?? 0;
+          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
           const configEntry = chartConfig[key.datakey];
+          const seriesLabel =
+            typeof configEntry === "object" && "label" in configEntry
+              ? String(configEntry.label)
+              : key.datakey;
+
           return (
-            <div key={key.datakey} className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: key.color }} />
-              <span className="text-xs text-[#4c4c4c] font-selleasy_normal">
-                {typeof configEntry === "object" && "label" in configEntry ? String(configEntry.label) : key.datakey}:{" "}
-                <span className="font-semibold text-[#17191c]">
+            <div key={key.datakey} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: key.color,
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: "12px", color: "#4c4c4c", flex: 1 }}>
+                  {seriesLabel}
+                </span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#17191c" }}>
                   {isCurrency ? formatCurrency(val) : val.toLocaleString("en-NG")}
                 </span>
-              </span>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#a3a6af",
+                    minWidth: "34px",
+                    textAlign: "right",
+                  }}
+                >
+                  {pct}%
+                </span>
+              </div>
+              {/* Mini percentage bar */}
+              <div
+                style={{
+                  height: "3px",
+                  width: "100%",
+                  background: "#f2f0ed",
+                  borderRadius: "99px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "3px",
+                    width: `${pct}%`,
+                    backgroundColor: key.color,
+                    borderRadius: "99px",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
             </div>
           );
         })}
@@ -99,13 +190,13 @@ export function BarChartStacked({
     <div className="border border-[#e8e6e3] flex flex-col">
       <div className="px-5 py-4 border-b border-[#e8e6e3] flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-[#17191c] font-dashboard_regular">{title}</p>
-          <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">{description}</p>
+          <p className="text-base font-semibold text-[#17191c]">{title}</p>
+          <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
         </div>
         <select
           value={selectedFilter}
           onChange={(e) => onFilterChange(e.target.value)}
-          className="h-[34px] px-3 border border-[#e8e6e3] text-xs font-selleasy_normal bg-white outline-none focus:border-[#17191c] transition-colors shrink-0"
+          className="h-[34px] px-3 border border-[#e8e6e3] text-xs bg-white outline-none focus:border-[#17191c] transition-colors shrink-0"
         >
           {filterOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -120,7 +211,7 @@ export function BarChartStacked({
               <rect x="3" y="3" width="4" height="18" /><rect x="10" y="8" width="4" height="13" /><rect x="17" y="13" width="4" height="8" />
             </svg>
           </div>
-          <p className="text-xs text-[#a3a6af] font-selleasy_normal">{emptyMessage}</p>
+          <p className="text-xs text-[#a3a6af]">{emptyMessage}</p>
         </div>
       ) : (
         <div className="px-2 py-4">
@@ -162,10 +253,12 @@ export function BarChartStacked({
                   stackId="a"
                   fill={key.color}
                   radius={
-                    dataKeys.length > 1
-                      ? index === 0
-                        ? [0, 0, 0, 0]
-                        : [0, 0, 0, 0]
+                    dataKeys.length === 1
+                      ? [100, 100, 100, 100]
+                      : index === 0
+                      ? [0, 0, 100, 100]
+                      : index === dataKeys.length - 1
+                      ? [100, 100, 0, 0]
                       : [0, 0, 0, 0]
                   }
                 />
