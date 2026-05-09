@@ -43,7 +43,18 @@ export const revenueOverTime = [
   { date: "2026-03-01", revenue: 780000 },
   { date: "2026-04-01", revenue: 540000 },
   { date: "2026-05-01", revenue: 910000 },
-  { date: "2026-06-01", revenue: 1248000 },
+  { date: "2026-06-01", revenue: 1048000 },
+  { date: "2026-06-04", revenue: 238000 },
+  { date: "2026-06-05", revenue: 1078000 },
+  { date: "2026-06-06", revenue: 1228000 },
+  { date: "2026-06-07", revenue: 1038000 },
+  { date: "2026-06-10", revenue: 1208000 },
+  { date: "2026-06-11", revenue: 12480 },
+  { date: "2026-06-21", revenue: 178000 },
+  { date: "2026-06-22", revenue: 148000 },
+  { date: "2026-07-03", revenue: 1848000 },
+  { date: "2026-07-04", revenue: 108000 },
+  { date: "2026-07-08", revenue: 248000 },
 ];
 export const revenueYoY = [
   { date: "2026-01-01", thisYear: 410000, lastYear: 310000 },
@@ -70,9 +81,14 @@ export const revenueBySegment = [
 export const monthlyGrowthRate = [
   { date: "2026-02-01", growth: 12 },
   { date: "2026-03-01", growth: 18 },
-  { date: "2026-04-01", growth: -8 },
+  { date: "2026-04-01", growth: -18 },
   { date: "2026-05-01", growth: 24 },
   { date: "2026-06-01", growth: 15 },
+  { date: "2026-06-02", growth: 10 },
+  { date: "2026-06-03", growth: 25 },
+  { date: "2026-06-08", growth: 75 },
+  { date: "2026-06-18", growth: 45 },
+  { date: "2026-06-28", growth: -15 },
 ];
 
 //  Products

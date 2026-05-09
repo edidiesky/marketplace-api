@@ -146,26 +146,6 @@ function CustomTooltip({ active, payload, label, dataKeys, chartConfig, isCurren
                   {pct}%
                 </span>
               </div>
-              {/* Mini percentage bar */}
-              <div
-                style={{
-                  height: "3px",
-                  width: "100%",
-                  background: "#f2f0ed",
-                  borderRadius: "99px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "3px",
-                    width: `${pct}%`,
-                    backgroundColor: key.color,
-                    borderRadius: "99px",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              </div>
             </div>
           );
         })}

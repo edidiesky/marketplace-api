@@ -49,11 +49,11 @@ function CustomTooltip({ active, payload, series, isCurrency }: TooltipProps) {
 
   return (
     <div className="border border-[#e8e6e3] bg-white p-3 shadow-sm flex flex-col gap-1.5 min-w-[180px]">
-      <p className="text-base font-semibold text-[#17191c] font-dashboard_regular truncate max-w-[180px]">{label}</p>
+      <p className="text-base font-semibold text-[#17191c] truncate max-w-[180px]">{label}</p>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-4">
           <span className="text-base text-[#777b86] font-normal">Total</span>
-          <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
+          <span className="text-sm font-semibold text-[#17191c]">
             {isCurrency ? `₦${total.toLocaleString("en-NG")}` : total.toLocaleString("en-NG")}
           </span>
         </div>
@@ -65,7 +65,7 @@ function CustomTooltip({ active, payload, series, isCurrency }: TooltipProps) {
                 <div className="w-2.5 h-2.5 shrink-0" style={{ backgroundColor: s?.color }} />
                 <span className="text-xs text-[#4c4c4c] font-normal">{s?.seriesLabel}</span>
               </div>
-              <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">
+              <span className="text-xs font-semibold text-[#17191c]">
                 {isCurrency ? `₦${entry.value.toLocaleString("en-NG")}` : entry.value.toLocaleString("en-NG")}
               </span>
             </div>
@@ -86,18 +86,18 @@ export function HorizontalBarChart({
   isCurrency = false,
 }: HorizontalBarChartProps) {
   const chartConfig = buildChartConfig(series);
-  const chartHeight = Math.max(data.length * 48, 200);
+  const chartHeight = Math.max(data.length * 48, 300);
 
   return (
     <div className="border border-[#e8e6e3] flex flex-col">
       <div className="px-5 py-4 border-b border-[#e8e6e3]">
-        <p className="text-base font-semibold text-[#17191c] font-dashboard_regular">{title}</p>
+        <p className="text-base font-semibold text-[#17191c]">{title}</p>
         <p className="text-sm text-[#777b86] font-normal mt-0.5">{description}</p>
       </div>
 
       {!data?.length ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <p className="text-xs text-[#a3a6af] font-normal">{emptyMessage}</p>
+          <p className="text-sm text-[#a3a6af] font-normal">{emptyMessage}</p>
         </div>
       ) : (
         <div className="px-4 py-4 overflow-x-auto">
@@ -149,10 +149,12 @@ export function HorizontalBarChart({
                     fill={s.color}
                     radius={
                       series.length === 1
-                        ? [0, 0, 0, 0]
+                        ? [100, 100, 100, 100]       
+                        : index === 0
+                        ? [100, 0, 0, 100]           
                         : index === series.length - 1
-                        ? [0, 0, 0, 0]
-                        : [0, 0, 0, 0]
+                        ? [0, 100, 100, 0]          
+                        : [0, 0, 0, 0]     
                     }
                   />
                 ))}
