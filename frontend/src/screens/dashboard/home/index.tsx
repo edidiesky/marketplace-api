@@ -1,5 +1,4 @@
 import { useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
 import { selectCurrentUser } from "@/redux/slices/authSlice";
 import Title from "@/components/dashboard/common/Title";
 import Stats from "@/components/dashboard/home/stats";

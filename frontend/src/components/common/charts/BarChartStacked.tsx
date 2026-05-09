@@ -25,6 +25,7 @@ interface BarChartStackedProps {
   filterOptions?: FilterOption[];
   isCurrency?: boolean;
   emptyMessage?: string;
+  hideHeader?: boolean;
 }
 
 const DEFAULT_FILTERS: FilterOption[] = [
@@ -146,6 +147,26 @@ function CustomTooltip({ active, payload, label, dataKeys, chartConfig, isCurren
                   {pct}%
                 </span>
               </div>
+              {/* Mini percentage bar */}
+              <div
+                style={{
+                  height: "3px",
+                  width: "100%",
+                  background: "#f2f0ed",
+                  borderRadius: "99px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "3px",
+                    width: `${pct}%`,
+                    backgroundColor: key.color,
+                    borderRadius: "99px",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
             </div>
           );
         })}
@@ -165,24 +186,27 @@ export function BarChartStacked({
   filterOptions = DEFAULT_FILTERS,
   isCurrency = true,
   emptyMessage = "No chart data available",
+  hideHeader = false,
 }: BarChartStackedProps) {
   return (
-    <div className="border border-[#e8e6e3] flex flex-col">
-      <div className="px-5 py-4 border-b border-[#e8e6e3] flex items-start justify-between gap-4">
-        <div>
-          <p className="text-base font-semibold text-[#17191c]">{title}</p>
-          <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
+    <div className={`flex flex-col ${!hideHeader ? "border":""}`}>
+      {!hideHeader && (
+        <div className="px-5 py-4 border-b border-[#e8e6e3] flex items-start justify-between gap-4">
+          <div>
+            <p className="text-base font-semibold text-[#17191c] font-dashboard_regular">{title}</p>
+            <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">{description}</p>
+          </div>
+          <select
+            value={selectedFilter}
+            onChange={(e) => onFilterChange(e.target.value)}
+            className="h-[34px] px-3 border border-[#e8e6e3] text-xs font-selleasy_normal bg-white outline-none focus:border-[#17191c] transition-colors shrink-0"
+          >
+            {filterOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
-        <select
-          value={selectedFilter}
-          onChange={(e) => onFilterChange(e.target.value)}
-          className="h-[34px] px-3 border border-[#e8e6e3] text-xs bg-white outline-none focus:border-[#17191c] transition-colors shrink-0"
-        >
-          {filterOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-      </div>
+      )}
 
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -191,7 +215,7 @@ export function BarChartStacked({
               <rect x="3" y="3" width="4" height="18" /><rect x="10" y="8" width="4" height="13" /><rect x="17" y="13" width="4" height="8" />
             </svg>
           </div>
-          <p className="text-xs text-[#a3a6af]">{emptyMessage}</p>
+          <p className="text-xs text-[#a3a6af] font-selleasy_normal">{emptyMessage}</p>
         </div>
       ) : (
         <div className="px-2 py-4">
