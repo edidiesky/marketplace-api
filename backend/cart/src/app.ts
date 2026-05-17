@@ -1,77 +1,60 @@
-"./utils/otel";
-import helmet from "helmet";
-import dotenv from "dotenv";
-dotenv.config();
-import morgan from "morgan";
-import CartRoute from "./routes/cart.routes";
-import express from "express";
-import cors from "cors";
+import "./utils/otel";
+import express      from "express";
+import helmet       from "helmet";
+import cors         from "cors";
 import cookieParser from "cookie-parser";
+import morgan       from "morgan";
+
+import cartRoutes                 from "./domains/cart/cart.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, CartRegistry } from "./utils/metrics";
-import logger from "./utils/logger";
+import { contextMiddleware }      from "./middleware/contextMiddleware";
+import { reqReplyTime, cartRegistry } from "./utils/metrics";
+import logger                     from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-import { cartSwaggerSpec } from "./config/swagger";
-import swaggerUi from "swagger-ui-express";
+
 const app = express();
 
-/** MIDDLEWARE */
 if (!process.env.WEB_ORIGIN) {
-  throw new Error("No WEB_ORIGIN");
+  throw new Error("WEB_ORIGIN env var is not set");
 }
-app.use(helmet());
-app.use(
-  cors({
-    origin: [process.env.WEB_ORIGIN!],
-    credentials: true,
-  }),
-);
 
-/** LOGS REQUEST */
+if (!process.env.INTERNAL_SECRET) {
+  throw new Error("INTERNAL_SECRET env var is not set");
+}
+
+app.use(helmet());
+app.use(cors({ origin: [process.env.WEB_ORIGIN], credentials: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// LATENCY METRICS MIDDLEWARE
+app.use(contextMiddleware);
 app.use((req, res, next) => {
   const startTime = process.hrtime();
   res.on("finish", () => reqReplyTime(req, res, startTime));
   next();
 });
 
-/** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Cart route is Fine!" });
+  res.json({ status: "ok", service: "cart-service" });
 });
 
-/** ROUTES */
-app.use("/api/v1/carts", CartRoute);
+app.use("/api/v1/carts", cartRoutes);
 
-app.get("/openapi.json", (_req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(cartSwaggerSpec);
-});
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(cartSwaggerSpec, {
-    customSiteTitle: "Cart Service API",
-    swaggerOptions: { persistAuthorization: true },
-  }),
-);
-app.get("/metrics", async (req, res) => {
+app.get("/metrics", async (_req, res) => {
   try {
-    res.set("Content-Type", CartRegistry.contentType);
-    res.end(await CartRegistry.metrics());
-    logger.info("Cart Metrics has been scraped successfully!");
-  } catch (error) {
-    logger.error("Cart Metrics scraping error:", { error });
+    res.set("Content-Type", cartRegistry.contentType);
+    res.end(await cartRegistry.metrics());
+  } catch (err) {
+    logger.error("metrics_scrape_failed", {
+      event: "metrics_scrape_failed",
+      error: err instanceof Error ? err.message : String(err),
+    });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
 
-app.use(errorHandler);
 app.use(NotFound);
+app.use(errorHandler);
 
 export { app };

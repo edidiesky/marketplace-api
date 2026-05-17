@@ -6,7 +6,7 @@ const base = winston.createLogger({
   level:       process.env.LOG_LEVEL ?? "info",
   format:      format.combine(format.timestamp(), format.json()),
   defaultMeta: {
-    service: process.env.OTEL_SERVICE_NAME ?? "authentication-service",
+    service: process.env.OTEL_SERVICE_NAME ?? "stores-service",
   },
   transports: [new winston.transports.Console()],
 });

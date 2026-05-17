@@ -1,8 +1,4 @@
-import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
-import logger from "../utils/logger";
-import { CartTopic } from "./topics";
-import { sendCartMessage } from "./producer";
-import { CART_CONSUMER_TOPICS } from "../constants";
+import type { ConsumeMessage } from "amqplib";
 import {
   context,
   propagation,
@@ -10,198 +6,145 @@ import {
   SpanStatusCode,
   trace,
 } from "@opentelemetry/api";
+import { getRabbitMQChannel }  from "./connection";
+import { QUEUES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
+import { cartHandlers }        from "./handlers/cart.handlers";
+import { requestContext }      from "../context/requestContext";
+import logger                  from "../utils/logger";
+import { randomUUID }          from "crypto";
 
-const tracer = trace.getTracer("cart-consumer");
+const tracer = trace.getTracer(SERVICE_NAME);
 
-const kafka = new Kafka({
-  clientId: "Cart_Service",
-  brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
-  retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
-});
+const queueHandlerMap: Record<string, string> = {
+  [QUEUES.ORDER_STOCK_COMMITTED]:  ROUTING_KEYS.ORDER_STOCK_COMMITTED,
+  [QUEUES.CART_ITEM_OUT_OF_STOCK]: ROUTING_KEYS.CART_ITEM_OUT_OF_STOCK,
+};
 
-const consumer: Consumer = kafka.consumer({
-  groupId: "Cart-group",
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-  rebalanceTimeout: 60000,
-  maxBytesPerPartition: 1_048_576,
-  maxWaitTimeInMs: 5000,
-  allowAutoTopicCreation: false,
-  retry: {
-    initialRetryTime: 100,
-    retries: 8,
-    multiplier: 2,
-    maxRetryTime: 30000,
-  },
-});
+export async function connectCartConsumer(): Promise<void> {
+  const channel = getRabbitMQChannel();
+  channel.prefetch(10);
 
-export async function connectConsumer() {
-  const retries = 10;
-  for (let i = 0; i < retries; i++) {
-    try {
-      await consumer.connect();
-      await consumer.subscribe({
-        topics: CART_CONSUMER_TOPICS,
-        fromBeginning: false,
+  for (const [queue, routingKey] of Object.entries(queueHandlerMap)) {
+    const handler = cartHandlers[routingKey];
+
+    if (!handler) {
+      logger.warn("cart_consumer_no_handler", {
+        event:      "cart_consumer_no_handler",
+        service:    SERVICE_NAME,
+        queue,
+        routingKey,
       });
-      logger.info("Cart consumer connected");
-      await startConsuming();
-      return;
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, (i + 1) * 300));
+      continue;
     }
-  }
-}
 
-async function startConsuming() {
-  await consumer.run({
-    autoCommit: false,
-    partitionsConsumedConcurrently: 3,
-    eachMessage: async (payload: EachMessagePayload) => {
-      const { topic, partition, message, heartbeat } = payload;
-      const start = Date.now();
-      const rawHeaders = message.headers ?? {};
-      const normalizedHeaders: Record<string, string> = {};
-      for (const [key, value] of Object.entries(rawHeaders)) {
-        if (value !== undefined && value !== null) {
-          normalizedHeaders[key] = Buffer.isBuffer(value)
-            ? value.toString("utf8")
-            : String(value);
+    await channel.consume(
+      queue,
+      async (msg: ConsumeMessage | null) => {
+        if (!msg) return;
+
+        const rawHeaders = msg.properties.headers ?? {};
+        const normalizedHeaders: Record<string, string> = {};
+        for (const [key, value] of Object.entries(rawHeaders)) {
+          if (value !== undefined && value !== null) {
+            normalizedHeaders[key] = Buffer.isBuffer(value)
+              ? value.toString("utf8")
+              : String(value);
+          }
         }
-      }
 
-      const parentContext = propagation.extract(
-        context.active(),
-        normalizedHeaders
-      );
-      let data: any;
-      try {
-        if (!message.value) {
-          logger.warn("Empty message", { topic, partition, offset: message.offset });
-          await commitOffset(topic, partition, message.offset);
+        const parentContext = propagation.extract(
+          context.active(),
+          normalizedHeaders
+        );
+        const requestId =
+          normalizedHeaders["x-request-id"] ?? randomUUID();
+
+        let data: unknown;
+        try {
+          data = JSON.parse(msg.content.toString());
+        } catch (err) {
+          logger.error("cart_consumer_parse_error", {
+            event:   "cart_consumer_parse_error",
+            service: SERVICE_NAME,
+            queue,
+            error:   err instanceof Error ? err.message : String(err),
+          });
+          channel.nack(msg, false, false);
           return;
         }
-        data = JSON.parse(message.value.toString());
-      } catch (parseErr) {
-        logger.error("Failed to parse message", {
-          topic,
-          partition,
-          offset: message.offset,
-          error: parseErr,
-        });
-        await sendToDLQ(topic, partition, message, null, parseErr as Error);
-        await commitOffset(topic, partition, message.offset);
-        return;
-      }
 
-      await context.with(parentContext, async () => {
-        const span = tracer.startSpan(`kafka.consume.${topic}`, {
-          kind: SpanKind.CONSUMER,
-          attributes: {
-            "messaging.system": "kafka",
-            "messaging.destination": topic,
-            "messaging.operation": "receive",
-            "messaging.kafka.partition": partition,
-            "messaging.kafka.offset": message.offset,
-          },
-        });
-
-        await context.with(trace.setSpan(context.active(), span), async () => {
-          try {
-            logger.info("Processing message", {
-              topic,
-              partition,
-              offset: message.offset,
-              key: message.key?.toString(),
-            });
-
-            const handler = CartTopic[topic as keyof typeof CartTopic];
-            if (!handler) {
-              logger.warn("No handler for topic", { topic });
-              await commitOffset(topic, partition, message.offset);
-              span.setStatus({ code: SpanStatusCode.OK });
-              return;
+        await context.with(parentContext, async () => {
+          const span = tracer.startSpan(
+            `rabbitmq.consume.${queue}`,
+            {
+              kind: SpanKind.CONSUMER,
+              attributes: {
+                "messaging.system":               "rabbitmq",
+                "messaging.destination":          queue,
+                "messaging.operation":            "receive",
+                "messaging.rabbitmq.routing_key": msg.fields.routingKey,
+              },
             }
+          );
 
-            await handler(data);
-            await commitOffset(topic, partition, message.offset);
-            await heartbeat();
-
-            span.setStatus({ code: SpanStatusCode.OK });
-            logger.info("Message processed", {
-              topic,
-              duration: Date.now() - start,
-            });
-          } catch (procErr) {
-            span.recordException(procErr as Error);
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: (procErr as Error).message,
-            });
-            logger.error("Handler failed", {
-              topic,
-              partition,
-              offset: message.offset,
-              error: procErr,
-            });
-            await sendToDLQ(topic, partition, message, data, procErr as Error);
-            await commitOffset(topic, partition, message.offset);
-          } finally {
-            span.end();
-          }
+          await context.with(
+            trace.setSpan(context.active(), span),
+            async () => {
+              const spanCtx = span.spanContext();
+              requestContext.run(
+                {
+                  requestId,
+                  traceId:   spanCtx.traceId,
+                  spanId:    spanCtx.spanId,
+                  eventType: msg.fields.routingKey,
+                },
+                async () => {
+                  try {
+                    await handler(data, channel, msg);
+                    span.setStatus({ code: SpanStatusCode.OK });
+                  } catch (err) {
+                    span.recordException(err as Error);
+                    span.setStatus({
+                      code:    SpanStatusCode.ERROR,
+                      message: err instanceof Error
+                        ? err.message
+                        : String(err),
+                    });
+                    logger.error("cart_consumer_handler_error", {
+                      event:      "cart_consumer_handler_error",
+                      service:    SERVICE_NAME,
+                      queue,
+                      routingKey: msg.fields.routingKey,
+                      requestId,
+                      error:      err instanceof Error
+                        ? err.message
+                        : String(err),
+                    });
+                    channel.nack(msg, false, false);
+                  } finally {
+                    span.end();
+                  }
+                }
+              );
+            }
+          );
         });
-      });
-    },
-  });
-}
-
-async function commitOffset(topic: string, partition: number, offset: string) {
-  try {
-    await consumer.commitOffsets([
-      {
-        topic,
-        partition,
-        offset: (BigInt(offset) + BigInt(1)).toString(),
       },
-    ]);
-  } catch (err) {
-    logger.error("Commit failed", { topic, partition, offset, err });
+      { noAck: false }
+    );
+
+    logger.info("cart_consumer_started", {
+      event:      "cart_consumer_started",
+      service:    SERVICE_NAME,
+      queue,
+      routingKey,
+    });
   }
 }
 
-async function sendToDLQ(
-  origTopic: string,
-  partition: number,
-  msg: any,
-  parsedData: any,
-  err: Error
-) {
-  try {
-    await sendCartMessage("Order.dlq", {
-      originalTopic: origTopic,
-      partition,
-      offset: msg.offset,
-      key: msg.key?.toString(),
-      timestamp: msg.timestamp,
-      data: parsedData,
-      error: { name: err.name, message: err.message, stack: err.stack },
-      failedAt: new Date().toISOString(),
-    });
-    logger.info("Sent to DLQ", { origTopic, offset: msg.offset });
-  } catch (dlqErr) {
-    logger.error("DLQ failed", { origTopic, error: dlqErr });
-  }
-}
-
-export async function disconnectConsumer() {
-  try {
-    await consumer.disconnect();
-    logger.info("Consumer disconnected");
-  } catch (error) {
-    logger.error("Error disconnecting cart consumer", {
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : "Unknown error",
-    });
-  }
+export async function disconnectCartConsumer(): Promise<void> {
+  logger.info("cart_consumer_disconnected", {
+    event:   "cart_consumer_disconnected",
+    service: SERVICE_NAME,
+  });
 }

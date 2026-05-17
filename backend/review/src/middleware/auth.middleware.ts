@@ -1,103 +1,72 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import logger from "../utils/logger";
-import { UNAUTHORIZED_STATUS_CODE } from "../constants";
-import { AuthenticatedRequest, Permission, RoleLevel } from "../types";
+import redisClient from "../config/redis";
+import { requestContext } from "../context/requestContext";
+import { AuthenticatedRequest } from "./contextMiddleware";
+import { JWTPayload } from "../types";
 
-export const authenticate = async (
-  req: Request,
-  res: Response,
+export function authenticate(
+  req:  Request,
+  res:  Response,
   next: NextFunction
-): Promise<void> => {
-  const token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
+): void {
+  const token =
+    req.headers.authorization?.replace("Bearer ", "") ??
+    req.cookies?.jwt;
 
   if (!token) {
-    logger.warn("Authentication failed: No token provided", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
+    res.status(401).json({
+      success: false,
+      message: "Authentication required. Please log in to continue.",
     });
-    res
-      .status(UNAUTHORIZED_STATUS_CODE)
-      .json({ error: "Authentication required" });
     return;
   }
 
-  const jwtSecret = process.env.JWT_CODE;
-  if (!jwtSecret) {
-    logger.error("JWT_CODE environment variable is not set");
-    res.status(500).json({ error: "Server configuration error" });
-    return;
-  }
+  let decoded: { user: JWTPayload; exp: number };
 
   try {
-    const decoded = (jwt.verify(token, jwtSecret) as AuthenticatedRequest).user;
-
-    // Now safe to assign
-    (req as AuthenticatedRequest).user = {
-      userId: decoded.userId,
-      role: decoded.role,
-      name: decoded.name,
-      permissions: decoded.permissions || [],
-      roleLevel: decoded.roleLevel,
-    };
-
-    logger.info("User authenticated", {});
-    next();
-  } catch (error) {
-    logger.warn("Authentication failed: Invalid token", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
-      error: error instanceof Error ? error.message : "Unknown error",
+    decoded = jwt.verify(token, process.env.JWT_CODE!, {
+      issuer:   "selleasi",
+      audience: "selleasi-client",
+    }) as { user: JWTPayload; exp: number };
+  } catch {
+    res.status(401).json({
+      success: false,
+      message: "Your session has expired. Please log in again.",
     });
-    res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Invalid token" });
+    return;
   }
-};
 
-export const requirePermissions = (requiredPermissions: Permission[]) => {
-  return (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): void => {
-    if (!req.user?.permissions) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No permissions" });
-      return;
-    }
+  const { userId } = decoded.user;
 
-    const hasAll = requiredPermissions.every((p) =>
-      req.user!.permissions.includes(p)
-    );
+  redisClient
+    .get(`blocklist:${userId}`)
+    .then((blocked) => {
+      if (blocked) {
+        res.status(401).json({
+          success: false,
+          message: "Your session has expired. Please log in again.",
+        });
+        return;
+      }
 
-    if (!hasAll) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Insufficient permissions",
-        required: requiredPermissions,
-        current: req.user.permissions,
+      (req as AuthenticatedRequest).user = {
+        userId:         decoded.user.userId,
+        userType:       decoded.user.userType,
+        organizationId: decoded.user.organizationId,
+      };
+
+      requestContext.set({
+        userId:         decoded.user.userId,
+        organizationId: decoded.user.organizationId,
       });
-      return;
-    }
 
-    next();
-  };
-};
-export const requireStoreOwner = (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.user?.role !== "store_owner" && req.user?.role !== "admin") {
-    return res.status(403).json({ error: "Only store owners can respond" });
-  }
-  next();
-};
-
-export const requireAdmin = (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ error: "Admin access required" });
-  }
-  next();
-};
+      next();
+    })
+    .catch(() => {
+      res.status(503).json({
+        success: false,
+        message: "We are experiencing technical difficulties. Please try again in a moment.",
+      });
+    });
+}
