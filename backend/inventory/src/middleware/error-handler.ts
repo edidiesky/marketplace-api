@@ -1,36 +1,50 @@
-import { NOT_FOUND_STATUS_CODE } from "../constants";
-import logger from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
+import { AppError } from "../utils/AppError";
+import logger from "../utils/logger";
 
-const NotFound = (req: Request, res: Response, next: NextFunction) => {
-  const error = new Error(`Not found - ${req.originalUrl}`);
-  logger.error("Error message:", error);
-  res.status(NOT_FOUND_STATUS_CODE);
-  next(error);
-};
-
-export function errorHandler(
-  error: any,
+export const errorHandler = (
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
-): void {
-  const statusCode = error.statusCode ?? 500;
-  const message = error.message ?? "Internal Server Error";
+): void => {
+  let error = err;
+  if (!(error instanceof AppError)) {
+    const statusCode = error.statusCode || 500;
+    const message = error.message || "Internal Server Error";
 
-  logger.error("Request failed", {
-    method: req.method,
-    url: req.originalUrl,
-    statusCode,
-    error: message,
-    stack: process.env.NODE_ENV !== "production" ? error.stack : undefined,
+    error = new AppError(
+      message,
+      statusCode,
+      false, 
+      { originalError: err.message, stack: err.stack }
+    );
+  }
+
+  if (error.isOperational) {
+    logger.warn(`Operational error: ${error.message}`, {
+      statusCode: error.statusCode,
+      path: req.path,
+      method: req.method,
+      details: error.details,
+    });
+  } else {
+    logger.error("Unexpected server error", {
+      error: error.message,
+      path: req.path,
+      method: req.method,
+    });
+  }
+
+  res.status(error.statusCode).json({
+    success: false,
+    error: error.message,
+    ...(error.details && { details: error.details }),
+    ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
   });
+};
 
-  const body: Record<string, any> = {
-    status: "error",
-    error: message,
-  };
-
-  res.status(statusCode).json(body);
-}
-export { NotFound };
+export const NotFound = (req: Request, res: Response, next: NextFunction) => {
+  next(AppError.notFound(`Cannot ${req.method} ${req.originalUrl}`));
+};
+  
