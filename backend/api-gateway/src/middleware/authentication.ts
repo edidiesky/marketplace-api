@@ -1,66 +1,80 @@
-import { UNAUTHORIZED_STATUS_CODE } from "../constants";
-import logger from "../utils/logger";
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt                   from "jsonwebtoken";
+import { redisClient }       from "../redis/redisClient";
+
+export interface JWTPayload {
+  userId:         string;
+  userType:       string;
+  organizationId: string;
+}
 
 declare global {
   namespace Express {
     interface Request {
-      user?: { userId: string };
+      user?: JWTPayload;
     }
   }
 }
 
-/** AUTHENTICATION MIDDLEWARE */
-export const authenticate = (
-  req: Request,
-  res: Response,
+export function authenticate(
+  req:  Request,
+  res:  Response,
   next: NextFunction
-): void => {
+): void {
   const token =
-    req.cookies.jwt ||
-    req.headers.authorization?.split(" ")[1];
+    req.headers.authorization?.replace("Bearer ", "") ??
+    req.cookies?.jwt;
 
   if (!token) {
-    logger.warn("Authentication failed: No token provided", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
+    res.status(401).json({
+      success: false,
+      message: "Authentication required. Please log in to continue.",
     });
-    res
-      .status(UNAUTHORIZED_STATUS_CODE)
-      .json({
-        error:
-          "You do not have the required access to access this resource. Please make contact with the platform support team!",
-      });
     return;
   }
 
-  const jwtSecret = process.env.JWT_CODE;
-  if (!jwtSecret) {
-    logger.error("JWT_CODE environment variable is not set");
-    res.status(500).json({ error: "Server configuration error" });
-    return;
-  }
+  let decoded: { user: JWTPayload; exp: number };
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      role: string;
-      name: string;
-    };
-    req.user = decoded;
-    logger.info("User authenticated", {
-      userId: decoded.userId,
-      role: decoded.role,
+    decoded = jwt.verify(token, process.env.JWT_CODE!, {
+      issuer:   "selleasi",
+      audience: "selleasi-client",
+    }) as { user: JWTPayload; exp: number };
+  } catch {
+    res.status(401).json({
+      success: false,
+      message: "Your session has expired. Please log in again.",
     });
-    next();
-  } catch (error) {
-    logger.warn("Authentication failed: Invalid token", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Invalid token" });
     return;
   }
-};
+
+  const { userId } = decoded.user;
+
+  redisClient
+    .getClient()
+    .get(`blocklist:${userId}`)
+    .then((blocked) => {
+      if (blocked) {
+        res.status(401).json({
+          success: false,
+          message: "Your session has expired. Please log in again.",
+        });
+        return;
+      }
+
+      req.user = {
+        userId:         decoded.user.userId,
+        userType:       decoded.user.userType,
+        organizationId: decoded.user.organizationId,
+      };
+
+      next();
+    })
+    .catch(() => {
+      res.status(503).json({
+        success: false,
+        message:
+          "We are experiencing technical difficulties. Please try again in a moment.",
+      });
+    });
+}

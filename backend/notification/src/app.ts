@@ -4,7 +4,8 @@ import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
-
+import dotnev       from "dotenv";
+dotnev.config()
 import notificationRoutes         from "./domains/notification/notification.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";

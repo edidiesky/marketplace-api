@@ -33,7 +33,7 @@ export const HandleInitiateOnboarding = asyncHandler(
   }
 );
 
-// Email interstitial redirect target
+// Email redirect target
 export const HandleConfirmEmailToken = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { token, email } = req.query as { email: string; token: string };

@@ -1,63 +1,58 @@
 import CircuitBreaker from "opossum";
-import logger from "./logger";
-import { trackCircuitBreakerEvent } from "./metrics";
+import logger         from "./logger";
+import { SERVICE_NAME } from "../constants";
 
-type AsyncAction = (...args: any[]) => Promise<any>;
+const breakerMap = new Map<string, CircuitBreaker>();
 
-const options = {
-  timeout: 8000,
+const BREAKER_OPTIONS: CircuitBreaker.Options = {
+  timeout:              8_000,
   errorThresholdPercentage: 50,
-  resetTimeout: 30000,
-  rollingCountTimeout: 10000,
-  volumeThreshold: 5,
-  errorFilter: (error: any): boolean => {
-    const status = error?.response?.status;
-    if (status && status >= 400 && status < 500) {
-      return true;
-    }
-    return false; 
-  },
+  resetTimeout:         30_000,
+  volumeThreshold:      5,
 };
 
-const breakers = new Map<string, CircuitBreaker>();
-
 export function getBreaker(serviceName: string): CircuitBreaker {
-  if (breakers.has(serviceName)) {
-    return breakers.get(serviceName)!;
+  if (breakerMap.has(serviceName)) {
+    return breakerMap.get(serviceName)!;
   }
+
   const breaker = new CircuitBreaker(
-    async (fn: AsyncAction) => fn(),
-    options
+    async (fn: () => Promise<unknown>) => fn(),
+    { ...BREAKER_OPTIONS, name: serviceName }
   );
 
-  breaker.fallback(() => {
-    logger.warn(`Circuit breaker OPEN: rejecting request for ${serviceName}`);
-    trackCircuitBreakerEvent(serviceName, "reject");
-    return Promise.reject({
-      message: `Service ${serviceName} is currently unavailable`,
-      isBreakerOpen: true,
-      statusCode: 503,
+  breaker.on("open", () => {
+    logger.warn("circuit_breaker_opened", {
+      event:   "circuit_breaker_opened",
+      service: SERVICE_NAME,
+      target:  serviceName,
     });
   });
 
-  breaker.on("open", () => {
-    logger.error(`Circuit OPEN for ${serviceName}`);
-    trackCircuitBreakerEvent(serviceName, "open");
-  });
   breaker.on("halfOpen", () => {
-    logger.warn(`Circuit HALF-OPEN for ${serviceName}`);
-    trackCircuitBreakerEvent(serviceName, "halfOpen");
+    logger.info("circuit_breaker_half_open", {
+      event:   "circuit_breaker_half_open",
+      service: SERVICE_NAME,
+      target:  serviceName,
+    });
   });
+
   breaker.on("close", () => {
-    logger.info(`Circuit CLOSED for ${serviceName}`);
-    trackCircuitBreakerEvent(serviceName, "close");
+    logger.info("circuit_breaker_closed", {
+      event:   "circuit_breaker_closed",
+      service: SERVICE_NAME,
+      target:  serviceName,
+    });
   });
 
-  breaker.on("failure", () => trackCircuitBreakerEvent(serviceName, "failure"));
-  breaker.on("success", () => trackCircuitBreakerEvent(serviceName, "success"));
-  breaker.on("timeout", () => trackCircuitBreakerEvent(serviceName, "timeout"));
-  breaker.on("reject", () => trackCircuitBreakerEvent(serviceName, "reject"));
+  breaker.on("fallback", () => {
+    logger.warn("circuit_breaker_fallback", {
+      event:   "circuit_breaker_fallback",
+      service: SERVICE_NAME,
+      target:  serviceName,
+    });
+  });
 
-  breakers.set(serviceName, breaker);
+  breakerMap.set(serviceName, breaker);
   return breaker;
 }
