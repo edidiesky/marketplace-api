@@ -1,72 +1,72 @@
-/**
- * declare the global variable for the timer
- *
- * ******** GETTING AL PENDING OUTBOX EVENTS ***
- * declare a function that starts the poling
- * it gets all pending putbox events
- * if none it exists
- * it then loops through all the pending outbox
- * t ehcekc if the otubo event matches the required list of events
- * if through, ut sends the evtn wieth the payload.
- * if succesful, it mark as being completed
- * if none it retires
- *
- * ******* DECLARING A FUNCTION THAT STOPS THE OUTBX ACTIONS DURING SERVER SHUTDOWN
- * it basically clear the timeout
- *
- */
-
-import { outboxRepository } from "../repository/OutboxRepository";
-import { IOutboxEventType } from "../models/OutboxEvent";
-import logger from "./logger";
-import { sendProductMessage } from "../messaging/producer";
-const POLL_INTERVAL_MS = 5_000;
-// utils/outboxPoller.ts
+import { outboxRepository }  from "../domains/outbox/outbox.repository";
+import { OutboxEventType }   from "../domains/outbox/outbox.model";
 import {
-  PRODUCT_ONBOARDING_COMPLETED_TOPIC,
-  PRODUCT_UPDATED_TOPIC,
-  PRODUCT_DELETED_TOPIC,
-} from "../constants";
+  publishProductCreated,
+  publishProductUpdated,
+  publishProductDeleted,
+} from "../messaging/publisher";
+import { productHandlers }   from "../messaging/handlers/product.handlers";
+import logger                from "./logger";
+import { SERVICE_NAME, POLL_INTERVAL_MS } from "../constants";
 
-const TOPIC_MAP: Record<IOutboxEventType, string> = {
-  [IOutboxEventType.PRODUCT_ONBOARDING_COMPLETED_TOPIC]: PRODUCT_ONBOARDING_COMPLETED_TOPIC,
-  [IOutboxEventType.PRODUCT_UPDATED_TOPIC]: PRODUCT_UPDATED_TOPIC,
-  [IOutboxEventType.PRODUCT_DELETED_TOPIC]: PRODUCT_DELETED_TOPIC,
+type OutboxPublisher = (payload: Record<string, unknown>) => void;
+
+const PUBLISHER_MAP: Record<OutboxEventType, OutboxPublisher> = {
+  [OutboxEventType.PRODUCT_CREATED]: publishProductCreated,
+  [OutboxEventType.PRODUCT_UPDATED]: publishProductUpdated,
+  [OutboxEventType.PRODUCT_DELETED]: publishProductDeleted,
 };
-
 
 let pollerTimer: NodeJS.Timeout | null = null;
 
 async function pollOnce(): Promise<void> {
-  const events = await outboxRepository.getPendingOutbox();
-  if (!events.length) return;
+  const events = await outboxRepository.getPending();
+  if (events.length === 0) return;
 
-  logger.info(`Outbox poller: processing ${events.length} pending events`);
+  logger.info("outbox_poller_processing", {
+    event:   "outbox_poller_processing",
+    service: SERVICE_NAME,
+    count:   events.length,
+  });
 
   for (const event of events) {
     try {
-      const topic = TOPIC_MAP[event.type];
-      if (!topic) {
-        logger.error("Unknown outbox event type", { type: event.type });
+      const publisher = PUBLISHER_MAP[event.type];
+      const handler   = productHandlers[event.type];
+
+      if (!publisher || !handler) {
+        logger.error("outbox_unknown_event_type", {
+          event:   "outbox_unknown_event_type",
+          service: SERVICE_NAME,
+          type:    event.type,
+          eventId: event._id.toString(),
+        });
         await outboxRepository.incrementRetry(
           event._id.toString(),
           `Unknown event type: ${event.type}`
         );
         continue;
       }
-      await sendProductMessage(topic, event.payload);
-      await outboxRepository.markOutboxAsProccessed(event._id.toString());
 
-      logger.info("Outbox event published", {
-        id: event._id,
-        type: event.type,
-        topic,
+      await handler(event.payload);
+
+      publisher(event.payload);
+
+      await outboxRepository.markCompleted(event._id.toString());
+
+      logger.info("outbox_event_processed", {
+        event:   "outbox_event_processed",
+        service: SERVICE_NAME,
+        type:    event.type,
+        eventId: event._id.toString(),
       });
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      logger.error("Outbox event publish failed", {
-        id: event._id,
-        type: event.type,
+      logger.error("outbox_event_failed", {
+        event:   "outbox_event_failed",
+        service: SERVICE_NAME,
+        type:    event.type,
+        eventId: event._id.toString(),
         reason,
       });
       await outboxRepository.incrementRetry(event._id.toString(), reason);
@@ -81,19 +81,28 @@ export function startOutboxPoller(): void {
     try {
       await pollOnce();
     } catch (err) {
-      logger.error("Outbox poller error", {
-        error: err instanceof Error ? err.message : String(err),
+      logger.error("outbox_poller_error", {
+        event:   "outbox_poller_error",
+        service: SERVICE_NAME,
+        error:   err instanceof Error ? err.message : String(err),
       });
     }
   }, POLL_INTERVAL_MS);
 
-  logger.info("Outbox poller started", { intervalMs: POLL_INTERVAL_MS });
+  logger.info("outbox_poller_started", {
+    event:      "outbox_poller_started",
+    service:    SERVICE_NAME,
+    intervalMs: POLL_INTERVAL_MS,
+  });
 }
 
 export function stopOutboxPoller(): void {
   if (pollerTimer) {
     clearInterval(pollerTimer);
     pollerTimer = null;
-    logger.info("Outbox poller stopped");
+    logger.info("outbox_poller_stopped", {
+      event:   "outbox_poller_stopped",
+      service: SERVICE_NAME,
+    });
   }
 }

@@ -1,30 +1,25 @@
-import { IProduct } from "../models/Product";
 import mongoose from "mongoose";
 import logger from "./logger";
+import { SERVICE_NAME } from "../constants";
 
 export async function withTransaction<T>(
-  fn: (session: mongoose.mongo.ClientSession) => Promise<T>
+  fn: (session: mongoose.ClientSession) => Promise<T>
 ): Promise<T> {
   const session = await mongoose.startSession();
-  session.startTransaction();
 
   try {
-    const result = await fn(session);
-    await session.commitTransaction();
-    return result;
-  } catch (error) {
-    await session.abortTransaction();
-    logger.error("Transaction aborted", {
-      message:
-        error instanceof Error
-          ? error.message
-          : "An iunknown error did occurred during the transaction abortion",
-      stack:
-        error instanceof Error
-          ? error.stack
-          : "An iunknown error did occurred during the transaction abortion",
+    let result!: T;
+    await session.withTransaction(async () => {
+      result = await fn(session);
     });
-    throw error;
+    return result;
+  } catch (err) {
+    logger.error("transaction_aborted", {
+      event:   "transaction_aborted",
+      service: SERVICE_NAME,
+      error:   err instanceof Error ? err.message : String(err),
+    });
+    throw err;
   } finally {
     session.endSession();
   }

@@ -98,8 +98,7 @@ PaymentSchema.pre("save", function(next) {
 PaymentSchema.index({ paymentId: 1 });
 PaymentSchema.index({ sagaId: 1 });
 PaymentSchema.index({ orderId: 1 });
-PaymentSchema.index({ status: 1, createdAt: -1 });
-PaymentSchema.index({ customerId: 1, createdAt: -1 });
+PaymentSchema.index({ customerId: 1, status: 1, createdAt: -1 });
 
 PaymentSchema.index(
   { customerName: "text", customerEmail: "text", paymentId: "text", status:"text" },
