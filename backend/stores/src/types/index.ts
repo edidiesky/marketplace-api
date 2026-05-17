@@ -1,34 +1,31 @@
-import { Response, Request } from "express";
+import { UserType, OrganizationType } from "../domains/auth/auth.model";
 
-export type AuthenticatedRequest = Request & {
-  user: {
-    role: string;
-    userId: string;
-    name: string; 
-    permissions: Permission[];
-    roleLevel?: RoleLevel;
+export interface IOnboarding {
+  email:         string;
+  step:          "email" | "password" | "complete";
+  firstName?:    string;
+  lastName?:     string;
+  passwordHash?: string;
+  tokenObject?: {
+    token:     string;
+    expiresAt: number;
   };
-};
-
-
-export enum RoleLevel {
-  SUPER_ADMIN = 1,
-  EXECUTIVE = 2,
-  DIRECTORATE_HEAD = 3,
-  MEMBER = 4,
+  createdAt?: string;
 }
 
-export enum Permission {
-  CREATE_USER = "CREATE_USER",
-  MANAGE_ROLES = "MANAGE_ROLES",
-  READ_USER = "READ_USER",
-  UPDATE_USER = "UPDATE_USER",
-  DELETE_USER = "DELETE_USER",
-  VIEW_REPORTS = "VIEW_REPORTS",
+export interface JWTPayload {
+  userId:           string;
+  userType:         UserType;
+  organizationId:   string;
+  organizationType: OrganizationType;
+  name:             string;
 }
 
-export interface IError {
-  message:string;
-  stack?:string;
-  status?:number;
+export interface AuthenticatedUser {
+  userId:            string;
+  userType:          UserType;
+  organizationId?:   string;
+  organizationType?: OrganizationType;
+  roles?:            string[];
+  name?:             string;
 }

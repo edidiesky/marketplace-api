@@ -1,21 +1,21 @@
-import { BAD_REQUEST_STATUS_CODE } from "../constants";
 import { Request, Response, NextFunction } from "express";
-import { Schema } from "joi";
+import Joi from "joi";
+import { BAD_REQUEST_STATUS_CODE } from "../constants";
 
-export const validateRequest = (schema: Schema, source: "body" | "query" | "params" = "body") => {
+export function validateRequest(schema: Joi.ObjectSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const data = source === "body" ? req.body : source === "query" ? req.query : req.params;
-    const { error } = schema.validate(data, { abortEarly: false });
-
+    const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
-      const errorMessages = error.details.map((detail) => detail.message).join(", ");
       res.status(BAD_REQUEST_STATUS_CODE).json({
         success: false,
-        error: errorMessages,
+        message: "Validation failed",
+        errors:  error.details.map((d) => ({
+          field:   d.path.join("."),
+          message: d.message,
+        })),
       });
       return;
     }
-
     next();
   };
-};
+}

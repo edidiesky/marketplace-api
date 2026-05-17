@@ -1,44 +1,26 @@
+
+
+import logger from "../utils/logger";
 import mongoose from "mongoose";
-import logger from "./logger";
-import { serverHealthGauge } from "./metrics";
-
-import client from "prom-client";
-import { IStore } from "../models/Store";
-
-export const databaseConnectionAttempts = new client.Counter({
-  name: "user_database_connection_attempts_total",
-  help: "Total database connection attempts",
-  labelNames: ["status", "error_type"],
-});
-
-export const databaseConnectionDuration = new client.Histogram({
-  name: "user_database_connection_duration_seconds",
-  help: "Database connection attempt duration",
-  buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["status", "attempt"],
-});
 
 export const connectMongoDB = async (
   mongoUrl: string,
   maxRetries: number = 5,
   retryDelay: number = 3000
 ): Promise<void> => {
-  serverHealthGauge.set(0);
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const startTime = process.hrtime();
 
     try {
-      // connection pooling
       await mongoose.connect(mongoUrl, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
         connectTimeoutMS: 30000,
         retryWrites: true,
         retryReads: true,
-        minPoolSize: 10,
-        maxPoolSize: 50,
+        minPoolSize:10,
+        maxPoolSize:50,
       });
-
       logger.info("MongoDB connected successfully", {
         attempt,
         totalAttempts: attempt,
@@ -48,6 +30,7 @@ export const connectMongoDB = async (
       const duration = process.hrtime(startTime);
       const durationSeconds = duration[0] + duration[1] / 1e9;
 
+    
       let errorType = "unknown";
       let severity: "low" | "medium" | "high" | "critical" = "high";
 
@@ -71,15 +54,7 @@ export const connectMongoDB = async (
         severity = "high";
       }
 
-      // Record failure metrics
-      databaseConnectionAttempts.inc({
-        status: "failure",
-        error_type: errorType,
-      });
-      databaseConnectionDuration.observe(
-        { status: "failure", attempt: attempt.toString() },
-        durationSeconds
-      );
+      
       logger.error(`MongoDB connection attempt ${attempt} failed`, {
         error: error.message,
         code: error.code,
@@ -100,30 +75,12 @@ export const connectMongoDB = async (
         );
       }
 
+      // Wait before retry with exponential backoff
       const backoffDelay = retryDelay * Math.pow(2, attempt - 1);
       logger.info(`Retrying MongoDB connection in ${backoffDelay}ms`, {
         attempt: attempt + 1,
       });
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
     }
-  }
-};
-
-export const withTransaction = async (
-  fn: (session: mongoose.ClientSession) => Promise<IStore>
-):Promise<IStore> => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    const result = await fn(session);
-    await session.commitTransaction();
-    return result;
-  } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
-    }
-    throw error;
-  } finally {
-    await session.endSession();
   }
 };
