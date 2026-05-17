@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import logger from "../utils/logger";
 
 const redisClient = new Redis({
   host:                 process.env.REDIS_HOST ?? "redis",
@@ -10,23 +11,25 @@ const redisClient = new Redis({
 });
 
 redisClient.on("connect", () =>
-  console.info(JSON.stringify({
+  logger.info("redis_connected", {
     event:   "redis_connected",
-    service: "authentication-service",
-  }))
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
+  })
 );
+
 redisClient.on("error", (err) =>
-  console.error(JSON.stringify({
+  logger.error("redis_error", {
     event:   "redis_error",
-    service: "authentication-service",
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
     error:   err.message,
-  }))
+  })
 );
+
 redisClient.on("close", () =>
-  console.warn(JSON.stringify({
+  logger.warn("redis_closed", {
     event:   "redis_closed",
-    service: "authentication-service",
-  }))
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
+  })
 );
 
 export default redisClient;
