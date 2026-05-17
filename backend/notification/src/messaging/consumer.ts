@@ -1,173 +1,142 @@
-import { Kafka, Consumer, EachMessagePayload } from "kafkajs";
-import logger from "../utils/logger";
-import { NotificationTopic } from "./topics";
-import { sendNotificationMessage } from "./producer";
-import { NOTIFICATION_TOPICS } from "../constants";
+import type { ConsumeMessage } from "amqplib";
+import {
+  context,
+  propagation,
+  SpanKind,
+  SpanStatusCode,
+  trace,
+} from "@opentelemetry/api";
+import { getRabbitMQChannel }        from "./connection";
+import { QUEUES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
+import { requestContext }            from "../context/requestContext";
+import logger                        from "../utils/logger";
+import { randomUUID }                from "crypto";
+import { BaseNotificationHandler }   from "./handlers/base.handler";
+import { emailConfirmationHandler }  from "./handlers/email-confirmation.handler";
+import { twoFAHandler }              from "./handlers/twofa.handler";
+import { passwordResetHandler }      from "./handlers/password-reset.handler";
+import { orgOnboardingHandler }      from "./handlers/org-onboarding.handler";
+import { storeOnboardingHandler }    from "./handlers/store-onboarding.handler";
+import { paymentSuccessHandler }     from "./handlers/payment-success.handler";
+import { paymentFailedHandler }      from "./handlers/payment-failed.handler";
+import { orderCompletedHandler }     from "./handlers/order-completed.handler";
+import { lowStockHandler }           from "./handlers/low-stock.handler";
 
-const kafka = new Kafka({
-  clientId: "Notification_Service",
-  brokers: ["kafka-1:9092", "kafka-2:9093", "kafka-3:9094"],
-  retry: { initialRetryTime: 2000, retries: 30, factor: 2 },
-});
+const tracer = trace.getTracer(SERVICE_NAME);
 
-const consumer: Consumer = kafka.consumer({
-  groupId: "Notification-group",
-  sessionTimeout: 30000,
-  heartbeatInterval: 3000,
-  rebalanceTimeout: 60000,
-  maxBytesPerPartition: 1_048_576,
-  maxWaitTimeInMs: 5000,
-  allowAutoTopicCreation: false,
-  retry: {
-    initialRetryTime: 100,
-    retries: 8,
-    multiplier: 2,
-    maxRetryTime: 30000,
-  },
-});
+const queueHandlerMap: Record<string, BaseNotificationHandler> = {
+  [QUEUES.EMAIL_CONFIRMATION]: emailConfirmationHandler,
+  [QUEUES.TWO_FA]:             twoFAHandler,
+  [QUEUES.RESET_PASSWORD]:     passwordResetHandler,
+  [QUEUES.ORG_ONBOARDING]:     orgOnboardingHandler,
+  [QUEUES.STORE_ONBOARDING]:   storeOnboardingHandler,
+  [QUEUES.PAYMENT_SUCCESS]:    paymentSuccessHandler,
+  [QUEUES.PAYMENT_FAILED]:     paymentFailedHandler,
+  [QUEUES.ORDER_COMPLETED]:    orderCompletedHandler,
+  [QUEUES.LOW_STOCK]:          lowStockHandler,
+};
 
-export async function connectConsumer() {
-  const retries = 10;
-  for (let i = 0; i < retries; i++) {
-    try {
-      await consumer.connect();
-      await consumer.subscribe({
-        topics: NOTIFICATION_TOPICS,
-        fromBeginning: false,
-      });
-      logger.info("Notification consumer connected");
-      await startConsuming();
-      return;
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, (i + 1) * 300));
-    }
-  }
-}
+export async function connectNotificationConsumer(): Promise<void> {
+  const channel = getRabbitMQChannel();
+  channel.prefetch(10);
 
-async function startConsuming() {
-  await consumer.run({
-    autoCommit: false,
-    partitionsConsumedConcurrently: 3,
-    eachMessage: async (payload: EachMessagePayload) => {
-      const { topic, partition, message, heartbeat, pause } = payload;
-      const start = Date.now();
+  for (const [queue, handler] of Object.entries(queueHandlerMap)) {
+    await channel.consume(
+      queue,
+      async (msg: ConsumeMessage | null) => {
+        if (!msg) return;
 
-      let data: any;
-      try {
-        if (!message.value) {
-          logger.warn("Empty message", {
-            topic,
-            partition,
-            offset: message.offset,
+        const rawHeaders = msg.properties.headers ?? {};
+        const normalizedHeaders: Record<string, string> = {};
+        for (const [key, value] of Object.entries(rawHeaders)) {
+          if (value !== undefined && value !== null) {
+            normalizedHeaders[key] = Buffer.isBuffer(value)
+              ? value.toString("utf8")
+              : String(value);
+          }
+        }
+
+        const parentContext = propagation.extract(
+          context.active(),
+          normalizedHeaders
+        );
+        const requestId =
+          normalizedHeaders["x-request-id"] ?? randomUUID();
+
+        let data: unknown;
+        try {
+          data = JSON.parse(msg.content.toString());
+        } catch (err) {
+          logger.error("notification_consumer_parse_error", {
+            event:   "notification_consumer_parse_error",
+            service: SERVICE_NAME,
+            queue,
+            error:   err instanceof Error ? err.message : String(err),
           });
-          await commitOffset(topic, partition, message.offset);
-          return;
-        }
-        data = JSON.parse(message.value.toString());
-      } catch (parseErr) {
-        logger.error("Failed to parse message", {
-          topic,
-          partition,
-          offset: message.offset,
-          error: parseErr,
-        });
-        await sendToDLQ(topic, partition, message, null, parseErr as Error);
-        await commitOffset(topic, partition, message.offset);
-        return;
-      }
-
-      try {
-        logger.info("Processing message", {
-          topic,
-          partition,
-          offset: message.offset,
-          key: message.key?.toString(),
-        });
-
-        const handler =
-          NotificationTopic[topic as keyof typeof NotificationTopic];
-        if (!handler) {
-          logger.warn("No handler for topic", { topic });
-          await commitOffset(topic, partition, message.offset);
+          channel.nack(msg, false, false);
           return;
         }
 
-        await handler(data);
-        await commitOffset(topic, partition, message.offset);
-        await heartbeat();
+        await context.with(parentContext, async () => {
+          const span = tracer.startSpan(
+            `rabbitmq.consume.${queue}`,
+            {
+              kind: SpanKind.CONSUMER,
+              attributes: {
+                "messaging.system":               "rabbitmq",
+                "messaging.destination":          queue,
+                "messaging.operation":            "receive",
+                "messaging.rabbitmq.routing_key": msg.fields.routingKey,
+              },
+            }
+          );
 
-        logger.info("Message processed", {
-          topic,
-          duration: Date.now() - start,
+          await context.with(
+            trace.setSpan(context.active(), span),
+            async () => {
+              const spanCtx = span.spanContext();
+              requestContext.run(
+                {
+                  requestId,
+                  traceId:   spanCtx.traceId,
+                  spanId:    spanCtx.spanId,
+                  eventType: msg.fields.routingKey,
+                },
+                async () => {
+                  try {
+                    await handler.process(data, channel, msg);
+                    span.setStatus({ code: SpanStatusCode.OK });
+                  } catch (err) {
+                    span.recordException(err as Error);
+                    span.setStatus({
+                      code:    SpanStatusCode.ERROR,
+                      message: err instanceof Error ? err.message : String(err),
+                    });
+                    logger.error("notification_consumer_handler_error", {
+                      event:      "notification_consumer_handler_error",
+                      service:    SERVICE_NAME,
+                      queue,
+                      routingKey: msg.fields.routingKey,
+                      requestId,
+                      error:      err instanceof Error ? err.message : String(err),
+                    });
+                    channel.nack(msg, false, false);
+                  } finally {
+                    span.end();
+                  }
+                }
+              );
+            }
+          );
         });
-      } catch (procErr) {
-        logger.error("Handler failed", {
-          topic,
-          partition,
-          offset: message.offset,
-          error: procErr,
-        });
-        await sendToDLQ(topic, partition, message, data, procErr as Error);
-        await commitOffset(topic, partition, message.offset);
-        // // Optional backpressure
-        // const p = pause();
-        // setTimeout(() => p.resume(), 5000);
-      }
-    },
-  });
-}
-
-// --- COMMIT OFFSET ---
-async function commitOffset(topic: string, partition: number, offset: string) {
-  try {
-    await consumer.commitOffsets([
-      {
-        topic,
-        partition,
-        offset: (BigInt(offset) + BigInt(1)).toString(),
       },
-    ]);
-  } catch (err) {
-    logger.error("Commit failed", { topic, partition, offset, err });
-  }
-}
+      { noAck: false }
+    );
 
-// --- DLQ ---
-async function sendToDLQ(
-  origTopic: string,
-  partition: number,
-  msg: any,
-  parsedData: any,
-  err: Error
-) {
-  try {
-    await sendNotificationMessage("Notification.dlq", {
-      originalTopic: origTopic,
-      partition,
-      offset: msg.offset,
-      key: msg.key?.toString(),
-      timestamp: msg.timestamp,
-      data: parsedData,
-      error: { name: err.name, message: err.message, stack: err.stack },
-      failedAt: new Date().toISOString(),
-    });
-    logger.info("Sent to DLQ", { origTopic, offset: msg.offset });
-  } catch (dlqErr) {
-    logger.error("DLQ failed", { origTopic, error: dlqErr });
-  }
-}
-
-export async function disconnectConsumer() {
-  try {
-    await consumer.disconnect();
-    logger.info("Consumer disconnected");
-  } catch (error) {
-    logger.error("Error in connecting to the Kafka comsumer", {
-      message:
-        error instanceof Error ? error.message : "unknown error has occurred",
-      stack:
-        error instanceof Error ? error.stack : "unknown error has occurred",
+    logger.info("notification_consumer_started", {
+      event:   "notification_consumer_started",
+      service: SERVICE_NAME,
+      queue,
     });
   }
 }
