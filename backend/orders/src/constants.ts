@@ -1,42 +1,55 @@
-export const UNAUTHORIZED_STATUS_CODE = 403;
-export const BAD_REQUEST_STATUS_CODE = 400;
+export const SERVICE_NAME = "orders-service";
+export const RABBITMQ_URL = process.env.RABBITMQ_URL!;
+
+export const MAX_RETRIES   = 3;
+export const BASE_DELAY_MS = 1_000;
+export const TIMEOUT_MS    = 8_000;
+
+export function getJitter(): number {
+  return Math.random() * 1_000;
+}
+
 export const SUCCESSFULLY_CREATED_STATUS_CODE = 201;
 export const SUCCESSFULLY_FETCHED_STATUS_CODE = 200;
-export const UNAUTHENTICATED_STATUS_CODE = 401;
-export const NOT_FOUND_STATUS_CODE = 404;
-export const SERVER_ERROR_STATUS_CODE = 500;
+export const BAD_REQUEST_STATUS_CODE          = 400;
+export const UNAUTHENTICATED_STATUS_CODE      = 401;
+export const UNAUTHORIZED_STATUS_CODE         = 403;
+export const NOT_FOUND_STATUS_CODE            = 404;
+export const CONFLICT_STATUS_CODE             = 409;
+export const SERVER_ERROR_STATUS_CODE         = 500;
 
-export const BASE_DELAY_MS = 4000;
-export const BASE_EXPIRATION_SEC = 60 * 60 * 2;
-export const EXPIRATION_SEC = 60 * 15 * 1000;
-export const REDIS_EXPIRATION_MIN = 60 * 5;
-export const MAX_RETRIES = 7;
-export const JITTER = Math.random() * 10000;
+export const EXCHANGES = {
+  ORDERS:       "selleasi.orders",
+  ORDERS_DLX:   "selleasi.orders.dlx",
+  PAYMENT:      "selleasi.payment",
+  INVENTORY:    "selleasi.inventory",
+  NOTIFICATION: "selleasi.notification",
+  CART:         "selleasi.cart",
+} as const;
 
-export const CART_ITEM_ADDED_TOPIC = "cart.item.added.topic";
-export const CART_ITEM_REMOVED_TOPIC = "cart.item.removed.topic";
-export const CART_EXPIRED_TOPIC = "cart.expired.topic";
+export const ROUTING_KEYS = {
+  ORDER_CREATED:             "order.created",
+  ORDER_COMPLETED:           "order.completed",
+  ORDER_FAILED:              "order.failed",
+  ORDER_CANCELLED:           "order.cancelled",
+  ORDER_ABANDONED:           "order.abandoned",
+  ORDER_STOCK_COMMITTED:     "order.stock.committed",
+  PAYMENT_COMPLETED:         "payment.completed",
+  PAYMENT_FAILED:            "payment.failed",
+  PAYMENT_INITIATED:         "payment.initiated",
+  INVENTORY_RESERVATION_FAILED: "inventory.reservation.failed",
+  CART_ITEM_OUT_OF_STOCK:    "cart.item.out_of_stock",
+} as const;
 
-export const ORDER_CHECKOUT_STARTED_TOPIC = "order.checkout.started.topic";
-export const ORDER_PAYMENT_COMPLETED_TOPIC = "order.payment.completed.topic";
-export const ORDER_PAYMENT_FAILED_TOPIC = "order.payment.failed.topic";
-export const ORDER_COMPLETED_TOPIC = "order.completed.topic";
-export const ORDER_RESERVATION_FAILED_TOPIC = "order.reservation.failed.topic";
-export const ORDER_PAYMENT_INITIATED_TOPIC = "order.payment.initiated.topic";
+export type OrderRoutingKey =
+  (typeof ROUTING_KEYS)[keyof typeof ROUTING_KEYS];
 
+export const QUEUES = {
+  PAYMENT_COMPLETED:            "selleasi.orders.payment.completed.queue",
+  PAYMENT_FAILED:               "selleasi.orders.payment.failed.queue",
+  PAYMENT_INITIATED:            "selleasi.orders.payment.initiated.queue",
+  INVENTORY_RESERVATION_FAILED: "selleasi.orders.inventory.reservation.failed.queue",
+} as const;
 
-
-export const INVENTORY_RESERVATION_REQUEST_TOPIC = "inventory.reservation.request.topic"; 
-export const INVENTORY_RESERVATION_COMPLETED_TOPIC = "inventory.reservation.completed.topic";
-export const INVENTORY_STOCK_COMMITTED_TOPIC = "inventory.stock.committed.topic";
-export const INVENTORY_RELEASE_REQUEST_TOPIC = "inventory.release.request.topic";
-export const CART_ITEM_OUT_OF_STOCK_TOPIC = "cart.item.outOfStock.topic"; // ORDER_ABANDONED_TOPIC
-export const ORDER_ABANDONED_TOPIC = "order.abandoned.topic"; // ORDER_ABANDONED_TOPIC
-
-export const ORDER_CONSUMER_TOPICS = [
-  ORDER_PAYMENT_COMPLETED_TOPIC,
-  ORDER_PAYMENT_FAILED_TOPIC,
-  INVENTORY_RESERVATION_COMPLETED_TOPIC, 
-  ORDER_RESERVATION_FAILED_TOPIC,
-  ORDER_PAYMENT_INITIATED_TOPIC
-];
+export const CART_SERVICE_URL      = process.env.CART_SERVICE_URL      ?? "http://cart:4009";
+export const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL ?? "http://inventory:4008";

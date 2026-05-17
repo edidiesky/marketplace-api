@@ -2,8 +2,7 @@ import PDFDocument from "pdfkit";
 import QRCode from "qrcode";
 import { Buffer } from "buffer";
 import logger from "./logger";
-import { IOrder } from "../models/Order";
-
+import { IOrder } from "../domains/order/order.model";
 interface ReceiptData {
   order: IOrder;
   storeName: string;

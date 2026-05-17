@@ -5,116 +5,248 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Orders Service",
+      title: "Inventory MicroService",
       version: "1.0.0",
       description:
-        "Handles checkout, order lifecycle, fulfillment, and shipping",
+        "A three-field inventory accounting per product: onHand = available + reserved. " +
+        "All stock changes basically use MongoDB $inc with a $gte guard inside a Redis distributed lock " +
+        "to prevent oversell. Reserve and release are synchronous during checkout. " +
+        "Commit is triggered by the ORDER_STOCK_COMMITTED Kafka event.",
     },
     servers: [
       {
         url:
           process.env.NODE_ENV === "production"
-            ? "https://api.selleasi.com/orders"
-            : "http://localhost:8000/orders",
+            ? "https://api.selleasi.com/inventory"
+            : "http://localhost:8000/inventory",
+        description:
+          process.env.NODE_ENV === "production"
+            ? "Production – via API Gateway"
+            : "Local dev – via API Gateway",
+      },
+    ],
+    tags: [
+      {
+        name: "Inventory",
+        description:
+          "Seller-facing inventory management. Create and inspect inventory records per store.",
+      },
+      {
+        name: "Inventory Internal",
+        description:
+          "Service-to-service endpoints called by the Orders service during the checkout saga. " +
+          "Protected by x-internal-secret header. Never called directly by clients.",
       },
     ],
     components: {
       securitySchemes: {
-        BearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Access token issued by the Auth service. 15-minute lifetime.",
+        },
       },
       schemas: {
-        CartItem: {
+        Inventory: {
           type: "object",
           properties: {
-            productId: { type: "string", example: "692b1c07e389ba822fb50090" },
-            productTitle: { type: "string", example: "Nike Air Max 90" },
-            productDescription: { type: "string" },
-            productPrice: { type: "number", example: 45000 },
-            productQuantity: { type: "number", example: 2 },
+            _id: { type: "string", example: "664f1b2e8a1c2d3e4f5a6b7c" },
+            productId: {
+              type: "string",
+              example: "692b1c07e389ba822fb50090",
+              description: "MongoDB ObjectId of the product this record tracks.",
+            },
+            storeId: {
+              type: "string",
+              example: "692ae291a78a6f8c7ebbdd37",
+              description: "MongoDB ObjectId of the store that owns this inventory.",
+            },
+            ownerId: { type: "string", example: "663e1a1d7b2c3d4e5f6a7b8c" },
+            ownerName: { type: "string", example: "Chidi Okafor" },
+            ownerEmail: {
+              type: "string",
+              format: "email",
+              example: "chidi@selleasi.com",
+            },
+            warehouseId: {
+              type: "string",
+              example: "663e1a1d7b2c3d4e5f6a7b9a",
+              description: "Optional warehouse ObjectId for multi-location tracking.",
+            },
+            warehouseName: { type: "string", example: "Lagos Central" },
+            productTitle: { type: "string", example: "Nike Air Max 90 – Triple Black" },
             productImage: {
               type: "array",
               items: { type: "string" },
-              example: ["https://res.cloudinary.com/example/image.jpg"],
-            },
-          },
-        },
-        ShippingAddress: {
-          type: "object",
-          required: ["street", "city", "state", "country"],
-          properties: {
-            street: { type: "string", example: "12 Aba Road" },
-            city: { type: "string", example: "Port Harcourt" },
-            state: { type: "string", example: "Rivers" },
-            country: { type: "string", example: "Nigeria" },
-            postalCode: { type: "string", example: "500001" },
-          },
-        },
-        Order: {
-          type: "object",
-          properties: {
-            _id: { type: "string", example: "69c572f77b95832e7af4cca2" },
-            userId: { type: "string" },
-            sellerId: { type: "string" },
-            storeId: { type: "string" },
-            cartId: { type: "string" },
-            fullName: { type: "string", example: "Victor Essien" },
-            quantity: { type: "number", example: 3 },
-            totalPrice: { type: "number", example: 135000 },
-            cartItems: {
-              type: "array",
-              items: { $ref: "#/components/schemas/CartItem" },
-            },
-            orderStatus: {
-              type: "string",
-              enum: [
-                "payment_pending",
-                "payment_initiated",
-                "completed",
-                "failed",
-                "out_of_stock",
+              example: [
+                "https://res.cloudinary.com/selleasi/image/upload/v1/products/airmax-1.jpg",
               ],
-              example: "payment_pending",
             },
-            fulfillmentStatus: {
-              type: "string",
-              enum: [
-                "unfulfilled",
-                "preparing",
-                "dispatched",
-                "delivered",
-                "delivery_failed",
-              ],
-              example: "unfulfilled",
+            storeName: { type: "string", example: "Chidi Sneakers" },
+            storeDomain: { type: "string", example: "chidi-sneakers.selleasi.com" },
+            quantityOnHand: {
+              type: "number",
+              example: 50,
+              description: "Total physical units. Always equals available + reserved.",
             },
-            shipping: { $ref: "#/components/schemas/ShippingAddress" },
-            transactionId: { type: "string" },
-            receiptUrl: { type: "string" },
-            sagaId: { type: "string" },
-            requestId: { type: "string" },
+            quantityAvailable: {
+              type: "number",
+              example: 47,
+              description: "Units that can be reserved by new orders.",
+            },
+            quantityReserved: {
+              type: "number",
+              example: 3,
+              description: "Units held by in-flight orders pending payment confirmation.",
+            },
+            reorderPoint: {
+              type: "number",
+              example: 10,
+              description: "Low-stock threshold. Notification triggered when quantityAvailable falls below this.",
+            },
+            reorderQuantity: {
+              type: "number",
+              example: 50,
+              description: "Suggested replenishment quantity when reorder point is breached.",
+            },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        CreateInventoryRequest: {
+          type: "object",
+          required: ["productId", "storeId", "quantityOnHand"],
+          properties: {
+            productId: { type: "string", example: "692b1c07e389ba822fb50090" },
+            storeId: { type: "string", example: "692ae291a78a6f8c7ebbdd37" },
+            productTitle: { type: "string", example: "Nike Air Max 90 – Triple Black" },
+            productImage: {
+              type: "array",
+              items: { type: "string" },
+            },
+            quantityOnHand: { type: "number", example: 100 },
+            reorderPoint: { type: "number", example: 10 },
+            reorderQuantity: { type: "number", example: 50 },
+            warehouseId: { type: "string" },
+            warehouseName: { type: "string", example: "Lagos Central" },
+            storeName: { type: "string" },
+            storeDomain: { type: "string" },
+          },
+        },
+        UpdateInventoryRequest: {
+          type: "object",
+          description:
+            "All fields optional. Only supplied fields are patched. " +
+            "quantityAvailable and quantityReserved cannot be set directly – " +
+            "use the reserve/release/commit internal endpoints.",
+          properties: {
+            quantityOnHand: { type: "number", example: 120 },
+            reorderPoint: { type: "number", example: 15 },
+            reorderQuantity: { type: "number", example: 60 },
+            warehouseName: { type: "string" },
+          },
+        },
+        ReserveStockRequest: {
+          type: "object",
+          required: ["productId", "storeId", "quantity", "orderId"],
+          properties: {
+            productId: { type: "string", example: "692b1c07e389ba822fb50090" },
+            storeId: { type: "string", example: "692ae291a78a6f8c7ebbdd37" },
+            quantity: {
+              type: "number",
+              example: 2,
+              description: "Units to move from available to reserved.",
+            },
+            orderId: {
+              type: "string",
+              example: "ord_01HXYZ",
+              description: "Order ID used as the idempotency key for this reservation.",
+            },
+            userId: { type: "string", example: "663e1a1d7b2c3d4e5f6a7b8c" },
+          },
+        },
+        ReleaseStockRequest: {
+          type: "object",
+          required: ["productId", "storeId", "quantity", "orderId"],
+          properties: {
+            productId: { type: "string", example: "692b1c07e389ba822fb50090" },
+            storeId: { type: "string", example: "692ae291a78a6f8c7ebbdd37" },
+            quantity: {
+              type: "number",
+              example: 2,
+              description: "Units to move back from reserved to available.",
+            },
+            orderId: { type: "string", example: "ord_01HXYZ" },
+            userId: { type: "string", example: "663e1a1d7b2c3d4e5f6a7b8c" },
+          },
+        },
+        CommitStockRequest: {
+          type: "object",
+          required: ["productId", "storeId", "quantity", "orderId"],
+          properties: {
+            productId: { type: "string", example: "692b1c07e389ba822fb50090" },
+            storeId: { type: "string", example: "692ae291a78a6f8c7ebbdd37" },
+            quantity: {
+              type: "number",
+              example: 2,
+              description:
+                "Units to permanently deduct. Decrements both onHand and reserved. " +
+                "Called after payment confirmation.",
+            },
+            orderId: { type: "string", example: "ord_01HXYZ" },
+            userId: { type: "string", example: "663e1a1d7b2c3d4e5f6a7b8c" },
+          },
+        },
+        InventoryAvailabilityResponse: {
+          type: "object",
+          properties: {
+            productId: { type: "string" },
+            quantityAvailable: { type: "number", example: 47 },
+            isInStock: { type: "boolean", example: true },
+          },
+        },
+        InventoryListResponse: {
+          type: "object",
+          properties: {
+            success: { type: "boolean", example: true },
+            data: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Inventory" },
+            },
+            pagination: {
+              type: "object",
+              properties: {
+                page: { type: "integer", example: 1 },
+                limit: { type: "integer", example: 20 },
+                total: { type: "integer", example: 40 },
+                totalPages: { type: "integer", example: 2 },
+              },
+            },
           },
         },
         ErrorResponse: {
           type: "object",
           properties: {
             status: { type: "string", example: "error" },
-            error: { type: "string", example: "Order not found" },
+            error: { type: "string", example: "Inventory record not found" },
           },
         },
-        PaginatedOrders: {
+        ValidationErrorResponse: {
           type: "object",
           properties: {
-            success: { type: "boolean", example: true },
-            data: {
-              type: "object",
-              properties: {
-                orders: {
-                  type: "array",
-                  items: { $ref: "#/components/schemas/Order" },
+            status: { type: "string", example: "error" },
+            errors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  field: { type: "string", example: "quantityOnHand" },
+                  message: {
+                    type: "string",
+                    example: "quantityOnHand must be a positive number",
+                  },
                 },
-                totalCount: { type: "number", example: 42 },
-                totalPages: { type: "number", example: 5 },
               },
             },
           },
@@ -122,317 +254,8 @@ const options: swaggerJsdoc.Options = {
       },
     },
     security: [{ BearerAuth: [] }],
-    tags: [
-      { name: "Checkout", description: "Checkout and order creation" },
-      { name: "Orders", description: "Order retrieval and management" },
-      { name: "Shipping", description: "Shipping address management" },
-      { name: "Fulfillment", description: "Seller fulfillment operations" },
-    ],
-    paths: {
-      "/api/v1/orders/{storeId}/checkout": {
-        post: {
-          tags: ["Checkout"],
-          summary: "Create a new order from cart",
-          description:
-            "Fetches cart server-side, reserves inventory for each item atomically, and creates an order in PAYMENT_PENDING state. Idempotent via requestId.",
-          security: [{ BearerAuth: [] }],
-          parameters: [
-            {
-              in: "path",
-              name: "storeId",
-              required: true,
-              schema: { type: "string" },
-              example: "692ae291a78a6f8c7ebbdd37",
-            },
-          ],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["cartId", "requestId"],
-                  properties: {
-                    cartId: {
-                      type: "string",
-                      example: "69bdadb4c5979ae29c7519f3",
-                    },
-                    requestId: {
-                      type: "string",
-                      format: "uuid",
-                      example: "f1332326-ac69-4fc6-b8c4-53806e287866",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          responses: {
-            "201": {
-              description: "Order created successfully",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Order" },
-                },
-              },
-            },
-            "400": {
-              description: "Insufficient stock or cart empty",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    properties: {
-                      status: { type: "string", example: "error" },
-                      error: {
-                        type: "string",
-                        example: "One or more items are unavailable",
-                      },
-                      failedItems: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            productId: { type: "string" },
-                            productTitle: { type: "string" },
-                            reason: { type: "string", example: "Out of stock" },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            "401": { description: "Unauthorized" },
-            "503": {
-              description: "Circuit breaker open",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    properties: {
-                      status: { type: "string", example: "error" },
-                      error: {
-                        type: "string",
-                        example: "Service orders is currently unavailable",
-                      },
-                      retryAfter: { type: "number", example: 30 },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      "/api/v1/orders/{orderId}/shipping": {
-        patch: {
-          tags: ["Shipping"],
-          summary: "Add or update shipping address on an order",
-          description:
-            "Only allowed when order is in PAYMENT_PENDING or PAYMENT_INITIATED state. Shipping is frozen once order reaches COMPLETED or FAILED.",
-          security: [{ BearerAuth: [] }],
-          parameters: [
-            {
-              in: "path",
-              name: "orderId",
-              required: true,
-              schema: { type: "string" },
-              example: "69c572f77b95832e7af4cca2",
-            },
-          ],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/ShippingAddress" },
-              },
-            },
-          },
-          responses: {
-            "200": {
-              description: "Shipping updated",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Order" },
-                },
-              },
-            },
-            "400": {
-              description: "Order not in a mutable state",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/ErrorResponse" },
-                },
-              },
-            },
-            "403": { description: "Not the order owner" },
-            "404": { description: "Order not found" },
-          },
-        },
-      },
-      "/api/v1/orders/{storeId}/store": {
-        get: {
-          tags: ["Orders"],
-          summary: "Get all orders for a store",
-          description:
-            "Returns paginated orders for a given store. Seller-scoped.",
-          security: [{ BearerAuth: [] }],
-          parameters: [
-            {
-              in: "path",
-              name: "storeId",
-              required: true,
-              schema: { type: "string" },
-              example: "692ae291a78a6f8c7ebbdd37",
-            },
-            {
-              in: "query",
-              name: "page",
-              schema: { type: "integer", default: 1 },
-            },
-            {
-              in: "query",
-              name: "limit",
-              schema: { type: "integer", default: 10 },
-            },
-            {
-              in: "query",
-              name: "orderStatus",
-              schema: {
-                type: "string",
-                enum: [
-                  "payment_pending",
-                  "payment_initiated",
-                  "completed",
-                  "failed",
-                  "out_of_stock",
-                ],
-              },
-            },
-          ],
-          responses: {
-            "200": {
-              description: "Paginated orders",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/PaginatedOrders" },
-                },
-              },
-            },
-            "401": { description: "Unauthorized" },
-          },
-        },
-      },
-      "/api/v1/orders/detail/{id}": {
-        get: {
-          tags: ["Orders"],
-          summary: "Get a single order by ID",
-          description:
-            "Returns full order details including cart items, shipping, and receipt URL.",
-          security: [{ BearerAuth: [] }],
-          parameters: [
-            {
-              in: "path",
-              name: "id",
-              required: true,
-              schema: { type: "string" },
-              example: "69c572f77b95832e7af4cca2",
-            },
-          ],
-          responses: {
-            "200": {
-              description: "Order found",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Order" },
-                },
-              },
-            },
-            "404": {
-              description: "Order not found",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/ErrorResponse" },
-                },
-              },
-            },
-          },
-        },
-      },
-      "/api/v1/orders/{orderId}/fulfillment": {
-        patch: {
-          tags: ["Fulfillment"],
-          summary: "Update fulfillment status",
-          description:
-            "Seller-only. Valid transitions: unfulfilled -> preparing -> dispatched -> delivered. Order must be in COMPLETED payment status.",
-          security: [{ BearerAuth: [] }],
-          parameters: [
-            {
-              in: "path",
-              name: "orderId",
-              required: true,
-              schema: { type: "string" },
-              example: "69c572f77b95832e7af4cca2",
-            },
-          ],
-          requestBody: {
-            required: true,
-            content: {
-              "application/json": {
-                schema: {
-                  type: "object",
-                  required: ["status"],
-                  properties: {
-                    status: {
-                      type: "string",
-                      enum: [
-                        "preparing",
-                        "dispatched",
-                        "delivered",
-                        "delivery_failed",
-                      ],
-                      example: "dispatched",
-                    },
-                    trackingNumber: {
-                      type: "string",
-                      example: "GIG123456789NG",
-                    },
-                    courierName: {
-                      type: "string",
-                      example: "GIG Logistics",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          responses: {
-            "200": {
-              description: "Fulfillment status updated",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Order" },
-                },
-              },
-            },
-            "400": {
-              description: "Invalid transition or order not completed",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/ErrorResponse" },
-                },
-              },
-            },
-            "403": { description: "Not the order seller" },
-            "404": { description: "Order not found" },
-          },
-        },
-      },
-    },
   },
-  apis: [path.resolve(__dirname, "../routes/*.ts")],
+  apis: [path.join(__dirname, "../routes/*.js")],
 };
 
-export const ordersSwaggerSpec = swaggerJsdoc(options);
+export const inventorySwaggerSpec = swaggerJsdoc(options);
