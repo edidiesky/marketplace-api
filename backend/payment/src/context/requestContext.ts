@@ -18,25 +18,14 @@ export const requestContext = {
   run<T>(ctx: RequestContext, fn: () => T): T {
     return storage.run(ctx, fn);
   },
-
   get(): RequestContext | undefined {
     return storage.getStore();
   },
-
   set(patch: Partial<RequestContext>): void {
     const ctx = storage.getStore();
     if (ctx) Object.assign(ctx, patch);
   },
-
-  getStoreId(): string | undefined {
-    return storage.getStore()?.storeId;
-  },
-
   getUserId(): string | undefined {
     return storage.getStore()?.userId;
-  },
-
-  getOrganizationId(): string | undefined {
-    return storage.getStore()?.organizationId;
   },
 };

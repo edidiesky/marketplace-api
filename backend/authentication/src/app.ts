@@ -5,7 +5,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
-
+import dotenv         from "dotenv";
+dotenv.config()
 import authRoutes       from "./domains/auth/auth.routes";
 // import roleRoutes       from "./domains/roles/role.routes";
 // import permissionRoutes from "./domains/permissions/permission.routes";

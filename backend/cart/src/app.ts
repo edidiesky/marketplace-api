@@ -2,9 +2,11 @@ import "./utils/otel";
 import express      from "express";
 import helmet       from "helmet";
 import cors         from "cors";
+
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
-
+import dotenv         from "dotenv";
+dotenv.config()
 import cartRoutes                 from "./domains/cart/cart.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";

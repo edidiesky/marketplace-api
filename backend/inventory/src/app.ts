@@ -4,7 +4,8 @@ import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
-
+import dotenv         from "dotenv";
+dotenv.config()
 import inventoryRoutes            from "./domains/inventory/inventory.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";

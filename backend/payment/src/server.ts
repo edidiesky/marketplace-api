@@ -1,138 +1,36 @@
-import mongoose from "mongoose";
-import { app } from "./app";
-import { errorHandler, NotFound } from "./middleware/error-handler";
-const PORT = process.env.PORT;
-import logger from "./utils/logger";
-import { connectMongoDB } from "./utils/connectDB";
-import { trackError, serverHealthGauge } from "./utils/metrics";
-import {
-  connectConsumer,
-  disconnectConsumer,
-} from "./infra/messaging/consumer";
-import {
-  connectProducer,
-  disconnectProducer,
-} from "./infra/messaging/producer";
-import { redisClient } from "./infra/cache/redis";
-import { startOutboxPoller, stopOutboxPoller } from "./utils/outboxPoller";
+import http from "http";
+import { app }                   from "./app";
+import { bootstrapServer }       from "./server/bootstrap";
+import { registerShutdownHooks } from "./server/shutdown";
+import logger                    from "./utils/logger";
+import { trackError }            from "./utils/metrics";
+import redisClient               from "./config/redis";
+import { SERVICE_NAME }          from "./constants";
 
-const mongoUrl = process.env.DATABASE_URL;
-if (!mongoUrl) {
-  trackError("missing_env_var", "server_initialization", "critical");
-  throw new Error("MongoDB connection string is not defined.");
-}
-const serverInitSteps = [
-  { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
-  {
-    name: "redis",
-    fn: async () => {
-      const ok = await redisClient.ping();
-      if (!ok) {
-        throw new Error(
-          "Redis ping failed — server is unreachable or not ready",
-        );
-      }
-    },
-  },
-  { name: "kafka_consumer", fn: connectConsumer },
-  { name: "kafka_producer", fn: connectProducer },
-  { name: "outbox_poller", fn: async () => startOutboxPoller() },
-];
+const PORT   = process.env.PORT ?? 4007;
+const server = http.createServer(app);
 
-const server = app.listen(PORT, async () => {
-  const serverStartTime = process.hrtime();
-  logger.info(`Payment Server running on port ${PORT}`);
-
-  try {
-    for (const step of serverInitSteps) {
-      const stepStart = process.hrtime();
-
-      try {
-        await step.fn();
-        const stepDuration = process.hrtime(stepStart);
-        const stepSeconds = stepDuration[0] + stepDuration[1] / 1e9;
-        logger.info(`${step.name} initialized successfully`, {
-          duration: stepSeconds,
-        });
-      } catch (error) {
-        const stepDuration = process.hrtime(stepStart);
-        const stepSeconds = stepDuration[0] + stepDuration[1] / 1e9;
-        trackError(
-          `${step.name}_initialization_failed`,
-          "server_initialization",
-          "critical",
-        );
-        logger.error(`${step.name} initialization failed`, {
-          error,
-          duration: stepSeconds,
-        });
-        throw error;
-      }
-    }
-
-    const totalDuration = process.hrtime(serverStartTime);
-    const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
-
-    serverHealthGauge.set(1);
-
-    logger.info("Payment service initialized successfully", {
-      totalDuration: totalSeconds,
-      components: serverInitSteps.length,
-    });
-  } catch (error) {
-    const totalDuration = process.hrtime(serverStartTime);
-    const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
-    trackError("server_initialization_failed", "server_startup", "critical");
-
-    logger.error("Server initialization failed", {
-      error,
-      totalDuration: totalSeconds,
-    });
-  }
-});
-async function GracefulShutdown(signal: string) {
-  logger.info(
-    `[Signal] ${signal} was being received. The server is shutting down gracefully!!`,
-  );
-
-  try {
-    const shutdownStart = process.hrtime();
-    await new Promise((resolve, reject) => {
-      server.close((err) => (err ? reject(err) : resolve));
-    });
-    await disconnectConsumer();
-    await disconnectProducer();
-    await mongoose.connection.close();
-    await redisClient.disconnect();
-    stopOutboxPoller();
-    const shutdownDuration = process.hrtime(shutdownStart);
-    const shutdownSeconds = shutdownDuration[0] + shutdownDuration[1] / 1e9;
-
-    logger.info("Mongoose, Kafka, and Redis disconnected", {
-      shutdownDuration: shutdownSeconds,
-    });
-    process.exit(0);
-  } catch (err) {
-    trackError("graceful_shutdown_failed", "system", "critical");
-    logger.error("Error during shutdown!", err);
-    process.exit(1);
-  }
+async function start(): Promise<void> {
+  await bootstrapServer();
+  await new Promise<void>((resolve) => {
+    server.listen(PORT, () => resolve());
+  });
+  registerShutdownHooks(server);
+  logger.info("payment_service_started", {
+    event:   "payment_service_started",
+    service: SERVICE_NAME,
+    port:    PORT,
+    env:     process.env.NODE_ENV,
+  });
 }
 
-app.use(NotFound);
-app.use(errorHandler);
-
-process.on("SIGINT", GracefulShutdown);
-process.on("SIGTERM", GracefulShutdown);
-
-process.on("unhandledRejection", (reason, promise) => {
-  trackError("unhandled_promise_rejection", "process", "critical");
-  logger.error("Unhandled Promise Rejection", { promise, reason });
-  GracefulShutdown("unhandledRejection");
-});
-
-process.on("uncaughtException", (error) => {
-  trackError("uncaught_exception", "process", "critical");
-  logger.error("Uncaught Exception", { error });
-  GracefulShutdown("uncaughtException");
+start().catch(async (err) => {
+  trackError("server_initialization_failed", "server_startup", "critical");
+  logger.error("payment_service_start_failed", {
+    event:   "payment_service_start_failed",
+    service: SERVICE_NAME,
+    error:   err instanceof Error ? err.message : String(err),
+  });
+  await redisClient.quit().catch(() => {});
+  process.exit(1);
 });

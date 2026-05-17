@@ -4,7 +4,8 @@ import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
-
+import dotenv         from "dotenv";
+dotenv.config()
 import productRoutes              from "./domains/product/product.routes";
 import searchRoutes               from "./domains/search/search.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";

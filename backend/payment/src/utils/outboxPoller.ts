@@ -1,34 +1,44 @@
-import { outboxRepository } from "../repository/OutboxRepository";
-import { sendPaymentMessage } from "../infra/messaging/producer";
+import { outboxRepository }  from "../domains/outbox/outbox.repository";
+import { OutboxEventType }   from "../domains/outbox/outbox.model";
 import {
-  PAYMENT_CONFIRMED_TOPIC,
-  PAYMENT_FAILED_TOPIC,
-  PAYMENT_INITIATED_TOPIC,
-} from "../constants";
-import { OutboxEventType } from "../models/OutboxEvent";
-import logger from "./logger";
+  publishPaymentCompleted,
+  publishPaymentFailed,
+  publishPaymentInitiated,
+} from "../messaging/publisher";
+import logger                from "./logger";
+import { SERVICE_NAME, POLL_INTERVAL_MS } from "../constants";
 
-const POLL_INTERVAL_MS = 5_000;
-const TOPIC_MAP: Record<OutboxEventType, string> = {
-  [OutboxEventType.PAYMENT_CONFIRMED]: PAYMENT_CONFIRMED_TOPIC,
-  [OutboxEventType.PAYMENT_FAILED]: PAYMENT_FAILED_TOPIC,
-  [OutboxEventType.PAYMENT_INITIATED]: PAYMENT_INITIATED_TOPIC,
-  
+type OutboxPublisher = (payload: Record<string, unknown>) => void;
+
+const PUBLISHER_MAP: Record<OutboxEventType, OutboxPublisher> = {
+  [OutboxEventType.PAYMENT_CONFIRMED]: publishPaymentCompleted,
+  [OutboxEventType.PAYMENT_FAILED]:    publishPaymentFailed,
+  [OutboxEventType.PAYMENT_INITIATED]: publishPaymentInitiated,
 };
 
 let pollerTimer: NodeJS.Timeout | null = null;
 
 async function pollOnce(): Promise<void> {
   const events = await outboxRepository.getPending();
-  if (!events.length) return;
+  if (events.length === 0) return;
 
-  logger.info(`Outbox poller: processing ${events.length} pending events`);
+  logger.info("outbox_poller_processing", {
+    event:   "outbox_poller_processing",
+    service: SERVICE_NAME,
+    count:   events.length,
+  });
 
   for (const event of events) {
     try {
-      const topic = TOPIC_MAP[event.type];
-      if (!topic) {
-        logger.error("Unknown outbox event type", { type: event.type });
+      const publisher = PUBLISHER_MAP[event.type];
+
+      if (!publisher) {
+        logger.error("outbox_unknown_event_type", {
+          event:   "outbox_unknown_event_type",
+          service: SERVICE_NAME,
+          type:    event.type,
+          eventId: event._id.toString(),
+        });
         await outboxRepository.incrementRetry(
           event._id.toString(),
           `Unknown event type: ${event.type}`
@@ -36,19 +46,22 @@ async function pollOnce(): Promise<void> {
         continue;
       }
 
-      await sendPaymentMessage(topic, event.payload);
+      publisher(event.payload);
       await outboxRepository.markProcessed(event._id.toString());
 
-      logger.info("Outbox event published", {
-        id: event._id,
-        type: event.type,
-        topic,
+      logger.info("outbox_event_published", {
+        event:   "outbox_event_published",
+        service: SERVICE_NAME,
+        type:    event.type,
+        eventId: event._id.toString(),
       });
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      logger.error("Outbox event publish failed", {
-        id: event._id,
-        type: event.type,
+      logger.error("outbox_event_publish_failed", {
+        event:   "outbox_event_publish_failed",
+        service: SERVICE_NAME,
+        type:    event.type,
+        eventId: event._id.toString(),
         reason,
       });
       await outboxRepository.incrementRetry(event._id.toString(), reason);
@@ -63,19 +76,28 @@ export function startOutboxPoller(): void {
     try {
       await pollOnce();
     } catch (err) {
-      logger.error("Outbox poller error", {
-        error: err instanceof Error ? err.message : String(err),
+      logger.error("outbox_poller_error", {
+        event:   "outbox_poller_error",
+        service: SERVICE_NAME,
+        error:   err instanceof Error ? err.message : String(err),
       });
     }
   }, POLL_INTERVAL_MS);
 
-  logger.info("Outbox poller started", { intervalMs: POLL_INTERVAL_MS });
+  logger.info("outbox_poller_started", {
+    event:      "outbox_poller_started",
+    service:    SERVICE_NAME,
+    intervalMs: POLL_INTERVAL_MS,
+  });
 }
 
 export function stopOutboxPoller(): void {
   if (pollerTimer) {
     clearInterval(pollerTimer);
     pollerTimer = null;
-    logger.info("Outbox poller stopped");
+    logger.info("outbox_poller_stopped", {
+      event:   "outbox_poller_stopped",
+      service: SERVICE_NAME,
+    });
   }
 }

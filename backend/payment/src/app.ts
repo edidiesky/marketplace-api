@@ -1,84 +1,66 @@
-"./utils/otel";
-import helmet from "helmet";
-import dotenv from "dotenv";
-dotenv.config();
-import morgan from "morgan";
-import paymentRoute from "./routes/payment.routes";
-import walletRoute from "./routes/wallet.routes";
-import webhookRoute from "./routes/webhook.routes";
-import payoutRoute from "./routes/payout.routes";
-import express from "express";
-import cors from "cors";
+import "./utils/otel";
+import express      from "express";
+import helmet       from "helmet";
+import cors         from "cors";
 import cookieParser from "cookie-parser";
+import morgan       from "morgan";
+
+import paymentRoutes              from "./domains/payment/payment.routes";
+import walletRoutes               from "./domains/wallet/wallet.routes";
+import payoutRoutes               from "./domains/payout/payout.routes";
+import webhookRoutes              from "./domains/webhook/webhook.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
+import { contextMiddleware }      from "./middleware/contextMiddleware";
 import { reqReplyTime, paymentRegistry } from "./utils/metrics";
-import logger from "./utils/logger";
+import logger                     from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
-import swaggerUi from "swagger-ui-express";
-import { paymentSwaggerSpec } from "./config/swagger";
+
 const app = express();
 
-/** MIDDLEWARE */
 if (!process.env.WEB_ORIGIN) {
-  throw new Error("No WEB_ORIGIN");
+  throw new Error("WEB_ORIGIN env var is not set");
 }
-app.use(helmet());
-app.use(
-  cors({
-    origin: [process.env.WEB_ORIGIN!],
-    credentials: true,
-  }),
-);
 
-/** LOGS REQUEST */
+if (!process.env.PAYSTACK_SECRET_KEY) {
+  throw new Error("PAYSTACK_SECRET_KEY env var is not set");
+}
+
+app.use(helmet());
+app.use(cors({ origin: [process.env.WEB_ORIGIN], credentials: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// LATENCY METRICS MIDDLEWARE
+app.use(contextMiddleware);
 app.use((req, res, next) => {
   const startTime = process.hrtime();
   res.on("finish", () => reqReplyTime(req, res, startTime));
   next();
 });
 
-/** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Payment route is Fine!" });
+  res.json({ status: "ok", service: "payment-service" });
 });
 
-/** ROUTES */
-app.use("/api/v1/payments", paymentRoute);
-app.use("/api/v1/wallets", walletRoute);
-app.use("/api/v1/webhooks", webhookRoute);
-app.use("/api/v1/payouts", payoutRoute);
+app.use("/api/v1/payments",  paymentRoutes);
+app.use("/api/v1/wallets",   walletRoutes);
+app.use("/api/v1/payouts",   payoutRoutes);
+app.use("/api/v1/webhooks",  webhookRoutes);
 
-app.get("/openapi.json", (_req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  res.send(paymentSwaggerSpec);
-});
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(paymentSwaggerSpec, {
-    customSiteTitle: "Payment Service API",
-    swaggerOptions: { persistAuthorization: true },
-  }),
-);
-
-/**
- * @description Metrics endpoint for my Prometheus server
- */
-app.get("/metrics", async (req, res) => {
+app.get("/metrics", async (_req, res) => {
   try {
     res.set("Content-Type", paymentRegistry.contentType);
     res.end(await paymentRegistry.metrics());
-    logger.info("Payment Metrics has been scraped successfully!");
-  } catch (error) {
-    logger.error("Payment Metrics scraping error:", { error });
+  } catch (err) {
+    logger.error("metrics_scrape_failed", {
+      event: "metrics_scrape_failed",
+      error: err instanceof Error ? err.message : String(err),
+    });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
+
+app.use(NotFound);
+app.use(errorHandler);
 
 export { app };

@@ -4,6 +4,8 @@ import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
+import dotenv         from "dotenv"
+dotenv.config()
 
 import orderRoutes                from "./domains/order/order.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";

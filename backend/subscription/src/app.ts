@@ -3,6 +3,8 @@ import express      from "express";
 import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
+import dotenv         from "dotenv";
+dotenv.config()
 import morgan       from "morgan";
 import subscriptionRoutes         from "./domains/subscription/subscription.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
