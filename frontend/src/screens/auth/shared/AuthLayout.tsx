@@ -65,9 +65,9 @@ export default function AuthLayout({ children, leftContent }: Props) {
       {/* right panel */}
       <div className="flex items-center justify-center p-6 lg:p-12">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.8 }}
           className="w-full max-w-md"
         >
           {/* mobile logo */}

@@ -1,119 +1,36 @@
-import mongoose from "mongoose";
+import http from "http";
 import { app } from "./app";
-import { errorHandler, NotFound } from "./middleware/error-handler";
-const PORT = process.env.PORT || 4001;
-import { connectConsumer, disconnectConsumer } from "./messaging/consumer";
-import { connectProducer, disconnectProducer } from "./messaging/producer";
+import { bootstrapServer } from "./server/bootstrap";
+import { registerShutdownHooks } from "./server/shutdown";
 import logger from "./utils/logger";
+import { trackError } from "./utils/metrics";
 import redisClient from "./config/redis";
-import { connectMongoDB } from "./utils/connectDB";
-import {
-  trackError,
-  serverHealthGauge,
-  businessOperationCounter,
-} from "./utils/metrics";
+import { SERVICE_NAME } from "./constants";
 
-app.use(NotFound);
-app.use(errorHandler);
+const PORT   = process.env.PORT ?? 4001;
+const server = http.createServer(app);
 
-
-async function GracefulShutdown() {
-  logger.info("Shutting down gracefully!!");
-  serverHealthGauge.set(0);
-  try {
-    await mongoose.connection.close();
-    await redisClient.quit();
-    await disconnectConsumer();
-    await disconnectProducer();
-    logger.info("Mongoose, RabbitMQ, and Redis have been disconnected!", {});
-    process.exit(0);
-  } catch (err) {
-    trackError("graceful_shutdown_failed", "system", "critical");
-    logger.error("Error during shutdown!", err);
-    process.exit(1);
-  }
+async function start(): Promise<void> {
+  await bootstrapServer();
+  await new Promise<void>((resolve) => {
+    server.listen(PORT, () => resolve());
+  });
+  registerShutdownHooks(server);
+  logger.info("authentication_service_started", {
+    event:   "authentication_service_started",
+    service: SERVICE_NAME,
+    port:    PORT,
+    env:     process.env.NODE_ENV,
+  });
 }
 
-app.listen(PORT, async () => {
-  const serverStartTime = process.hrtime();
-  logger.info(`Auth Server running on port ${PORT}`);
-
-  const mongoUrl = process.env.DATABASE_URL;
-  if (!mongoUrl) {
-    trackError("missing_env_var", "server_initialization", "critical");
-    throw new Error("MongoDB connection string is not defined.");
-  }
-
-  try {
-    const initSteps = [
-      { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
-      { name: "redis", fn: () => redisClient.ping() },
-      { name: "kafka_consumer", fn: connectConsumer },
-      { name: "kafka_producer", fn: connectProducer },
-    ];
-
-    for (const step of initSteps) {
-      const stepStart = process.hrtime();
-
-      try {
-        if (step.name === "redis") {
-          await step.fn();
-          logger.info(`Successfully connected to Redis at`);
-        } else if (step.name === "kafka_consumer") {
-          await step.fn();
-          logger.info(`Kakfa Consumer Successfully connected `);
-        } else if (step.name === "kafka_producer") {
-          await step.fn();
-          logger.info(`Kakfa Producer Successfully connected `);
-        } else {
-          await step.fn();
-        }
-
-        const stepDuration = process.hrtime(stepStart);
-        const stepSeconds = stepDuration[0] + stepDuration[1] / 1e9;
-
-        logger.info(`${step.name} initialized successfully`, {
-          duration: stepSeconds,
-        });
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    const totalDuration = process.hrtime(serverStartTime);
-    const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
-    serverHealthGauge.set(1);
-
-    businessOperationCounter.inc({
-      operation_type: "server_startup",
-      user_type: "system",
-      status: "success",
-    });
-
-    logger.info("Server initialized successfully", {
-      totalDuration: totalSeconds,
-      components: initSteps.length,
-    });
-  } catch (error) {
-    const totalDuration = process.hrtime(serverStartTime);
-    const totalSeconds = totalDuration[0] + totalDuration[1] / 1e9;
-
-    businessOperationCounter.inc({
-      operation_type: "server_startup",
-      user_type: "system",
-      status: "error",
-    });
-
-    trackError("server_initialization_failed", "server_startup", "critical");
-
-    logger.error(`Server initialization failed`, {
-      error,
-      totalDuration: totalSeconds,
-    });
-
-    await GracefulShutdown();
-  }
+start().catch(async (err) => {
+  trackError("server_initialization_failed", "server_startup", "critical");
+  logger.error("authentication_service_start_failed", {
+    event:   "authentication_service_start_failed",
+    service: SERVICE_NAME,
+    error:   err instanceof Error ? err.message : String(err),
+  });
+  await redisClient.quit().catch(() => {});
+  process.exit(1);
 });
-
-process.on("SIGINT", GracefulShutdown);
-process.on("SIGTERM", GracefulShutdown);

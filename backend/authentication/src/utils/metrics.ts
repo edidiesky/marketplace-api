@@ -3,22 +3,22 @@ import client from "prom-client";
 
 const register = new client.Registry();
 client.collectDefaultMetrics({
-  prefix: "user_service_",
+  prefix: "auth_service_",
   register,
 });
 
 // Existing metrics (improved)
 export const requestResponseTimeHistogram = new client.Histogram({
-  name: "user_http_request_duration_seconds",
-  help: "user API duration in seconds",
+  name: "auth_http_request_duration_seconds",
+  help: "Auth API duration in seconds",
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
   registers: [register],
   labelNames: ["method", "route", "status_code", "success"],
 });
 
 export const httpRequestCounter = new client.Counter({
-  name: "user_http_request_total",
-  help: "The total number of user API requests",
+  name: "auth_http_request_total",
+  help: "The total number of Auth API requests",
   labelNames: ["method", "route", "status_code", "success"],
   registers: [register],
 });
@@ -28,22 +28,22 @@ export const httpRequestCounter = new client.Counter({
  */
 
 export const httpErrorsByRoute = new client.Counter({
-  name: "user_http_errors_total",
+  name: "auth_http_errors_total",
   help: "HTTP errors by route and status code",
   labelNames: ["method", "route", "status_code", "error_type"],
   registers: [register],
 });
 
 export const httpErrorRate = new client.Gauge({
-  name: "user_http_error_rate",
+  name: "auth_http_error_rate",
   help: "Current HTTP error rate (errors/sec)",
   labelNames: ["route"],
   registers: [register],
 });
 
 export const databaseQueryTimeHistogram = new client.Histogram({
-  name: "user_database_query_duration_seconds",
-  help: "user Database query duration in seconds",
+  name: "auth_database_query_duration_seconds",
+  help: "Auth Database query duration in seconds",
   buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30],
   registers: [register],
   labelNames: ["operation", "success", "table"],
@@ -51,22 +51,22 @@ export const databaseQueryTimeHistogram = new client.Histogram({
 
 // Error tracking metrics
 export const errorCounter = new client.Counter({
-  name: "user_service_errors_total",
-  help: "Total number of errors in user service",
+  name: "auth_service_errors_total",
+  help: "Total number of errors in Auth service",
   labelNames: ["error_type", "operation", "severity"],
   registers: [register],
 });
 
 // Cache metrics
 export const cacheHitCounter = new client.Counter({
-  name: "user_cache_hits_total",
+  name: "auth_cache_hits_total",
   help: "Total cache hits",
   labelNames: ["cache_type", "operation"],
   registers: [register],
 });
 
 export const cacheMissCounter = new client.Counter({
-  name: "user_cache_misses_total",
+  name: "auth_cache_misses_total",
   help: "Total cache misses",
   labelNames: ["cache_type", "operation"],
   registers: [register],
@@ -74,23 +74,23 @@ export const cacheMissCounter = new client.Counter({
 
 // Business metrics
 export const businessOperationCounter = new client.Counter({
-  name: "user_business_operations_total",
+  name: "auth_business_operations_total",
   help: "Total business operations",
-  labelNames: ["operation_type", "user_type", "status"],
+  labelNames: ["operation_type", "auth_type", "status"],
   registers: [register],
 });
 
 export const businessOperationDuration = new client.Histogram({
-  name: "user_business_operation_duration_seconds",
+  name: "auth_business_operation_duration_seconds",
   help: "Business operation duration in seconds",
   buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["operation_type", "user_type"],
+  labelNames: ["operation_type", "auth_type"],
   registers: [register],
 });
 
 // Queue/async operation metrics
 export const queueDepthGauge = new client.Gauge({
-  name: "user_service_queue_depth",
+  name: "auth_service_queue_depth",
   help: "Current queue depth",
   labelNames: ["queue_name"],
   registers: [register],
@@ -117,7 +117,7 @@ export const trackCacheMiss = (cacheType: string, operation: string) => {
 export async function measureDatabaseQuery<T>(
   operation: string,
   query: () => Promise<T>,
-  table: string = "users"
+  table: string = "auths"
 ): Promise<T> {
   const startTime = process.hrtime();
   const labels = { operation, success: "true", table };
@@ -163,7 +163,7 @@ export async function measureDatabaseQuery<T>(
 }
 
 export const serverHealthGauge = new client.Gauge({
-  name: "user_service_health_status",
+  name: "auth_service_health_status",
   help: "Overall service health status (1=healthy, 0=unhealthy)",
 });
 
@@ -217,7 +217,7 @@ export async function reqReplyTime(
 // Business operation tracker
 export async function measureBusinessOperation<T>(
   operationType: string,
-  userType: string,
+  authType: string,
   operation: () => Promise<T>
 ): Promise<T> {
   const startTime = process.hrtime();
@@ -229,12 +229,12 @@ export async function measureBusinessOperation<T>(
 
     businessOperationCounter.inc({
       operation_type: operationType,
-      user_type: userType,
+      auth_type: authType,
       status: "success",
     });
 
     businessOperationDuration.observe(
-      { operation_type: operationType, user_type: userType },
+      { operation_type: operationType, auth_type: authType },
       durationSeconds
     );
 
@@ -242,7 +242,6 @@ export async function measureBusinessOperation<T>(
   } catch (error) {
     businessOperationCounter.inc({
       operation_type: operationType,
-      user_type: userType,
       status: "error",
     });
 
@@ -252,4 +251,4 @@ export async function measureBusinessOperation<T>(
 }
 
 
-export const userRegistry = register;
+export const authRegistry = register;

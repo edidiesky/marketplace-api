@@ -1,231 +1,141 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-export enum UserStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  SUSPENDED = "suspended",
-}
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export enum UserType {
-  SELLER_ADMIN   = "seller:admin", 
-  SELLER_MEMBER  = "seller:member",  
-  SELLER_VIEWER  = "seller:viewer", 
-  PLATFORM_ADMIN = "platform:admin", 
-  PLATFORM_STAFF = "platform:staff", 
-  CUSTOMER       = "customer", 
+  SELLER_ADMIN   = "seller:admin",
+  SELLER_MEMBER  = "seller:member",
+  SELLER_VIEWER  = "seller:viewer",
+  PLATFORM_ADMIN = "platform:admin",
+  PLATFORM_STAFF = "platform:staff",
+  CUSTOMER       = "customer",
   INVESTOR       = "investor",
   ADVISOR        = "advisor",
   SYSTEM         = "system",
 }
 
-// OrganizationType
+export enum UserStatus {
+  ACTIVE    = "active",
+  INACTIVE  = "inactive",
+  SUSPENDED = "suspended",
+  DRAFT     = "draft",
+}
+
 export enum OrganizationType {
   SELLER_INDIVIDUAL = "SELLER_INDIVIDUAL",
-  SELLER_BUSINESS   = "SELLER_BUSINESS",  
-  MARKETPLACE       = "MARKETPLACE",    
-  FRANCHISE         = "FRANCHISE",   
+  SELLER_BUSINESS   = "SELLER_BUSINESS",
+  MARKETPLACE       = "MARKETPLACE",
+  FRANCHISE         = "FRANCHISE",
   ADMIN_PLATFORM    = "ADMIN_PLATFORM",
-  ADMIN_PARTNER     = "ADMIN_PARTNER", 
-  CUSTOMER_B2C      = "CUSTOMER_B2C",   
-  CUSTOMER_B2B      = "CUSTOMER_B2B", 
+  ADMIN_PARTNER     = "ADMIN_PARTNER",
+  CUSTOMER_B2C      = "CUSTOMER_B2C",
+  CUSTOMER_B2B      = "CUSTOMER_B2B",
   INVESTOR_ANGEL    = "INVESTOR_ANGEL",
   INVESTOR_VC       = "INVESTOR_VC",
   ADVISOR           = "ADVISOR",
   SYSTEM_INTERNAL   = "SYSTEM_INTERNAL",
 }
-export enum BillingPlan {
-  FREE = "FREE",
-  PRO = "PRO",
-  ENTERPRISE = "ENTERPRISE",
-}
 
-export enum TenantStatus {
-  DRAFT = "DRAFT",
-  ACTIVE = "ACTIVE",
-  SUSPENDED = "SUSPENDED",
-  DELETED = "DELETED",
-}
-
-export enum RoleLevel {
-  SUPER_ADMIN = 1,
-  EXECUTIVE = 2,
-  DIRECTORATE_HEAD = 3,
-  MEMBER = 4,
-}
-
-export enum Permission {
-
-  MANAGE_ROLES = "MANAGE_ROLES",
-  READ_USER = "READ_USER",
-  UPDATE_USER = "UPDATE_USER",
-  DELETE_USER = "DELETE_USER",
-  VIEW_REPORTS = "VIEW_REPORTS",
-  // Platform-level
-  PLATFORM_ADMIN = "PLATFORM_ADMIN",
-  MANAGE_TENANTS = "MANAGE_TENANTS",
-  
-  // Tenant-level
-  TENANT_OWNER = "TENANT_OWNER",
-  MANAGE_TEAM = "MANAGE_TEAM",
-  
-  // Store-level
-  STORE_CREATE = "STORE_CREATE",
-  STORE_UPDATE = "STORE_UPDATE",
-  STORE_DELETE = "STORE_DELETE",
-  STORE_SETTINGS = "STORE_SETTINGS",
-  
-  // Product management
-  PRODUCT_CREATE = "PRODUCT_CREATE",
-  PRODUCT_UPDATE = "PRODUCT_UPDATE",
-  PRODUCT_DELETE = "PRODUCT_DELETE",
-  PRODUCT_VIEW = "PRODUCT_VIEW",
-  
-  // Inventory
-  INVENTORY_MANAGE = "INVENTORY_MANAGE",
-  INVENTORY_VIEW = "INVENTORY_VIEW",
-  
-  // Orders
-  ORDER_VIEW = "ORDER_VIEW",
-  ORDER_FULFILL = "ORDER_FULFILL",
-  ORDER_REFUND = "ORDER_REFUND",
-  
-  // Analytics
-  ANALYTICS_VIEW = "ANALYTICS_VIEW",
-  FINANCIAL_VIEW = "FINANCIAL_VIEW",
-  
-  // Customer-facing
-  CUSTOMER_BROWSE = "CUSTOMER_BROWSE",
-  CUSTOMER_PURCHASE = "CUSTOMER_PURCHASE",
-  CUSTOMER_REVIEW = "CUSTOMER_REVIEW",
-}
-
-/** ENUM FOR GENDER */
 export enum Gender {
-  Male = "Male",
-  Female = "Female",
+  MALE   = "Male",
+  FEMALE = "Female",
 }
 
-export enum TWOFA {
+export enum TwoFAMethod {
   MAIL = "MAIL",
-  SMS = "SMS",
-  APP = "APP",
+  SMS  = "SMS",
+  APP  = "APP",
 }
 
 export interface IUser extends Document {
-  userType: UserType;
-  email: string;
-  phone: string;
-  passwordHash: string;
-  createdAt: Date;
-  updatedAt: Date;
-  password: string;
-  /** Common Contact Information */
-  address?: string;
-  firstName?: string;
-  lastName?: string;
-  profileImage: string;
-  gender?: Gender;
-  nationality?: string;
-  lastActiveAt?: Date;
-  isEmailVerified: boolean;
+  _id:                     Types.ObjectId;
+  userType:                UserType;
+  email:                   string;
+  phone:                   string;
+  passwordHash:            string;
+  firstName?:              string;
+  lastName?:               string;
+  profileImage?:           string;
+  gender?:                 Gender;
+  nationality?:            string;
+  address?:                string;
+  organizationId?:         Types.ObjectId;
+  organizationType:        OrganizationType;
+  status:                  UserStatus;
+  isEmailVerified:         boolean;
+  isTwoFAEnabled:          boolean;
+  twoFAMethod?:            TwoFAMethod;
+  twoFASecret?:            string;
   falseIdentificationFlag: boolean;
-
-  // tenant metadata
-  tenantId: string;
-  tenantType: TenantType;
-  tenantStatus: TenantStatus;
-  tenantPlan: BillingPlan;
-  trialEndsAt?: Date;
-  currentPeriodEndsAt?: Date;
-  cancelAtPeriodEnd: boolean;
+  lastActiveAt?:           Date;
+  createdAt:               Date;
+  updatedAt:               Date;
 }
 
 const UserSchema = new Schema<IUser>(
   {
     userType: {
-      type: String,
-      enum: Object.values(UserType),
+      type:     String,
+      enum:     Object.values(UserType),
       required: true,
     },
     email: {
-      type: String,
-      required: true,
-      unique: true,
+      type:      String,
+      required:  true,
+      unique:    true,
       lowercase: true,
-      trim: true,
+      trim:      true,
       match: [
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         "Please provide a valid email address",
       ],
     },
     phone: {
-      type: String,
+      type:     String,
       required: true,
       match: [
         /^(\+?[1-9]\d{0,2}\s?)?[1-9]\d{9,12}$/,
-        "Phone must be a valid number with an optional country code (e.g., +2348100099551)",
+        "Phone must be a valid number with country code",
       ],
     },
-    passwordHash: {
+    passwordHash:    { type: String, required: true, select: false },
+    firstName:       { type: String, trim: true },
+    lastName:        { type: String, trim: true },
+    profileImage:    { type: String },
+    gender:          { type: String, enum: Object.values(Gender) },
+    nationality:     { type: String, trim: true },
+    address:         { type: String, trim: true },
+    organizationId:  {
+      type:  Schema.Types.ObjectId,
+      ref:   "Organization",
+      index: true,
+    },
+    organizationType: {
       type: String,
-      required: true,
+      enum: Object.values(OrganizationType),
     },
-    address: { type: String, trim: true },
-    profileImage: { type: String },
-    firstName: {
-      type: String,
-      trim: true,
+    status: {
+      type:    String,
+      enum:    Object.values(UserStatus),
+      default: UserStatus.DRAFT,
+      index:   true,
     },
-    lastName: {
-      type: String,
-      trim: true,
-    },
-
-    tenantType: {
-      type: String,
-      enum: Object.values(TenantType),
-    },
-    tenantId:String,
-    tenantStatus: {
-      type: String,
-      enum: Object.values(TenantStatus),
-      default: TenantStatus.DRAFT,
-    },
-    tenantPlan: {
-      type: String,
-      enum: Object.values(BillingPlan),
-      default: BillingPlan.FREE,
-    },
-    trialEndsAt: { type: Date },
-    currentPeriodEndsAt: { type: Date },
-    cancelAtPeriodEnd: { type: Boolean, default: false },
-
-    gender: {
-      type: String,
-      enum: Object.values(Gender),
-    },
-    lastActiveAt: {
-      type: Date,
-    },
-    falseIdentificationFlag: Boolean,
-    isEmailVerified: Boolean,
+    isEmailVerified:         { type: Boolean, default: false },
+    isTwoFAEnabled:          { type: Boolean, default: false },
+    twoFAMethod:             { type: String, enum: Object.values(TwoFAMethod) },
+    twoFASecret:             { type: String, select: false },
+    falseIdentificationFlag: { type: Boolean, default: false },
+    lastActiveAt:            { type: Date },
   },
   { timestamps: true }
 );
-UserSchema.index({
-  createdAt: -1,
-  userType: 1,
-  institutionType: 1,
-});
-UserSchema.index({ createdAt: -1, firstName: 1 });
-UserSchema.index({ createdAt: -1, email: 1 });
-UserSchema.index({ createdAt: -1, role: 1 });
 
-UserSchema.pre<IUser>("save", function (next) {
+UserSchema.index({ email: 1 });
+UserSchema.index({ organizationId: 1, status: 1 });
+UserSchema.index({ userType: 1, createdAt: -1 });
+
+UserSchema.pre("save", function () {
   if (this.isModified() || this.isNew) {
     this.lastActiveAt = new Date();
   }
-  next();
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

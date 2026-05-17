@@ -2,17 +2,12 @@ import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 import mongoose from "mongoose";
 import { Response } from "express";
-import { userRepository } from "./auth.repository";
-import { passwordResetRepository } from "../auth/password-reset.repository";
+import { passwordResetRepository } from "./password-reset.repository";
 import redisClient from "../../config/redis";
 import logger from "../../utils/logger";
 import { generateSecureToken } from "../../utils/resetTokenGenerator";
-import {
-  publishUserOnboardingCompleted,
-  publishNotificationEmailConfirmation,
-  publishNotification2FA,
-  publishNotificationResetPassword,
-} from "../../messaging/publisher";
+import { generateToken, signJwt } from "../../utils/generateToken";
+import { normalizePhoneNumber } from "../../utils/normalizePhoneNumber";
 import {
   deleteOnboardingState,
   getOnboardingState,
@@ -25,25 +20,28 @@ import {
   REDIS_EXPIRATION_MIN,
   SERVICE_NAME,
 } from "../../constants";
-import { UserType, OrganizationType, IUser } from "./auth.model";
+import { UserType, OrganizationType, IUser, UserStatus } from "./auth.model";
 import { AppError } from "../../utils/AppError";
 import { requestContext } from "../../context/requestContext";
+import { userRepository } from "./auth.repository";
 import {
-  InitiateEmailOnboardingDto,
+  AuthTokensDto,
   ConfirmEmailTokenDto,
-  SetOnboardingPasswordDto,
+  InitiateLoginDto,
+  InitiateOnboardingDto,
+  LogoutDto,
+  RefreshTokenDto,
   RegisterUserDto,
   RegisterUserResponseDto,
-  InitiateLoginDto,
-  Verify2FADto,
-  AuthTokensDto,
-  RefreshTokenDto,
   ResetPasswordDto,
-  LogoutDto,
+  Verify2FADto,
 } from "./auth.dto";
-import { normalizePhoneNumber } from "../../utils/normalizePhoneNumber";
-import { generateToken, signJwt } from "../../utils/generateToken";
-
+import {
+  publishNotification2FA,
+  publishNotificationEmailConfirmation,
+  publishNotificationResetPassword,
+  publishUserOnboardingCompleted,
+} from "../../messaging/publisher";
 
 function deriveOrganizationType(userType: UserType): OrganizationType {
   switch (userType) {
@@ -68,54 +66,54 @@ function deriveOrganizationType(userType: UserType): OrganizationType {
 }
 
 export const authService = {
-
-  //  ONBOARDING 
-
-  async initiateEmailOnboarding(
-    params: InitiateEmailOnboardingDto
-  ): Promise<void> {
-    const { email, firstName, lastName, notificationId } = params;
+  //  ONBOARDING
+  async initiateOnboarding(params: InitiateOnboardingDto): Promise<void> {
+    const { email, password, notificationId } = params;
     const normalizedEmail = email.toLowerCase().trim();
 
     const existing = await userRepository.findByEmail(normalizedEmail);
     if (existing) {
-      logger.warn("email_onboarding_duplicate", {
-        event: "email_onboarding_duplicate",
+      logger.warn("onboarding_duplicate_email", {
+        event: "onboarding_duplicate_email",
         service: SERVICE_NAME,
         email: normalizedEmail,
         requestId: requestContext.get()?.requestId,
       });
-      throw AppError.conflict("Email already registered");
+      throw AppError.conflict("Email already registered.");
     }
 
     const token = uuidv4();
-    const link = `${process.env.WEB_ORIGIN}/onboarding/verify-email?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
     const expiresAt = Date.now() + ONBOARDING_EXPIRATION_SEC * 1000;
+    const link = `${process.env.WEB_ORIGIN}/onboarding/verify-email?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
 
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // Store email + hashed password + token together in Redis
     await setOnboardingData({
       email: normalizedEmail,
       step: "email",
-      firstName,
-      lastName,
+      passwordHash,
       tokenObject: { token, expiresAt },
     });
 
     publishNotificationEmailConfirmation({
       email: normalizedEmail,
-      firstName,
-      lastName,
+      firstName: "",
+      lastName: "",
       notificationId: notificationId ?? uuidv4(),
       verificationUrl: link,
     });
 
-    logger.info("email_onboarding_initiated", {
-      event: "email_onboarding_initiated",
+    logger.info("onboarding_initiated", {
+      event: "onboarding_initiated",
       service: SERVICE_NAME,
       email: normalizedEmail,
       requestId: requestContext.get()?.requestId,
     });
   },
 
+  // Email token confirmation - unchanged logic
   async confirmEmailToken(params: ConfirmEmailTokenDto): Promise<void> {
     const { email, token } = params;
     const key = getRedisOnboardingKey(email);
@@ -128,14 +126,12 @@ export const authService = {
         email,
         requestId: requestContext.get()?.requestId,
       });
-      throw AppError.badRequest(
-        "No onboarding session found. Please restart the process."
-      );
+      throw AppError.badRequest("No onboarding session found. Please restart.");
     }
 
-    const onboardingData = JSON.parse(raw);
+    const state = JSON.parse(raw);
 
-    if (onboardingData.tokenObject?.token !== token) {
+    if (state.tokenObject?.token !== token) {
       logger.warn("email_token_confirm_invalid", {
         event: "email_token_confirm_invalid",
         service: SERVICE_NAME,
@@ -145,7 +141,7 @@ export const authService = {
       throw AppError.badRequest("The token provided is not valid.");
     }
 
-    if (Date.now() > (onboardingData.tokenObject?.expiresAt ?? 0)) {
+    if (Date.now() > (state.tokenObject?.expiresAt ?? 0)) {
       logger.warn("email_token_confirm_expired", {
         event: "email_token_confirm_expired",
         service: SERVICE_NAME,
@@ -153,9 +149,12 @@ export const authService = {
         requestId: requestContext.get()?.requestId,
       });
       throw AppError.badRequest(
-        "The token has expired. Please retry the onboarding flow."
+        "Token has expired. Please restart the onboarding flow.",
       );
     }
+
+    // Advance step to password_confirmed so signup knows email is verified
+    await setOnboardingData({ email, step: "password" });
 
     logger.info("email_token_confirmed", {
       event: "email_token_confirmed",
@@ -165,44 +164,12 @@ export const authService = {
     });
   },
 
-  async setOnboardingPassword(
-    params: SetOnboardingPasswordDto
-  ): Promise<void> {
-    const { email, password } = params;
-    const key = getRedisOnboardingKey(email);
-    const raw = await redisClient.get(key);
-
-    if (!raw) {
-      logger.warn("password_step_no_session", {
-        event: "password_step_no_session",
-        service: SERVICE_NAME,
-        email,
-        requestId: requestContext.get()?.requestId,
-      });
-      throw AppError.badRequest(
-        "No onboarding session found. Please restart the process."
-      );
-    }
-
-    const salt = await bcrypt.genSalt(12);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    await setOnboardingData({ email, passwordHash, step: "password" });
-
-    logger.info("password_step_completed", {
-      event: "password_step_completed",
-      service: SERVICE_NAME,
-      email,
-      requestId: requestContext.get()?.requestId,
-    });
-  },
-
-  //  REGISTRATION 
-
+  // Step 2: StepDetails
   async registerUser(
-    params: RegisterUserDto
+    params: RegisterUserDto,
   ): Promise<RegisterUserResponseDto> {
-    const { email, userType, phone, address, gender } = params;
+    const { email, firstName, lastName, userType, phone, address, gender } =
+      params;
     const normalizedEmail = email.toLowerCase().trim();
 
     const onboardingData = await getOnboardingState(normalizedEmail);
@@ -215,27 +182,37 @@ export const authService = {
         requestId: requestContext.get()?.requestId,
       });
       throw AppError.badRequest(
-        "Please complete all onboarding steps first."
+        "Please verify your email before completing registration.",
       );
     }
 
-    const { passwordHash, firstName, lastName } = onboardingData;
+    // passwordHash was stored in step 1 alongside the token
+    const { passwordHash } = onboardingData;
+
+    if (!passwordHash) {
+      logger.warn("registration_missing_password_hash", {
+        event: "registration_missing_password_hash",
+        service: SERVICE_NAME,
+        email: normalizedEmail,
+        requestId: requestContext.get()?.requestId,
+      });
+      throw AppError.badRequest(
+        "Onboarding session is invalid. Please restart.",
+      );
+    }
+
     const organizationType = deriveOrganizationType(userType);
     const session = await mongoose.startSession();
-
     let user!: IUser;
 
     await session.withTransaction(async () => {
       const existing = await userRepository.findByEmail(
         normalizedEmail,
         undefined,
-        session
+        session,
       );
-
       if (existing) {
-        throw AppError.conflict(
-          "An account with this email already exists."
-        );
+        throw AppError.conflict("An account with this email already exists.");
       }
 
       const normalizedPhone = phone.startsWith("0")
@@ -255,12 +232,11 @@ export const authService = {
             phone: normalizedPhone,
             address,
             gender: gender as IUser["gender"],
-            status: "draft" as IUser["status"],
+            status: UserStatus.DRAFT,
           },
         ],
-        session
+        session,
       );
-
       user = created;
     });
 
@@ -271,13 +247,14 @@ export const authService = {
       eventType: "user.registered",
     });
 
+    // Non-customer users trigger the org onboarding saga
     if (userType !== UserType.CUSTOMER) {
       publishUserOnboardingCompleted({
         userId: user._id.toString(),
         organizationId: "",
         organizationType,
         email: normalizedEmail,
-        ownerName: `${firstName ?? ""} ${lastName ?? ""}`.trim(),
+        ownerName: `${firstName} ${lastName}`.trim(),
         billingPlan: "FREE",
       });
 
@@ -310,11 +287,7 @@ export const authService = {
     };
   },
 
-  //  LOGIN 
-
-  async initiateLogin(
-    params: InitiateLoginDto
-  ): Promise<{ email: string }> {
+  async initiateLogin(params: InitiateLoginDto): Promise<{ email: string }> {
     const { email, password, idempotencyKey, ip, userAgent } = params;
     const notificationId = idempotencyKey ?? uuidv4();
     const cacheKey = `user:${email}`;
@@ -324,23 +297,16 @@ export const authService = {
 
     if (cached) {
       user = JSON.parse(cached) as IUser;
-      logger.debug("login_cache_hit", {
-        event: "login_cache_hit",
-        service: SERVICE_NAME,
-        email,
-        requestId: requestContext.get()?.requestId,
-      });
     } else {
       user = await userRepository.findByEmail(
         email,
-        "+passwordHash +phone +email +userType +firstName +lastName +organizationId +organizationType +status"
+        "+passwordHash +phone +email +userType +firstName +lastName +organizationId +organizationType +status",
       );
-
       if (user) {
         await redisClient.setex(
           cacheKey,
           BASE_EXPIRATION_SEC,
-          JSON.stringify(user)
+          JSON.stringify(user),
         );
       }
     }
@@ -354,9 +320,7 @@ export const authService = {
         userAgent,
         requestId: requestContext.get()?.requestId,
       });
-      throw AppError.unauthorized(
-        "No account found with this email. Please sign up."
-      );
+      throw AppError.unauthorized("No account found with this email.");
     }
 
     if (user.falseIdentificationFlag) {
@@ -369,16 +333,12 @@ export const authService = {
         requestId: requestContext.get()?.requestId,
       });
       throw AppError.forbidden(
-        "Your account has been restricted. Please contact support."
+        "Your account has been restricted. Contact support.",
       );
     }
 
-    const isValidPassword = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
-    if (!isValidPassword) {
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) {
       logger.warn("login_invalid_password", {
         event: "login_invalid_password",
         service: SERVICE_NAME,
@@ -386,15 +346,11 @@ export const authService = {
         email,
         requestId: requestContext.get()?.requestId,
       });
-      throw AppError.badRequest("Invalid password credentials.");
+      throw AppError.badRequest("Invalid credentials.");
     }
 
-    const fullName =
-      `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    const twoFAToken = await generateSecureToken(
-      user._id.toString(),
-      "2fa"
-    );
+    const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    const twoFAToken = await generateSecureToken(user._id.toString(), "2fa");
     const normalizedPhone = user.phone?.startsWith("0")
       ? normalizePhoneNumber(user.phone)
       : user.phone;
@@ -405,7 +361,7 @@ export const authService = {
       JSON.stringify({
         token: twoFAToken,
         expiresAt: new Date(Date.now() + 900_000).toISOString(),
-      })
+      }),
     );
 
     publishNotification2FA({
@@ -427,16 +383,14 @@ export const authService = {
     return { email: user.email };
   },
 
-  //  2FA VERIFY 
-
   async verify2FA(
-    params: Verify2FADto & { res: Response }
+    params: Verify2FADto & { res: Response },
   ): Promise<AuthTokensDto> {
     const { email, otp, res } = params;
 
     const user = await userRepository.findByEmail(
       email,
-      "-passwordHash +organizationId +organizationType +status"
+      "-passwordHash +organizationId +organizationType +status",
     );
 
     if (!user) {
@@ -461,14 +415,14 @@ export const authService = {
       throw AppError.badRequest("Invalid or expired 2FA token.");
     }
 
-    const cachedToken = JSON.parse(cachedRaw) as {
+    const cached = JSON.parse(cachedRaw) as {
       token: string;
       expiresAt: string;
     };
 
     if (
-      cachedToken.token !== otp ||
-      Date.now() > new Date(cachedToken.expiresAt).getTime()
+      cached.token !== otp ||
+      Date.now() > new Date(cached.expiresAt).getTime()
     ) {
       logger.warn("2fa_verify_invalid_token", {
         event: "2fa_verify_invalid_token",
@@ -480,10 +434,9 @@ export const authService = {
       throw AppError.badRequest("Invalid or expired 2FA token.");
     }
 
-    // Block non-customer sellers whose org onboarding saga has not yet completed
     if (
       user.userType !== UserType.CUSTOMER &&
-      user.status !== "active"
+      user.status !== UserStatus.ACTIVE
     ) {
       logger.warn("2fa_verify_org_not_active", {
         event: "2fa_verify_org_not_active",
@@ -493,12 +446,11 @@ export const authService = {
         requestId: requestContext.get()?.requestId,
       });
       throw AppError.forbidden(
-        "Your account setup is still processing. Please try again in a moment."
+        "Your account setup is still processing. Please try again shortly.",
       );
     }
 
-    const fullName =
-      `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+    const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
 
     const { accessToken, refreshToken } = await generateToken(
       res,
@@ -506,7 +458,7 @@ export const authService = {
       user.userType,
       fullName,
       user.organizationId?.toString() ?? "",
-      user.organizationType
+      user.organizationType,
     );
 
     await redisClient.del(`2fa:${email}`);
@@ -540,10 +492,8 @@ export const authService = {
     };
   },
 
-  //  REFRESH TOKEN 
-
   async refreshToken(
-    params: RefreshTokenDto
+    params: RefreshTokenDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const { refreshToken, ip, userAgent } = params;
 
@@ -567,31 +517,28 @@ export const authService = {
 
     const user = await userRepository.findById(
       userId,
-      "-passwordHash +organizationId +organizationType"
+      "-passwordHash +organizationId +organizationType",
     );
-
-    if (!user) {
-      throw AppError.badRequest("User not found.");
-    }
+    if (!user) throw AppError.badRequest("User not found.");
 
     const newAccessToken = await signJwt(
       user._id.toString(),
       userType,
       name,
       user.organizationId?.toString() ?? "",
-      user.organizationType
+      user.organizationType,
     );
 
     const newRefreshToken = await generateSecureToken(
       user._id.toString(),
-      "refresh"
+      "refresh",
     );
 
     await redisClient.set(
       `refresh:${newRefreshToken}`,
       JSON.stringify({ userId: user._id, userType, name }),
       "EX",
-      BASE_EXPIRATION_SEC
+      BASE_EXPIRATION_SEC,
     );
     await redisClient.del(`refresh:${refreshToken}`);
 
@@ -604,18 +551,12 @@ export const authService = {
       requestId: requestContext.get()?.requestId,
     });
 
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-    };
+    return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   },
-
-  //  PASSWORD RESET 
 
   async requestPasswordReset(email: string): Promise<void> {
     const user = await userRepository.findByEmail(email);
     if (!user) {
-      // Intentional: never reveal whether email is registered
       logger.warn("password_reset_user_not_found", {
         event: "password_reset_user_not_found",
         service: SERVICE_NAME,
@@ -656,22 +597,18 @@ export const authService = {
     const resetToken = await passwordResetRepository.findByToken(token);
     if (!resetToken) {
       throw AppError.badRequest(
-        "The password reset token is not valid. Please request a new one."
+        "Invalid password reset token. Please request a new one.",
       );
     }
 
     if (resetToken.expiresAt < new Date()) {
-      await passwordResetRepository.deleteById(
-        resetToken._id.toString()
-      );
+      await passwordResetRepository.deleteById(resetToken._id.toString());
       throw AppError.badRequest(
-        "The password reset token has expired. Please request a new link."
+        "Password reset token has expired. Please request a new link.",
       );
     }
 
-    const user = await userRepository.findById(
-      resetToken.userId.toString()
-    );
+    const user = await userRepository.findById(resetToken.userId.toString());
     if (!user) {
       throw AppError.unauthorized("No account found for this token.");
     }
@@ -679,9 +616,7 @@ export const authService = {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(newPassword, salt);
 
-    await userRepository.updateById(user._id.toString(), {
-      passwordHash,
-    });
+    await userRepository.updateById(user._id.toString(), { passwordHash });
     await passwordResetRepository.deleteById(resetToken._id.toString());
     await redisClient.del(`user:${user.email}`);
 
@@ -713,7 +648,6 @@ export const authService = {
     });
   },
 
-  //  LOGOUT 
   async logout(params: LogoutDto): Promise<void> {
     const { token, refreshToken, jwtSecret } = params;
 
@@ -724,24 +658,24 @@ export const authService = {
           exp: number;
           user: { userId: string };
         };
-        const remainingTTL = decoded.exp - Math.floor(Date.now() / 1000);
-        if (remainingTTL > 0) {
+        const remaining = decoded.exp - Math.floor(Date.now() / 1000);
+        if (remaining > 0) {
           await redisClient.set(
             `blocklist:${decoded.user.userId}`,
             "1",
             "EX",
-            remainingTTL
+            remaining,
           );
           logger.info("logout_token_blocklisted", {
             event: "logout_token_blocklisted",
             service: SERVICE_NAME,
             userId: decoded.user.userId,
-            remainingTTL,
+            remainingTTL: remaining,
             requestId: requestContext.get()?.requestId,
           });
         }
       } catch {
-        
+        // token already expired
       }
     }
 

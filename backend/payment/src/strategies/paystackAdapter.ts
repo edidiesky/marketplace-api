@@ -49,7 +49,7 @@ const createPaystackAdapter = ({ secretKey }: IAdapterRequest) => {
 
         if (!data.status) {
           throw new Error(data.message || "Failed to initialize Paystack transaction");
-        }
+        } 
 
         return {
           success: true,

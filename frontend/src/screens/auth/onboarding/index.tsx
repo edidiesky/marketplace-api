@@ -12,11 +12,13 @@ import { useOnboarding } from "./hooks/useOnboarding";
 const STEP_LABELS = ["Account", "Your details", "Create store"];
 const TOTAL_STEPS = 3;
 
+
 const LEFT_CONTENT: Record<number, { heading: string; sub: string }> = {
   1: { heading: "Join 10,000+ sellers.",        sub: "No credit card required. Start free, scale when you're ready."          },
   2: { heading: "Tell us who you are.",          sub: "We'll personalise your dashboard based on how you use Selleasi."         },
   3: { heading: "Your store awaits.",            sub: "You're one step away from your first sale."                              },
 };
+
 
 export default function Onboarding() {
   const savedEmail = useSelector(selectOnboardingEmail);

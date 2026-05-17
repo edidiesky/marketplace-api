@@ -2,7 +2,7 @@
  * 1. action 2. resource 3. role 4. enabled 5.
  */
 
-import { UserType } from "@/models/User";
+import { UserType } from "../../models/User";
 
 export enum IResource {
   PROFILE = "profile",

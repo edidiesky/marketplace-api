@@ -1,9 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { validateRequest } from "../../middleware/validate.middleware";
 import {
-  emailOnboardingSchema,
+  initiateOnboardingSchema,
   confirmEmailTokenSchema,
-  passwordOnboardingSchema,
   finalSignupOnboardingSchema,
   loginSchema,
   twoFASchema,
@@ -12,9 +11,8 @@ import {
   changePasswordSchema,
 } from "../../validators/auth.validator";
 import {
-  HandleEmailOnboardingStep,
+  HandleInitiateOnboarding,
   HandleConfirmEmailToken,
-  HandlePasswordOnboardingStep,
   RegisterUser,
   LoginUser,
   Verify2FA,
@@ -30,19 +28,15 @@ const router = Router();
 
 //  ONBOARDING 
 router.post(
-  "/verify-email",
-  validateRequest(emailOnboardingSchema),
-  HandleEmailOnboardingStep
+  "/onboarding/initiate",
+  validateRequest(initiateOnboardingSchema),
+  HandleInitiateOnboarding
 );
 
+// Email verification interstitial
 router.get("/email/confirmation", HandleConfirmEmailToken);
 
-router.post(
-  "/verify-password",
-  validateRequest(passwordOnboardingSchema),
-  HandlePasswordOnboardingStep
-);
-
+// 
 router.post(
   "/signup",
   validateRequest(finalSignupOnboardingSchema),

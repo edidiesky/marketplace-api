@@ -1,5 +1,10 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, BarChart3, Truck, Zap } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const features = [
   {
@@ -57,14 +62,73 @@ const features = [
 ];
 
 export default function StickyFeatures() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
+    const ctx = gsap.context(() => {
+
+      // Pin each card 
+      cards.forEach((card, index) => {
+        if (index < cards.length - 1) {
+          ScrollTrigger.create({
+            trigger: card,
+            start: "top top",
+            endTrigger: cards[cards.length - 1],
+            end: "top top",
+            pin: true,
+            pinSpacing: false,
+          });
+        }
+      });
+
+      cards.forEach((card, index) => {
+        if (index < cards.length - 1) {
+          const overlay = card.querySelector(".card-overlay") as HTMLElement;
+
+          ScrollTrigger.create({
+            trigger: cards[index + 1],
+            start: "top bottom",
+            end: "top top",
+            onUpdate: (self) => {
+              const progress = self.progress;
+              const scale = 1 - progress * 0.06;
+              const rotation = (index % 2 === 0 ? 2 : -2) * progress;
+
+              gsap.set(card, { scale, rotation, transformOrigin: "center top" });
+              if (overlay) gsap.set(overlay, { opacity: progress * 0.55 });
+            },
+            onLeave: () => {
+              const progress = 1;
+              const scale = 1 - progress * 0.06;
+              const rotation = (index % 2 === 0 ? 2 : -2) * progress;
+              gsap.set(card, { scale, rotation });
+              if (overlay) gsap.set(overlay, { opacity: 0.55 });
+            },
+            onEnterBack: () => {
+              gsap.set(card, { scale: 1, rotation: 0 });
+              if (overlay) gsap.set(overlay, { opacity: 0 });
+            },
+          });
+        }
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section style={{ backgroundColor: "var(--color-canvas)" }}>
+    <section
+      ref={containerRef}
+      style={{ backgroundColor: "var(--color-canvas)" }}
+    >
       <div
         className="mx-auto px-6 lg:px-8 pt-32 pb-20 text-center"
         style={{ maxWidth: "1280px" }}
       >
         <span
-          className="text-xl lg:text-2xl font-medium uppercase tracking-widest"
+          className="text-base lg:text-xl font-medium uppercase tracking-widest"
           style={{ color: "var(--color-light-steel)" }}
         >
           Everything you need
@@ -81,13 +145,24 @@ export default function StickyFeatures() {
         return (
           <div
             key={i}
-            className="sticky flex items-center px-6 lg:px-8 py-16 min-h-[70vh]"
+            ref={(el) => { cardRefs.current[i] = el; }}
+            className="sticky-card sticky flex items-center px-6 lg:px-8 py-16 min-h-[70vh] will-change-transform"
             style={{
-              top: "64px",
+              top: "0px",
               zIndex: i + 1,
               backgroundColor: "var(--color-canvas)",
+              position: "sticky",
             }}
           >
+            <div
+              className="card-overlay absolute inset-0 pointer-events-none"
+              style={{
+                backgroundColor: "rgba(0,0,0,1)",
+                opacity: 0,
+                zIndex: 10,
+              }}
+            />
+
             <div
               className="mx-auto w-full grid lg:grid-cols-2 gap-16 items-center"
               style={{ maxWidth: "1280px" }}
@@ -107,10 +182,7 @@ export default function StickyFeatures() {
 
                 <h3
                   className="text-3xl lg:text-5xl font-semibold leading-[1.1]"
-                  style={{
-                    color: "var(--color-ink)",
-                    letterSpacing: "-0.66px",
-                  }}
+                  style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
                 >
                   {feature.title}
                 </h3>
@@ -154,6 +226,9 @@ export default function StickyFeatures() {
           </div>
         );
       })}
+
+      {/* spacer so last card scrolls off naturally */}
+      <div style={{ height: "30vh" }} />
     </section>
   );
 }

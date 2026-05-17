@@ -1,62 +1,12 @@
-import { authenticator } from "otplib";
-import { PasswordResetToken } from "../models/ResetPassword";
-import logger from "./logger";
+import { createHmac, randomBytes } from "crypto";
 
-// Lazy-loaded nanoid with type safety
-let nanoid: (size?: number) => string;
-
-const ALPHANUMERIC_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-const initializeNanoid = async () => {
-  try {
-    const { customAlphabet } = await import("nanoid");
-    nanoid = customAlphabet(ALPHANUMERIC_ALPHABET, 32);
-  } catch (error) {
-    logger.error("Failed to load nanoid module", { error });
-    throw new Error("Unable to initialize token generator");
-  }
-};
-
-export const getNanoid = async (): Promise<(size?: number) => string> => {
-  if (!nanoid) {
-    await initializeNanoid();
-  }
-  return nanoid;
-};
-
-export const generateSecureToken = async (
-  userId: string,
-  type: "reset" | "2fa" | "refresh" = "reset"
-): Promise<string> => {
-  const nanoidFunc = await getNanoid();
-  try {
-    const token =
-      type === "2fa"
-        ? authenticator.generate(
-            process.env.SECRET_2FA_KEY || (await getNanoid())(20)
-          )
-        : nanoidFunc();
-
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
-    if (type === "refresh") {
-      return nanoid(32);
-    }
-
-    if (type === "reset") {
-      await PasswordResetToken.create({
-        userId,
-        token,
-        expiresAt,
-      });
-    }
-    return token;
-  } catch (error) {
-    logger.error(`Error generating ${type} token`, { error, userId });
-    throw new Error(`Failed to generate ${type} token`);
-  }
-};
-
-export const verify2FAToken = (token: string, secret: string): boolean => {
-  return authenticator.check(token, secret);
-};
+export async function generateSecureToken(
+  userId:  string,
+  purpose = "reset"
+): Promise<string> {
+  const random    = randomBytes(32).toString("hex");
+  const timestamp = Date.now().toString();
+  const secret    = process.env.JWT_CODE ?? "fallback-secret";
+  const payload   = `${userId}:${purpose}:${random}:${timestamp}`;
+  return createHmac("sha256", secret).update(payload).digest("hex");
+}
