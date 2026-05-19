@@ -1,21 +1,41 @@
-import { Response, Request } from "express";
 
-export type AuthenticatedRequest = Request & {
-  user: {
-    role: string;
-    userId: string;
-    name: string; 
-    permissions: Permission[];
-    roleLevel?: RoleLevel;
+
+export type Rating = 1 | 2 | 3 | 4 | 5;
+
+export function isValidRating(value: unknown): value is Rating {
+  return (
+    typeof value === "number" && [1, 2, 3, 4, 5].includes(value)
+  );
+}
+
+export interface IOnboarding {
+  email:         string;
+  step:          "email" | "password" | "complete";
+  firstName?:    string;
+  lastName?:     string;
+  passwordHash?: string;
+  tokenObject?: {
+    token:     string;
+    expiresAt: number;
   };
-};
+  createdAt?: string;
+}
 
+export interface JWTPayload {
+  userId:           string;
+  userType:         string;
+  organizationId:   string;
+  organizationType: string;
+  name:             string;
+}
 
-export enum RoleLevel {
-  SUPER_ADMIN = 1,
-  EXECUTIVE = 2,
-  DIRECTORATE_HEAD = 3,
-  MEMBER = 4,
+export interface AuthenticatedUser {
+  userId:            string;
+  userType:          string;
+  organizationId?:   string;
+  organizationType?: string;
+  roles?:            string[];
+  name?:             string;
 }
 
 export enum Permission {
@@ -26,8 +46,8 @@ export enum Permission {
   DELETE_USER = "DELETE_USER",
   VIEW_REPORTS = "VIEW_REPORTS",
   CREATE_REVIEW = "CREATE_REVIEW",
-  RESPOND_TO_REVIEW = "RESPOND_TO_REVIEW",     // ← For store owners
-  MANAGE_REVIEWS = "MANAGE_REVIEWS",           // ← For admins
+  RESPOND_TO_REVIEW = "RESPOND_TO_REVIEW",    
+  MANAGE_REVIEWS = "MANAGE_REVIEWS", 
   MARK_HELPFUL = "MARK_HELPFUL",
   VIEW_REVIEWS = "VIEW_REVIEWS",
 }
@@ -37,8 +57,3 @@ export interface IError {
   stack?:string;
   status?:number;
 }
-
-export type Rating = 1 | 2 | 3 | 4 | 5;
-
-export const isValidRating = (value: number): value is Rating => 
-  [1, 2, 3, 4, 5].includes(value as Rating);

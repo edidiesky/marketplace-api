@@ -50,7 +50,7 @@ pattern_ingester:
 
 table_manager:
   retention_deletes_enabled: true
-  retention_period: 744h  # 31 days
+  retention_period: 744h 
 
 compactor:
   working_directory: /loki/compactor

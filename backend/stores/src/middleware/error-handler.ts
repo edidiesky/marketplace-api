@@ -1,9 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError";
 import logger from "../utils/logger";
-
+export interface IError {
+  message: string;
+  code: number;
+  statusCode: number;
+  details: Record<string, unknown>;
+  isOperational: boolean;
+  stack: string;
+}
 export const errorHandler = (
-  err: any,
+  err: IError,
   req: Request,
   res: Response,
   next: NextFunction

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import logger from "./logger";
-import { serverHealthGauge } from "./metrics";
+import logger from "../utils/logger";
+import { serverHealthGauge } from "../utils/metrics";
 
 import client from "prom-client";
 import { IReview } from "../models/Review";
