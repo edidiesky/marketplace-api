@@ -1,16 +1,21 @@
 # Selleasi
 
-I built Selleasi as a Shopify-style multi-tenant marketplace platform where each store is an isolated tenant. Every data record is scoped by `storeId` and `tenantId`. I deliberately favour consistency over availability: inventory reservation is synchronous and fail-fast, payment writes are atomic, and I publish every critical event through a transactional outbox so a Kafka outage never causes a split-brain between the payment record and the event stream.
+Selleasi is a Shopify-style multi-tenant marketplace platform where each
+seller gets an isolated subdomain, a scoped data store, and a full commerce
+stack without sharing infrastructure with other sellers. I built it to solve
+the hardest distributed systems problems in e-commerce: inventory consistency
+under concurrent load, atomic payment processing, and reliable async event
+delivery across independently deployable services.
 
-Built on Node.js 20, TypeScript 5, MongoDB Atlas, Apache Kafka (KRaft), Redis, and the full Grafana observability stack.
+Every record is scoped by `storeId` and `organizationId`. I favour consistency
+over availability at the transaction boundary: inventory reservation is
+synchronous and fail-fast, payment writes are atomic inside a MongoDB
+transaction, and every critical event is published through a transactional
+outbox so a broker outage never causes a split-brain between the payment
+record and the event stream.
 
----
-
-## Buyer journey
-![Buyer journey](./_documentation/architecture/buyer_flow_1.png)
-
-## Seller journey
-![Seller journey](./_documentation/architecture/seller_flow_1.png)
+Built on Node.js 20, TypeScript 5, MongoDB, RabbitMQ, Redis, and the full
+Grafana observability stack.
 
 ---
 
@@ -21,114 +26,193 @@ Built on Node.js 20, TypeScript 5, MongoDB Atlas, Apache Kafka (KRaft), Redis, a
 3. [Technology Stack](#technology-stack)
 4. [Infrastructure Overview](#infrastructure-overview)
 5. [Architectural Patterns](#architectural-patterns)
-6. [Kafka Choreography Chain](#kafka-choreography-chain)
-7. [Observability](#observability)
-8. [Getting Started](#getting-started)
-9. [Environment Variables](#environment-variables)
-10. [Testing Strategy](#testing-strategy)
-11. [Performance Benchmarks](#performance-benchmarks)
-12. [Architecture Decision Records](#architecture-decision-records)
-13. [Roadmap](#roadmap)
+6. [Event Choreography Chain](#event-choreography-chain)
+7. [Subdomain and Store Context Flow](#subdomain-and-store-context-flow)
+8. [Observability](#observability)
+9. [Getting Started](#getting-started)
+10. [Environment Variables](#environment-variables)
+11. [Testing Strategy](#testing-strategy)
+12. [Load Testing](#load-testing)
+13. [Chaos Engineering](#chaos-engineering)
+14. [Architecture Decision Records](#architecture-decision-records)
+15. [Roadmap](#roadmap)
 
 ---
 
 ## System Architecture
 
-I am routing all client traffic through the API Gateway at port 8000, where I enforce token-bucket rate limiting and circuit breaking via Opossum before proxying downstream. Inventory and payment are my consistency boundary: reservation is synchronous and fail-fast, payment commits atomically. Kafka sits downstream and handles all async choreography without blocking the request path. The observability stack sits outside the request path entirely.
+All client traffic routes through the API Gateway at port 8000. The gateway
+enforces JWT authentication, subdomain resolution, rate limiting via a
+database-backed rules engine, and circuit breaking via Opossum before proxying
+downstream. Every request arriving on a store subdomain
+(`storename.selleasi.com`) is resolved to a `storeId` and `organizationId`
+at the gateway edge and injected into downstream requests as headers. No
+downstream service accepts store context from the client.
 
-![System Architecture](./_documentation/architecture/architecture.png)
+Inventory and payment are the consistency boundary. Reservation is synchronous
+HTTP, fail-fast. Payment commits atomically across the payment record, ledger
+entry, wallet balance, and outbox event in a single MongoDB transaction.
+RabbitMQ handles all async choreography without blocking the request path.
 
 ---
 
 ## Service Catalogue
 
-| Service | Port | Status | Responsibility |
-|---|---|---|---|
-| api-gateway | 8000 | Production | Reverse proxy, token-bucket + sliding-window rate limiter, Opossum circuit breaker, rules engine, Swagger UI aggregator |
-| auth | 4001 | Production | Registration, OTP 2FA, JWT issuance, refresh-token rotation, blocklist on logout, RBAC |
-| audit | 4002 | In progress | Audit log trail for admin and seller actions |
-| products | 4003 | Production | Product CRUD, variant management, transactional outbox, Elasticsearch sync |
-| payment | 4004 | Production | Paystack/Flutterwave integration, HMAC webhook verification, ledger, wallet, outbox poller |
-| categories | 4005 | In progress | Product category taxonomy |
-| notification | 4006 | Production | Email dispatch, in-app notifications, receipt delivery |
-| stores | 4007 | Production | Store/tenant creation, TenantScopedRepository base class |
-| inventory | 4008 | Production | Three-field stock accounting (onHand = available + reserved), MVCC optimistic concurrency, TTL reservations |
-| cart | 4009 | Production | Per-store per-user cart state, Redis distributed lock, versioned cache |
-| tenant | 4010 | Production | Tenant provisioning saga, billing plan management |
-| review | 4011 | Production | Product reviews, scoped by storeId |
-| orders | 4012 | Production | Checkout saga orchestration, order state machine, PDF receipt generation |
-| color | 4013 | In progress | Color catalogue for product variants |
-| view | 4014 | In progress | Storefront view aggregation |
-| size | 4015 | In progress | Size catalogue for product variants |
-| users | 4016 | Production | User profile management |
+| Service | Port | Responsibility |
+|---|---|---|
+| api-gateway | 8000 | JWT auth, subdomain resolution, rate limiter rules engine, circuit breaker, Swagger aggregator |
+| authentication | 4001 | Registration, OTP 2FA via Twilio, JWT issuance, refresh rotation, blocklist, RBAC |
+| audit | 4002 | Immutable append-only audit log, consumes events from all services |
+| products | 4003 | Product CRUD, outbox pattern, Elasticsearch sync via ngram index |
+| payment | 4004 | Paystack and Flutterwave, HMAC webhook verification, ledger, wallet, payout, outbox poller |
+| categories | 4005 | Product category taxonomy |
+| notification | 4006 | Email via Resend, SMS via Twilio, nine event-driven handlers |
+| stores | 4007 | Store creation, subdomain registration via Caddy admin API, custom domain verification |
+| inventory | 4008 | Three-field stock accounting, MVCC optimistic concurrency, TTL reservations |
+| cart | 4009 | Per-store per-user cart, Redis distributed lock, TTL expiry |
+| organization | 4010 | Organization provisioning saga, plan management |
+| review | 4011 | Product reviews scoped by store, verified purchase flag, moderation |
+| orders | 4012 | Checkout saga, order state machine, fulfillment tracking, PDF receipt generation |
+| color | 4013 | Color catalogue for product variants |
+| view | 4014 | Storefront view aggregation |
+| size | 4015 | Size catalogue for product variants |
+| users | 4016 | User profile management |
+| subscription | 4017 | Plan features, trial management, commission rate lookup |
+| escrow | 4018 | Escrow, dispute, and payout domain |
 
 ---
 
 ## Technology Stack
 
-**Runtime.** I run every service on Node.js 20 and TypeScript 5 with Express 4. All Dockerfiles use `node:20-alpine` as the base image and `npm ci --omit=dev` to keep production images lean.
+**Runtime.** Every service runs on Node.js 20 and TypeScript 5 with Express 4.
+All Dockerfiles use `node:20-alpine` and `npm ci --omit=dev` to keep
+production images lean.
 
-**Databases.** I use MongoDB Atlas via Mongoose with a dedicated database per service. There are no cross-service joins. I use multi-document ACID transactions via `withSession`/`withTransaction` for operations that must be atomic across multiple collections. All indexes are declared on the schema.
+**Databases.** MongoDB via Mongoose with a dedicated database per service.
+No cross-service joins. Multi-document ACID transactions via
+`session.withTransaction` for operations that must be atomic across multiple
+collections.
 
-**Caching and coordination.** I use Redis 7 via ioredis for rate-limit counters, OTP TTL storage, refresh-token storage, idempotency NX keys for Kafka consumers, cart versioned cache, and pub/sub for rules-engine cache invalidation. I removed distributed locking from the inventory service in favour of MVCC optimistic concurrency.
+**Message broker.** RabbitMQ 3.13 with quorum queues, per-exchange DLX, and
+`x-delivery-limit: 5`. All exchanges are topic type. Every queue declares a
+dead letter exchange so permanently failed messages are routed to the DLX
+instead of being dropped. I replaced Kafka with RabbitMQ to eliminate the
+KRaft cluster overhead that was not justified at the current scale.
 
-**Event streaming.** I run Apache Kafka 3 in KRaft mode with no ZooKeeper. In dev I run a 3-broker Docker Compose cluster. In prod I use Confluent Cloud to avoid the ~6 GB broker RAM overhead on a 4 GB VPS. I configure `acks=-1`, `idempotent: true`, `MIN_INSYNC_REPLICAS=2`, and `AUTO_CREATE_TOPICS_ENABLE=false`. Partition counts are derived from the LCM of each topic's consumer group sizes for even distribution.
+**Caching and coordination.** Redis 7 via ioredis for rate-limit counters,
+OTP TTL, refresh-token storage, idempotency NX keys for consumers, cart
+distributed lock, subdomain resolution cache, and pub/sub for rules-engine
+invalidation.
 
-**Search.** I use Elasticsearch 8.11 with `@elastic/elasticsearch` v8.19.1. In dev I run a single node with a 512m heap and `xpack.security=false`. In prod I run a cluster. I use an ngram tokenizer (min=3, max=10) at index time for partial match and a standard tokenizer at query time to avoid over-matching. MongoDB is my source of truth. ES is an eventually consistent read replica I sync via Kafka outbox events.
+**Search.** Elasticsearch 8.11 with ngram tokenizer (min=3, max=10) at index
+time and standard tokenizer at query time. MongoDB is the source of truth.
+Elasticsearch is an eventually consistent read replica synced via the products
+outbox.
 
-**Payment.** I integrate both Paystack and Flutterwave. The PSP is selected per request. I verify every webhook with HMAC signature validation per gateway and deduplicate payloads with a SHA-256 hash stored inside the same MongoDB transaction as the payment record update.
+**Payment.** Paystack and Flutterwave. The PSP is selected per request.
+Every webhook is verified with HMAC signature validation. Duplicate payloads
+are deduplicated with a SHA-256 hash stored inside the same MongoDB
+transaction as the payment record update. Amount is always read from the order
+record server-side. The client-supplied amount is never trusted.
 
-**File storage.** I store PDF receipts and product images on Cloudinary.
+**Subdomain routing.** Caddy 2 handles wildcard TLS and proxies all traffic
+to the API Gateway with `X-Forwarded-Host`. The gateway resolves the subdomain
+to store context via a Redis-cached lookup backed by stores-service. Store
+context is injected as headers on every downstream request.
 
-**Receipt generation.** I generate receipts in memory using pdfkit with a qrcode verification URL embedded as a QR code. I upload the buffer directly to Cloudinary and persist the `receiptUrl` on the order document, then include it in the `ORDER_COMPLETED` Kafka event payload.
+**Notifications.** Resend SDK for transactional email. Twilio for SMS. All
+templates are inline TypeScript functions returning HTML strings. No
+Handlebars, no file system reads at runtime.
 
-**Observability.** I scrape Prometheus metrics from every service at `/metrics`. I use Grafana for dashboards covering latency histograms, error rates, and circuit breaker state. I aggregate structured JSON logs in Loki and ship distributed traces to Tempo via OTEL. I inject `trace_id`, `span_id`, and `trace_flags` into every log record via Winston instrumentation.
+**File storage.** Cloudinary for PDF receipts and product images.
+
+**Receipt generation.** pdfkit generates receipts in memory. The buffer is
+uploaded directly to Cloudinary and the `receiptUrl` persisted on the order
+document then included in the `order.completed` RabbitMQ event payload.
 
 ---
 
 ## Infrastructure Overview
 
-**Dev.** I use Docker Compose with a 3-broker Kafka KRaft cluster, single-node Elasticsearch, and Nginx for SSL termination. The full stack needs a minimum of 8 GB RAM; I recommend 16 GB.
+**Dev.** Docker Compose with a single MongoDB instance, Redis, RabbitMQ with
+management UI, single-node Elasticsearch, Caddy, and the full Grafana stack.
+Minimum 8 GB RAM recommended, 16 GB comfortable.
 
-**Prod.** I deploy to a single 4 GB VPS. I use Confluent Cloud for Kafka, MongoDB Atlas for the database, and Cloudflare for DNS and DDoS mitigation. I deploy via GitHub Actions CI/CD over SSH.
+**Prod.** Single VPS with k3s. Istio service mesh with Envoy sidecar per pod,
+mTLS strict across the selleasi namespace. ArgoCD for GitOps continuous
+deployment. MongoDB Atlas for the database. Cloudflare for DNS and DDoS
+mitigation.
 
-**Healthchecks.** Every service exposes `GET /health` as the Docker healthcheck target and `GET /metrics` as the Prometheus scrape target.
+**Healthchecks.** Every service exposes `GET /health` as the Docker
+healthcheck target and `GET /metrics` as the Prometheus scrape target.
 
-**Service startup dependencies.**
-
-For a checkout to succeed I need these services healthy in order:
+**Startup dependency order for a successful checkout.**
 
 ```
-MongoDB + Redis + Kafka
-  > auth (JWT issuance)
-  > products (catalog)
-  > inventory (stock accounting)
-  > cart (session state)
-  > orders (saga entry point)
-  > payment (PSP integration)
+MongoDB + Redis + RabbitMQ
+  authentication
+  organization
+  subscription
+  stores
+  products (requires Elasticsearch healthy)
+  inventory
+  cart
+  orders (requires cart healthy, inventory healthy)
+  payment (requires orders healthy)
+  notification
+  review
+  audit
 ```
-
-I guard the products service startup with `depends_on: condition: service_healthy` on Elasticsearch because the ngram index bootstrap runs at startup and will crash if ES is not ready.
 
 ---
 
 ## Architectural Patterns
 
-### Outbox pattern
+### Vertical Slice Domain Structure
 
-For payment I commit the status update, ledger credit, wallet balance increment, and outbox event record in a single MongoDB `withTransaction`. A poller running every 5 seconds reads unsent outbox records, publishes them to Kafka, and marks them sent. This means a Kafka outage queues events in MongoDB rather than failing the payment write or silently losing the event.
+Each service is organized by domain, not by technical layer. Everything
+related to a domain lives in one folder.
 
-I designed `LedgerRepository.creditOnPaymentConfirmed` to accept an external session parameter so it joins the caller's transaction without opening a nested `withTransaction`, which MongoDB does not support.
+```
+src/domains/payment/
+  payment.model.ts
+  payment.repository.ts
+  payment.service.ts
+  payment.controller.ts
+  payment.routes.ts
+  payment.dto.ts
+  payment.validator.ts
+```
 
-I use the same pattern in the products service: I write the product document and the `OutboxEvent` in the same transaction, and the poller publishes `PRODUCT_ONBOARDING_COMPLETED_TOPIC`.
+Working on payment means all files are in one place. Deleting a domain is one
+folder delete. Extracting a domain into a new service is a folder move.
 
-### Saga choreography
+### Transactional Outbox
 
-I use choreography with no central orchestrator. Each service reacts to Kafka events, runs its local transaction, and publishes the next event. I run compensation in reverse order: if inventory reservation fails for item N, I release reservations for items 0..N-1 synchronously before emitting `order.reservation.failed.topic`.
+For payment I commit the status update, ledger credit, wallet balance
+increment, and outbox event in a single MongoDB `withTransaction`. A poller
+running every 5 seconds reads unsent outbox records, publishes them to
+RabbitMQ, and marks them processed. A broker outage queues events in MongoDB
+rather than losing them or failing the payment write.
 
-I made inventory reservation during checkout synchronous HTTP deliberately. The trade-off is higher checkout latency in exchange for zero oversell. I accept that trade-off.
+`LedgerRepository.creditOnPaymentConfirmed` accepts an external session
+so it joins the caller's transaction without opening a nested
+`withTransaction`, which MongoDB does not support.
 
-### Inventory three-field accounting
+The same pattern is used in products-service for Elasticsearch sync.
+
+### Choreography-Based Saga
+
+No central orchestrator. Each service reacts to RabbitMQ events, runs its
+local transaction, and publishes the next event. Compensation runs in reverse
+order: if inventory reservation fails for item N, reservations for items
+0..N-1 are released synchronously before emitting
+`inventory.reservation.failed` to the orders exchange.
+
+Inventory reservation during checkout is synchronous HTTP deliberately. The
+trade-off is higher checkout latency in exchange for zero oversell.
+
+### Inventory Three-Field Accounting
 
 ```
 Invariant:  onHand = available + reserved   (enforced at every write)
@@ -136,120 +220,197 @@ Invariant:  onHand = available + reserved   (enforced at every write)
 Reserve:    available -= N  ($gte: N guard, fails atomically if insufficient)
             reserved  += N
 
-Commit:     onHand    -= N  (permanent sale, triggered by ORDER_STOCK_COMMITTED)
+Commit:     onHand    -= N  (permanent sale, on ORDER_STOCK_COMMITTED)
             reserved  -= N
 
 Release:    available += N  (compensation or TTL expiry)
             reserved  -= N
 ```
 
-I use MongoDB `$inc` with a `$gte` predicate guard for all three operations. The guard makes the check-and-decrement atomic with no application-level check-then-act race. Concurrent writes are handled by MVCC, not by a distributed lock.
+MongoDB `$inc` with a `$gte` predicate guard makes check-and-decrement atomic
+with no application-level check-then-act race.
 
-### MVCC optimistic concurrency on inventory
+### MVCC Optimistic Concurrency on Inventory
 
-I replaced distributed locking (Redis NX mutex) on the inventory service with MVCC optimistic concurrency. Every inventory document carries a `__v` version field managed by Mongoose. Reserve, release, and commit all follow the same pattern:
-
-1. Read the current document including `__v`.
-2. Validate the precondition (sufficient stock or reservation).
-3. Attempt `findOneAndUpdate` with `__v: current.__v` in the query predicate.
-4. If the update returns `null`, another writer modified the document since our read. Retry with exponential backoff and jitter up to `MAX_RETRIES`.
-5. If the update succeeds, the version matched and the write is committed.
+Every inventory document carries a `__v` version field. Reserve, release,
+and commit all follow the same pattern.
 
 ```
-Read document (version N)
-  > attempt write with { __v: N }
-     > success: document is now version N+1
-     > null: version mismatch, another writer committed first
-        > retry: re-read (version N+1), attempt write with { __v: N+1 }
+Read document at version N
+  attempt write with { __v: N } in query predicate
+    success:  document is now version N+1
+    null:     version mismatch, another writer committed first
+      retry:  re-read at version N+1, attempt with { __v: N+1 }
 ```
 
-This approach eliminates the lock acquisition bottleneck that caused cascading 409 timeouts under concurrent load. Under high concurrency all writers read simultaneously, only one succeeds per version, and the rest retry cleanly. No single point of serialisation.
+This will obvously eliminates the lock acquisition bottleneck that caused cascading 409
+timeouts under concurrent load. Under normal load conflicts are rare. Under
+flash-sale conditions the retry budget absorbs contention without the
+cascading timeout behaviour a Redis mutex produces.
 
-Load tests confirmed the old Redis NX mutex caused a concurrency cliff at approximately 50 VUs on a single product. MVCC removes that cliff. The retry budget is 5 attempts with `BASE_DELAY * 2^attempt + jitter` between each.
+Load tests also confirmed the old Redis NX mutex produced a concurrency cliff at
+approximately 50 VUs on a single product. MVCC removes that cliff. The retry
+budget is 5 attempts with `BASE_DELAY * 2^attempt + jitter` between each.
+
+### Subdomain Store Context Injection
+
+Every store gets a subdomain (`storename.selleasi.com`) registered in Caddy.
+The API Gateway extracts the subdomain from `X-Forwarded-Host`, resolves it
+to `storeId` and `organizationId` via a Redis-cached lookup against
+stores-service, and injects the context as headers before proxying.
+
+```
+x-store-id               storeId of the subdomain owner
+x-store-organization-id  organizationId of the store owner
+x-store-name             store display name
+```
+
+Downstream services read `x-store-id` with a path param fallback. A buyer on
+`nike.selleasi.com` can never access `adidas` store data by manipulating the
+request because the gateway-injected header always takes priority.
 
 ### Idempotency
 
-I set a Redis NX key (`eventType:messageId`) before processing any Kafka message. A duplicate delivery results in a silent drop and offset commit. For webhooks I store a SHA-256 hash of the payload inside the same `withTransaction` as the payment update. This protects against duplicates even after the NX key TTL expires.
+Every RabbitMQ consumer sets a Redis NX key (`eventType:sagaId`) before
+processing. A duplicate delivery results in a silent ack and drop. For
+webhooks a SHA-256 hash of the payload is stored inside the same
+`withTransaction` as the payment update. This protects against duplicates
+even after the NX key TTL expires.
 
-For inventory operations I store a reservation key per `sagaId` in Redis with a 10-minute TTL. A duplicate reserve call for the same `sagaId` is detected before any database read and returned immediately.
+### Circuit Breaker
 
-### Circuit breaker
+Opossum at the gateway with a custom `errorFilter` ignoring 4xx responses.
+Only 5xx responses and timeouts increment the failure counter. Validation
+errors under load do not trip the breaker on a healthy service.
 
-I use Opossum at the gateway with a custom `errorFilter` that ignores 4xx responses. Only 5xx responses and timeouts increment the failure counter and move the breaker toward open. This prevents validation errors under load from tripping the breaker on a healthy service.
+### JWT and Session Management
 
-### JWT and token rotation
+Short-lived stateless access tokens with 15-minute TTL, never checked against
+Redis on the hot path. Refresh tokens are `nanoid(32)` strings with a 7-day
+TTL in Redis, rotated on every use. On logout a blocklist key is written per
+`userId` with TTL equal to the remaining access token lifetime.
 
-I issue short-lived stateless access tokens (15-minute TTL) that I never check against Redis on the hot path. Refresh tokens are stateful `nanoid(32)` strings with a 7-day TTL in Redis. I rotate on every use: I delete the old token before writing the new one in a single Redis pipeline. On logout I write a blocklist key per `userId` with TTL equal to the remaining access token lifetime. The JWT payload carries `userId`, `role`, `tenantId`, `tenantType`, `tenantPlan`, `permissions`, and `roleLevel`.
-
-I never read `tenantId` from the request body or params. I always inject it from the verified JWT.
+`organizationId` is never read from the request body or params. It is always
+injected from the verified JWT or from the gateway subdomain context.
 
 ---
 
-## Kafka Choreography Chain
+## Event Choreography Chain
 
 ```
-payment.confirmed (outbox poller, 5s)
-  > order.payment.completed.topic
-       > orders:     status = COMPLETED
-                      generate PDF receipt (pdfkit + qrcode)
-                      upload to Cloudinary, persist receiptUrl
-                      emit order.completed.topic { receiptUrl }
-       > inventory:  commitStock per line item
-                      emit order.stock.committed.topic
-                        > cart:          clearCartByStoreId
-                        > notification:  send confirmation email with receiptUrl
+checkout (HTTP, synchronous)
+  orders-service creates order in PAYMENT_PENDING
+    publishes order.created to selleasi.orders exchange
 
 payment.initiated (outbox poller, 5s)
-  > order.payment.initiated.topic
-       > orders: status = PAYMENT_INITIATED
+  orders marks PAYMENT_INITIATED
 
-order.payment.failed.topic
-  > orders:     status = FAILED
-  > inventory:  releaseStock per line item
-  > payment:    payment record = FAILED
+webhook arrives from PSP (HTTP)
+  webhook-service verifies HMAC signature
+  amount validated against order snapshot
+    mismatch: payment marked FAILED
+              PAYMENT_FAILED published via outbox
+    match:    payment marked SUCCESS
+              ledger CREDIT + FEE written in same transaction
+              wallet balance incremented in same transaction
+              PAYMENT_CONFIRMED written to outbox
 
-order.reservation.failed.topic  (emitted by inventory on $gte guard failure)
-  > orders: status = OUT_OF_STOCK
-             emit cart.item.out.of.stock.topic
-               > cart: markItemsUnavailable
+payment.confirmed (outbox poller, 5s)
+  orders marks COMPLETED
+    generates PDF receipt via pdfkit
+    uploads to Cloudinary, persists receiptUrl
+    publishes order.completed to selleasi.orders exchange
+      notification sends confirmation email with receiptUrl
+      cart clears via order.stock.committed
 
-product.onboarding.completed.topic (outbox poller, 5s)
-  > inventory:  createInventoryRecord
-  > es-sync:    upsert ES document (idempotent, MongoDB _id as ES doc _id)
+payment.failed (outbox poller, 5s)
+  orders marks FAILED
+    publishes order.failed to selleasi.orders exchange
+
+inventory.reservation.failed
+  orders marks OUT_OF_STOCK
+    publishes cart.item.out_of_stock to selleasi.cart exchange
+      cart marks unavailable items with reason
+
+order.abandoned (scheduler, 30 min timeout)
+  orders marks CANCELLED
+    publishes order.abandoned to selleasi.orders exchange
+      inventory releases reserved stock
+
+product.created (outbox poller, 5s)
+  inventory creates inventory record
+  Elasticsearch upserts product document (MongoDB _id as ES doc _id)
+
+review.approved
+  audit logs review.approved event
+
+payment.refunded
+  audit logs payment.refunded event
+  ledger REFUND debit written against wallet
 ```
 
-Every consumer I wrote shares the same guarantees:
+Every consumer guarantees:
 
-- Double `context.with()` for OTEL trace propagation across Kafka message boundaries
-- Exponential backoff with jitter: `delay = 2^attempt * BASE_DELAY + random(JITTER)`
-- Redis NX idempotency key per `eventType:messageId`
-- Manual `commitOffsets` only after the handler completes successfully
-- DLQ routing after `MAX_RETRIES` exhausted or on unrecoverable parse failure
+- OTel trace propagation via B3 headers across RabbitMQ message boundaries
+- Exponential backoff with jitter per retry iteration, never module-level constant
+- Redis NX idempotency key per sagaId
+- `channel.nack` with requeue false after MAX_RETRIES routing to DLX
+- `channel.ack` only after handler completes successfully
+
+---
+
+## Subdomain and Store Context Flow
+
+```
+Buyer visits storename.selleasi.com
+
+Caddy receives request
+  forwards to api-gateway:8000 with X-Forwarded-Host: storename.selleasi.com
+
+Gateway subdomainResolver middleware
+  extracts subdomain: "storename"
+  checks Redis: subdomain:storename
+    hit:  returns cached { storeId, organizationId, storeName }
+    miss: calls stores-service GET /internal/subdomain/storename
+          caches result for 300 seconds
+          returns { storeId, organizationId, storeName }
+
+Gateway proxy handler
+  injects x-store-id x-store-organization-id x-store-name on all requests
+  injects x-user-id x-user-type x-organization-id from verified JWT
+
+Downstream service controller
+  const storeId = ctx.store.storeId ?? req.params.storeId
+  gateway-injected value always takes priority over path param or body
+```
 
 ---
 
 ## Observability
 
-I propagate trace context end-to-end across both HTTP and Kafka boundaries.
+Trace context propagates end-to-end across HTTP and RabbitMQ boundaries.
 
-Over HTTP: the gateway injects `traceparent` and `tracestate` (W3C + B3 composite propagator) into every proxied request. Downstream services extract and continue the span.
+**Over HTTP.** The gateway injects B3 headers into every proxied request.
+Downstream services extract and continue the span.
 
-Over Kafka: I inject `traceparent` into message headers via `propagation.inject` on the producer side. On the consumer side I extract the header, restore the parent context with `context.with()`, and create a `SpanKind.CONSUMER` child span. I always call `span.end()` in `finally`.
+**Over RabbitMQ.** `propagation.inject` writes `traceparent` into message
+headers on the producer side. The consumer extracts the header, restores
+the parent context with `context.with()`, and creates a `SpanKind.CONSUMER`
+child span. `span.end()` is always called in `finally`.
 
-In logs: Winston instrumentation reads the active span and injects `trace_id`, `span_id`, and `trace_flags` into every log record. I correlate logs to traces in Grafana by clicking the `trace_id` field in the Loki log explorer, which jumps directly to the Tempo trace.
-
-Every inventory operation logs a structured event name, `userId`, `productId`, `sagaId`, and the resulting stock fields so I can trace any reservation through the full lifecycle in Loki without needing to join across multiple log lines.
-
-I provision all Grafana datasources (Loki, Tempo, Prometheus) automatically on stack startup via the config in `_infrastructure/grafana/`.
+**In logs.** Winston instrumentation reads the active span and injects
+`trace_id`, `span_id`, and `trace_flags` into every log record. Clicking
+`trace_id` in the Loki log explorer jumps directly to the Tempo trace.
 
 | Endpoint | Purpose |
 |---|---|
-| http://localhost:3000 | Grafana (dashboards, log explorer, trace viewer) |
-| http://localhost:9090 | Prometheus (raw metrics) |
-| http://localhost:3100 | Loki (log aggregation) |
-| http://localhost:3200 | Tempo (distributed traces) |
-| http://localhost:8080 | Kafka UI |
-| http://localhost:8000/api-docs | Swagger UI (all 53 endpoints aggregated) |
+| http://localhost:3001 | Grafana dashboards, log explorer, trace viewer |
+| http://localhost:9091 | Prometheus raw metrics |
+| http://localhost:3101 | Loki log aggregation |
+| http://localhost:3201 | Tempo distributed traces |
+| http://localhost:15672 | RabbitMQ management UI |
+| http://localhost:9200 | Elasticsearch |
+| http://localhost:8000/api-docs | Swagger UI aggregated across all services |
 
 ---
 
@@ -257,195 +418,335 @@ I provision all Grafana datasources (Loki, Tempo, Prometheus) automatically on s
 
 ### Prerequisites
 
-Docker Engine 24+ and Docker Compose 2+. Node.js 20+ for running scripts outside containers.
+Docker Engine 24+ and Docker Compose 2+. Node.js 20+ for running scripts
+outside containers.
 
-### Start the stack
+### Clone and configure
 
 ```bash
 git clone https://github.com/<your-org>/selleasi.git
 cd selleasi
 
-# Copy env files for every service
-for svc in api-gateway auth products stores inventory cart orders payment notification tenant review; do
-  cp $svc/.env.example $svc/.env
-done
+# Copy and fill root env file
+cp .env.example .env
+# Edit .env and fill in all secrets before continuing
 
-# Fill in secrets before starting (see Environment Variables section)
-docker compose -f docker-compose.dev.yml up -d
+# Generate all service .env files
+chmod +x generate-envs.sh
+./generate-envs.sh
+```
+
+### Start the stack
+
+```bash
+chmod +x dev.sh
+./dev.sh up
 ```
 
 ### Verify the stack is healthy
 
 ```bash
 # All containers should show healthy or running
-docker compose ps
+./dev.sh ps
 
-# Confirm the gateway is up
+# Gateway
 curl -f http://localhost:8000/health
 
-# Confirm Elasticsearch is healthy (products service depends on this at startup)
+# RabbitMQ management UI
+open http://localhost:15672
+
+# Elasticsearch cluster health
 curl -f http://localhost:9200/_cluster/health
 
-# Confirm Kafka has the expected topics
-docker exec kafka-1 kafka-topics.sh --bootstrap-server localhost:9092 --list
+# Grafana
+open http://localhost:3001
 ```
 
-### Seed development data
+### Useful dev commands
 
 ```bash
-cd _infrastructure/scripts/seed
-cp .env.seed.example .env.seed
-# Fill in AUTH_DATABASE_URL, PRODUCTS_DATABASE_URL, STORES_DATABASE_URL, KAFKA_BROKERS
-npm install
-npm run seed
-
-# To wipe all seeded data and re-seed from scratch
-npm run seed -- --destroy
+./dev.sh logs              # tail all service logs
+./dev.sh logs orders       # tail a single service
+./dev.sh restart           # down then up with rebuild
+./dev.sh clean             # removes all volumes, destructive
 ```
-
-The seed script creates 4 customers, 4 sellers, 4 admins, and 4 investors (all use `Password@123`). Each seller gets one store and 4 products. Seller registration emits `USER_ONBOARDING_COMPLETED_TOPIC` and the tenant provisioning saga runs asynchronously. The script is idempotent via a `_seedTag` field and safe to run multiple times without `--destroy`.
 
 ---
 
 ## Environment Variables
 
-Common across all services:
+The root `.env` carries all shared secrets. Service `.env` files carry only
+service-specific values. Docker Compose loads both via `env_file` ordering
+with the service file winning on conflict.
+
+### Root `.env`
 
 ```bash
-NODE_ENV=development
-PORT=                          # see service catalogue
-MONGO_URI=mongodb://localhost:27017/<service-db>
-REDIS_URL=redis://localhost:6379
-JWT_SECRET=
-JWT_REFRESH_SECRET=
-OTEL_SERVICE_NAME=             # matches service label in Grafana
-INTERNAL_SECRET=               # shared secret for x-internal-secret header
-KAFKA_BROKERS=localhost:9092,localhost:9093,localhost:9094
+REDIS_PASSWORD=
+IO_REDIS_URL=redis://:your_password@redis:6379
+
+JWT_CODE=
+
+INTERNAL_SECRET=
+
+RABBITMQ_DEFAULT_USER=
+RABBITMQ_DEFAULT_PASS=
+RABBITMQ_URL=amqp://user:pass@rabbitmq:5672/selleasi
+RABBITMQ_DEFAULT_VHOST=selleasi
+
+WEB_ORIGIN=http://localhost:5173
+BASE_DOMAIN=selleasi.com
+
+OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+
+GRAFANA_ADMIN_USER=
+GRAFANA_ADMIN_PASSWORD=
 ```
 
-Payment service:
+### Service-specific additions
 
 ```bash
+# authentication-service
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+SMS_FROM_NUMBER=+1234567890
+
+# notification-service
+RESEND_API_KEY=
+EMAIL_FROM=Selleasi <no-reply@selleasi.com>
+
+# payment-service
 PAYSTACK_SECRET_KEY=
-PAYSTACK_WEBHOOK_SECRET=
-FLUTTERWAVE_SECRET_KEY=
-FLUTTERWAVE_WEBHOOK_SECRET=
-CLOUDINARY_URL=
+FLW_SECRET_KEY=
+PLATFORM_FEE_RATE=0.05
+
+# orders-service
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+# products-service
+ELASTICSEARCH_URL=http://elasticsearch:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=
+
+# stores-service
+CADDY_ADMIN_URL=http://caddy:2019
+CADDY_BASE_DOMAIN=selleasi.com
 ```
 
-Products and Elasticsearch:
+Generate strong secrets for `JWT_CODE` and `INTERNAL_SECRET`:
 
 ```bash
-ELASTICSEARCH_URL=http://elasticsearch:9200
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-See each service's `.env.example` for the complete variable list.
+Run it twice, once for each secret.
 
 ---
 
 ## Testing Strategy
 
-I weight my test pyramid toward unit tests at 70%, integration tests at 20%, and load tests at 10%. Business logic lives in the service and repository layers and that is where the majority of my coverage sits. Controller-level integration tests cover the full HTTP stack and are where I catch contract regressions.
+I weight the test pyramid toward unit tests at 70%, integration tests at 20%,
+and load tests at 10%.
 
-### Unit tests (70%)
+### Unit tests
 
-I test the service layer and repository layer in isolation with mocked dependencies. I mock Mongoose models, Redis, and any external HTTP calls. This tier covers the business rules I care most about: inventory accounting invariants, MVCC version conflict handling, saga compensation logic, token rotation, ledger credit operations, and idempotency key handling.
+Service and repository layers tested in isolation with mocked dependencies.
+Coverage targets: inventory accounting invariants, MVCC version conflict
+handling, saga compensation logic, token rotation, ledger credit operations,
+idempotency key handling, fulfillment state machine transitions, subdomain
+extraction logic, isValidRating type guard.
 
 ```bash
-cd <service>
+cd backend/<service>
 npm test
 npm run test:coverage
 ```
 
-### Integration tests (20%)
+### Integration tests
 
-I target controllers in my integration tests. A real HTTP request enters the Express router, passes through all middleware (auth, rate limiter, validation, `requireTenant`), and hits the service layer against a real MongoDB instance running in Docker. This is where I catch middleware ordering bugs, wrong HTTP status codes, malformed response shapes, and auth bypass regressions. I do not test repositories or service methods directly at this tier since that is already covered by the unit suite.
+Controller-level tests against a real MongoDB instance running in Docker. A
+real HTTP request enters the Express router, passes through all middleware,
+and hits the service layer. Catches middleware ordering bugs, wrong status
+codes, malformed response shapes, and auth bypass regressions.
 
 ```bash
-# Requires the Docker Compose stack to be running
+./dev.sh up
+cd backend/<service>
 npm run test:integration
 ```
 
-### Load tests (k6, 10%)
+### Contract tests
 
-Scripts are in `_infrastructure/k6/scripts/`. Results and findings are in `_infrastructure/k6/results/`.
+Gateway proxy tests verifying each service responds correctly to
+`x-internal-secret` and returns the expected response shape. Prevents silent
+contract drift between the gateway routing table and downstream service routes.
 
-**Inventory correctness under concurrency.** 50 concurrent VUs against a single product with `quantityAvailable = 10`. Asserts exactly 10 reservations succeed, zero oversell, invariant `onHand = available + reserved` holds after all VUs complete. This test exposed the Redis NX mutex concurrency cliff at ~50 VUs and drove the migration to MVCC.
+---
 
-**Checkout end-to-end.** Ramp 10 to 100 VUs over 5 minutes through the full gateway. Assert p95 latency < 2s and error rate < 1%.
+## Load Testing
 
-**Rate limiter precision.** Send exactly N+1 concurrent requests to a token-bucket-limited route. Assert exactly 1 receives HTTP 429.
+Scripts live in `_infrastructure/k6/scripts/`.
 
-**Webhook idempotency under concurrency.** Send the same `transactionId` payload 10 times simultaneously. Assert exactly 1 write reaches MongoDB.
+### Checkout saga end-to-end
+
+Ramp 10 to 100 VUs over 5 minutes through the full gateway.
+Threshold: p95 < 2s, error rate < 1%.
 
 ```bash
-cd _infrastructure/k6
-k6 run scripts/inventory/01-inventory-load.js
-k6 run scripts/inventory/03-inventory-strain.js
-k6 run scripts/orders/05-checkout-saga-e2e.js
+k6 run _infrastructure/k6/scripts/checkout-saga-e2e.js
+```
+
+### Inventory correctness under concurrency
+
+50 concurrent VUs against a single product with `quantityAvailable = 10`.
+Asserts exactly 10 reservations succeed, zero oversell, and the invariant
+`onHand = available + reserved` holds after all VUs complete.
+
+```bash
+k6 run _infrastructure/k6/scripts/inventory-concurrent.js
+```
+
+### Cart lock contention
+
+Concurrent `addToCart` for the same user and store.
+Validates Redis distributed lock holds under pressure.
+
+```bash
+k6 run _infrastructure/k6/scripts/cart-lock.js
+```
+
+### Webhook idempotency flood
+
+Send the same `transactionId` payload 10 times simultaneously.
+Assert exactly 1 write reaches MongoDB.
+
+```bash
+k6 run _infrastructure/k6/scripts/webhook-flood.js
+```
+
+### Rate limiter precision
+
+Send exactly N+1 concurrent requests to a rate-limited route.
+Assert exactly 1 receives HTTP 429.
+
+```bash
+k6 run _infrastructure/k6/scripts/rate-limiter.js
+```
+
+### Subdomain resolution under load
+
+1000 concurrent requests to the same subdomain.
+Validates Redis cache prevents stores-service saturation.
+
+```bash
+k6 run _infrastructure/k6/scripts/subdomain-resolution.js
 ```
 
 ---
 
-## Performance Benchmarks
+## Chaos Engineering
 
-Load tests are pending final execution after MVCC migration. I will update this section with real p50/p95/p99 latency numbers, throughput (req/s), error rate under 100 VUs, and MVCC retry rate once k6 results are collected.
+Scripts live in `_infrastructure/chaos/scenarios/`.
 
-Known latency constraints I designed in deliberately:
+| Scenario | Script | Expected behaviour |
+|---|---|---|
+| Redis goes down | `redis-down.sh` | authenticate returns 503, cart lock returns 409, services recover on restart |
+| RabbitMQ goes down | `rabbitmq-down.sh` | outbox poller retries on reconnect, no events lost via DLX |
+| Inventory service down during checkout | `inventory-down.sh` | orders releases already-reserved items via compensation, buyer receives clear error |
+| Payment service down after order created | `payment-down.sh` | order sits in PAYMENT_PENDING, abandoned order scheduler cancels after 30 minutes |
+| MongoDB latency 500ms | `mongo-latency.sh` | services with 8s timeouts do not cascade fail, circuit breakers do not open prematurely |
+| Notification service down | `notification-down.sh` | all other services continue normally, events queue in RabbitMQ DLX, delivered on recovery |
 
-Inventory reservation is synchronous HTTP during checkout. It adds one internal round-trip per line item before the order document is created. I chose this over async reservation to eliminate oversell.
+Run all scenarios:
 
-MVCC adds up to `MAX_RETRIES` read-write cycles on version conflict. Under normal load (requests spread across many products) conflicts are rare and most reservations complete on the first attempt. Under flash-sale conditions (many concurrent requests for the same product) the retry budget absorbs the contention without the cascading timeout behaviour the old mutex produced.
-
-I always fetch the payment amount from the order record via internal HTTP. I never trust the client-supplied amount. This adds one round-trip per payment initialisation.
-
-Receipt PDF generation (pdfkit + qrcode + Cloudinary upload) is asynchronous. It happens after order completion via Kafka and does not block the checkout response.
+```bash
+chmod +x _infrastructure/chaos/runner.sh
+./_infrastructure/chaos/runner.sh
+```
 
 ---
 
 ## Architecture Decision Records
 
-I document all ADRs in [`_documentation/adr/`](./_documentation/adr/). Each covers the context I was in, the decision I made, and the consequences I accepted.
+ADRs live in `_documentation/adr/`.
 
-**Inventory concurrency**
-
-| ADR | Decision |
-|---|---|
-| ADR-INV-001 | I replaced Redis NX distributed locking with MVCC optimistic concurrency on inventory writes |
-
-**Elasticsearch**
+### Infrastructure
 
 | ADR | Decision |
 |---|---|
-| ADR-ES-001 | Node 18 is incompatible with ES client v9, so I upgraded to Node 20 |
-| ADR-ES-002 | I moved the ES client from devDependencies to dependencies |
-| ADR-ES-003 | I use the Docker Compose service hostname for inter-container ES connections, not localhost |
-| ADR-ES-004 | I set `max_ngram_diff: 7` to support the ngram tokenizer min/max range I needed |
-| ADR-ES-005 | ES bootstrap blocks service startup; I accepted this with a `depends_on: service_healthy` guard |
-| ADR-ES-006 | I sync ES via the outbox pattern rather than writing directly from the HTTP handler |
-| ADR-ES-007 | I use MongoDB `_id` as the ES document `_id` for idempotent upserts |
-| ADR-ES-008 | I soft-delete in ES with an `isDeleted: true` filter rather than hard-deleting documents |
-| ADR-ES-009 | I use a separate `ngram_analyzer` at index time and `search_analyzer` at query time |
-| ADR-ES-010 | ES is not my source of truth. MongoDB is. I treat ES as a search read replica only |
-| ADR-ES-011 | I route to a DLQ after `MAX_RETRIES` for failed ES sync Kafka messages |
-| ADR-ES-012 | I run single-node in dev and a cluster in prod |
+| ADR-INFRA-001 | Replaced Kafka with RabbitMQ. KRaft cluster RAM overhead not justified at current scale. Quorum queues with DLX provide equivalent durability guarantees. |
+| ADR-INFRA-002 | Replaced Mailersend with Resend SDK. Simpler API, no axios wrapper needed, native TypeScript types. |
+| ADR-INFRA-003 | Replaced Opossum circuit breaker in individual services with Istio DestinationRule outlier detection in production. Opossum retained at gateway only. |
+| ADR-INFRA-004 | Replaced Nginx with Caddy for subdomain routing. Caddy admin API allows dynamic route registration without config file reloads. |
 
-**Products**
+### Inventory
 
 | ADR | Decision |
 |---|---|
-| ADR-PRODUCT-001 | I use a transactional outbox for product creation event publishing |
+| ADR-INV-001 | Replaced Redis NX distributed locking with MVCC optimistic concurrency. Eliminates lock contention cliff at 50 VUs. |
+| ADR-INV-002 | Inventory reservation during checkout is synchronous HTTP. Higher latency accepted in exchange for zero oversell guarantee. |
 
-I document service-level ADRs for auth, orders, payment, inventory, and cart in their respective `_documentation/service_docs/<service>/architecture/decision/` directories.
+### Elasticsearch
+
+| ADR | Decision |
+|---|---|
+| ADR-ES-001 | Node 20 required for ES client v8 compatibility |
+| ADR-ES-002 | ES synced via outbox pattern not direct HTTP handler write |
+| ADR-ES-003 | MongoDB `_id` used as ES document `_id` for idempotent upserts |
+| ADR-ES-004 | Soft delete in ES via `isDeleted: true` filter, not hard delete |
+| ADR-ES-005 | Separate ngram analyzer at index time, standard analyzer at query time |
+| ADR-ES-006 | ES is a read replica only. MongoDB is source of truth. |
+
+### Payment
+
+| ADR | Decision |
+|---|---|
+| ADR-PAY-001 | Payment amount always read from order record server-side. Client amount never trusted. |
+| ADR-PAY-002 | Webhook idempotency via SHA-256 hash stored inside the payment transaction, not only Redis NX. Protects against duplicates after NX TTL expiry. |
+| ADR-PAY-003 | Ledger `creditOnPaymentConfirmed` accepts external session to join caller transaction. MongoDB does not support nested withTransaction. |
+
+### Architecture
+
+| ADR | Decision |
+|---|---|
+| ADR-ARCH-001 | Vertical slice domain structure per service. Files organized by domain not by technical layer. |
+| ADR-ARCH-002 | Choreography-based saga with no central orchestrator. Each service owns its local transaction and publishes the next event. |
+| ADR-ARCH-003 | Gateway subdomain resolver injects store context as headers. Downstream services never accept storeId from client body or params as primary source. |
 
 ---
 
 ## Roadmap
 
-**Load testing.** Re-run inventory strain and load tests after MVCC migration to record the new concurrency ceiling. Run checkout E2E to get the portfolio headline p95 number. Target: p95 < 2s under 100 VUs.
+**Escrow and disputes.** escrow-service owns the full escrow lifecycle:
+funds held on order completion, released to seller on buyer confirmation or
+after the dispute window, with a dispute flow raising a case for admin
+resolution.
 
-**Payout completion.** I need to add a seller bank account model, wire up the Paystack Transfer API on admin approval, handle the `transfer.success` and `transfer.failed` webhooks, and apply a PAYOUT debit to the ledger on success.
+**Payout completion.** Seller bank account model, Paystack Transfer API
+on admin approval, `transfer.success` and `transfer.failed` webhook handlers,
+PAYOUT ledger debit on success.
 
-**Job scheduler.** I plan to replace the `setInterval`-based reservation expiry with a Redis sorted set scheduler, add a Friday 09:00 payout batch job, and add order abandonment reminders (1hr email, 24hr cancel + inventory release). I will use Redlock leader election with a heartbeat watchdog to ensure only one scheduler instance runs at a time.
+**Abandoned order scheduler.** Orders in PAYMENT_PENDING for more than
+30 minutes are cancelled via an internal endpoint. Scheduler uses Redis sorted
+set with Redlock leader election so only one instance runs across all replicas.
 
-**Documentation.** I am working through individual service flow diagrams and per-service documentation covering `api/contracts.md`, `api/error-codes.md`, `architecture/decision/*.md`, and `operations/runbook.md` for each production service.
+**Webhook retry scheduler.** payment-service `webhookService.retryFailed()`
+triggered every 5 minutes via cron.
+
+**ArgoCD GitOps pipeline.** k8s manifests, ApplicationSet for all services,
+ArgoCD Image Updater watching container registry, GitHub Actions building and
+pushing images on merge to main.
+
+**Istio service mesh.** PeerAuthentication STRICT mTLS across selleasi
+namespace, AuthorizationPolicy default-deny with per-service allow rules,
+VirtualService retry and timeout per service, DestinationRule outlier
+detection replacing Opossum in individual services.
+
+**Load test results.** Run all k6 scripts after MVCC migration and publish
+p50/p95/p99 latency, throughput, error rate under 100 VUs, and MVCC retry
+rate.
+
+**Documentation.** Per-service flow diagrams, `api/contracts.md`,
+`api/error-codes.md`, and `operations/runbook.md` for each production service.
