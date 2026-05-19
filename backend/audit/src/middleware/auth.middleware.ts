@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 import redisClient from "../config/redis";
 import { AppError } from "../utils/AppError";
 import { requestContext } from "../context/requestContext";
-import { AuthenticatedRequest } from "./contextMiddleware";
-import { JWTUserPayload } from "../utils/generateToken";
+import { AuthenticatedRequest } from "./contextMiddleware"
+import { JWTPayload } from "../types";
 
 export function authenticate(
   req:  Request,
@@ -21,11 +21,11 @@ export function authenticate(
     return;
   }
 
-  let decoded: { user: JWTUserPayload; exp: number };
+  let decoded: { user: JWTPayload; exp: number };
 
   try {
     decoded = jwt.verify(token, process.env.JWT_CODE!) as {
-      user: JWTUserPayload;
+      user: JWTPayload;
       exp:  number;
     };
   } catch {

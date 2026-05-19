@@ -1,13 +1,10 @@
 import { FilterQuery }       from "mongoose";
 import { auditRepository }   from "./audit.repository";
 import { AppError }          from "../../utils/AppError";
-import { SERVICE_NAME }      from "../../constants";
 import { requestContext }    from "../../context/requestContext";
-import logger                from "../../utils/logger";
 import {
   AuditAction,
   AuditSeverity,
-  AuditSource,
   IAuditLog,
 } from "./audit.model";
 import {
