@@ -7,53 +7,54 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
-
-export const CreateProductHandler = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { userId, organizationId } = (req as AuthenticatedRequest).user;
-    const storeId = req.params["storeId"] as string;
-
-    if (!organizationId) {
-      throw AppError.forbidden("Organization context required.");
-    }
-
-    const product = await productService.createProduct({
-      ...req.body,
-      ownerId:        userId,
-      organizationId,
-      storeId,
-    });
-
-    res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
-      success: true,
-      data:    product,
-    });
-  }
-);
+import { readGatewayContext } from "../../utils/readGatewayContext";
 
 export const GetStoreProductsHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const storeId   = req.params["storeId"] as string;
-    const page      = Number(req.query["page"]      ?? 1);
-    const limit     = Number(req.query["limit"]     ?? 20);
-    const category  = req.query["category"]  as string | undefined;
-    const isArchive = req.query["isArchive"] === "true"
-      ? true
-      : req.query["isArchive"] === "false"
-        ? false
-        : undefined;
+    const ctx     = readGatewayContext(req);
+    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const page      = Number(req.query["page"]     ?? 1);
+    const limit     = Number(req.query["limit"]    ?? 20);
+    const category  = req.query["category"]  as string  | undefined;
+    const isArchive = req.query["isArchive"] !== undefined
+      ? req.query["isArchive"] === "true"
+      : undefined;
 
     const result = await productService.getProductsByStore({
       storeId,
-      category,
-      isArchive,
       page,
       limit,
+      category,
+      isArchive,
     });
 
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       success: true,
       data:    result,
+    });
+  }
+);
+
+export const CreateProductHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId }  = (req as AuthenticatedRequest).user;
+    const ctx         = readGatewayContext(req);
+    const storeId     = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const product = await productService.createProduct({
+      ...req.body,
+      storeId,
+      ownerId: userId,
+    });
+
+    res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+      success: true,
+      data:    product,
     });
   }
 );

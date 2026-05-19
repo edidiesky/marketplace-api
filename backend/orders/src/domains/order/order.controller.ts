@@ -9,11 +9,16 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
+import { readGatewayContext } from "../../utils/readGatewayContext";
 
 export const CheckoutHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId }  = (req as AuthenticatedRequest).user;
-    const storeId     = req.params["storeId"] as string;
+    const { userId } = (req as AuthenticatedRequest).user;
+    const ctx        = readGatewayContext(req);
+    const storeId    = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
     const { cartId, requestId } = req.body as {
       cartId:    string;
       requestId: string;
@@ -33,6 +38,30 @@ export const CheckoutHandler = asyncHandler(
   }
 );
 
+export const GetStoreOrdersHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const ctx     = readGatewayContext(req);
+    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const page        = Number(req.query["page"]  ?? 1);
+    const limit       = Number(req.query["limit"] ?? 10);
+    const orderStatus = req.query["orderStatus"]  as string | undefined;
+
+    const query: Record<string, unknown> = {
+      storeId: new Types.ObjectId(storeId),
+    };
+    if (orderStatus) query["orderStatus"] = orderStatus;
+
+    const result = await orderService.getOrders(query, page, limit);
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      success: true,
+      data:    result,
+    });
+  }
+);
 export const AddShippingHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
@@ -56,27 +85,6 @@ export const GetOrderHandler = asyncHandler(
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       success: true,
       data:    order,
-    });
-  }
-);
-
-export const GetStoreOrdersHandler = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const storeId     = req.params["storeId"] as string;
-    const page        = Number(req.query["page"]  ?? 1);
-    const limit       = Number(req.query["limit"] ?? 10);
-    const orderStatus = req.query["orderStatus"]  as string | undefined;
-
-    const query: Record<string, unknown> = {
-      storeId: new Types.ObjectId(storeId),
-    };
-    if (orderStatus) query["orderStatus"] = orderStatus;
-
-    const result = await orderService.getOrders(query, page, limit);
-
-    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
-      success: true,
-      data:    result,
     });
   }
 );

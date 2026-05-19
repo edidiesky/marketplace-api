@@ -7,6 +7,7 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
+import { readGatewayContext } from "../../utils/readGatewayContext";
 
 export const CreateInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -33,9 +34,13 @@ export const CreateInventoryHandler = asyncHandler(
 
 export const GetStoreInventoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const storeId = req.params["storeId"] as string;
-    const page    = Number(req.query["page"]  ?? 1);
-    const limit   = Number(req.query["limit"] ?? 20);
+    const ctx     = readGatewayContext(req);
+    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const page  = Number(req.query["page"]  ?? 1);
+    const limit = Number(req.query["limit"] ?? 20);
 
     const result = await inventoryService.getStoreInventory(
       storeId,

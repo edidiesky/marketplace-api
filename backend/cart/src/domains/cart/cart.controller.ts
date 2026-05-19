@@ -7,11 +7,15 @@ import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
+import { readGatewayContext } from "../../utils/readGatewayContext";
 
 export const AddToCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const storeId    = req.params["storeId"] as string;
+    const ctx        = readGatewayContext(req);
+    const storeId    = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
 
     const cart = await cartService.addToCart({
       ...req.body,
@@ -29,7 +33,10 @@ export const AddToCartHandler = asyncHandler(
 export const GetUserCartHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId } = (req as AuthenticatedRequest).user;
-    const storeId    = req.params["storeId"] as string;
+    const ctx        = readGatewayContext(req);
+    const storeId    = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
 
     const cart = await cartService.getCart(userId, storeId);
 
@@ -39,6 +46,8 @@ export const GetUserCartHandler = asyncHandler(
     });
   }
 );
+
+
 
 export const GetAllStoreCartsHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {

@@ -2,7 +2,7 @@
 
 import mongoose from "mongoose";
 import logger from "../utils/logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "../utils/metrics";
+import { serverHealthGauge } from "../utils/metrics";
 
 import client from "prom-client";
 

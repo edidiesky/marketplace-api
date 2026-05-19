@@ -6,17 +6,18 @@ import cookieParser from "cookie-parser";
 import morgan       from "morgan";
 import axios, { AxiosResponse } from "axios";
 import { randomUUID } from "crypto";
-
-import { errorHandler, NotFound } from "./middleware/error-handler";
-import { authenticate }           from "./middleware/authentication";
-import { rateLimiter }            from "./middleware/rateLimiter";
-import { getBreaker }             from "./utils/createBreaker";
-import { apiGatewayRegistry }     from "./utils/metrics";
-import logger                     from "./utils/logger";
-import swaggerUi                  from "swagger-ui-express";
-import { aggregateSpecs }         from "./utils/swaggerAggregator";
-
-import rulesRouter from "./routes/rules.routes";
+import dotenv from 'dotenv'
+dotenv.config()
+import { errorHandler, NotFound }  from "./middleware/error-handler";
+import { authenticate }            from "./middleware/authentication";
+import { rateLimiter }             from "./middleware/rateLimiter";
+import { subdomainResolver }       from "./middleware/subdomainResolver";
+import { getBreaker }              from "./utils/createBreaker";
+import { apiGatewayRegistry }      from "./utils/metrics";
+import logger                      from "./utils/logger";
+import swaggerUi                   from "swagger-ui-express";
+import { aggregateSpecs }          from "./utils/swaggerAggregator";
+import rulesRouter                 from "./routes/rules.routes";
 
 import {
   BAD_REQUEST_STATUS_CODE,
@@ -32,13 +33,9 @@ import {
 
 const app: Application = express();
 
-if (!process.env.WEB_ORIGIN) {
-  throw new Error("WEB_ORIGIN env var is not set");
-}
-
-if (!process.env.JWT_CODE) {
-  throw new Error("JWT_CODE env var is not set");
-}
+if (!process.env.WEB_ORIGIN)    throw new Error("WEB_ORIGIN env var is not set");
+if (!process.env.JWT_CODE)      throw new Error("JWT_CODE env var is not set");
+if (!process.env.BASE_DOMAIN)   throw new Error("BASE_DOMAIN env var is not set");
 
 app.use(helmet());
 app.use(
@@ -78,7 +75,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
   next();
 });
-
+// handle gateway probing
 app.use((req: Request, res: Response, next: NextFunction) => {
   const firstSegment = req.path.split("/").filter(Boolean)[0];
   if (firstSegment && WP_PROBE_PATHS.has(firstSegment)) {
@@ -95,10 +92,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// resolve subdomain
+app.use(subdomainResolver);
+
+// andling health check
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: SERVICE_NAME });
 });
 
+// andling health metrics
 app.get("/metrics", async (_req: Request, res: Response) => {
   try {
     res.set("Content-Type", apiGatewayRegistry.contentType);
@@ -176,9 +178,7 @@ app.use(
     const isPublic  = PUBLIC_ROUTES.has(service);
     const isWebhook = service === "payment" && path.startsWith(WEBHOOK_PATH_PREFIX);
 
-    if (isPublic || isWebhook) {
-      return next();
-    }
+    if (isPublic || isWebhook) return next();
 
     return authenticate(req, res, next);
   }
@@ -235,6 +235,12 @@ app.use(
       forwardedHeaders["x-organization-id"] = req.user.organizationId;
     }
 
+    if (req.storeContext) {
+      forwardedHeaders["x-store-id"]              = req.storeContext.storeId;
+      forwardedHeaders["x-store-organization-id"] = req.storeContext.organizationId;
+      forwardedHeaders["x-store-name"]            = req.storeContext.storeName;
+    }
+
     const queryParams = new URLSearchParams();
     for (const [key, value] of Object.entries(req.query)) {
       if (value !== undefined && value !== null) {
@@ -248,12 +254,13 @@ app.use(
       : `${targetURL}/${path}`;
 
     logger.info("gateway_proxying_request", {
-      event:     "gateway_proxying_request",
-      service:   SERVICE_NAME,
-      target:    service,
-      method:    req.method,
-      url:       fullUrl,
-      requestId: req.headers["x-request-id"],
+      event:          "gateway_proxying_request",
+      service:        SERVICE_NAME,
+      target:         service,
+      method:         req.method,
+      url:            fullUrl,
+      storeId:        req.storeContext?.storeId,
+      requestId:      req.headers["x-request-id"],
     });
 
     const breaker = getBreaker(service);

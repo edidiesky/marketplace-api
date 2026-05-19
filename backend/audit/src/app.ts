@@ -1,66 +1,57 @@
-import helmet from "helmet";
-import dotenv from "dotenv";
-dotenv.config();
-import morgan from "morgan";
-import productRoute from "./routes/product.routes";
-import express from "express";
-import cors from "cors";
+import "./utils/otel";
+import express      from "express";
+import helmet       from "helmet";
+import cors         from "cors";
 import cookieParser from "cookie-parser";
+import morgan       from "morgan";
+import dotenv from 'dotenv'
+dotenv.config()
+import auditRoutes                from "./domains/audit/audit.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
-import { reqReplyTime, productRegistry } from "./utils/metrics";
-import logger from "./utils/logger";
+import { contextMiddleware }      from "./middleware/contextMiddleware";
+import { reqReplyTime, auditRegistry } from "./utils/metrics";
+import logger                     from "./utils/logger";
 import { SERVER_ERROR_STATUS_CODE } from "./constants";
 
 const app = express();
 
-/** MIDDLEWARE */
 if (!process.env.WEB_ORIGIN) {
-  throw new Error("No WEB_ORIGIN");
+  throw new Error("WEB_ORIGIN env var is not set");
 }
-app.use(helmet());
-app.use(
-  cors({
-    origin: [process.env.WEB_ORIGIN],
-    credentials: true,
-  })
-);
 
-/** LOGS REQUEST */
+app.use(helmet());
+app.use(cors({ origin: [process.env.WEB_ORIGIN], credentials: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-
-// LATENCY METRICS MIDDLEWARE
+app.use(contextMiddleware);
 app.use((req, res, next) => {
   const startTime = process.hrtime();
   res.on("finish", () => reqReplyTime(req, res, startTime));
   next();
 });
 
-/** HEALTH CHECK */
 app.get("/health", (_req, res) => {
-  res.json({ status: "Product route is Fine!" });
+  res.json({ status: "ok", service: "audit-service" });
 });
 
-/** ROUTES */
-app.use("/api/v1/audits", productRoute);
+app.use("/api/v1/audit", auditRoutes);
 
-/**
- * @description Metrics endpoint for my Prometheus server
- */
-app.get("/metrics", async (req, res) => {
+app.get("/metrics", async (_req, res) => {
   try {
-    res.set("Content-Type", productRegistry.contentType);
-    res.end(await productRegistry.metrics());
-    logger.info("Product Metrics has been scraped successfully!");
-  } catch (error) {
-    logger.error("Product Metrics scraping error:", { error });
+    res.set("Content-Type", auditRegistry.contentType);
+    res.end(await auditRegistry.metrics());
+  } catch (err) {
+    logger.error("metrics_scrape_failed", {
+      event: "metrics_scrape_failed",
+      error: err instanceof Error ? err.message : String(err),
+    });
     res.status(SERVER_ERROR_STATUS_CODE).end();
   }
 });
 
-app.use(errorHandler);
 app.use(NotFound);
+app.use(errorHandler);
 
 export { app };

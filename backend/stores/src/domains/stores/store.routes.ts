@@ -21,6 +21,7 @@ import {
   RemoveCustomDomainHandler,
   DeleteStoreHandler,
 } from "./store.controller";
+import { internalOnly } from "../../middleware/internal";
 
 const router = Router();
 
@@ -83,6 +84,12 @@ router.post(
   "/:storeId/domain/verify",
   authenticate,
   VerifyCustomDomainHandler
+);
+
+router.get(
+  "/internal/subdomain/:subdomain",
+  internalOnly,
+  GetStoreBySubdomainHandler
 );
 
 router.delete(

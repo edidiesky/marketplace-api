@@ -1,37 +1,17 @@
 
 
+import logger from "../utils/logger";
 import mongoose from "mongoose";
-import logger from "./logger";
-import { trackError, errorCounter, databaseConnectionsGauge, serverHealthGauge } from "./metrics";
-
-// Add new metrics for connection monitoring
-import client from "prom-client";
-
-export const databaseConnectionAttempts = new client.Counter({
-  name: "user_database_connection_attempts_total",
-  help: "Total database connection attempts",
-  labelNames: ["status", "error_type"],
-});
-
-export const databaseConnectionDuration = new client.Histogram({
-  name: "user_database_connection_duration_seconds",
-  help: "Database connection attempt duration",
-  buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["status", "attempt"],
-});
-
 
 export const connectMongoDB = async (
   mongoUrl: string,
   maxRetries: number = 5,
   retryDelay: number = 3000
 ): Promise<void> => {
-  serverHealthGauge.set(0);
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const startTime = process.hrtime();
 
     try {
-      // connection pooling
       await mongoose.connect(mongoUrl, {
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
@@ -41,7 +21,6 @@ export const connectMongoDB = async (
         minPoolSize:10,
         maxPoolSize:50,
       });
-
       logger.info("MongoDB connected successfully", {
         attempt,
         totalAttempts: attempt,
@@ -75,15 +54,7 @@ export const connectMongoDB = async (
         severity = "high";
       }
 
-      // Record failure metrics
-      databaseConnectionAttempts.inc({
-        status: "failure",
-        error_type: errorType,
-      });
-      databaseConnectionDuration.observe(
-        { status: "failure", attempt: attempt.toString() },
-        durationSeconds
-      );
+      
       logger.error(`MongoDB connection attempt ${attempt} failed`, {
         error: error.message,
         code: error.code,
@@ -104,6 +75,7 @@ export const connectMongoDB = async (
         );
       }
 
+      // Wait before retry with exponential backoff
       const backoffDelay = retryDelay * Math.pow(2, attempt - 1);
       logger.info(`Retrying MongoDB connection in ${backoffDelay}ms`, {
         attempt: attempt + 1,

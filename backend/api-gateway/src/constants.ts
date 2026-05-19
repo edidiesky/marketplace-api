@@ -76,3 +76,11 @@ export const FORWARDED_HEADERS = new Set([
   "verif-hash",
   "x-request-id",
 ]);
+
+export const BASE_DOMAIN = process.env.BASE_DOMAIN ?? "selleasi.com";
+
+export const STORE_CONTEXT_HEADERS = [
+  "x-store-id",
+  "x-store-organization-id",
+  "x-store-name",
+] as const;

@@ -1,36 +1,35 @@
 import Redis from "ioredis";
-import dotenv from "dotenv";
 import logger from "../utils/logger";
 
-
-dotenv.config();
-
-
-const IO_REDIS_URL = process.env.IO_REDIS_URL || "redis://localhost:6379";
-
-
-if (!IO_REDIS_URL) {
-  logger.error("Error: IO_REDIS_URL is missing and no fallback provided.");
-  process.exit(1);
-}
-
-const redisClient = new Redis(IO_REDIS_URL, {
-  retryStrategy(times) {
-    const delay = Math.min(times * 500, 2000);
-    logger.error(`Retrying Redis connection (${times})...`);
-    return delay;
-  },
+const redisClient = new Redis({
+  host:                 process.env.REDIS_HOST ?? "redis",
+  port:                 parseInt(process.env.REDIS_PORT ?? "6379", 10),
+  password:             process.env.REDIS_PASSWORD,
+  retryStrategy:        (times) => Math.min(times * 200, 5_000),
   maxRetriesPerRequest: 3,
+  enableReadyCheck:     true,
 });
 
-// Handling connection errors
-redisClient.on("error", (err) => {
-  logger.error("Redis Client Error:", err.message);
-});
+redisClient.on("connect", () =>
+  logger.info("redis_connected", {
+    event:   "redis_connected",
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
+  })
+);
 
-// Log successful connection
-redisClient.on("connect", () => {
-  logger.info("Successfully connected to Redis at", IO_REDIS_URL);
-});
+redisClient.on("error", (err) =>
+  logger.error("redis_error", {
+    event:   "redis_error",
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
+    error:   err.message,
+  })
+);
+
+redisClient.on("close", () =>
+  logger.warn("redis_closed", {
+    event:   "redis_closed",
+    service: process.env.OTEL_SERVICE_NAME ?? "service",
+  })
+);
 
 export default redisClient;

@@ -22,7 +22,7 @@ async function start(): Promise<void> {
     port:    PORT,
     env:     process.env.NODE_ENV,
   });
-}
+} 
 
 start().catch(async (err) => {
   trackError("server_initialization_failed", "server_startup", "critical");

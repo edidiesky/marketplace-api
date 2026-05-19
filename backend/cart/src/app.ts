@@ -2,7 +2,6 @@ import "./utils/otel";
 import express      from "express";
 import helmet       from "helmet";
 import cors         from "cors";
-
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
 import dotenv         from "dotenv";
