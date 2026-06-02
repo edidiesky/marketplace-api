@@ -1,25 +1,30 @@
-import { AuthenticatedRequest, UserType } from "../types";
-import { Request } from "express";
-import { IPayment } from "../models/Payment";
+import { Request }            from "express";
 import { FilterQuery, Types } from "mongoose";
+import { IPayment }           from "../domains/payment/payment.model";
+import { readGatewayContext } from "./readGatewayContext";
 
-const toObjectId = (value: unknown): Types.ObjectId | undefined => {
+function toObjectId(value: unknown): Types.ObjectId | undefined {
   if (!value || value === "undefined" || value === "null") return undefined;
   try {
     return new Types.ObjectId(String(value));
   } catch {
     return undefined;
   }
-};
+}
 
-export const buildQuery = (req: Request): FilterQuery<IPayment> => {
+export function buildPaymentQuery(req: Request): FilterQuery<IPayment> {
+  const ctx = readGatewayContext(req);
+
+  const userId   = ctx.user.userId;
+  const userType = ctx.user.userType;
+  const storeId  = (ctx.store.storeId ?? req.query["storeId"]) as string | undefined;
+
   const {
     status,
     method,
     startDate,
     endDate,
     search,
-    storeId,
     ownerId,
     customerId,
     gateway,
@@ -27,61 +32,60 @@ export const buildQuery = (req: Request): FilterQuery<IPayment> => {
     paidAt,
     refundedAt,
   } = req.query;
-  const { userId, role } = (req as AuthenticatedRequest).user;
 
-  const queryObjects: FilterQuery<IPayment> = {};
+  const query: FilterQuery<IPayment> = {};
 
-  if (role !== "ADMIN") {
+  if (userType !== "platform:admin" && userType !== "platform:staff") {
     const uid = toObjectId(userId);
-    if (role === UserType.SELLERS) {
-      if (uid) queryObjects.ownerId = uid;
-    } else if (role === UserType.CUSTOMER || role === UserType.INVESTORS) {
-      if (uid) queryObjects.customerId = uid;
+
+    if (
+      userType === "seller:admin" ||
+      userType === "seller:member" ||
+      userType === "seller:viewer"
+    ) {
+      if (uid) query["ownerId"] = uid;
+    } else if (userType === "customer" || userType === "investor") {
+      if (uid) query["customerId"] = uid;
     }
   }
 
   const sid = toObjectId(storeId);
-  if (sid) queryObjects.storeId = sid;
+  if (sid) query["storeId"] = sid;
 
-  const oid = toObjectId(ownerId);
-  if (oid) queryObjects.ownerId = oid;
+  const oid = toObjectId(ownerId as string | undefined);
+  if (oid) query["ownerId"] = oid;
 
-  const cid = toObjectId(customerId);
-  if (cid) queryObjects.customerId = cid;
+  const cid = toObjectId(customerId as string | undefined);
+  if (cid) query["customerId"] = cid;
 
-  if (status) queryObjects.status = status;
-  if (method) queryObjects.method = method;
-  if (gateway) queryObjects.gateway = gateway;
-  if (currency) queryObjects.currency = currency;
+  if (status)   query["status"]   = status;
+  if (method)   query["method"]   = method;
+  if (gateway)  query["gateway"]  = gateway;
+  if (currency) query["currency"] = currency;
 
   if (startDate && endDate) {
-    queryObjects.createdAt = {
+    query["createdAt"] = {
       $gte: new Date(startDate as string),
-      $lte: new Date(endDate as string),
+      $lte: new Date(endDate   as string),
     };
   } else if (startDate) {
-    queryObjects.createdAt = { $gte: new Date(startDate as string) };
+    query["createdAt"] = { $gte: new Date(startDate as string) };
   } else if (endDate) {
-    queryObjects.createdAt = { $lte: new Date(endDate as string) };
+    query["createdAt"] = { $lte: new Date(endDate   as string) };
   }
 
-  if (paidAt) {
-    queryObjects.paidAt = { $lte: new Date(paidAt as string) };
-  }
-
-  if (refundedAt) {
-    queryObjects.refundedAt = { $lte: new Date(refundedAt as string) };
-  }
+  if (paidAt)     query["paidAt"]     = { $lte: new Date(paidAt     as string) };
+  if (refundedAt) query["refundedAt"] = { $lte: new Date(refundedAt as string) };
 
   if (search) {
-    queryObjects.$or = [
-      { method: { $regex: search, $options: "i" } },
+    query["$or"] = [
+      { method:        { $regex: search, $options: "i" } },
       { customerEmail: { $regex: search, $options: "i" } },
-      { customerName: { $regex: search, $options: "i" } },
-      { status: { $regex: search, $options: "i" } },
-      { paymentId: { $regex: search, $options: "i" } },
+      { customerName:  { $regex: search, $options: "i" } },
+      { status:        { $regex: search, $options: "i" } },
+      { paymentId:     { $regex: search, $options: "i" } },
     ];
   }
 
-  return queryObjects;
-};
+  return query;
+}

@@ -76,7 +76,7 @@ export const GetMyPayoutsHandler = asyncHandler(
 );
 
 export const GetPendingPayoutsHandler = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (_req: Request, res: Response): Promise<void> => {
     const payouts = await payoutService.getPendingPayouts();
 
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({

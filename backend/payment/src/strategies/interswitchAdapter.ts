@@ -1,9 +1,5 @@
-import {
-  IAdapterRequest,
-  IPaymentProcessRequest,
-  IPaymentResponse,
-  IPaystackResponse,
-} from "../types";
+
+import { IAdapterRequest, IPaymentProcessRequest, IPaymentResponse } from ".";
 import logger from "../utils/logger";
 import axios from "axios";
 
@@ -18,7 +14,7 @@ const createInterswitchAdapter = (req: IAdapterRequest) => {
         .toString()
         .padStart(6, "0");
       try {
-        const { data } = await axios.post<IPaystackResponse>(
+        const { data } = await axios.post(
           "https://api.paystack.co/transaction/initialize",
           {
             amount: Number(amount) * 100,

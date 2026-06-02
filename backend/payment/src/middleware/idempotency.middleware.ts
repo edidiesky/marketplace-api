@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthenticatedRequest } from "../types";
-import {
-  idempotencyRepository,
-  IdempotencyRepository,
-} from "../repository/IdempotencyRepository";
 import logger from "../utils/logger";
+import { idempotencyRepository } from "../utils/idempotency";
+import { AuthenticatedRequest } from "./contextMiddleware";
 
 export function withIdempotency(endpoint: string) {
   return async (
@@ -20,7 +17,7 @@ export function withIdempotency(endpoint: string) {
       return;
     }
 
-    const requestHash = IdempotencyRepository.buildHash(
+    const requestHash = idempotencyRepository.buildHash(
       req.method,
       endpoint,
       userId,

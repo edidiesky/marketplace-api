@@ -1,8 +1,8 @@
 import crypto            from "crypto";
 import mongoose, { Types } from "mongoose";
-import IdempotencyKey, { IIdempotencyKey } from "../domains/webhook/idempotency.model";
 import logger            from "./logger";
 import { SERVICE_NAME }  from "../constants";
+import idempotencyModel, { IIdempotencyKey } from "../domains/wallet/idempotency.model";
 
 export const idempotencyRepository = {
   buildHash(
@@ -17,7 +17,7 @@ export const idempotencyRepository = {
 
   async find(requestHash: string): Promise<IIdempotencyKey | null> {
     try {
-      return await IdempotencyKey.findOne({ requestHash }).lean().exec();
+      return await idempotencyModel.findOne({ requestHash }).lean().exec();
     } catch (err) {
       logger.warn("idempotency_key_lookup_failed", {
         event:       "idempotency_key_lookup_failed",
@@ -42,7 +42,7 @@ export const idempotencyRepository = {
   ): Promise<void> {
     try {
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      await IdempotencyKey.create([{ ...data, expiresAt }], { session });
+      await idempotencyModel.create([{ ...data, expiresAt }], { session });
     } catch (err) {
       const error = err as { code?: number };
       if (error.code !== 11000) {

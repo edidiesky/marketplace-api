@@ -1,15 +1,15 @@
-import logger from "../utils/logger";
-import redisClient from "../config/redis";
-import { connectRabbitMQ } from "../messaging/connection";
-import { connectAuthConsumer } from "../messaging/consumer";
-// import { seedRoles } from "../seeds/roles.seed";
+import logger                      from "../utils/logger";
+import redisClient                  from "../config/redis";
+import { connectRabbitMQ }          from "../messaging/connection";
+import { connectAuthConsumer }      from "../messaging/consumer";
 import { trackError, serverHealthGauge } from "../utils/metrics";
-import { SERVICE_NAME } from "../constants";
-import { connectMongoDB } from "../config/database";
+import { SERVICE_NAME }             from "../constants";
+import { connectMongoDB }           from "../config/database";
+import { rbacService }              from "../domains/permissions/rbac.service";
 
 interface InitStep {
   name: string;
-  fn: () => Promise<void>;
+  fn:   () => Promise<void>;
 }
 
 async function runStep(step: InitStep): Promise<void> {
@@ -18,22 +18,18 @@ async function runStep(step: InitStep): Promise<void> {
     await step.fn();
     const ms = Number(process.hrtime.bigint() - start) / 1e6;
     logger.info("bootstrap_step_complete", {
-      event: "bootstrap_step_complete",
-      service: SERVICE_NAME,
-      step: step.name,
+      event:      "bootstrap_step_complete",
+      service:    SERVICE_NAME,
+      step:       step.name,
       durationMs: ms.toFixed(2),
     });
   } catch (err) {
-    trackError(
-      `${step.name}_initialization_failed`,
-      "server_initialization",
-      "critical",
-    );
+    trackError(`${step.name}_initialization_failed`, "server_initialization", "critical");
     logger.error("bootstrap_step_failed", {
-      event: "bootstrap_step_failed",
+      event:   "bootstrap_step_failed",
       service: SERVICE_NAME,
-      step: step.name,
-      error: err instanceof Error ? err.message : String(err),
+      step:    step.name,
+      error:   err instanceof Error ? err.message : String(err),
     });
     throw err;
   }
@@ -44,17 +40,12 @@ export async function bootstrapServer(): Promise<void> {
   if (!mongoUrl) throw new Error("DATABASE_URL is not defined");
 
   const steps: InitStep[] = [
-    { name: "mongodb", fn: () => connectMongoDB(mongoUrl) },
-    {
-      name: "redis",
-      fn: async () => {
-        await redisClient.ping();
-      },
-    },
-    { name: "rabbitmq", fn: connectRabbitMQ },
-    // { name: "seed_permissions", fn: async () => { await seedPermissions(); } },
-    // { name: "seed_roles",       fn: seedRoles },
-    { name: "auth_consumer", fn: connectAuthConsumer },
+    { name: "mongodb",       fn: () => connectMongoDB(mongoUrl)                      },
+    { name: "redis",         fn: async () => { await redisClient.ping(); }            },
+    { name: "rabbitmq",      fn: () => connectRabbitMQ()                              },
+    // Arrow wrapper preserves `this` context on rbacService
+    { name: "rbac_seed",     fn: () => rbacService.seedRolesAndPermissions()          },
+    { name: "auth_consumer", fn: () => connectAuthConsumer()                          },
   ];
 
   const start = process.hrtime.bigint();
@@ -66,9 +57,9 @@ export async function bootstrapServer(): Promise<void> {
   serverHealthGauge.set(1);
 
   logger.info("bootstrap_complete", {
-    event: "bootstrap_complete",
-    service: SERVICE_NAME,
-    totalMs: totalMs.toFixed(2),
-    steps: steps.length,
+    event:    "bootstrap_complete",
+    service:  SERVICE_NAME,
+    totalMs:  totalMs.toFixed(2),
+    steps:    steps.length,
   });
 }

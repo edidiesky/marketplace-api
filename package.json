@@ -1,0 +1,13 @@
+{
+  "name": "infra",
+  "version": "1.0.0",
+  "scripts": {
+    "docker:up": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml up -d",
+    "docker:up:build": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml up -d --build",
+    "docker:down": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml down",
+    "docker:down:clean": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml down -v",
+    "docker:logs": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml logs -f --tail=100",
+    "docker:ps": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml ps",
+    "docker:restart": "docker compose -f _infrastructure/docker/development/docker-compose.dev.yml restart proptytax"
+  }
+}

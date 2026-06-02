@@ -1,7 +1,7 @@
 import RulesModel, { IRules } from "../models/Rules";
 import { IRulesRepository } from "./IRulesRepository";
 import logger from "../utils/logger";
-import mongoose, { FilterQuery, Types } from "mongoose";
+import mongoose from "mongoose";
 import { measureDatabaseQuery } from "../utils/metrics";
 import { redisClient } from "../redis/redisClient";
 
@@ -67,7 +67,7 @@ export class RulesRepository implements IRulesRepository {
   }
 
   async getRules(
-    query: FilterQuery<IRules>,
+    query: Partial<IRules>,
     skip: number,
     limit: number,
   ): Promise<IRules[] | null> {
@@ -177,7 +177,7 @@ export class RulesRepository implements IRulesRepository {
     logger.info("Rule deleted and cache invalidated", { ruleId });
   }
 
-  async getStoreRules(query: FilterQuery<IRules>, skip: number, limit: number) {
+  async getStoreRules(query: Partial<IRules>, skip: number, limit: number) {
      const cacheKey = this.getSearchCacheKey(query, skip, limit);
     const cached = await this.getCache<IRules[]>(cacheKey);
     if (cached) {

@@ -8,22 +8,16 @@ interface MongoServerError {
   keyValue?: Record<string, unknown>;
 }
 
-function handleMongooseCastError(
-  err: MongooseError.CastError
-): AppError {
+function handleMongooseCastError(err: MongooseError.CastError): AppError {
   return AppError.badRequest(
     `Invalid value for field "${err.path}": ${err.value}`
   );
 }
 
-function handleMongooseDuplicateKey(
-  err: MongoServerError
-): AppError {
-  const field  = err.keyValue ? Object.keys(err.keyValue)[0] : "field";
-  const value  = err.keyValue ? Object.values(err.keyValue)[0] : "";
-  return AppError.conflict(
-    `${field} "${value}" already exists.`
-  );
+function handleMongooseDuplicateKey(err: MongoServerError): AppError {
+  const field = err.keyValue ? Object.keys(err.keyValue)[0]   : "field";
+  const value = err.keyValue ? Object.values(err.keyValue)[0] : "";
+  return AppError.conflict(`${field} "${value}" already exists.`);
 }
 
 function handleMongooseValidationError(
@@ -35,10 +29,13 @@ function handleMongooseValidationError(
   return AppError.badRequest(`Validation failed: ${messages}`);
 }
 
-function handleJoiValidationError(
-  err: { isJoi: boolean; details: Array<{ message: string }> }
-): AppError {
-  const messages = err.details.map((d) => d.message.replace(/"/g, "")).join(", ");
+function handleJoiValidationError(err: {
+  isJoi:   boolean;
+  details: Array<{ message: string }>;
+}): AppError {
+  const messages = err.details
+    .map((d) => d.message.replace(/"/g, ""))
+    .join(", ");
   return AppError.badRequest(messages);
 }
 
@@ -58,14 +55,21 @@ function normalizeError(err: unknown): AppError {
     return handleMongooseDuplicateKey(mongoErr);
   }
 
-  const joiErr = err as { isJoi?: boolean; details?: Array<{ message: string }> };
+  const joiErr = err as {
+    isJoi?:   boolean;
+    details?: Array<{ message: string }>;
+  };
   if (joiErr.isJoi === true && Array.isArray(joiErr.details)) {
     return handleJoiValidationError(
       err as { isJoi: boolean; details: Array<{ message: string }> }
     );
   }
 
-  const anyErr = err as { statusCode?: number; message?: string; stack?: string };
+  const anyErr = err as {
+    statusCode?: number;
+    message?:    string;
+    stack?:      string;
+  };
   const statusCode = anyErr.statusCode ?? 500;
   const message    = anyErr.message    ?? "An unexpected error occurred.";
 
@@ -76,10 +80,10 @@ function normalizeError(err: unknown): AppError {
 }
 
 export function errorHandler(
-  err:  unknown,
-  req:  Request,
-  res:  Response,
-  next: NextFunction
+  err:   unknown,
+  req:   Request,
+  res:   Response,
+  _next: NextFunction
 ): void {
   const error = normalizeError(err);
 
@@ -109,9 +113,8 @@ export function errorHandler(
     message: error.message,
   };
 
-  if (error.details) {
-    body["details"] = error.details;
-  }
+  if (error.details)     body["details"]     = error.details;
+  if (error.failedItems) body["failedItems"] = error.failedItems;
 
   if (process.env.NODE_ENV === "development") {
     body["stack"] = error.stack;
@@ -122,7 +125,7 @@ export function errorHandler(
 
 export function NotFound(
   req:  Request,
-  res:  Response,
+  _res: Response,
   next: NextFunction
 ): void {
   next(AppError.notFound(`Cannot ${req.method} ${req.originalUrl}`));

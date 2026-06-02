@@ -4,11 +4,6 @@ import helmet       from "helmet";
 import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
-
-import paymentRoutes              from "./domains/payment/payment.routes";
-import walletRoutes               from "./domains/wallet/wallet.routes";
-import payoutRoutes               from "./domains/payout/payout.routes";
-import webhookRoutes              from "./domains/webhook/webhook.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";
 import { reqReplyTime, paymentRegistry } from "./utils/metrics";
@@ -41,11 +36,6 @@ app.use((req, res, next) => {
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "payment-service" });
 });
-
-app.use("/api/v1/payments",  paymentRoutes);
-app.use("/api/v1/wallets",   walletRoutes);
-app.use("/api/v1/payouts",   payoutRoutes);
-app.use("/api/v1/webhooks",  webhookRoutes);
 
 app.get("/metrics", async (_req, res) => {
   try {

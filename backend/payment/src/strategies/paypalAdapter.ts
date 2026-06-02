@@ -1,14 +1,12 @@
-import {
-  IAdapterRequest,
-  IPaymentProcessRequest,
-  IPaymentResponse,
-} from "../types";
+
+import { IAdapterRequest, IPaymentProcessRequest, IPaymentResponse } from ".";
 import logger from "../utils/logger";
 import axios from "axios";
 
 const createPaypalAdapter = (req: IAdapterRequest) => {
   const { secretKey } = req;
   return {
+
     async process(processBody: IPaymentProcessRequest) {
       const { amount, callbackUrl, currency, email, phone, userId, name } =
         processBody;
@@ -17,7 +15,6 @@ const createPaypalAdapter = (req: IAdapterRequest) => {
         .toString()
         .padStart(6, "0");
       try {
-        logger.info("callbackUrl log:", callbackUrl);
         if (!callbackUrl) {
           throw new Error("Callback URL is required for Stripe payment");
         }

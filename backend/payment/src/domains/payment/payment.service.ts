@@ -7,17 +7,13 @@ import { idempotencyRepository } from "../../utils/idempotency";
 import { createPaymentAdapter } from "../../strategies";
 import { AppError }            from "../../utils/AppError";
 import logger                  from "../../utils/logger";
-import redisClient             from "../../config/redis";
 import {
   SERVICE_NAME,
   ORDER_SERVICE_URL,
   TIMEOUT_MS,
-  PLATFORM_FEE_RATE,
 } from "../../constants";
 import { requestContext }      from "../../context/requestContext";
 import {
-  publishPaymentCompleted,
-  publishPaymentFailed,
   publishPaymentRefunded,
 } from "../../messaging/publisher";
 import { OutboxEventType }     from "../outbox/outbox.model";
@@ -31,7 +27,6 @@ import {
 } from "./payment.dto";
 import {
   IPayment,
-  PaymentGateway,
   PaymentMethod,
   PaymentStatus,
 } from "./payment.model";
@@ -433,7 +428,7 @@ export const paymentService = {
 
   async processWebhookFailure(
     transactionId:    string,
-    rawBody:          Record<string, unknown>,
+    _rawBody:          Record<string, unknown>,
     metadata:         Record<string, unknown>,
     idempotencyHash:  string,
     session:          mongoose.ClientSession

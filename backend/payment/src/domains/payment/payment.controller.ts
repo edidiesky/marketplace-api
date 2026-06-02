@@ -2,13 +2,12 @@ import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
 import { paymentService }       from "./payment.service";
 import { AuthenticatedRequest } from "../../middleware/contextMiddleware";
-import { AppError }             from "../../utils/AppError";
-import { Types }                from "mongoose";
 import {
   SUCCESSFULLY_CREATED_STATUS_CODE,
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
 import { PaymentGateway }       from "./payment.model";
+import { buildPaymentQuery } from "../../utils/buildQuery";
 
 export const InitializePaymentHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -49,19 +48,10 @@ export const InitializePaymentHandler = asyncHandler(
 
 export const GetPaymentHistoryHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = (req as AuthenticatedRequest).user;
     const page       = Number(req.query["page"]  ?? 1);
     const limit      = Number(req.query["limit"] ?? 20);
-    const status     = req.query["status"]   as string | undefined;
-    const gateway    = req.query["gateway"]  as string | undefined;
-    const orderId    = req.query["orderId"]  as string | undefined;
 
-    const query: Record<string, unknown> = {
-      customerId: new Types.ObjectId(userId),
-    };
-    if (status)  query["status"]  = status;
-    if (gateway) query["gateway"] = gateway;
-    if (orderId) query["orderId"] = new Types.ObjectId(orderId);
+    const query: Record<string, unknown> = buildPaymentQuery(req)
 
     const result = await paymentService.getPaymentHistory(query, page, limit);
 

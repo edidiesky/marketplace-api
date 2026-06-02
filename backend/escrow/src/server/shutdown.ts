@@ -2,8 +2,8 @@ import http      from "http";
 import mongoose  from "mongoose";
 import logger    from "../utils/logger";
 import redisClient from "../config/redis";
-import { disconnectRabbitMQ }            from "../messaging/connection";
-import { stopOutboxPoller }              from "../utils/outboxPoller";
+// import { disconnectRabbitMQ }            from "../messaging/connection";
+// import { stopOutboxPoller }              from "../utils/outboxPoller";
 import { trackError, serverHealthGauge } from "../utils/metrics";
 import { SERVICE_NAME }                  from "../constants";
 
@@ -26,12 +26,12 @@ export async function gracefulShutdown(
   const start = process.hrtime.bigint();
 
   try {
-    stopOutboxPoller();
+    // stopOutboxPoller();
     await closeHttpServer(server);
 
     const steps = [
       { name: "mongoose",  fn: async () => { await mongoose.connection.close(); } },
-      { name: "rabbitmq",  fn: disconnectRabbitMQ },
+      // { name: "rabbitmq",  fn: disconnectRabbitMQ },
       { name: "redis",     fn: async () => { await redisClient.quit(); } },
     ];
 

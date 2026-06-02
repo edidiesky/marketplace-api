@@ -1,9 +1,5 @@
 "use client"
 import React from 'react';
-import { AnimatePresence } from "framer-motion";
-import LoginModal from '@/components/modals/auth/LoginModal';
-import RegisterModal from '@/components/modals/auth/RegisterModal';
-import { useSelector } from 'react-redux'
 
 const ModalProvider = () => {
     // const {

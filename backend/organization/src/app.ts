@@ -5,12 +5,12 @@ import cors         from "cors";
 import cookieParser from "cookie-parser";
 import morgan       from "morgan";
 
-import organizationRoutes from "./domains/organization/";
+import organizationRoutes from "./domains/organization/organization.routes";
 import { errorHandler, NotFound }    from "./middleware/error-handler";
 import { contextMiddleware }         from "./middleware/contextMiddleware";
 import { reqReplyTime, orgRegistry } from "./utils/metrics";
 import logger                        from "./utils/logger";
-import { SERVER_ERROR_STATUS_CODE }  from "./constants";
+import { SERVER_ERROR_STATUS_CODE }  from "./constant";
 
 const app = express();
 

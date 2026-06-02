@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequest } from "../../middleware/validate.middleware";
-import { authenticate }    from "../../middleware/authenticate.middleware";
+import { authenticate }    from "../../middleware/auth.middleware";
 import {
   createProductSchema,
   updateProductSchema,

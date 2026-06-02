@@ -4,7 +4,7 @@ import logger    from "../utils/logger";
 import redisClient from "../config/redis";
 import { disconnectRabbitMQ }            from "../messaging/connection";
 import { trackError, serverHealthGauge } from "../utils/metrics";
-import { SERVICE_NAME }                  from "../constants";
+import { SERVICE_NAME }                  from "../constant";
 
 async function closeHttpServer(server: http.Server): Promise<void> {
   return new Promise((resolve, reject) => {

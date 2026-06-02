@@ -1,18 +1,39 @@
 import { Request, Response, NextFunction } from "express";
-import redisClient from "../config/redis";
+import redisClient                         from "../config/redis";
 import RolePermission from "../domains/role-permissions/role-permission.model";
-import UserRole from "../domains/user-roles/user-role.model";
-import { IAction, IResource } from "../domains/permissions/permission.model";
-import { AppError } from "../utils/AppError";
-import logger from "../utils/logger";
+import UserRole                            from "../domains/user-roles/user-role.model";
+import { IAction, IResource }              from "../domains/permissions/permission.constant";
+import { AppError }                        from "../utils/AppError";
+import logger                              from "../utils/logger";
 import { PERMISSION_CACHE_TTL_SEC, SERVICE_NAME } from "../constants";
-import { requestContext } from "../context/requestContext";
-import { AuthenticatedRequest } from "./contextMiddleware";
+import { requestContext }                  from "../context/requestContext";
+import { AuthenticatedRequest }            from "./contextMiddleware";
+import { Types } from "mongoose";
 
 interface PermissionCacheEntry {
   permissions: string[];
   cachedAt:    number;
 }
+
+interface PopulatedPermission {
+  resource: string;
+  action:   string;
+}
+
+
+interface UserRoleLean {
+  roleId: Types.ObjectId;
+}
+
+interface RolePermLean {
+  _id:          Types.ObjectId;
+  roleId:       Types.ObjectId;
+  permissionId: PopulatedPermission;
+  granted:      boolean;
+  createdAt:    Date;
+  updatedAt:    Date;
+}
+
 
 function permissionCacheKey(userId: string): string {
   return `permissions:${userId}`;
@@ -30,42 +51,47 @@ export async function invalidatePermissionCache(
   });
 }
 
+
 async function resolvePermissions(userId: string): Promise<string[]> {
   const cacheKey = permissionCacheKey(userId);
-  const cached   = await redisClient.get(cacheKey);
 
-  if (cached) {
-    return (JSON.parse(cached) as PermissionCacheEntry).permissions;
-  }
+  try {
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return (JSON.parse(cached) as PermissionCacheEntry).permissions;
+    }
+  } catch {}
 
-  const userRoles = await UserRole.find({ userId }).lean();
+  const userRoles: UserRoleLean[] = await UserRole.find({ userId })
+    .lean()
+    .exec() as UserRoleLean[];
+
   if (userRoles.length === 0) return [];
 
   const roleIds = userRoles.map((ur) => ur.roleId);
-  const rolePerms = await RolePermission.find({
-    roleId:  { $in: roleIds },
-    granted: true,
-  })
-    .populate("permissionId")
-    .lean();
 
+const rolePerms = await RolePermission.find({
+  roleId:  { $in: roleIds },
+  granted: true,
+})
+  .populate("permissionId")
+  .lean()
+  .exec() as unknown as RolePermLean[];
+  
   const permissions = rolePerms.map((rp) => {
-    const perm = rp.permissionId as unknown as {
-      resource: string;
-      action:   string;
-    };
-    return `${perm.resource}:${perm.action}`;
+    return `${rp.permissionId.resource}:${rp.permissionId.action}`;
   });
 
-  await redisClient.setex(
-    cacheKey,
-    PERMISSION_CACHE_TTL_SEC,
-    JSON.stringify({ permissions, cachedAt: Date.now() })
-  );
+  try {
+    await redisClient.setex(
+      cacheKey,
+      PERMISSION_CACHE_TTL_SEC,
+      JSON.stringify({ permissions, cachedAt: Date.now() })
+    );
+  } catch {}
 
   return permissions;
 }
-
 export function checkPermission(resource: IResource, action: IAction) {
   return async (
     req:  Request,
@@ -97,7 +123,10 @@ export function checkPermission(resource: IResource, action: IAction) {
         const err = AppError.forbidden(
           `You do not have permission to ${action} ${resource}.`
         );
-        res.status(err.statusCode).json({ success: false, message: err.message });
+        res.status(err.statusCode).json({
+          success: false,
+          message: err.message,
+        });
         return;
       }
 

@@ -5,7 +5,7 @@ import {
   EXCHANGES,
   QUEUES,
   ROUTING_KEYS,
-} from "../constants";
+} from "../constant";
 
 const MAX_RETRIES         = 10;
 const BASE_RETRY_DELAY_MS = 1_000;

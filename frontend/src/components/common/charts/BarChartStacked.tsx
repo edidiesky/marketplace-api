@@ -1,11 +1,10 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { ChartSelect } from "./Chartselect";
 
 type FilterOption = { label: string; value: string };
 
@@ -25,12 +24,13 @@ interface BarChartStackedProps {
   filterOptions?: FilterOption[];
   isCurrency?: boolean;
   emptyMessage?: string;
+  showBorder?: boolean;
   hideHeader?: boolean;
 }
 
 const DEFAULT_FILTERS: FilterOption[] = [
-  { label: "7 Days",   value: "7-days"   },
-  { label: "3 Weeks",  value: "3-weeks"  },
+  { label: "7 Days", value: "7-days" },
+  { label: "3 Weeks", value: "3-weeks" },
   { label: "3 Months", value: "3-months" },
 ];
 
@@ -42,14 +42,19 @@ function formatDate(value: number | string): string {
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000_000) return `₦${(value / 1_000_000_000).toFixed(1)}B`;
-  if (value >= 1_000_000)     return `₦${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000)         return `₦${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1_000_000) return `₦${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `₦${(value / 1_000).toFixed(1)}K`;
   return `₦${value}`;
+}
+
+interface TooltipPayloadItem {
+  value: number;
+  dataKey: string;
 }
 
 interface TooltipProps {
   active?: boolean;
-  payload?: { value: number; dataKey: string }[];
+  payload?: TooltipPayloadItem[];
   label?: number | string;
   dataKeys: DataKey[];
   chartConfig: ChartConfig;
@@ -66,111 +71,60 @@ function CustomTooltip({ active, payload, label, dataKeys, chartConfig, isCurren
       style={{
         background: "white",
         border: "0.5px solid #e8e6e3",
-        borderRadius: "10px",
-        padding: "14px 16px",
-        minWidth: "210px",
+        padding: "10px 14px",
+        minWidth: "180px",
         display: "flex",
         flexDirection: "column",
-        gap: "10px",
-        boxShadow: "0 4px 16px 0 rgba(0,0,0,0.08)",
+        gap: "8px",
+        boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
       }}
     >
-      {/* Date */}
-      <p
-        style={{
-          fontSize: "11px",
-          color: "#777b86",
-          fontWeight: 500,
-          letterSpacing: "0.04em",
-          margin: 0,
-          textTransform: "uppercase",
-        }}
-      >
+      <p style={{ fontSize: "14px", color: "#17191c", margin: 0 }}>
         {formatDate(label ?? "")}
       </p>
-
-      {/* Total row */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          borderBottom: "0.5px solid #f2f0ed",
-          paddingBottom: "10px",
-        }}
-      >
-        <span style={{ fontSize: "12px", color: "#777b86" }}>
-          {isCurrency ? "Total revenue" : "Total"}
-        </span>
-        <span style={{ fontSize: "20px", fontWeight: 600, color: "#17191c", lineHeight: 1 }}>
+      <p style={{ fontSize: "14px", color: "#4c4c4c", margin: 0 }}>
+        {isCurrency ? "Total revenue" : "Total"}:{" "}
+        <span style={{ color: "#17191c" }}>
           {isCurrency ? formatCurrency(total) : total.toLocaleString("en-NG")}
         </span>
-      </div>
+      </p>
+      {dataKeys.map((key, i) => {
+        const val = payload[i]?.value ?? 0;
+        const configEntry = chartConfig[key.datakey];
+        const seriesLabel =
+          typeof configEntry === "object" && "label" in configEntry
+            ? String(configEntry.label)
+            : key.datakey;
+        return (
+          <p key={key.datakey} style={{ fontSize: "14px", margin: 0 }}>
+            <span style={{ color: key.color, }}>{seriesLabel}:</span>{" "}
+            <span style={{ color: "#17191c" }}>
+              {isCurrency ? formatCurrency(val) : val.toLocaleString("en-NG")}
+            </span>
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
-      {/* Per-series rows with percentage bars */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {dataKeys.map((key, i) => {
-          const val = payload[i]?.value ?? 0;
-          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
-          const configEntry = chartConfig[key.datakey];
-          const seriesLabel =
-            typeof configEntry === "object" && "label" in configEntry
-              ? String(configEntry.label)
-              : key.datakey;
-
-          return (
-            <div key={key.datakey} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    backgroundColor: key.color,
-                    flexShrink: 0,
-                  }}
-                />
-                <span style={{ fontSize: "12px", color: "#4c4c4c", flex: 1 }}>
-                  {seriesLabel}
-                </span>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#17191c" }}>
-                  {isCurrency ? formatCurrency(val) : val.toLocaleString("en-NG")}
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "#a3a6af",
-                    minWidth: "34px",
-                    textAlign: "right",
-                  }}
-                >
-                  {pct}%
-                </span>
-              </div>
-              {/* Mini percentage bar */}
-              <div
-                style={{
-                  height: "3px",
-                  width: "100%",
-                  background: "#f2f0ed",
-                  borderRadius: "99px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "3px",
-                    width: `${pct}%`,
-                    backgroundColor: key.color,
-                    borderRadius: "99px",
-                    transition: "width 0.3s ease",
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+// Shared legend matching the image: circle dot + label, wrapping flex row
+function ChartLegendRow({ dataKeys, chartConfig }: { dataKeys: DataKey[]; chartConfig: ChartConfig }) {
+  return (
+    <div className="flex items-center justify-center gap-x-4 gap-y-2 flex-wrap pt-2 pb-1">
+      {dataKeys.map((key) => {
+        const configEntry = chartConfig[key.datakey];
+        const label =
+          typeof configEntry === "object" && "label" in configEntry
+            ? String(configEntry.label)
+            : key.datakey;
+        return (
+          <div key={key.datakey} className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: key.color }} />
+            <span className="text-sm text-[#4c4c4c]">{label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -184,39 +138,32 @@ export function BarChartStacked({
   onFilterChange,
   selectedFilter,
   filterOptions = DEFAULT_FILTERS,
-  isCurrency = true,
+  isCurrency = false,
   emptyMessage = "No chart data available",
+  showBorder = true,
   hideHeader = false,
 }: BarChartStackedProps) {
   return (
-    <div className={`flex flex-col ${!hideHeader ? "border":""}`}>
+    <div className={`${showBorder ? "border border-[#e8e6e3]" : ""} flex flex-col rounded-2xl`}>
       {!hideHeader && (
-        <div className="px-5 py-4 border-b border-[#e8e6e3] flex items-start justify-between gap-4">
-          <div>
-            <p className="text-base font-semibold text-[#17191c] font-dashboard_regular">{title}</p>
-            <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">{description}</p>
+        <div className="px-5 py-4 w-full border-b border-[#e8e6e3] flex items-start justify-between gap-4">
+          <div className="w-full">
+            <p className="text-lg font-bold text-[#17191c]">{title}</p>
+            <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
           </div>
-          <select
+          <ChartSelect
             value={selectedFilter}
-            onChange={(e) => onFilterChange(e.target.value)}
-            className="h-[34px] px-3 border border-[#e8e6e3] text-xs font-selleasy_normal bg-white outline-none focus:border-[#17191c] transition-colors shrink-0"
-          >
-            {filterOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+            onValueChange={onFilterChange}
+            options={filterOptions}
+          />
         </div>
       )}
 
       {data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-10 h-10 border border-[#e8e6e3] flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a3a6af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="4" height="18" /><rect x="10" y="8" width="4" height="13" /><rect x="17" y="13" width="4" height="8" />
-            </svg>
-          </div>
-          <p className="text-xs text-[#a3a6af] font-selleasy_normal">{emptyMessage}</p>
-        </div>
+        <div className="flex flex-col items-center justify-center py-8 gap-3">
+    <img src="/assets/icons/card.png" className="w-50 h-50" alt="" />
+    <p className="text-sm text-[#a3a6af]">{emptyMessage}</p>
+  </div>
       ) : (
         <div className="px-2 py-4">
           <ChartContainer config={chartConfig} className="w-full h-[280px] lg:h-[320px]">
@@ -228,28 +175,21 @@ export function BarChartStacked({
                 axisLine={false}
                 tickMargin={8}
                 minTickGap={32}
-                tick={{ fontSize: 11, fill: "#777b86", fontFamily: "'DM Sans', sans-serif" }}
+                tick={{ fontSize: 14, fill: "#777b86" }}
                 tickFormatter={(v) => formatDate(v)}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                width={isCurrency ? 70 : 40}
-                tick={{ fontSize: 11, fill: "#777b86", fontFamily: "'DM Sans', sans-serif" }}
+                width={isCurrency ? 70 : 55}
+                tick={{ fontSize: 14, fill: "#777b86" }}
                 tickFormatter={(v: number) => isCurrency ? formatCurrency(v) : v.toLocaleString("en-NG")}
               />
               <ChartTooltip
                 cursor={{ fill: "#f2f0ed" }}
-                content={
-                  <CustomTooltip
-                    dataKeys={dataKeys}
-                    chartConfig={chartConfig}
-                    isCurrency={isCurrency}
-                  />
-                }
+                content={<CustomTooltip dataKeys={dataKeys} chartConfig={chartConfig} isCurrency={isCurrency} />}
               />
-              <ChartLegend content={({ payload }) => <ChartLegendContent payload={payload} />} />
               {dataKeys.map((key, index) => (
                 <Bar
                   key={key.datakey}
@@ -258,17 +198,18 @@ export function BarChartStacked({
                   fill={key.color}
                   radius={
                     dataKeys.length === 1
-                      ? [100, 100, 100, 100]
+                      ? [20, 20, 20, 20]
                       : index === 0
-                      ? [0, 0, 100, 100]
+                      ? [0, 0, 20, 20]
                       : index === dataKeys.length - 1
-                      ? [100, 100, 0, 0]
+                      ? [20, 20, 0, 0]
                       : [0, 0, 0, 0]
                   }
                 />
               ))}
             </BarChart>
           </ChartContainer>
+          <ChartLegendRow dataKeys={dataKeys} chartConfig={chartConfig} />
         </div>
       )}
     </div>

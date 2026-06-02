@@ -6,7 +6,7 @@ import logger                              from "../utils/logger";
 interface MongoServerError {
   code?:     number;
   keyValue?: Record<string, unknown>;
-}
+} 
 
 function handleMongooseCastError(
   err: MongooseError.CastError
@@ -79,7 +79,7 @@ export function errorHandler(
   err:  unknown,
   req:  Request,
   res:  Response,
-  next: NextFunction
+  _next: NextFunction
 ): void {
   const error = normalizeError(err);
 
@@ -126,7 +126,7 @@ export function errorHandler(
 
 export function NotFound(
   req:  Request,
-  res:  Response,
+  _res:  Response,
   next: NextFunction
 ): void {
   next(AppError.notFound(`Cannot ${req.method} ${req.originalUrl}`));

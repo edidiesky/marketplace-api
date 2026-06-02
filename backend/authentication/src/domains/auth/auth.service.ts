@@ -42,6 +42,7 @@ import {
   publishNotificationResetPassword,
   publishUserOnboardingCompleted,
 } from "../../messaging/publisher";
+import { rbacService } from "../permissions/rbac.service";
 
 function deriveOrganizationType(userType: UserType): OrganizationType {
   switch (userType) {
@@ -241,6 +242,8 @@ export const authService = {
     });
 
     session.endSession();
+
+    await rbacService.assignDefaultRoleToUser(user._id.toString(), userType);
 
     requestContext.set({
       userId: user._id.toString(),

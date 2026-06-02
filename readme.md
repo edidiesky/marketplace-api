@@ -7,14 +7,14 @@ the hardest distributed systems problems in e-commerce: inventory consistency
 under concurrent load, atomic payment processing, and reliable async event
 delivery across independently deployable services.
 
-Every record is scoped by `storeId` and `organizationId`. I favour consistency
-over availability at the transaction boundary: inventory reservation is
+Every record is scoped by `storeId` and `organizationId`. I delibrately favour consistency
+over availability at the transaction boundary in te sense that inventory reservation is
 synchronous and fail-fast, payment writes are atomic inside a MongoDB
 transaction, and every critical event is published through a transactional
 outbox so a broker outage never causes a split-brain between the payment
 record and the event stream.
 
-Built on Node.js 20, TypeScript 5, MongoDB, RabbitMQ, Redis, and the full
+The application is built on Node.js 20, TypeScript 5, MongoDB, RabbitMQ, Redis, and the full
 Grafana observability stack.
 
 ---

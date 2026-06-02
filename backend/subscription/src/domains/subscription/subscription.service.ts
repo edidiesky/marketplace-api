@@ -4,7 +4,6 @@ import {
   ISubscription,
   PLAN_FEATURES,
   SubscriptionStatus,
-  IPlanFeatures,
 } from "./subscription.model";
 import { AppError } from "../../utils/AppError";
 import logger from "../../utils/logger";

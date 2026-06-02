@@ -1,11 +1,11 @@
 import { FilterQuery, Types } from "mongoose";
-import { AuthenticatedRequest } from "../types";
 import { Request } from "express";
-import { ICart } from "../models/Cart";
 import logger from "./logger";
+import { AuthenticatedRequest } from "../middleware/contextMiddleware";
+import { ICart } from "../domains/cart/cart.model";
 
 export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
-  const { userId, role } = (req as AuthenticatedRequest).user;
+  const { userId, userType } = (req as AuthenticatedRequest).user;
   const {
     name,
     productTitle,
@@ -23,7 +23,7 @@ export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
   let queryFilter: FilterQuery<Partial<ICart>> = {
     storeId: new Types.ObjectId(req.params.storeId),
   };
-  if (role !== "ADMIN") {
+  if (userType !== "ADMIN") {
     queryFilter.userId = new Types.ObjectId(userId);
   }
 
@@ -53,6 +53,6 @@ export const buildQuery = (req: Request): FilterQuery<Partial<ICart>> => {
       $gte: new Date(endDate as string),
     };
   }
-  logger.info("Built query filter", { queryFilter, role, userId });
+  logger.info("Built query filter", { queryFilter, userType, userId });
   return queryFilter;
 };

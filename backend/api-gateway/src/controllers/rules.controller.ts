@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { FilterQuery } from "mongoose";
 import { IRules } from "../models/Rules";
 import {
   RulesService,
@@ -43,8 +42,7 @@ export class RulesController {
       const page = Number(req.query.page ?? 1);
       const limit = Number(req.query.limit ?? 20);
 
-      const filter: FilterQuery<IRules> = {};
-      if (req.query.id_type) filter.id_type = String(req.query.id_type);
+      const filter: Partial<IRules> = {};
       if (req.query.resource) filter.resource = String(req.query.resource);
       if (req.query.enabled !== undefined) {
         filter.enabled = req.query.enabled === "true";

@@ -1,4 +1,4 @@
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose from "mongoose";
 import { IRules } from "../models/Rules";
 
 export interface IRulesRepository {
@@ -7,12 +7,12 @@ export interface IRulesRepository {
     session?: mongoose.ClientSession
   ) => Promise<IRules>;
   getRules: (
-    query: FilterQuery<IRules>,
+    query: Partial<IRules>,
     skip: number,
     limit: number
   ) => Promise<IRules[] | null>;
   getStoreRules: (
-    query: FilterQuery<IRules>,
+    query: Partial<IRules>,
     skip: number,
     limit: number
   ) => Promise<IRules[] | null>;

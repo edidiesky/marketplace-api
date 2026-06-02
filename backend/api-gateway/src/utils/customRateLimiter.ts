@@ -41,7 +41,7 @@ const createLimiter = (options: RateLimitOptions) => {
         code: "RATE_LIMIT_EXCEEDED",
       };
     },
-    handler: (req: Request, res: Response, next: NextFunction, optionsUsed) => {
+    handler: (req: Request, res: Response, _next: NextFunction, optionsUsed) => {
       logger.warn("Rate limit exceeded", {
         ip: req.ip,
         userId: req.user?.userId,

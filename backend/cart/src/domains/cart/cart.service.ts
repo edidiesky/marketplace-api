@@ -7,9 +7,6 @@ import {
   SERVICE_NAME,
   LOCK_TTL_SEC,
   CART_TTL_DAYS,
-  getJitter,
-  MAX_RETRIES,
-  BASE_DELAY_MS,
 } from "../../constants";
 import { requestContext }    from "../../context/requestContext";
 import { CartItemStatus, ICart } from "./cart.model";

@@ -7,7 +7,7 @@ import {
   trace,
 } from "@opentelemetry/api";
 import { getRabbitMQChannel }        from "./connection";
-import { QUEUES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
+import { QUEUES, SERVICE_NAME } from "../constants";
 import { requestContext }            from "../context/requestContext";
 import logger                        from "../utils/logger";
 import { randomUUID }                from "crypto";

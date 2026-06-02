@@ -1,15 +1,8 @@
-import { Document } from "mongoose";
 import Subscription, {
-  BillingPlan,
   ISubscription,
   SubscriptionStatus,
 } from "./subscription.model";
 
-type LeanSubscription = Omit<ISubscription, keyof Document> & {
-  _id:       import("mongoose").Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-};
 
 export const subscriptionRepository = {
   async create(

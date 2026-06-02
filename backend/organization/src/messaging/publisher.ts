@@ -1,6 +1,6 @@
 import { context, propagation } from "@opentelemetry/api";
 import { getRabbitMQChannel }   from "./connection";
-import { EXCHANGES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
+import { EXCHANGES, ROUTING_KEYS, SERVICE_NAME } from "../constant";
 import { requestContext }       from "../context/requestContext";
 
 function publish(

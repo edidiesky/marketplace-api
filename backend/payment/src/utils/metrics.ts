@@ -46,12 +46,37 @@ export const outboxProcessedCounter = new client.Counter({
   registers:  [register],
 });
 
+export const circuitBreakerCounter = new client.Counter({
+  name:       "gateway_circuit_breaker_events_total",
+  help:       "Total circuit breaker state change and request events",
+  labelNames: ["service", "event"],
+  registers:  [register],
+});
+
+export const circuitBreakerStateGauge = new client.Gauge({
+  name:       "gateway_circuit_breaker_state",
+  help:       "Circuit breaker state: 0=closed 1=halfOpen 2=open",
+  labelNames: ["service"],
+  registers:  [register],
+});
+
 export function trackError(
   errorType: string,
   operation: string,
   severity:  "low" | "medium" | "high" | "critical" = "medium"
 ): void {
   errorCounter.inc({ error_type: errorType, operation, severity });
+}
+
+export function trackCircuitBreakerEvent(
+  service: string,
+  event:   "open" | "halfOpen" | "close" | "failure" | "success" | "timeout" | "reject"
+): void {
+  circuitBreakerCounter.inc({ service, event });
+
+  if (event === "open")     circuitBreakerStateGauge.set({ service }, 2);
+  if (event === "halfOpen") circuitBreakerStateGauge.set({ service }, 1);
+  if (event === "close")    circuitBreakerStateGauge.set({ service }, 0);
 }
 
 export function reqReplyTime(

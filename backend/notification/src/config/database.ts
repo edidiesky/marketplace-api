@@ -1,113 +1,148 @@
-
-
 import mongoose from "mongoose";
-import logger from "../utils/logger";
-import { serverHealthGauge } from "../utils/metrics";
+import logger   from "../utils/logger";
+import { SERVICE_NAME } from "../constants";
 
-import client from "prom-client";
+const MAX_RETRIES   = 5;
+const BASE_DELAY_MS = 3_000;
+const MAX_DELAY_MS  = 30_000;
 
-export const databaseConnectionAttempts = new client.Counter({
-  name: "user_database_connection_attempts_total",
-  help: "Total database connection attempts",
-  labelNames: ["status", "error_type"],
-});
+function getJitter(): number {
+  return Math.random() * 1_000;
+}
 
-export const databaseConnectionDuration = new client.Histogram({
-  name: "user_database_connection_duration_seconds",
-  help: "Database connection attempt duration",
-  buckets: [0.1, 0.5, 1, 2, 5, 10, 30, 60],
-  labelNames: ["status", "attempt"],
-});
+function classifyError(err: unknown): {
+  errorType: string;
+  severity:  "low" | "medium" | "high" | "critical";
+  retryable: boolean;
+} {
+  const message = err instanceof Error ? err.message.toLowerCase() : "";
+  const code    = (err as { code?: string }).code;
 
+  if (message.includes("whitelist") || message.includes("ip")) {
+    return { errorType: "ip_whitelist",       severity: "critical", retryable: false };
+  }
+  if (message.includes("authentication") || message.includes("auth")) {
+    return { errorType: "authentication",     severity: "critical", retryable: false };
+  }
+  if (message.includes("timeout")) {
+    return { errorType: "connection_timeout", severity: "high",     retryable: true  };
+  }
+  if (message.includes("network")) {
+    return { errorType: "network",            severity: "high",     retryable: true  };
+  }
+  if (code === "EAI_AGAIN") {
+    return { errorType: "dns_resolution",     severity: "high",     retryable: true  };
+  }
+  if (message.includes("econnrefused")) {
+    return { errorType: "connection_refused", severity: "high",     retryable: true  };
+  }
+  if (message.includes("enotfound")) {
+    return { errorType: "host_not_found",     severity: "high",     retryable: true  };
+  }
 
-export const connectMongoDB = async (
-  mongoUrl: string,
-  maxRetries: number = 5,
-  retryDelay: number = 3000
-): Promise<void> => {
-  serverHealthGauge.set(0);
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const startTime = process.hrtime();
+  return { errorType: "unknown", severity: "high", retryable: true };
+}
+
+function registerConnectionEvents(): void {
+  mongoose.connection.on("disconnected", () => {
+    logger.warn("mongodb_disconnected", {
+      event:   "mongodb_disconnected",
+      service: SERVICE_NAME,
+    });
+  });
+
+  mongoose.connection.on("reconnected", () => {
+    logger.info("mongodb_reconnected", {
+      event:   "mongodb_reconnected",
+      service: SERVICE_NAME,
+    });
+  });
+
+  mongoose.connection.on("error", (err: Error) => {
+    logger.error("mongodb_connection_error", {
+      event:   "mongodb_connection_error",
+      service: SERVICE_NAME,
+      error:   err.message,
+    });
+  });
+
+  mongoose.connection.on("close", () => {
+    logger.info("mongodb_connection_closed", {
+      event:   "mongodb_connection_closed",
+      service: SERVICE_NAME,
+    });
+  });
+}
+
+export async function connectMongoDB(mongoUrl: string): Promise<void> {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const start = process.hrtime.bigint();
 
     try {
-      // connection pooling
       await mongoose.connect(mongoUrl, {
-        serverSelectionTimeoutMS: 10000,
-        socketTimeoutMS: 45000,
-        connectTimeoutMS: 30000,
-        retryWrites: true,
-        retryReads: true,
-        minPoolSize:10,
-        maxPoolSize:50,
+        serverSelectionTimeoutMS: 10_000,
+        socketTimeoutMS:          45_000,
+        connectTimeoutMS:         30_000,
+        retryWrites:              true,
+        retryReads:               true,
+        minPoolSize:              10,
+        maxPoolSize:              50,
       });
 
-      logger.info("MongoDB connected successfully", {
+      const ms = Number(process.hrtime.bigint() - start) / 1e6;
+
+      registerConnectionEvents();
+
+      logger.info("mongodb_connected", {
+        event:      "mongodb_connected",
+        service:    SERVICE_NAME,
         attempt,
-        totalAttempts: attempt,
+        durationMs: ms.toFixed(2),
       });
+
       return;
-    } catch (error: any) {
-      const duration = process.hrtime(startTime);
-      const durationSeconds = duration[0] + duration[1] / 1e9;
+    } catch (err) {
+      const ms           = Number(process.hrtime.bigint() - start) / 1e6;
+      const { errorType, severity, retryable } = classifyError(err);
+      const isLast       = attempt === MAX_RETRIES;
 
-    
-      let errorType = "unknown";
-      let severity: "low" | "medium" | "high" | "critical" = "high";
-
-      if (
-        error.message?.includes("whitelist") ||
-        error.message?.includes("IP")
-      ) {
-        errorType = "ip_whitelist";
-        severity = "critical";
-      } else if (error.message?.includes("timeout")) {
-        errorType = "connection_timeout";
-        severity = "high";
-      } else if (error.message?.includes("authentication")) {
-        errorType = "authentication";
-        severity = "critical";
-      } else if (error.message?.includes("network")) {
-        errorType = "network";
-        severity = "high";
-      } else if (error.code === "EAI_AGAIN") {
-        errorType = "dns_resolution";
-        severity = "high";
-      }
-
-      // Record failure metrics
-      databaseConnectionAttempts.inc({
-        status: "failure",
-        error_type: errorType,
-      });
-      databaseConnectionDuration.observe(
-        { status: "failure", attempt: attempt.toString() },
-        durationSeconds
-      );
-      logger.error(`MongoDB connection attempt ${attempt} failed`, {
-        error: error.message,
-        code: error.code,
-        errorType,
+      logger.error("mongodb_connection_attempt_failed", {
+        event:             "mongodb_connection_attempt_failed",
+        service:           SERVICE_NAME,
         attempt,
-        duration: durationSeconds,
-        remainingAttempts: maxRetries - attempt,
+        maxRetries:        MAX_RETRIES,
+        durationMs:        ms.toFixed(2),
+        errorType,
+        severity,
+        retryable,
+        remainingAttempts: MAX_RETRIES - attempt,
+        error:             err instanceof Error ? err.message : String(err),
       });
 
-      if (attempt === maxRetries) {
-        logger.error("Max MongoDB connection retries reached", {
-          error,
-          totalAttempts: maxRetries,
+      if (!retryable || isLast) {
+        logger.error("mongodb_connection_failed_permanently", {
+          event:       "mongodb_connection_failed_permanently",
+          service:     SERVICE_NAME,
           errorType,
+          totalAttempts: attempt,
         });
         throw new Error(
-          `Failed to connect to MongoDB after ${maxRetries} retries: ${errorType}`
+          `Failed to connect to MongoDB after ${attempt} attempt(s). Reason: ${errorType}`
         );
       }
 
-      const backoffDelay = retryDelay * Math.pow(2, attempt - 1);
-      logger.info(`Retrying MongoDB connection in ${backoffDelay}ms`, {
-        attempt: attempt + 1,
+      const delay =
+        Math.min(BASE_DELAY_MS * Math.pow(2, attempt - 1), MAX_DELAY_MS) +
+        getJitter();
+
+      logger.info("mongodb_connection_retrying", {
+        event:      "mongodb_connection_retrying",
+        service:    SERVICE_NAME,
+        nextAttempt: attempt + 1,
+        delayMs:    delay.toFixed(0),
       });
-      await new Promise((resolve) => setTimeout(resolve, backoffDelay));
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-};
+}

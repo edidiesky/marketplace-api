@@ -1,11 +1,11 @@
 import { FilterQuery, Types } from "mongoose";
-import { AuthenticatedRequest } from "../types";
 import { Request } from "express";
-import { IInventory } from "../models/Inventory";
 import logger from "./logger";
+import { IInventory } from "../domains/inventory/inventory.model";
+import { AuthenticatedRequest } from "../middleware/contextMiddleware";
 
 export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
-  const { userId, role } = (req as AuthenticatedRequest).user;
+  const { userId, userType } = (req as AuthenticatedRequest).user;
   const {
     productTitle,
     quantityAvailable,
@@ -18,7 +18,7 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
   let queryFilter: FilterQuery<Partial<IInventory>> = {
     storeId: new Types.ObjectId(req.params.storeId),
   };
-  if (role === "ADMIN" || role === "SELLER") {
+  if (userType === "ADMIN" || userType === "SELLER") {
     queryFilter.ownerId = new Types.ObjectId(userId);
   }
   if (productTitle) queryFilter.productTitle = productTitle;
@@ -37,6 +37,6 @@ export const buildQuery = (req: Request): FilterQuery<Partial<IInventory>> => {
       },
     ];
   }
-  logger.info("Built query filter", { queryFilter, role, userId });
+  logger.info("Built query filter", { queryFilter, userType, userId });
   return queryFilter;
 };

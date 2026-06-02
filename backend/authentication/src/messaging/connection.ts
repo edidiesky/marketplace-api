@@ -1,5 +1,6 @@
 import amqp from "amqplib";
 import { SERVICE_NAME, RABBITMQ_URL, EXCHANGES, QUEUES, ROUTING_KEYS } from "../constants";
+import logger from "../utils/logger";
 
 const MAX_RETRIES         = 10;
 const BASE_RETRY_DELAY_MS = 1_000;
@@ -50,7 +51,7 @@ export async function connectRabbitMQ(): Promise<void> {
       channel          = await connection.createChannel();
 
       connection.on("error", (error: Error) => {
-        console.error(JSON.stringify({
+        logger.error(JSON.stringify({
           event:   "rabbitmq_connection_error",
           service: SERVICE_NAME,
           error:   error.message,
@@ -59,7 +60,7 @@ export async function connectRabbitMQ(): Promise<void> {
 
       connection.on("close", () => {
         channel = null;
-        console.warn(JSON.stringify({
+        logger.warn(JSON.stringify({
           event:   "rabbitmq_connection_closed",
           service: SERVICE_NAME,
         }));
@@ -72,7 +73,7 @@ export async function connectRabbitMQ(): Promise<void> {
       for (const t of QUEUE_TOPOLOGY) {
         await channel.assertQueue(t.queue, t.options);
         await channel.bindQueue(t.queue, t.exchange, t.routingKey);
-        console.info(JSON.stringify({
+        logger.info(JSON.stringify({
           event:      "rabbitmq_queue_bound",
           service:    SERVICE_NAME,
           queue:      t.queue,
@@ -81,7 +82,7 @@ export async function connectRabbitMQ(): Promise<void> {
         }));
       }
 
-      console.info(JSON.stringify({
+      logger.info(JSON.stringify({
         event:    "rabbitmq_connected",
         service:  SERVICE_NAME,
         exchanges: EXCHANGE_LIST.map((e) => e.name),
@@ -91,7 +92,7 @@ export async function connectRabbitMQ(): Promise<void> {
       return;
     } catch (error) {
       const isLast = attempt === MAX_RETRIES - 1;
-      console.error(JSON.stringify({
+      logger.error(JSON.stringify({
         event:      "rabbitmq_connect_attempt_failed",
         service:    SERVICE_NAME,
         attempt:    attempt + 1,
@@ -125,12 +126,12 @@ export async function disconnectRabbitMQ(): Promise<void> {
       await channel.close();
       channel = null;
     }
-    console.info(JSON.stringify({
+    logger.info(JSON.stringify({
       event:   "rabbitmq_disconnected_gracefully",
       service: SERVICE_NAME,
     }));
   } catch (error) {
-    console.error(JSON.stringify({
+    logger.error(JSON.stringify({
       event:   "rabbitmq_disconnect_error",
       service: SERVICE_NAME,
       error:   error instanceof Error ? error.message : String(error),

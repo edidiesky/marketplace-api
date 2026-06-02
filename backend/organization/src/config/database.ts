@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import logger   from "../utils/logger";
-import { SERVICE_NAME } from "../constants";
+import { SERVICE_NAME } from "../constant";
 
 const MAX_RETRIES   = 5;
 const BASE_DELAY_MS = 3_000;

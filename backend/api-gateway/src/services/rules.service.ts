@@ -4,7 +4,6 @@ import { IRulesRepository } from "../repository/IRulesRepository";
 import { RulesEngine } from "../rules/engine";
 import { RateLimitRule, UserTier, Algorithm } from "../rules/repository";
 import logger from "../utils/logger";
-import { FilterQuery } from "mongoose";
 import mongoose from "mongoose";
 
 export interface CreateRuleDTO {
@@ -137,7 +136,7 @@ export class RulesService {
   }
 
   async getRules(
-    query: FilterQuery<IRules>,
+    query: Partial<IRules>,
     page: number,
     limit: number,
   ): Promise<PaginatedRules> {

@@ -1,4 +1,3 @@
-import { UserType, OrganizationType } from "../domains/auth/auth.model";
 
 export interface IOnboarding {
   email:         string;
@@ -15,17 +14,17 @@ export interface IOnboarding {
 
 export interface JWTPayload {
   userId:           string;
-  userType:         UserType;
+  userType:         string;
   organizationId:   string;
-  organizationType: OrganizationType;
+  organizationType: string;
   name:             string;
 }
 
 export interface AuthenticatedUser {
   userId:            string;
-  userType:          UserType;
+  userType:          string;
   organizationId?:   string;
-  organizationType?: OrganizationType;
+  organizationType?: string;
   roles?:            string[];
   name?:             string;
 }

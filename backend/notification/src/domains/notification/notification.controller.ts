@@ -97,7 +97,6 @@ export const LowStockAlertHandler = asyncHandler(
       quantityAvailable,
       reorderPoint,
       email,
-      sellerName,
     } = req.body as {
       inventoryId:       string;
       storeId:           string;

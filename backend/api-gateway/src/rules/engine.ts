@@ -1,5 +1,5 @@
 import RulesModel, { IRules, RulesIDType } from "../models/Rules";
-import { RateLimitRule, UserOverride, Algorithm } from "./repository";
+import { RateLimitRule, Algorithm } from "./repository";
 import logger from "../utils/logger";
 
 const RELOAD_INTERVAL_MS = 60_000;

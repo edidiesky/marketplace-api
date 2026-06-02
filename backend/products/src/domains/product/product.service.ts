@@ -47,6 +47,26 @@ function toDto(product: IProduct): ProductResponseDto {
 }
 
 export const productService = {
+  async getProductsByStoreQuery(
+  query: FilterQuery<Partial<IProduct>>,
+  page:  number,
+  limit: number
+): Promise<ProductListResponseDto> {
+  const skip = (page - 1) * limit;
+
+  const [products, total] = await Promise.all([
+    productRepository.findAll(query, skip, limit),
+    productRepository.count(query),
+  ]);
+
+  return {
+    products:   products.map(toDto),
+    totalCount: total,
+    totalPages: Math.ceil(total / limit),
+    page,
+    limit,
+  };
+},
   async createProduct(
     dto: CreateProductDto
   ): Promise<ProductResponseDto> {

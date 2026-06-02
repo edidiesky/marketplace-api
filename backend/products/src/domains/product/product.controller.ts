@@ -8,28 +8,15 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
 import { readGatewayContext } from "../../utils/readGatewayContext";
+import { buildProductQuery } from "../../utils/buildQuery";
 
 export const GetStoreProductsHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const ctx     = readGatewayContext(req);
-    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+    const page  = Number(req.query["page"]  ?? 1);
+    const limit = Number(req.query["limit"] ?? 20);
 
-    if (!storeId) throw AppError.badRequest("Store ID is required.");
-
-    const page      = Number(req.query["page"]     ?? 1);
-    const limit     = Number(req.query["limit"]    ?? 20);
-    const category  = req.query["category"]  as string  | undefined;
-    const isArchive = req.query["isArchive"] !== undefined
-      ? req.query["isArchive"] === "true"
-      : undefined;
-
-    const result = await productService.getProductsByStore({
-      storeId,
-      page,
-      limit,
-      category,
-      isArchive,
-    });
+    const query  = buildProductQuery(req);
+    const result = await productService.getProductsByStoreQuery(query, page, limit);
 
     res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
       success: true,
@@ -37,7 +24,6 @@ export const GetStoreProductsHandler = asyncHandler(
     });
   }
 );
-
 export const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { userId }  = (req as AuthenticatedRequest).user;

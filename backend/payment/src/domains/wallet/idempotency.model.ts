@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IIdempotencyKey extends Document {
+  _id:          Types.ObjectId;
   requestHash:  string;
   endpoint:     string;
   userId:       Types.ObjectId;
@@ -13,23 +14,49 @@ export interface IIdempotencyKey extends Document {
 
 const IdempotencyKeySchema = new Schema<IIdempotencyKey>(
   {
-    requestHash:  { type: String, required: true, unique: true },
-    endpoint:     { type: String, required: true },
-    userId:       { type: Schema.Types.ObjectId, required: true },
-    paymentId:    { type: String },
-    responseBody: { type: Schema.Types.Mixed, required: true },
-    statusCode:   { type: Number, required: true },
-    expiresAt:    {
-      type:  Date,
+    requestHash: {
+      type:     String,
       required: true,
-      index: { expireAfterSeconds: 0 },
+      unique:   true,
+      index:    true,
+    },
+    endpoint: {
+      type:     String,
+      required: true,
+    },
+    userId: {
+      type:     Schema.Types.ObjectId,
+      ref:      "User",
+      required: true,
+      index:    true,
+    },
+    paymentId: {
+      type: String,
+    },
+    responseBody: {
+      type:     Schema.Types.Mixed,
+      required: true,
+    },
+    statusCode: {
+      type:     Number,
+      required: true,
+    },
+    expiresAt: {
+      type:     Date,
+      required: true,
+      index:    true,
     },
   },
-  { timestamps: { createdAt: true, updatedAt: false } }
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+    versionKey: false,
+  }
 );
 
-IdempotencyKeySchema.index({ requestHash: 1 });
-IdempotencyKeySchema.index({ userId: 1, endpoint: 1 });
+IdempotencyKeySchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0 }
+);
 
 export default mongoose.model<IIdempotencyKey>(
   "IdempotencyKey",

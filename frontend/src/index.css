@@ -207,6 +207,9 @@ input::placeholder {
   color: #777;
 }
 
+textarea {
+  field-sizing: content;
+}
 form input {
   min-height: 50px;
   border: 1.5px solid rgba(0, 0, 0, 0.1);

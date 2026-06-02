@@ -12,7 +12,7 @@ const options = {
   volumeThreshold: 8,
 };
 
-export function getBreaker(serviceName: string,requestPath:string, action: ProxyFunction) {
+export function getBreaker(serviceName: string,_requestPath:string, action: ProxyFunction) {
   const breaker = new CircuitBreaker(action, options);
   breaker.fallback(() => {
     logger.warn(`Circuit breaker OPEN - rejecting request for ${serviceName}`);

@@ -2,14 +2,13 @@ import { Router, Request, Response, NextFunction } from "express";
 import { validateRequest } from "../../middleware/validate.middleware";
 import {
   initiateOnboardingSchema,
-  confirmEmailTokenSchema,
   finalSignupOnboardingSchema,
   loginSchema,
   twoFASchema,
   passwordResetSchema,
   requestPasswordResetSchema,
   changePasswordSchema,
-} from "../../validators/auth.validator";
+} from "./auth.validator";
 import {
   HandleInitiateOnboarding,
   HandleConfirmEmailToken,

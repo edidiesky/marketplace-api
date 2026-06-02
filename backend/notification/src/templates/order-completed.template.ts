@@ -8,7 +8,7 @@ export interface OrderCompletedTemplateData {
 export function orderCompletedTemplate(
   data: OrderCompletedTemplateData
 ): { subject: string; html: string } {
-  const { customerName, orderId, receiptUrl, storeId } = data;
+  const { customerName, orderId, receiptUrl } = data;
   const trackUrl = `${process.env.WEB_ORIGIN}/orders/${orderId}`;
 
   return {

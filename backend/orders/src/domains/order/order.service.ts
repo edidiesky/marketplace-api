@@ -2,13 +2,11 @@ import mongoose, { FilterQuery, Types } from "mongoose";
 import { orderRepository }              from "./order.repository";
 import { AppError }                     from "../../utils/AppError";
 import logger                           from "../../utils/logger";
-import redisClient                      from "../../config/redis";
 import {
   SERVICE_NAME,
   CART_SERVICE_URL,
   INVENTORY_SERVICE_URL,
   TIMEOUT_MS,
-  getJitter,
 } from "../../constants";
 import { requestContext }               from "../../context/requestContext";
 import {
@@ -30,7 +28,6 @@ import {
   UpdateFulfillmentDto,
 } from "./order.dto";
 import {
-  FulfillmentStatus,
   IOrder,
   IShippingAddress,
   OrderStatus,

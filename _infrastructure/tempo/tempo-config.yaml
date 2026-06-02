@@ -1,5 +1,6 @@
 server:
   http_listen_port: 3200
+  log_level:        info
 
 distributor:
   receivers:
@@ -10,6 +11,21 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:4317
 
+ingester:
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 48h
+
+metrics_generator:
+  registry:
+    external_labels:
+      source:  tempo
+      cluster: selleasi-dev
+  storage:
+    path: /tmp/tempo/generator/wal
+
 storage:
   trace:
     backend: local
@@ -17,3 +33,20 @@ storage:
       path: /tmp/tempo/blocks
     wal:
       path: /tmp/tempo/wal
+    pool:
+      max_workers: 100
+      queue_depth:  10000
+
+query_frontend:
+  search:
+    duration_slo:        5s
+    throughput_bytes_slo: 1.073741824e+09
+  trace_by_id:
+    duration_slo: 5s
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics

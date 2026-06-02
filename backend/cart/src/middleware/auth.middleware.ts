@@ -1,107 +1,68 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import logger from "../utils/logger";
-import { UNAUTHORIZED_STATUS_CODE } from "../constants";
-import { AuthenticatedRequest, Permission, RoleLevel } from "../types";
+import redisClient from "../config/redis";
+import { AppError } from "../utils/AppError";
+import { requestContext } from "../context/requestContext";
+import { AuthenticatedRequest } from "./contextMiddleware";
+import { JWTPayload } from "../types";
 
-export const authenticate = async (
-  req: Request,
-  res: Response,
+export function authenticate(
+  req:  Request,
+  res:  Response,
   next: NextFunction
-): Promise<void> => {
-  const token = req.cookies?.jwt || req.headers.authorization?.split(" ")[1];
+): void {
+  const token =
+    req.cookies?.jwt ??
+    req.headers.authorization?.replace("Bearer ", "");
 
   if (!token) {
-    logger.warn("Authentication failed: No token provided", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
-    });
-    res
-      .status(UNAUTHORIZED_STATUS_CODE)
-      .json({ error: "Authentication required" });
+    const err = AppError.unauthorized("No authentication token provided.");
+    res.status(err.statusCode).json({ success: false, message: err.message });
     return;
   }
 
-  const jwtSecret = process.env.JWT_CODE;
-  if (!jwtSecret) {
-    logger.error("JWT_CODE environment variable is not set");
-    res.status(500).json({ error: "Server configuration error" });
-    return;
-  }
+  let decoded: { user: JWTPayload; exp: number };
 
   try {
-    const decoded = (jwt.verify(token, jwtSecret) as AuthenticatedRequest).user;
-
-    // Now safe to assign
-    (req as AuthenticatedRequest).user = {
-      userId: decoded.userId,
-      role: decoded.role,
-      name: decoded.name,
-      permissions: decoded.permissions || [],
-      roleLevel: decoded.roleLevel,
+    decoded = jwt.verify(token, process.env.JWT_CODE!) as {
+      user: JWTPayload;
+      exp:  number;
     };
-
-    logger.info("User authenticated", {});
-    next();
-  } catch (error) {
-    logger.warn("Authentication failed: Invalid token", {
-      ip: req.ip,
-      "user-agent": req.headers["user-agent"],
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "Invalid token" });
+  } catch {
+    const err = AppError.unauthorized("Invalid or expired authentication token.");
+    res.status(err.statusCode).json({ success: false, message: err.message });
+    return;
   }
-};
 
-// Permission middleware
-export const requirePermissions = (requiredPermissions: Permission[]) => {
-  return (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): void => {
-    if (!req.user?.permissions) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No permissions" });
-      return;
-    }
+  const { userId } = decoded.user;
 
-    const hasAll = requiredPermissions.every((p) =>
-      req.user!.permissions.includes(p)
-    );
-
-    if (!hasAll) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Insufficient permissions",
-        required: requiredPermissions,
-        current: req.user.permissions,
+  redisClient
+    .get(`blocklist:${userId}`)
+    .then((blocked) => {
+      if (blocked) {
+        const err = AppError.unauthorized(
+          "Session has been invalidated. Please log in again."
+        );
+        res.status(err.statusCode).json({ success: false, message: err.message });
+        return;
+      }
+      (req as AuthenticatedRequest).user = {
+        userId:         decoded.user.userId,
+        userType:       decoded.user.userType,
+        organizationId: decoded.user.organizationId,
+      };
+      requestContext.set({
+        userId:         decoded.user.userId,
+        organizationId: decoded.user.organizationId,
       });
-      return;
-    }
-
-    next();
-  };
-};
-
-export const requireMinimumRoleLevel = (minimumLevel: RoleLevel) => {
-  return (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction
-  ): void => {
-    if (!req.user?.roleLevel) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({ error: "No role level" });
-      return;
-    }
-
-    if (req.user.roleLevel > minimumLevel) {
-      res.status(UNAUTHORIZED_STATUS_CODE).json({
-        error: "Insufficient role level",
-        required: minimumLevel,
-        current: req.user.roleLevel,
-      });
-      return;
-    }
-
-    next();
-  };
-};
+      next();
+    })
+    .catch(() => {
+      (req as AuthenticatedRequest).user = {
+        userId:         decoded.user.userId,
+        userType:       decoded.user.userType,
+        organizationId: decoded.user.organizationId,
+      };
+      next();
+    });
+}

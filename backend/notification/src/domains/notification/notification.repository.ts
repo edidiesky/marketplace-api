@@ -1,4 +1,4 @@
-import mongoose, { FilterQuery } from "mongoose";
+import { FilterQuery } from "mongoose";
 import Notification, {
   INotification,
   NotificationStatus,

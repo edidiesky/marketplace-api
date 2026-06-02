@@ -6,7 +6,7 @@ import {
   MAX_RETRIES,
   BASE_DELAY_MS,
   getJitter,
-} from "../../constants";
+} from "../../constant";
 import { requestContext } from "../../context/requestContext";
 import logger             from "../../utils/logger";
 import { organizationService } from "../../domains/organization/organization.service";
@@ -25,7 +25,7 @@ interface UserOnboardingCompletedEvent {
   billingPlan:      string;
 }
 
-export const organizationHandlers: Record
+export const organizationHandlers: Record<
   string,
   (
     data:    unknown,

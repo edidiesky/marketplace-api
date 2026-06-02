@@ -1,8 +1,5 @@
-import {
-  IAdapterRequest,
-  IPaymentProcessRequest,
-  IPaymentResponse,
-} from "../types";
+
+import { IAdapterRequest, IPaymentProcessRequest, IPaymentResponse } from ".";
 import logger from "../utils/logger";
 import axios from "axios";
 
@@ -17,7 +14,6 @@ const createStripeAdapter = (req: IAdapterRequest) => {
         .toString()
         .padStart(6, "0");
       try {
-        logger.info("callbackUrl log:", callbackUrl);
         if (!callbackUrl) {
           throw new Error("Callback URL is required for Stripe payment");
         }

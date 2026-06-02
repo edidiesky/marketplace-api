@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
-import { BAD_REQUEST_STATUS_CODE } from "../constants";
+import { BAD_REQUEST_STATUS_CODE } from "../constant";
 
 export function validateRequest(schema: Joi.ObjectSchema) {
   return (req: Request, res: Response, next: NextFunction): void => {

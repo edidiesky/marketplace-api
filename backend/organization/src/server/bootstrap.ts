@@ -4,7 +4,7 @@ import { connectMongoDB }              from "../config/database";
 import { connectRabbitMQ }             from "../messaging/connection";
 import { connectOrganizationConsumer } from "../messaging/consumer";
 import { trackError, serverHealthGauge } from "../utils/metrics";
-import { SERVICE_NAME }               from "../constants";
+import { SERVICE_NAME }               from "../constant";
 
 interface InitStep {
   name: string;
