@@ -14,6 +14,7 @@ interface InitStep {
   fn:   () => Promise<void>;
 }
 
+
 async function runStep(step: InitStep): Promise<void> {
   const start = process.hrtime.bigint();
   try {
