@@ -1,0 +1,151 @@
+{
+  "info": {
+    "name": "Selleasi - Subscription Service",
+    "description": "Subscription service running on port 4017.\n\nRoutes:\n- GET /me — authenticated user's subscription\n- POST /upgrade — upgrade to PRO or ENTERPRISE\n- GET /features/check — internal feature gate check (no auth)\n- GET /:organizationId — platform admin only",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",         "value": "http://localhost:4017", "type": "string" },
+    { "key": "access_token",     "value": "", "type": "string" },
+    { "key": "organization_id",  "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "Get My Subscription",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/subscriptions/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has subscriptionId', () => pm.expect(pm.response.json().data.subscriptionId).to.be.a('string'));",
+            "pm.test('Has plan', () => pm.expect(pm.response.json().data.plan).to.be.a('string'));",
+            "pm.test('Has features', () => pm.expect(pm.response.json().data.features).to.be.an('object'));",
+            "pm.test('Has daysRemaining', () => pm.expect(pm.response.json().data.daysRemaining).to.be.a('number'));",
+            "if (pm.response.code === 200) {",
+            "  pm.collectionVariables.set('organization_id', pm.response.json().data.organizationId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "Upgrade to PRO",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/subscriptions/upgrade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"PRO\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Plan updated', () => pm.expect(pm.response.json().data.plan).to.equal('PRO'));"
+          ]}}]
+        },
+        {
+          "name": "Upgrade to ENTERPRISE",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/subscriptions/upgrade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"ENTERPRISE\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "Check Feature (Internal)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/subscriptions/features/check?organizationId={{organization_id}}&feature=customDomain",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "subscriptions", "features", "check"],
+              "query": [
+                { "key": "organizationId", "value": "{{organization_id}}" },
+                { "key": "feature",        "value": "customDomain" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has allowed field', () => pm.expect(pm.response.json().data.allowed).to.be.a('boolean'));",
+            "pm.test('Has plan field', () => pm.expect(pm.response.json().data.plan).to.be.a('string'));"
+          ]}}]
+        },
+        {
+          "name": "Get Subscription By Org ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/subscriptions/{{organization_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Upgrade - Invalid Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/subscriptions/upgrade",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"FREE\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));"
+          ]}}]
+        },
+        {
+          "name": "Get Subscription - No Token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/subscriptions/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

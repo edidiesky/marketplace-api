@@ -1,0 +1,122 @@
+{
+  "info": {
+    "name": "Selleasi - Organization Service",
+    "description": "Organization service running on port 4010.\n\nAll routes require Bearer token.\nSet access_token variable before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",         "value": "http://localhost:4010", "type": "string" },
+    { "key": "access_token",     "value": "", "type": "string" },
+    { "key": "organization_id",  "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('organization-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "Get My Organization",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/organizations/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has organizationId', () => pm.expect(pm.response.json().data.organizationId).to.be.a('string'));",
+            "pm.test('Has ownerId', () => pm.expect(pm.response.json().data.ownerId).to.be.a('string'));",
+            "if (pm.response.code === 200) {",
+            "  pm.collectionVariables.set('organization_id', pm.response.json().data.organizationId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/organizations/"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has organizations array', () => pm.expect(pm.response.json().data.organizations).to.be.an('array'));",
+            "pm.test('Has totalCount', () => pm.expect(pm.response.json().data.totalCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "Get Organization By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/organizations/{{organization_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has organizationId', () => pm.expect(pm.response.json().data.organizationId).to.be.a('string'));",
+            "pm.test('Has status field', () => pm.expect(pm.response.json().data.status).to.be.a('string'));",
+            "pm.test('Has billingPlan', () => pm.expect(pm.response.json().data.billingPlan).to.be.a('string'));"
+          ]}}]
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/organizations/{{organization_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Organization Name\",\n  \"description\": \"Updated description\",\n  \"phone\": \"+2348012345678\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has status success', () => pm.expect(pm.response.json().status).to.equal('success'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Get Org - No Token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/organizations/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));",
+            "pm.test('Error is UNAUTHORIZED', () => pm.expect(pm.response.json().error).to.equal('UNAUTHORIZED'));"
+          ]}}]
+        },
+        {
+          "name": "Get Org - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/organizations/000000000000000000000000"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.expect(pm.response.code).to.equal(404));",
+            "pm.test('Error is NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('NOT_FOUND'));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

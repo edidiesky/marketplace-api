@@ -1,0 +1,135 @@
+{
+  "info": {
+    "name": "Selleasi - Notification Service",
+    "description": "Notification service running on port 4006.\n\nMost notifications are created by consumers reacting to RabbitMQ events.\nHTTP routes are for reading and managing existing notifications.\n\nRoutes:\n- GET  /:storeId/store — list notifications for store\n- GET  /:id — get single notification\n- PATCH /:id — update (mark read, etc)\n- DELETE /:id — delete\n- POST /internal/low-stock — internal trigger",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",        "value": "http://localhost:4006", "type": "string" },
+    { "key": "access_token",    "value": "", "type": "string" },
+    { "key": "internal_secret", "value": "", "type": "string" },
+    { "key": "store_id",        "value": "", "type": "string" },
+    { "key": "notification_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('notification-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "1. Get Store Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/notifications/{{store_id}}/store?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "notifications", "{{store_id}}", "store"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));",
+            "if (pm.response.json().data.length > 0) {",
+            "  pm.collectionVariables.set('notification_id', pm.response.json().data[0].id || pm.response.json().data[0]._id);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get Notification By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/notifications/{{notification_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "3. Update Notification",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/notifications/{{notification_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isRead\": true\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "4. Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/notifications/{{notification_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Internal",
+      "item": [
+        {
+          "name": "Trigger Low Stock Alert",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/notifications/internal/low-stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storeId\": \"{{store_id}}\",\n  \"productId\": \"product-001\",\n  \"productTitle\": \"Premium Sneakers\",\n  \"quantityAvailable\": 5,\n  \"reorderPoint\": 10\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Get Notifications - No Token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/notifications/{{store_id}}/store"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

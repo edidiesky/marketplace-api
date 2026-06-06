@@ -1,0 +1,209 @@
+{
+  "info": {
+    "name": "Selleasi - Payment Service",
+    "description": "Payment service running on port 4004.\n\nRoutes:\n- POST /payments/initialize — start payment (Paystack redirect)\n- GET  /payments/history — paginated payment history with filters\n- GET  /payments/stats/:storeId — payment stats for store\n- GET  /payments/:id — single payment\n- POST /payments/:paymentId/refund — initiate refund\n\nNote: wallets, payouts, and webhook routes are registered but not included here. Add those routes files if needed.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:4004", "type": "string" },
+    { "key": "access_token",  "value": "", "type": "string" },
+    { "key": "store_id",      "value": "", "type": "string" },
+    { "key": "order_id",      "value": "", "type": "string" },
+    { "key": "payment_id",    "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('payment-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "1. Initialize Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/payments/initialize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"gateway\": \"paystack\",\n  \"customerEmail\": \"buyer@test.com\",\n  \"customerName\": \"John Doe\",\n  \"customerId\": \"user-001\",\n  \"phone\": \"+2348012345678\",\n  \"currency\": \"NGN\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has paymentId', () => pm.expect(pm.response.json().data.paymentId).to.be.a('string'));",
+            "pm.test('Has redirectUrl', () => pm.expect(pm.response.json().data.redirectUrl).to.be.a('string'));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('payment_id', pm.response.json().data.paymentId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get Payment History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/history?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "history"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has payments array', () => pm.expect(pm.response.json().data.payments).to.be.an('array'));",
+            "pm.test('Has totalCount', () => pm.expect(pm.response.json().data.totalCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "Get Payment History - Filtered by Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/history?page=1&limit=20&status=success",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "history"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "20" },
+                { "key": "status", "value": "success" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "Get Payment History - Date Range",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/history?startDate=2026-01-01&endDate=2026-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "history"],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01" },
+                { "key": "endDate",   "value": "2026-12-31" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "3. Get Payment Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/payments/stats/{{store_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has totalAmount', () => pm.expect(pm.response.json().data.totalAmount).to.be.a('number'));",
+            "pm.test('Has successfulPayments', () => pm.expect(pm.response.json().data.successfulPayments).to.be.a('number'));",
+            "pm.test('Has failedPayments', () => pm.expect(pm.response.json().data.failedPayments).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "4. Get Payment By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/payments/{{payment_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has paymentId', () => pm.expect(pm.response.json().data.paymentId).to.be.a('string'));",
+            "pm.test('Has status', () => pm.expect(pm.response.json().data.status).to.be.a('string'));",
+            "pm.test('Has gateway', () => pm.expect(pm.response.json().data.gateway).to.be.a('string'));",
+            "pm.test('Has amount', () => pm.expect(pm.response.json().data.amount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "5. Initiate Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/payments/{{payment_id}}/refund",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000,\n  \"reason\": \"Customer requested refund\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Initialize - Missing orderId",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/payments/initialize",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gateway\": \"paystack\",\n  \"customerEmail\": \"buyer@test.com\",\n  \"customerName\": \"John\",\n  \"customerId\": \"user-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));"
+          ]}}]
+        },
+        {
+          "name": "Get Payment - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/payments/000000000000000000000000"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.expect(pm.response.code).to.equal(404));"
+          ]}}]
+        },
+        {
+          "name": "No Token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/payments/history"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

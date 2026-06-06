@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "Selleasi - Stores Service",
+    "description": "Stores service running on port 4007.\n\nPublic routes: resolve, subdomain lookup, get by ID\nAuthenticated: create, me, list, update, status, domain management\nInternal: subdomain lookup via X-Internal-Secret\n\nFlow:\n1. Create Store\n2. Get My Stores (saves store_id)\n3. Domain management\n4. Status updates",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",         "value": "http://localhost:4007", "type": "string" },
+    { "key": "access_token",     "value": "", "type": "string" },
+    { "key": "internal_secret",  "value": "", "type": "string" },
+    { "key": "store_id",         "value": "", "type": "string" },
+    { "key": "subdomain",        "value": "my-test-store", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('stores-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Resolve Store By Host",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/stores/resolve?host=my-test-store.selleasi.com",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stores", "resolve"],
+              "query": [{ "key": "host", "value": "my-test-store.selleasi.com" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));"
+          ]}}]
+        },
+        {
+          "name": "Get Store By Subdomain",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/stores/subdomain/{{subdomain}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 404', () => pm.expect([200, 404]).to.include(pm.response.code));"
+          ]}}]
+        },
+        {
+          "name": "Get Store By ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has storeId', () => pm.expect(pm.response.json().data.storeId).to.be.a('string'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Authenticated",
+      "item": [
+        {
+          "name": "1. Create Store",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/stores/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Test Store\",\n  \"subdomain\": \"my-test-store\",\n  \"description\": \"A great store for testing\",\n  \"email\": \"store@test.com\",\n  \"phoneNumber\": \"+2348012345678\",\n  \"address\": {\n    \"street\": \"123 Test Street\",\n    \"city\": \"Lagos\",\n    \"state\": \"Lagos\",\n    \"country\": \"Nigeria\",\n    \"postalCode\": \"100001\"\n  },\n  \"settings\": {\n    \"currency\": \"NGN\",\n    \"timezone\": \"Africa/Lagos\",\n    \"taxRate\": 7.5\n  }\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has storeId', () => pm.expect(pm.response.json().data.storeId).to.be.a('string'));",
+            "pm.test('Has subdomain', () => pm.expect(pm.response.json().data.subdomain).to.be.a('string'));",
+            "pm.test('Has slug', () => pm.expect(pm.response.json().data.slug).to.be.a('string'));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('store_id', pm.response.json().data.storeId);",
+            "  pm.collectionVariables.set('subdomain', pm.response.json().data.subdomain);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get My Stores",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/stores/me"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has stores array', () => pm.expect(pm.response.json().data.stores).to.be.an('array'));",
+            "if (pm.response.code === 200 && pm.response.json().data.stores.length > 0) {",
+            "  pm.collectionVariables.set('store_id', pm.response.json().data.stores[0].storeId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "3. Get All Stores",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/stores/"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has stores array', () => pm.expect(pm.response.json().data.stores).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "4. Update Store",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Store Name\",\n  \"description\": \"Updated description\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "5. Update Store Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "6. Add Custom Domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}/domain",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customDomain\": \"shop.mystore.com\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));"
+          ]}}]
+        },
+        {
+          "name": "7. Verify Custom Domain",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}/domain/verify"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "8. Remove Custom Domain",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}/domain"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "9. Delete Store",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/stores/{{store_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Create Store - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/stores/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"email\": \"not-an-email\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));",
+            "pm.test('Has details', () => pm.expect(pm.response.json().details).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Get Store - Not Found",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/stores/000000000000000000000000"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.expect(pm.response.code).to.equal(404));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

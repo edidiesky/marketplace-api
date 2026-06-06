@@ -1,0 +1,251 @@
+{
+  "info": {
+    "name": "Selleasi - Products Service",
+    "description": "Products service running on port 4003.\n\nIncludes product CRUD and Elasticsearch search/autocomplete.\n\nPublic routes: GET by ID, search, autocomplete\nAuthenticated: create, list by store, update, delete, restore\n\nFlow:\n1. Create Product (saves product_id)\n2. Search/Autocomplete\n3. Update/Delete",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:4003", "type": "string" },
+    { "key": "access_token",  "value": "", "type": "string" },
+    { "key": "store_id",      "value": "", "type": "string" },
+    { "key": "product_id",    "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('products-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "1. Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/products/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Sneakers\",\n  \"description\": \"High quality sneakers for everyday use\",\n  \"price\": 25000,\n  \"images\": [\"https://example.com/sneaker.jpg\"],\n  \"category\": [\"footwear\", \"sneakers\"],\n  \"colors\": [\n    { \"name\": \"Black\", \"value\": \"#000000\" },\n    { \"name\": \"White\", \"value\": \"#FFFFFF\" }\n  ],\n  \"size\": [\n    { \"name\": \"42\", \"value\": \"42\" },\n    { \"name\": \"43\", \"value\": \"43\" }\n  ],\n  \"sku\": \"SNK-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has productId', () => pm.expect(pm.response.json().data.productId).to.be.a('string'));",
+            "pm.test('Has price', () => pm.expect(pm.response.json().data.price).to.be.a('number'));",
+            "pm.test('isArchive is false', () => pm.expect(pm.response.json().data.isArchive).to.equal(false));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('product_id', pm.response.json().data.productId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get Store Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/{{store_id}}/store?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{store_id}}", "store"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has products array', () => pm.expect(pm.response.json().data.products).to.be.an('array'));",
+            "pm.test('Has totalCount', () => pm.expect(pm.response.json().data.totalCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "3. Get Product By ID (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/products/{{product_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has productId', () => pm.expect(pm.response.json().data.productId).to.be.a('string'));",
+            "pm.test('Has name', () => pm.expect(pm.response.json().data.name).to.be.a('string'));",
+            "pm.test('Has price', () => pm.expect(pm.response.json().data.price).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "4. Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/products/{{product_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Sneakers\",\n  \"price\": 28000,\n  \"description\": \"Updated description\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "5. Archive Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/products/{{product_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isArchive\": true\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('isArchive is true', () => pm.expect(pm.response.json().data.isArchive).to.equal(true));"
+          ]}}]
+        },
+        {
+          "name": "6. Restore Product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/products/{{product_id}}/restore"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "7. Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/products/{{product_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/search?q=sneakers&storeId={{store_id}}&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "search"],
+              "query": [
+                { "key": "q",       "value": "sneakers" },
+                { "key": "storeId", "value": "{{store_id}}" },
+                { "key": "page",    "value": "1" },
+                { "key": "limit",   "value": "10" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has hits array', () => pm.expect(pm.response.json().data.hits).to.be.an('array'));",
+            "pm.test('Has total', () => pm.expect(pm.response.json().data.total).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "Search With Price Range",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/search?q=sneakers&minPrice=10000&maxPrice=50000&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "search"],
+              "query": [
+                { "key": "q",        "value": "sneakers" },
+                { "key": "minPrice", "value": "10000" },
+                { "key": "maxPrice", "value": "50000" },
+                { "key": "page",     "value": "1" },
+                { "key": "limit",    "value": "10" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "Autocomplete",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/autocomplete?q=sneak&storeId={{store_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "autocomplete"],
+              "query": [
+                { "key": "q",       "value": "sneak" },
+                { "key": "storeId", "value": "{{store_id}}" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has data array or results', () => pm.expect(pm.response.json().data).to.exist);"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Create Product - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/products/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"price\": -100\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));"
+          ]}}]
+        },
+        {
+          "name": "Get Product - Not Found",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/products/000000000000000000000000"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.expect(pm.response.code).to.equal(404));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

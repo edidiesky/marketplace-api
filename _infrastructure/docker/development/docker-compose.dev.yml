@@ -442,6 +442,7 @@ services:
       - "127.0.0.1:4008:4008"
     networks:
       - selleasi-services
+      - selleasi-data
     depends_on:
       redis:
         condition: service_healthy

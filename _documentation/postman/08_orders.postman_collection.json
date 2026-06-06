@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "Selleasi - Orders Service",
+    "description": "Orders service running on port 4012.\n\nFlow:\n1. Checkout (triggers saga: reserve stock -> create order -> payment)\n2. Add Shipping\n3. Track Order\n4. Update Fulfillment (seller)\n5. Abandon Order (internal only)\n\nNote: checkout depends on a valid cartId. Run cart flow first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",        "value": "http://localhost:4012", "type": "string" },
+    { "key": "access_token",    "value": "", "type": "string" },
+    { "key": "internal_secret", "value": "", "type": "string" },
+    { "key": "store_id",        "value": "", "type": "string" },
+    { "key": "cart_id",         "value": "", "type": "string" },
+    { "key": "order_id",        "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('orders-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "1. Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/orders/{{store_id}}/checkout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cart_id}}\",\n  \"requestId\": \"req-{{$randomUUID}}\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has orderId', () => pm.expect(pm.response.json().data.orderId).to.be.a('string'));",
+            "pm.test('Has orderStatus', () => pm.expect(pm.response.json().data.orderStatus).to.be.a('string'));",
+            "pm.test('Has sagaId', () => pm.expect(pm.response.json().data.sagaId).to.be.a('string'));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('order_id', pm.response.json().data.orderId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/me?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "me"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has orders array', () => pm.expect(pm.response.json().data.orders).to.be.an('array'));",
+            "pm.test('Has totalCount', () => pm.expect(pm.response.json().data.totalCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "3. Get Store Orders (Seller)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{store_id}}/store?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "{{store_id}}", "store"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has orders array', () => pm.expect(pm.response.json().data.orders).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "4. Get Order By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/orders/detail/{{order_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has orderId', () => pm.expect(pm.response.json().data.orderId).to.be.a('string'));",
+            "pm.test('Has orderStatus', () => pm.expect(pm.response.json().data.orderStatus).to.be.a('string'));",
+            "pm.test('Has fulfillmentStatus', () => pm.expect(pm.response.json().data.fulfillmentStatus).to.be.a('string'));",
+            "pm.test('Has cartItems', () => pm.expect(pm.response.json().data.cartItems).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "5. Add Shipping",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/orders/{{order_id}}/shipping",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipping\": {\n    \"fullName\": \"John Doe\",\n    \"phone\": \"+2348012345678\",\n    \"address\": \"123 Main Street\",\n    \"city\": \"Lagos\",\n    \"state\": \"Lagos\",\n    \"country\": \"Nigeria\",\n    \"postalCode\": \"100001\"\n  }\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "6. Update Fulfillment (Seller)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/orders/{{order_id}}/fulfillment",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shipped\",\n  \"trackingNumber\": \"TRK-123456\",\n  \"courierName\": \"DHL\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Internal (Service-to-Service)",
+      "item": [
+        {
+          "name": "Abandon Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/orders/internal/{{order_id}}/abandon",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Payment timeout\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Checkout - No Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/orders/{{store_id}}/checkout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cart_id}}\",\n  \"requestId\": \"req-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        },
+        {
+          "name": "Get Order - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/orders/detail/000000000000000000000000"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.expect(pm.response.code).to.equal(404));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

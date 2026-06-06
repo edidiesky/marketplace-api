@@ -26,7 +26,6 @@ query_range:
         max_size_mb: 100
 
 limits_config:
-  metric_aggregation_enabled:   true
   retention_period:             744h
   reject_old_samples:           true
   reject_old_samples_max_age:   168h
@@ -45,11 +44,6 @@ schema_config:
         prefix: index_
         period: 24h
 
-pattern_ingester:
-  enabled: true
-  metric_aggregation:
-    loki_address: localhost:3100
-
 compactor:
   working_directory:          /loki/compactor
   compaction_interval:        10m
@@ -62,12 +56,5 @@ storage_config:
   filesystem:
     directory: /loki
 
-table_manager:
-  retention_deletes_enabled: true
-  retention_period:          744h
-
 ruler:
   alertmanager_url: http://localhost:9093
-
-frontend:
-  encoding: protobuf

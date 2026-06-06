@@ -1,0 +1,236 @@
+{
+  "info": {
+    "name": "Selleasi - Review Service",
+    "description": "Review service running on port 4011.\n\nPublic routes:\n- GET /product/:productId — customer-facing reviews with stats\n\nAuthenticated:\n- GET /store/:storeId — seller views their product reviews\n- GET /:reviewId — single review\n- POST / — submit review (requires verified purchase)\n- POST /:reviewId/helpful — vote helpful/unhelpful\n- POST /:reviewId/respond — seller responds to review\n- PATCH /:reviewId/approve — platform admin moderates\n- PATCH /:reviewId/reject — platform admin moderates",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",     "value": "http://localhost:4011", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "store_id",     "value": "", "type": "string" },
+    { "key": "product_id",   "value": "", "type": "string" },
+    { "key": "order_id",     "value": "", "type": "string" },
+    { "key": "review_id",    "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('review-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews/product/{{product_id}}?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews", "product", "{{product_id}}"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has reviews array', () => pm.expect(pm.response.json().data.reviews).to.be.an('array'));",
+            "pm.test('Has stats', () => pm.expect(pm.response.json().data.stats).to.be.an('object'));",
+            "pm.test('Stats has averageRating', () => pm.expect(pm.response.json().data.stats.averageRating).to.be.a('number'));",
+            "pm.test('Stats has ratingDistribution', () => pm.expect(pm.response.json().data.stats.ratingDistribution).to.be.an('object'));"
+          ]}}]
+        },
+        {
+          "name": "Get Product Reviews - Filter by Rating",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews/product/{{product_id}}?rating=5&verified=true&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews", "product", "{{product_id}}"],
+              "query": [
+                { "key": "rating",   "value": "5" },
+                { "key": "verified", "value": "true" },
+                { "key": "page",     "value": "1" },
+                { "key": "limit",    "value": "10" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Authenticated",
+      "item": [
+        {
+          "name": "1. Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/reviews/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"orderId\": \"{{order_id}}\",\n  \"rating\": 5,\n  \"title\": \"Excellent product quality!\",\n  \"comment\": \"I absolutely love this product. The quality is outstanding and it arrived on time. Would definitely recommend to anyone looking for great value.\",\n  \"isVerifiedPurchase\": true,\n  \"productTitle\": \"Premium Sneakers\",\n  \"storeName\": \"My Test Store\",\n  \"reviewerName\": \"John Doe\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has reviewId', () => pm.expect(pm.response.json().data.reviewId).to.be.a('string'));",
+            "pm.test('Has rating', () => pm.expect(pm.response.json().data.rating).to.be.a('number'));",
+            "pm.test('Has status', () => pm.expect(pm.response.json().data.status).to.be.a('string'));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('review_id', pm.response.json().data.reviewId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get Store Reviews (Seller)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/reviews/store/{{store_id}}?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "reviews", "store", "{{store_id}}"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has reviews array', () => pm.expect(pm.response.json().data.reviews).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "3. Get Review By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/reviews/{{review_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has reviewId', () => pm.expect(pm.response.json().data.reviewId).to.be.a('string'));",
+            "pm.test('Has helpfulCount', () => pm.expect(pm.response.json().data.helpfulCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "4. Mark Helpful",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/reviews/{{review_id}}/helpful",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": true\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "5. Respond to Review (Seller)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/reviews/{{review_id}}/respond",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Thank you for your kind review! We are glad you enjoyed the product.\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "6. Approve Review (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/reviews/{{review_id}}/approve"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "7. Reject Review (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/reviews/{{review_id}}/reject"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Submit Review - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/reviews/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"rating\": 6,\n  \"title\": \"Short\",\n  \"comment\": \"Too short\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));"
+          ]}}]
+        },
+        {
+          "name": "Submit Review - No Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/reviews/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"rating\": 5\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "info": {
+    "name": "Selleasi - Authentication Service",
+    "description": "Auth service running on port 4001.\n\nFlow:\n1. Onboarding Initiate (email + password)\n2. Confirm Email Token (GET with query params from email link)\n3. Signup (user details after email verified)\n4. Login\n5. Verify OTP\n6. Use access_token for protected routes\n\nAll tokens auto-saved to collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",      "value": "http://localhost:4001", "type": "string" },
+    { "key": "access_token",  "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "user_id",       "value": "", "type": "string" },
+    { "key": "email_token",   "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('authentication-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Onboarding",
+      "item": [
+        {
+          "name": "1. Initiate Onboarding",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/onboarding/initiate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200,201]).to.include(pm.response.code));",
+            "pm.test('Has status success', () => pm.expect(pm.response.json().status).to.equal('success'));"
+          ]}}]
+        },
+        {
+          "name": "2. Confirm Email Token",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/email/confirmation?email=seller@test.com&token={{email_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "email", "confirmation"],
+              "query": [
+                { "key": "email", "value": "seller@test.com" },
+                { "key": "token", "value": "{{email_token}}" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "3. Complete Signup",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/signup",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"userType\": \"seller:admin\",\n  \"phone\": \"+2348012345678\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has status success', () => pm.expect(pm.response.json().status).to.equal('success'));",
+            "if (pm.response.code === 201) {",
+            "  const b = pm.response.json();",
+            "  if (b.data && b.data.userId) pm.collectionVariables.set('user_id', b.data.userId);",
+            "}"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "1. Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has status success', () => pm.expect(pm.response.json().status).to.equal('success'));",
+            "if (pm.response.code === 200) {",
+            "  const b = pm.response.json();",
+            "  if (b.data && b.data.userId) pm.collectionVariables.set('user_id', b.data.userId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/verify-otp",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\",\n  \"otp\": \"123456\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has accessToken', () => pm.expect(pm.response.json().data.accessToken).to.be.a('string'));",
+            "pm.test('Has refreshToken', () => pm.expect(pm.response.json().data.refreshToken).to.be.a('string'));",
+            "if (pm.response.code === 200) {",
+            "  const b = pm.response.json();",
+            "  pm.collectionVariables.set('access_token',  b.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', b.data.refreshToken);",
+            "  if (b.data.user && b.data.user.userId) pm.collectionVariables.set('user_id', b.data.user.userId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "3. Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/refresh-token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has new accessToken', () => pm.expect(pm.response.json().data.accessToken).to.be.a('string'));",
+            "if (pm.response.code === 200) {",
+            "  const b = pm.response.json();",
+            "  pm.collectionVariables.set('access_token',  b.data.accessToken);",
+            "  pm.collectionVariables.set('refresh_token', b.data.refreshToken);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "4. Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/logout",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Password",
+      "item": [
+        {
+          "name": "1. Request Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/request-reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "2. Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/password-reset",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"<token_from_email>\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "3. Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/auth/password-change",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Login - Wrong Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller@test.com\",\n  \"password\": \"WrongPassword!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));",
+            "pm.test('Error is UNAUTHORIZED', () => pm.expect(pm.response.json().error).to.equal('UNAUTHORIZED'));"
+          ]}}]
+        },
+        {
+          "name": "Initiate - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/onboarding/initiate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"short\",\n  \"confirmPassword\": \"different\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));",
+            "pm.test('Has details array', () => pm.expect(pm.response.json().details).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Refresh - Invalid Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/refresh-token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"invalidtoken\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

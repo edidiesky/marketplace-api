@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "Selleasi - Cart Service",
+    "description": "Cart service running on port 4009.\n\nRoutes:\n- GET /internal/:cartId — internal only (X-Internal-Secret)\n- POST /:storeId/store — add to cart (authenticated)\n- GET /:storeId/store — get user cart for store (authenticated)\n- GET /:storeId/admin/carts — all store carts (authenticated, seller)\n- PATCH /:storeId/items — update cart item quantity\n- DELETE /:storeId/items — remove cart item\n- GET /:cartId — get cart by ID (authenticated)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",        "value": "http://localhost:4009", "type": "string" },
+    { "key": "access_token",    "value": "", "type": "string" },
+    { "key": "internal_secret", "value": "", "type": "string" },
+    { "key": "store_id",        "value": "", "type": "string" },
+    { "key": "product_id",      "value": "", "type": "string" },
+    { "key": "cart_id",         "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('cart-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "1. Add To Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"productTitle\": \"Premium Sneakers\",\n  \"productImage\": [\"https://example.com/sneaker.jpg\"],\n  \"productPrice\": 25000,\n  \"productDescription\": \"High quality sneakers\",\n  \"quantity\": 2,\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@test.com\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));",
+            "pm.test('Has cartId', () => pm.expect(pm.response.json().data.cartId).to.be.a('string'));",
+            "pm.test('Has totalPrice', () => pm.expect(pm.response.json().data.totalPrice).to.be.a('number'));",
+            "pm.test('Has cartItems array', () => pm.expect(pm.response.json().data.cartItems).to.be.an('array'));",
+            "if ([200, 201].includes(pm.response.code)) {",
+            "  pm.collectionVariables.set('cart_id', pm.response.json().data.cartId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get User Cart For Store",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/store"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has cartId', () => pm.expect(pm.response.json().data.cartId).to.be.a('string'));",
+            "pm.test('Has expireAt', () => pm.expect(pm.response.json().data.expireAt).to.be.a('string'));",
+            "if (pm.response.code === 200) {",
+            "  pm.collectionVariables.set('cart_id', pm.response.json().data.cartId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "3. Get All Store Carts (Seller)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/carts/{{store_id}}/admin/carts?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "carts", "{{store_id}}", "admin", "carts"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has carts array', () => pm.expect(pm.response.json().data.carts).to.be.an('array'));",
+            "pm.test('Has totalCount', () => pm.expect(pm.response.json().data.totalCount).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "4. Get Cart By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/carts/{{cart_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has cartId', () => pm.expect(pm.response.json().data.cartId).to.be.a('string'));",
+            "pm.test('Has version', () => pm.expect(pm.response.json().data.version).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "5. Update Cart Item Quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantity\": 3\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "6. Delete Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Internal (Service-to-Service)",
+      "item": [
+        {
+          "name": "Get Cart By ID (Internal)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Internal-Secret", "value": "{{internal_secret}}" }],
+            "url": "{{base_url}}/api/v1/carts/internal/{{cart_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has cartId', () => pm.expect(pm.response.json().data.cartId).to.be.a('string'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Add To Cart - No Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"productTitle\": \"Test\",\n  \"productImage\": [],\n  \"productPrice\": 100,\n  \"quantity\": 1,\n  \"fullName\": \"Test User\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.expect(pm.response.code).to.equal(401));"
+          ]}}]
+        },
+        {
+          "name": "Add To Cart - Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/carts/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": -1\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.expect(pm.response.code).to.equal(400));",
+            "pm.test('Error is INVALID_PAYLOAD', () => pm.expect(pm.response.json().error).to.equal('INVALID_PAYLOAD'));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}

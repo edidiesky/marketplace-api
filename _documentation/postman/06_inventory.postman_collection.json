@@ -1,0 +1,244 @@
+{
+  "info": {
+    "name": "Selleasi - Inventory Service",
+    "description": "Inventory service running on port 4008.\n\nInternal routes (X-Internal-Secret header required):\n- POST /reserve\n- POST /release\n- POST /commit\n- POST /internal/reservations/:sagaId/expire\n\nPublic: GET /check/:productId\nAuthenticated: CRUD on /:storeId/store and /:inventoryId",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",        "value": "http://localhost:4008", "type": "string" },
+    { "key": "access_token",    "value": "", "type": "string" },
+    { "key": "internal_secret", "value": "", "type": "string" },
+    { "key": "store_id",        "value": "", "type": "string" },
+    { "key": "product_id",      "value": "", "type": "string" },
+    { "key": "inventory_id",    "value": "", "type": "string" },
+    { "key": "saga_id",         "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{base_url}}/health" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Service name correct', () => pm.expect(pm.response.json().service).to.equal('inventory-service'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Authenticated",
+      "item": [
+        {
+          "name": "1. Create Inventory",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/{{store_id}}/store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"productTitle\": \"Premium Sneakers\",\n  \"storeName\": \"My Test Store\",\n  \"quantityOnHand\": 100,\n  \"reorderPoint\": 10,\n  \"reorderQuantity\": 50,\n  \"warehouseName\": \"Main Warehouse\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.expect(pm.response.code).to.equal(201));",
+            "pm.test('Has inventoryId', () => pm.expect(pm.response.json().data.inventoryId).to.be.a('string'));",
+            "pm.test('Has quantityOnHand', () => pm.expect(pm.response.json().data.quantityOnHand).to.equal(100));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('inventory_id', pm.response.json().data.inventoryId);",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "2. Get Store Inventory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/inventories/{{store_id}}/store?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "inventories", "{{store_id}}", "store"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has inventories array', () => pm.expect(pm.response.json().data.inventories).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "3. Get Inventory By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/inventories/{{inventory_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has inventoryId', () => pm.expect(pm.response.json().data.inventoryId).to.be.a('string'));",
+            "pm.test('Has quantityAvailable', () => pm.expect(pm.response.json().data.quantityAvailable).to.be.a('number'));",
+            "pm.test('Has isLowStock flag', () => pm.expect(pm.response.json().data.isLowStock).to.be.a('boolean'));"
+          ]}}]
+        },
+        {
+          "name": "4. Update Inventory",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/{{inventory_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouseName\": \"Secondary Warehouse\",\n  \"reorderPoint\": 15,\n  \"reorderQuantity\": 75\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "5. Delete Inventory",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": "{{base_url}}/api/v1/inventories/{{inventory_id}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Check Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/inventories/check/{{product_id}}?storeId={{store_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "inventories", "check", "{{product_id}}"],
+              "query": [{ "key": "storeId", "value": "{{store_id}}" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has isInStock', () => pm.expect(pm.response.json().data.isInStock).to.be.a('boolean'));",
+            "pm.test('Has quantityAvailable', () => pm.expect(pm.response.json().data.quantityAvailable).to.be.a('number'));"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Internal (Service-to-Service)",
+      "item": [
+        {
+          "name": "Reserve Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/reserve",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 2,\n  \"sagaId\": \"saga-test-001\",\n  \"userId\": \"user-test-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 or 201', () => pm.expect([200, 201]).to.include(pm.response.code));",
+            "if (pm.response.code === 200 || pm.response.code === 201) {",
+            "  const d = pm.response.json().data;",
+            "  pm.test('Has reservationId', () => pm.expect(d.reservationId).to.be.a('string'));",
+            "  pm.test('Has expiresAt', () => pm.expect(d.expiresAt).to.be.a('string'));",
+            "  pm.collectionVariables.set('saga_id', 'saga-test-001');",
+            "}"
+          ]}}]
+        },
+        {
+          "name": "Release Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/release",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 2,\n  \"sagaId\": \"{{saga_id}}\",\n  \"userId\": \"user-test-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has releasedQuantity', () => pm.expect(pm.response.json().data.releasedQuantity).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "Commit Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/commit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 2,\n  \"sagaId\": \"{{saga_id}}\",\n  \"userId\": \"user-test-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));",
+            "pm.test('Has committedQuantity', () => pm.expect(pm.response.json().data.committedQuantity).to.be.a('number'));"
+          ]}}]
+        },
+        {
+          "name": "Expire Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Internal-Secret", "value": "{{internal_secret}}" },
+              { "key": "Content-Type",       "value": "application/json" }
+            ],
+            "url": "{{base_url}}/api/v1/inventories/internal/reservations/{{saga_id}}/expire",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inventoryId\": \"{{inventory_id}}\",\n  \"quantity\": 2\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.expect(pm.response.code).to.equal(200));"
+          ]}}]
+        },
+        {
+          "name": "Internal - Missing Secret",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/inventories/reserve",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 2,\n  \"sagaId\": \"saga-001\",\n  \"userId\": \"user-001\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401 or 403', () => pm.expect([401, 403]).to.include(pm.response.code));"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}
