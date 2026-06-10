@@ -2,8 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
-
 const accountSchema = z.object({
   email:           z.string().email("Enter a valid email address"),
   password:        z.string().min(8, "Minimum 8 characters"),
@@ -31,8 +29,8 @@ export default function StepAccount({ onSubmit, isLoading, defaultEmail }: Props
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[32px] font-semibold leading-[1.1]"
-          style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
+          className="text-[28px] font-semibold leading-[1.1]"
+          style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
         >
           Create your account
         </h1>
@@ -77,11 +75,10 @@ export default function StepAccount({ onSubmit, isLoading, defaultEmail }: Props
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
         style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
       >
         {isLoading ? "Creating account..." : "Continue"}
-        {!isLoading && <ArrowRight size={14} />}
       </button>
     </form>
   );

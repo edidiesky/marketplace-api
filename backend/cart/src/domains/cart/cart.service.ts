@@ -80,6 +80,7 @@ export const cartService = {
       fullName,
       email,
       idempotencyKey,
+      organizationId
     } = dto;
 
     const lockKey = `cart:add:${storeId}:${userId}:${productId}:${idempotencyKey ?? ""}`;
@@ -118,6 +119,7 @@ export const cartService = {
             quantity:   0,
             totalPrice: 0,
             expireAt:   computeExpireAt(),
+            organizationId
           });
         }
 

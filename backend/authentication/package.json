@@ -19,6 +19,7 @@
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.56.0",
     "@opentelemetry/core": "^1.30.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
     "@opentelemetry/instrumentation-winston": "^0.44.0",
     "@opentelemetry/propagator-b3": "^1.30.0",
@@ -27,6 +28,7 @@
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.1",
     "express-async-handler": "^1.2.0",
     "generate-password": "^1.7.1",
@@ -41,8 +43,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
-    "winston": "^3.17.0",
-    "dotenv": "^16.6.1"
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",

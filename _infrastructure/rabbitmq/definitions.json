@@ -54,7 +54,7 @@
       "destination": "selleasi.authentication.user.onboarding.queue",
       "destination_type": "queue",
       "routing_key": "organization.onboarding.completed",
-      "source": "selleasi.authentication",
+      "source": "selleasi.organization",
       "vhost": "selleasi"
     },
     {
@@ -78,14 +78,6 @@
       "destination": "selleasi.audit.user.logout.queue",
       "destination_type": "queue",
       "routing_key": "user.logout",
-      "source": "selleasi.authentication",
-      "vhost": "selleasi"
-    },
-    {
-      "arguments": {},
-      "destination": "selleasi.authentication.user.onboarding.queue",
-      "destination_type": "queue",
-      "routing_key": "user.onboarding.completed",
       "source": "selleasi.authentication",
       "vhost": "selleasi"
     },

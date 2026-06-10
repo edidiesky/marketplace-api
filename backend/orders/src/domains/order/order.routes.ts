@@ -48,7 +48,6 @@ router.get(
 
 router.get(
   "/detail/:id",
-  authenticate,
   GetOrderHandler
 );
 

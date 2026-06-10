@@ -111,7 +111,7 @@ export const inventoryService = {
 
     const inventory = await inventoryRepository.create({
       ownerId:        new Types.ObjectId(dto.ownerId),
-      organizationId: new Types.ObjectId(dto.organizationId),
+      organizationId:dto.organizationId,
       productId:      new Types.ObjectId(dto.productId),
       storeId:        new Types.ObjectId(dto.storeId),
       quantityOnHand: dto.quantityOnHand,

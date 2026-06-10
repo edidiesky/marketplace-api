@@ -18,6 +18,7 @@ interface ProductCreatedEvent {
   organizationId: string;
   storeName?:     string;
   name?:          string;
+  stockQuantity?: number; 
 }
 
 export const inventoryHandlers: Record<
@@ -49,6 +50,7 @@ export const inventoryHandlers: Record<
       productId,
       storeId,
       requestId: requestContext.get()?.requestId,
+      organizationId
     });
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -74,10 +76,10 @@ export const inventoryHandlers: Record<
           productId:      new Types.ObjectId(productId),
           storeId:        new Types.ObjectId(storeId),
           ownerId:        new Types.ObjectId(ownerId),
-          organizationId: new Types.ObjectId(organizationId),
+          organizationId,
           storeName,
           productTitle:   name,
-          quantityOnHand: 0,
+          quantityOnHand: event.stockQuantity ?? 0,
         });
 
         logger.info("inventory_handler_created", {

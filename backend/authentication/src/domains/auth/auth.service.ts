@@ -303,7 +303,7 @@ export const authService = {
     } else {
       user = await userRepository.findByEmail(
         email,
-        "+passwordHash +phone +email +userType +firstName +lastName +organizationId +organizationType +status",
+        "+passwordHash +phone +email +userType +firstName +lastName +status",
       );
       if (user) {
         await redisClient.setex(
@@ -353,7 +353,7 @@ export const authService = {
     }
 
     const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
-    const twoFAToken = await generateSecureToken(user._id.toString(), "2fa");
+    const twoFAToken = Math.floor(100000 + Math.random() * 900000).toString();
     const normalizedPhone = user.phone?.startsWith("0")
       ? normalizePhoneNumber(user.phone)
       : user.phone;
@@ -393,7 +393,7 @@ export const authService = {
 
     const user = await userRepository.findByEmail(
       email,
-      "-passwordHash +organizationId +organizationType +status",
+      "-passwordHash",
     );
 
     if (!user) {
@@ -520,7 +520,7 @@ export const authService = {
 
     const user = await userRepository.findById(
       userId,
-      "-passwordHash +organizationId +organizationType",
+      "-passwordHash",
     );
     if (!user) throw AppError.badRequest("User not found.");
 
@@ -576,6 +576,7 @@ export const authService = {
       userId: user._id,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
     });
+    
 
     publishNotificationResetPassword({
       email,

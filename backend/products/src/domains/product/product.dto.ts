@@ -14,6 +14,7 @@ export interface CreateProductDto {
   colors?:        IProductColor[];
   size?:          IProductSize[];
   sku?:           string;
+  stockQuantity?: number;
 }
 
 export interface UpdateProductDto {

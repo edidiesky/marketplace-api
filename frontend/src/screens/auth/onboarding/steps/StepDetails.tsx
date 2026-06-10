@@ -1,11 +1,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, User, Briefcase } from "lucide-react";
-import {
-  detailsSchema,
-  type DetailsFormData,
-} from "../schema/onboarding.schema";
+import { User, Briefcase } from "lucide-react";
+import { detailsSchema, type DetailsFormData } from "../schema/onboarding.schema";
 
 interface Props {
   onSubmit: (data: DetailsFormData) => Promise<void>;
@@ -30,15 +27,12 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[32px] font-semibold leading-[1.1]"
-          style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
+          className="text-[28px] font-semibold leading-[1.1]"
+          style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
         >
           Tell us about yourself
         </h1>
-        <p
-          className="text-[15px]"
-          style={{ color: "var(--color-muted-stone)" }}
-        >
+        <p className="text-[15px]" style={{ color: "var(--color-muted-stone)" }}>
           A few details to personalise your experience.
         </p>
       </div>
@@ -59,10 +53,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <p
-          className="text-sm font-medium"
-          style={{ color: "var(--color-ink)" }}
-        >
+        <p className="text-sm font-medium" style={{ color: "var(--color-ink)" }}>
           I am joining as
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -74,47 +65,31 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
                 key={type}
                 type="button"
                 onClick={() => setValue("userType", type)}
-                className="flex flex-col items-start gap-2 p-4 rounded-[12px] border-2 transition-all"
+                className="flex flex-col items-start gap-2 p-4 rounded-[14px] border-2 transition-all"
                 style={{
-                  borderColor: isSelected
-                    ? "var(--color-ink)"
-                    : "",
-                  backgroundColor: isSelected
-                    ? "var(--color-fog)"
-                    : "",
+                  borderColor: isSelected ? "var(--color-ink)" : "#e5e7eb",
+                  backgroundColor: isSelected ? "var(--color-fog)" : "#ffffff",
                 }}
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center"
                   style={{
-                    backgroundColor: isSelected
-                      ? "var(--color-ink)"
-                      : "var(--color-fog)",
+                    backgroundColor: isSelected ? "var(--color-ink)" : "var(--color-fog)",
                   }}
                 >
                   <Icon
                     size={15}
                     style={{
-                      color: isSelected
-                        ? "var(--color-canvas)"
-                        : "var(--color-muted-stone)",
+                      color: isSelected ? "var(--color-canvas)" : "var(--color-muted-stone)",
                     }}
                   />
                 </div>
                 <div className="text-left">
-                  <p
-                    className="text-sm font-semibold"
-                    style={{ color: "var(--color-ink)" }}
-                  >
+                  <p className="text-sm font-semibold" style={{ color: "var(--color-ink)" }}>
                     {type === "SELLER" ? "Seller" : "Buyer"}
                   </p>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--color-muted-stone)" }}
-                  >
-                    {type === "SELLER"
-                      ? "I want to sell products"
-                      : "I want to buy products"}
+                  <p className="text-xs" style={{ color: "var(--color-muted-stone)" }}>
+                    {type === "SELLER" ? "I want to sell products" : "I want to buy products"}
                   </p>
                 </div>
               </button>
@@ -122,22 +97,17 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
           })}
         </div>
         {errors.userType && (
-          <p className="text-xs text-destructive">{errors.userType.message}</p>
+          <p className="text-xs" style={{ color: "#ef4444" }}>{errors.userType.message}</p>
         )}
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
-        style={{
-          backgroundColor: "var(--color-ink)",
-          color: "var(--color-canvas)",
-          borderRadius: "9999px",
-        }}
+        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
       >
         {isLoading ? "Creating account..." : "Continue"}
-        {!isLoading && <ArrowRight size={14} />}
       </button>
     </form>
   );

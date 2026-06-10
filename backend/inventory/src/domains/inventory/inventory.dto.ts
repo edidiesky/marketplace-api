@@ -13,6 +13,7 @@ export interface CreateInventoryDto {
   quantityOnHand:  number;
   reorderPoint?:   number;
   reorderQuantity?: number;
+  
 }
 
 export interface UpdateInventoryDto {

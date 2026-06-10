@@ -2,7 +2,7 @@ import { UserType, OrganizationType } from "./auth.model";
 
 //  ONBOARDING 
 
-// Step 1: email + password together
+//  email + password together
 export interface InitiateOnboardingDto {
   email:           string;
   password:        string;
@@ -15,7 +15,7 @@ export interface ConfirmEmailTokenDto {
   token: string;
 }
 
-// Step 2: user details after email verified
+//  user details after email verified
 export interface RegisterUserDto {
   email:     string;
   firstName: string;

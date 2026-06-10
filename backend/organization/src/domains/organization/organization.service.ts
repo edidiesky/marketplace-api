@@ -11,10 +11,11 @@ import {
   UpdateOrganizationDto,
 } from "./organization.dto";
 import { IOrganization, OrganizationStatus } from "./organization.model";
+import { v4 } from "uuid";
 
 function toDto(org: IOrganization): OrganizationResponseDto {
   return {
-    organizationId: org._id.toString(),
+    organizationId: org.organizationId,
     ownerId:        org.ownerId.toString(),
     ownerEmail:     org.ownerEmail,
     ownerName:      org.ownerName,
@@ -56,18 +57,19 @@ export const organizationService = {
 
     await session.withTransaction(async () => {
       org = await organizationRepository.create(
-        {
-          ownerId:     new Types.ObjectId(dto.ownerId),
-          ownerEmail:  dto.ownerEmail,
-          ownerName:   dto.ownerName,
-          name:        deriveOrgName(dto.ownerName, dto.type),
-          type:        dto.type as IOrganization["type"],
-          billingPlan: (dto.billingPlan as IOrganization["billingPlan"]) ?? "FREE",
-          status:    OrganizationStatus.ACTIVE,
-          trialEndsAt: trialEndsAt(),
-        },
-        session
-      );
+  {
+    organizationId: v4(),
+    ownerId:        new Types.ObjectId(dto.ownerId),
+    ownerEmail:     dto.ownerEmail,
+    ownerName:      dto.ownerName,
+    name:           deriveOrgName(dto.ownerName, dto.type),
+    type:           dto.type as IOrganization["type"],
+    billingPlan:    (dto.billingPlan as IOrganization["billingPlan"]) ?? "FREE",
+    status:         OrganizationStatus.ACTIVE,
+    trialEndsAt:    trialEndsAt(),
+  },
+  session
+);
     });
 
     session.endSession();

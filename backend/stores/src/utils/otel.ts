@@ -44,8 +44,26 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-process.on("SIGTERM", () => {
-  sdk.shutdown().finally(() => process.exit(0));
-});
+async function shutdown(signal: string): Promise<void> {
+  if (!sdk) return;
+  try {
+    await sdk.shutdown();
+    logger.info("otel_tracing_terminated", {
+      event:   "otel_tracing_terminated",
+      service: SERVICE_NAME,
+      signal,
+    });
+  } catch (err) {
+    logger.error("otel_tracing_shutdown_error", {
+      event:   "otel_tracing_shutdown_error",
+      service: SERVICE_NAME,
+      signal,
+      error:   err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+ 
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT",  () => shutdown("SIGINT"));
 
 export default sdk;

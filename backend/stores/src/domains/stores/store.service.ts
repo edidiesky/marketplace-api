@@ -71,7 +71,7 @@ export const storeService = {
       const subdomainRouteId = `store-sub-${randomUUID()}`;
 
       const storeData: Partial<IStore> = {
-        organizationId: new Types.ObjectId(dto.organizationId),
+        organizationId:dto.organizationId,
         ownerId: new Types.ObjectId(dto.ownerId),
         ownerName: dto.ownerName,
         ownerEmail: dto.ownerEmail,

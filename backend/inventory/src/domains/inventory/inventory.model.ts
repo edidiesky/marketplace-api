@@ -4,7 +4,7 @@ export interface IInventory extends Document {
   _id:               Types.ObjectId;
   __v:               number;
   ownerId:           Types.ObjectId;
-  organizationId:    Types.ObjectId;
+  organizationId:    string;
   productId:         Types.ObjectId;
   storeId:           Types.ObjectId;
   ownerName?:        string;
@@ -32,8 +32,7 @@ const InventorySchema = new Schema<IInventory>(
       index:    true,
     },
     organizationId: {
-      type:     Schema.Types.ObjectId,
-      ref:      "Organization",
+      type:     String,
       required: true,
       index:    true,
     },

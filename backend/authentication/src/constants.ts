@@ -25,8 +25,8 @@ export const EXCHANGES = {
   AUTHENTICATION:     "selleasi.authentication",
   AUTHENTICATION_DLX: "selleasi.authentication.dlx",
   ORGANIZATION:       "selleasi.organization",
-  NOTIFICATION:       "selleasi.notification",
 } as const;
+
 
 export const ROUTING_KEYS = {
   USER_ONBOARDING_COMPLETED:         "user.onboarding.completed",

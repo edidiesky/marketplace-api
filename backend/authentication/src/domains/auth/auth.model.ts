@@ -57,7 +57,7 @@ export interface IUser extends Document {
   gender?:                 Gender;
   nationality?:            string;
   address?:                string;
-  organizationId?:         Types.ObjectId;
+  organizationId?:         string;
   organizationType:        OrganizationType;
   status:                  UserStatus;
   isEmailVerified:         boolean;
@@ -104,8 +104,7 @@ const UserSchema = new Schema<IUser>(
     nationality:     { type: String, trim: true },
     address:         { type: String, trim: true },
     organizationId:  {
-      type:  Schema.Types.ObjectId,
-      ref:   "Organization",
+      type:  String,
       index: true,
     },
     organizationType: {

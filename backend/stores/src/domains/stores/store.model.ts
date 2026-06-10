@@ -36,7 +36,7 @@ export interface IStoreSettings {
 
 export interface IStore extends Document {
   _id:                    Types.ObjectId;
-  organizationId:         Types.ObjectId;
+  organizationId:         string;
   ownerId:                Types.ObjectId;
   ownerName:              string;
   ownerEmail:             string;
@@ -64,8 +64,7 @@ export interface IStore extends Document {
 const StoreSchema = new Schema<IStore>(
   {
     organizationId: {
-      type:     Schema.Types.ObjectId,
-      ref:      "Organization",
+      type:     String,
       required: true,
       index:    true,
     },
@@ -75,8 +74,8 @@ const StoreSchema = new Schema<IStore>(
       required: true,
       index:    true,
     },
-    ownerName:  { type: String, required: true },
-    ownerEmail: { type: String, required: true },
+    ownerName:  { type: String, required: false },
+    ownerEmail: { type: String, required: false },
     name: {
       type:     String,
       required: true,

@@ -10,6 +10,7 @@ export interface AuthenticatedRequest extends Request {
     organizationId?: string;
     roles?:          string[];
     permissionIds?:  string[];
+    name?:           string;
   };
 }
 

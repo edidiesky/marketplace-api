@@ -8,6 +8,7 @@ import {
 } from "@opentelemetry/core";
 import { CompositePropagator } from "@opentelemetry/core";
 import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3";
+import logger from "./logger";
 
 const TEMPO_URL = process.env.TEMPO_URL ?? "http://tempo:4318/v1/traces";
 const OTEL_ENABLED = process.env.OTEL_ENABLED !== "false";
@@ -62,12 +63,28 @@ if (OTEL_ENABLED) {
 
 sdk.start();
 
-process.on("SIGTERM", () => {
-  sdk
-    .shutdown()
-    .then(() => console.log("Tracing terminated"))
-    .catch((error) => console.error("Error terminating tracing", error))
-    .finally(() => process.exit(0));
-});
+ 
+async function shutdown(signal: string): Promise<void> {
+  if (!sdk) return;
+  try {
+    await sdk.shutdown();
+    logger.info("otel_tracing_terminated", {
+      event:   "otel_tracing_terminated",
+      service: SERVICE_NAME,
+      signal,
+    });
+  } catch (err) {
+    logger.error("otel_tracing_shutdown_error", {
+      event:   "otel_tracing_shutdown_error",
+      service: SERVICE_NAME,
+      signal,
+      error:   err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+ 
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT",  () => shutdown("SIGINT"));
+ 
 
 export default sdk;

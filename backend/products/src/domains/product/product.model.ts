@@ -13,7 +13,7 @@ export interface IProductSize {
 export interface IProduct extends Document {
   _id:            Types.ObjectId;
   ownerId:        Types.ObjectId;
-  organizationId: Types.ObjectId;
+  organizationId: string;
   storeId:        Types.ObjectId;
   ownerName?:     string;
   storeName?:     string;
@@ -42,8 +42,7 @@ const ProductSchema = new Schema<IProduct>(
       index:    true,
     },
     organizationId: {
-      type:     Schema.Types.ObjectId,
-      ref:      "Organization",
+      type:     String,
       required: true,
       index:    true,
     },

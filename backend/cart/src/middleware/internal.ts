@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-const INTERNAL_SECRET = process.env.INTERNAL_SERVICE_SECRET ?? "";
+const INTERNAL_SECRET = process.env.INTERNAL_SECRET ?? "";
 
 export function internalOnly(
   req: Request,

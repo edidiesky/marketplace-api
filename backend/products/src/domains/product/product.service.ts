@@ -81,7 +81,7 @@ export const productService = {
       product = await productRepository.create(
         {
           ownerId:        new Types.ObjectId(dto.ownerId),
-          organizationId: new Types.ObjectId(dto.organizationId),
+          organizationId:dto.organizationId,
           storeId:        new Types.ObjectId(dto.storeId),
           ownerName:      dto.ownerName,
           storeName:      dto.storeName,
@@ -93,6 +93,7 @@ export const productService = {
           colors:         dto.colors   ?? [],
           size:           dto.size     ?? [],
           sku:            dto.sku,
+          
         },
         session
       );
@@ -110,6 +111,8 @@ export const productService = {
           images:      product.images,
           isDeleted:   false,
           createdAt:   product.createdAt,
+          stockQuantity: dto.stockQuantity ?? 0,
+          organizationId: dto.organizationId,
         },
         session
       );

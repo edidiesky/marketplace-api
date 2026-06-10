@@ -3,17 +3,17 @@ import { getRabbitMQChannel } from "./connection";
 import { EXCHANGES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
 import { requestContext } from "../context/requestContext";
 
-function publish(
+async function publish(
   exchange:       string,
   routingKey:     string,
   payload:        unknown,
   correlationId?: string
-): void {
+): Promise<void> {
   const channel      = getRabbitMQChannel();
   const traceHeaders: Record<string, string> = {};
   propagation.inject(context.active(), traceHeaders);
 
-  channel.publish(
+  await channel.publish(
     exchange,
     routingKey,
     Buffer.from(JSON.stringify(payload)),
@@ -80,7 +80,7 @@ export function publishNotificationEmailConfirmation(
   event: NotificationEmailConfirmationEvent
 ): void {
   publish(
-    EXCHANGES.NOTIFICATION,
+    EXCHANGES.AUTHENTICATION,
     ROUTING_KEYS.NOTIFICATION_EMAIL_CONFIRMATION,
     event,
     event.notificationId
@@ -89,7 +89,7 @@ export function publishNotificationEmailConfirmation(
 
 export function publishNotification2FA(event: Notification2FAEvent): void {
   publish(
-    EXCHANGES.NOTIFICATION,
+    EXCHANGES.AUTHENTICATION,
     ROUTING_KEYS.NOTIFICATION_2FA,
     event,
     event.notificationId
@@ -100,7 +100,7 @@ export function publishNotificationResetPassword(
   event: NotificationResetPasswordEvent
 ): void {
   publish(
-    EXCHANGES.NOTIFICATION,
+    EXCHANGES.AUTHENTICATION,
     ROUTING_KEYS.NOTIFICATION_RESET_PASSWORD,
     event,
     event.notificationId

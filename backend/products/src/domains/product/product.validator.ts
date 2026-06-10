@@ -24,6 +24,7 @@ export const createProductSchema = Joi.object({
     .optional(),
   sku:       Joi.string().optional(),
   storeName: Joi.string().optional(),
+  stockQuantity: Joi.number().min(0).default(0),
 });
 
 export const updateProductSchema = Joi.object({
@@ -49,5 +50,6 @@ export const updateProductSchema = Joi.object({
     )
     .optional(),
   isArchive: Joi.boolean().optional(),
+  isDeleted: Joi.boolean().optional(),
   sku:       Joi.string().optional(),
 });

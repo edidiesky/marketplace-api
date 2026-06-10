@@ -10,7 +10,7 @@ import {
 
 export const CreateStoreHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId, organizationId } = (req as AuthenticatedRequest).user;
+    const { userId, organizationId, name } = (req as AuthenticatedRequest).user;
 
     if (!organizationId) {
       throw AppError.forbidden("Organization context required.");
@@ -20,6 +20,8 @@ export const CreateStoreHandler = asyncHandler(
       ...req.body,
       ownerId:        userId,
       organizationId,
+      ownerName:      name,
+      ownerEmail: "",
     });
 
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({

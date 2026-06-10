@@ -13,6 +13,7 @@ export interface AddToCartDto {
   fullName:            string;
   email?:              string;
   idempotencyKey?:     string;
+  organizationId?:     string;
 }
 
 export interface UpdateCartItemDto {

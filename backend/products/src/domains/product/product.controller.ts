@@ -26,7 +26,7 @@ export const GetStoreProductsHandler = asyncHandler(
 );
 export const CreateProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId }  = (req as AuthenticatedRequest).user;
+    const { userId, organizationId }  = (req as AuthenticatedRequest).user;
     const ctx         = readGatewayContext(req);
     const storeId     = ctx.store.storeId ?? req.params["storeId"] as string;
 
@@ -36,6 +36,7 @@ export const CreateProductHandler = asyncHandler(
       ...req.body,
       storeId,
       ownerId: userId,
+      organizationId,
     });
 
     res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
