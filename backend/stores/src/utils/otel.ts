@@ -5,6 +5,7 @@ import { WinstonInstrumentation } from "@opentelemetry/instrumentation-winston";
 import { diag, DiagConsoleLogger, DiagLogLevel } from "@opentelemetry/api";
 import { W3CTraceContextPropagator, CompositePropagator } from "@opentelemetry/core";
 import { B3Propagator, B3InjectEncoding } from "@opentelemetry/propagator-b3";
+import logger from "./logger";
 
 const TEMPO_URL    = process.env.TEMPO_URL ?? "http://tempo:4318/v1/traces";
 const SERVICE_NAME = process.env.OTEL_SERVICE_NAME ?? "stores-service";
