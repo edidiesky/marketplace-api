@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
 import { requestContext, RequestContext } from "../context/requestContext";
 import logger from "../utils/logger";
+import { trace } from "@opentelemetry/api";
 
 export interface AuthenticatedRequest extends Request {
   user: {
@@ -49,6 +50,13 @@ export function contextMiddleware(
   };
 
   requestContext.run(ctx, () => {
+    const span = trace.getActiveSpan();
+    if (span) {
+      if (ctx.userId)         span.setAttribute("app.user.id",         ctx.userId);
+      if (ctx.organizationId) span.setAttribute("app.organization.id", ctx.organizationId);
+      if (ctx.storeId)        span.setAttribute("app.store.id",        ctx.storeId);
+      if (ctx.requestId)      span.setAttribute("app.request.id",      ctx.requestId);
+    }
     logger.info("http_request", {
       event:  "http_request",
       method: req.method,
