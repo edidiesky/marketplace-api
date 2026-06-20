@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Error as MongooseError }          from "mongoose";
+import { trace, SpanStatusCode }           from "@opentelemetry/api";
 import { AppError }                        from "../utils/AppError";
 import logger                              from "../utils/logger";
 
@@ -86,23 +87,39 @@ export function errorHandler(
   _next: NextFunction
 ): void {
   const error = normalizeError(err);
+  const span  = trace.getActiveSpan();
 
   if (error.isOperational) {
+    if (span) {
+      span.setAttribute("app.error.operational",  true);
+      span.setAttribute("app.error.status_code",  error.statusCode);
+      span.setAttribute("app.error.message",      error.message);
+    }
+
     logger.warn("operational_error", {
       event:      "operational_error",
       statusCode: error.statusCode,
       message:    error.message,
       path:       req.path,
       method:     req.method,
+      service:    process.env.OTEL_SERVICE_NAME,
       requestId:  req.headers["x-request-id"] as string,
       details:    error.details,
     });
   } else {
+    if (span) {
+      span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+      span.recordException(
+        err instanceof Error ? err : new Error(String(err))
+      );
+    }
+
     logger.error("unexpected_server_error", {
       event:     "unexpected_server_error",
       message:   error.message,
       path:      req.path,
       method:    req.method,
+      service:   process.env.OTEL_SERVICE_NAME,
       requestId: req.headers["x-request-id"] as string,
       stack:     error.stack,
     });

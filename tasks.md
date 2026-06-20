@@ -1,20 +1,4 @@
 
-Phase 1: Stabilize (current — nearly done)
-
- RabbitMQ auth and bindings fixed
- MongoDB database URL per service fixed
- Organization service UUID generation fixed
- Auth handler receiving correct UUID
- User status transitions (draft → active) working
- 2FA OTP 6-digit generation
- Notification email pipeline working
- Subscription creation on org onboarding
- Store creation working
- Product creation with stock quantity to inventory
- Guest cart flow (next immediate task)
- Fix all services with organizationId: ObjectId → String
- sellerId injection through gateway subdomain context
- Copy Postman collections to _documentation/postman/
 
 Phase 2: Complete Platform
 
@@ -63,9 +47,6 @@ Phase 8: Service Mesh
  Replace internal secret header auth
 
 Phase 9: Documentation
-
- OpenAPI specs per service
- Swagger aggregation via gateway working
  Architecture decision records (ADRs)
  Postman collections complete
 

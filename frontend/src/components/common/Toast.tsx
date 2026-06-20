@@ -5,11 +5,18 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { toast } from "sonner";
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface CustomToastProps {
   message: string;
   type: "success" | "error" | "info";
+  action?: ToastAction;
 }
-export default function CustomToast({ message, type }: CustomToastProps) {
+
+export default function CustomToast({ message, type, action }: CustomToastProps) {
   const Icon = () => {
     switch (type) {
       case "success":
@@ -25,14 +32,23 @@ export default function CustomToast({ message, type }: CustomToastProps) {
     <div className={`custom-toast border ${type}`}>
       <Icon />
       <span className="toast-message bold">{message}</span>
+      {action && (
+        <button className="toast-action" onClick={action.onClick}>
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }
 
-/** MY UTILITY FUNCTION FOR CREATING A TOAST */
+
 export const showToast = (
   message: string,
-  type: "success" | "error" | "info"
+  type: "success" | "error" | "info",
+   options?: { id?: string; duration?: number; action?: ToastAction },
 ) => {
-  toast.custom(() => <CustomToast message={message} type={type} />);
+   toast.custom(() => <CustomToast message={message} type={type} action={options?.action} />, {
+    id: options?.id,
+    duration: options?.duration,
+  });
 };

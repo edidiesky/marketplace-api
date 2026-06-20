@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+coverage
+**/__tests__
+**/*.test.ts
+**/*.spec.ts
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+_documentation

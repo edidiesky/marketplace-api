@@ -1,27 +1,48 @@
 import { AUTH_URL } from "@/constants";
 import { apiSlice } from "./apiSlice";
 import type {
-  LoginPayload, VerifyOtpPayload, RegisterPayload,
-  AuthResponse, OnboardingEmailPayload, OnboardingPasswordPayload,
-  RequestResetPayload, PasswordResetPayload, ChangePasswordPayload,
+  LoginPayload,
+  VerifyOtpPayload,
+  RequestResetPayload,
+  PasswordResetPayload,
+  AuthResponse,
   ApiSuccessResponse,
 } from "@/types/api";
 
+export interface InitiateOnboardingPayload {
+  email: string;
+  password: string;
+  notificationId?: string;
+}
+
+export interface RegisterPayload {
+  email: string;
+  firstName: string;
+  lastName: string;
+  userType: "BUYER" | "SELLER";
+  phone: string;
+  address?: string;
+  gender?: "Male" | "Female";
+}
+
+export interface ChangePasswordPayload {
+  email: string;
+  newPassword: string;
+}
+
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    verifyEmail: builder.mutation<ApiSuccessResponse, OnboardingEmailPayload>({
-      query: (body) => ({ method: "POST", url: `${AUTH_URL}/verify-email`, body }),
+    initiateOnboarding: builder.mutation<ApiSuccessResponse, InitiateOnboardingPayload>({
+      query: (body) => ({ method: "POST", url: `${AUTH_URL}/onboarding/initiate`, body }),
     }),
     confirmEmailToken: builder.query<ApiSuccessResponse, string>({
       query: (token) => ({ method: "GET", url: `${AUTH_URL}/email/confirmation?token=${token}` }),
     }),
-    verifyPassword: builder.mutation<ApiSuccessResponse, OnboardingPasswordPayload>({
-      query: (body) => ({ method: "POST", url: `${AUTH_URL}/verify-password`, body }),
-    }),
     register: builder.mutation<ApiSuccessResponse, RegisterPayload>({
       query: (body) => ({ method: "POST", url: `${AUTH_URL}/signup`, body }),
+      invalidatesTags: ["Auth"],
     }),
-    login: builder.mutation<ApiSuccessResponse, LoginPayload>({
+    login: builder.mutation<AuthResponse, LoginPayload>({
       query: (body) => ({ method: "POST", url: `${AUTH_URL}/login`, body }),
     }),
     verifyOtp: builder.mutation<AuthResponse, VerifyOtpPayload>({
@@ -39,18 +60,25 @@ export const authApiSlice = apiSlice.injectEndpoints({
       query: (body) => ({ method: "POST", url: `${AUTH_URL}/request-reset`, body }),
     }),
     passwordReset: builder.mutation<ApiSuccessResponse, PasswordResetPayload>({
-      query: (body) => ({ method: "POST", url: `${AUTH_URL}/password-reset`, body }),
+      query: ({ token, password }) => ({
+        method: "POST",
+        url: `${AUTH_URL}/password-reset`,
+        body: { token, newPassword: password },
+      }),
     }),
     changePassword: builder.mutation<ApiSuccessResponse, ChangePasswordPayload>({
-      query: (body) => ({ method: "POST", url: `${AUTH_URL}/password-change`, body }),
+      query: (body) => ({
+        method: "POST",
+        url: `${AUTH_URL}/password-change`,
+        body,
+      }),
     }),
   }),
 });
 
 export const {
-  useVerifyEmailMutation,
+  useInitiateOnboardingMutation,
   useConfirmEmailTokenQuery,
-  useVerifyPasswordMutation,
   useRegisterMutation,
   useLoginMutation,
   useVerifyOtpMutation,

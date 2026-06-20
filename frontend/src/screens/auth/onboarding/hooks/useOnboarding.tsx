@@ -3,48 +3,47 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setOnboardingEmail } from "@/redux/slices/authSlice";
 import {
-  useVerifyEmailMutation,
-  useVerifyPasswordMutation,
+  useInitiateOnboardingMutation,
   useRegisterMutation,
+  type RegisterPayload,
 } from "@/redux/services/authApi";
-import { useCreateStoreMutation } from "@/redux/services/storeApi";
-import toast from "react-hot-toast";
+import { useCreateStoreMutation } from "@/redux/services/storeApi"
 import type { AccountFormData } from "../steps/StepAccount";
 import type { DetailsFormData, StoreFormData } from "../schema/onboarding.schema";
+import { showToast } from "@/components/common/Toast";
 
 export function useOnboarding(onNext: () => void) {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch  = useDispatch();
+  const navigate  = useNavigate();
 
-  const [pendingEmail, setPendingEmail]   = useState("");
-  const [showVerify,   setShowVerify]     = useState(false);
-  const [userType,     setUserType]       = useState<"SELLER" | "BUYER">("SELLER");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [showVerify,   setShowVerify]   = useState(false);
 
-  const [verifyEmail,    { isLoading: sendingEmail    }] = useVerifyEmailMutation();
-  const [verifyPassword, { isLoading: settingPassword }] = useVerifyPasswordMutation();
-  const [register,       { isLoading: registering     }] = useRegisterMutation();
-  const [createStore,    { isLoading: creatingStore   }] = useCreateStoreMutation();
+  const [initiateOnboarding, { isLoading: initiating }] = useInitiateOnboardingMutation();
+  const [register,           { isLoading: registering }] = useRegisterMutation();
+  const [createStore,        { isLoading: creatingStore }] = useCreateStoreMutation();
 
   const handleAccount = async (data: AccountFormData) => {
     try {
-      await verifyEmail({ email: data.email }).unwrap();
-      await verifyPassword({ email: data.email, password: data.password }).unwrap();
+      await initiateOnboarding({ email: data.email, password: data.password }).unwrap();
       dispatch(setOnboardingEmail(data.email));
       setPendingEmail(data.email);
       setShowVerify(true);
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
-      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) =>
+        showToast(m, "error")
+      );
     }
   };
 
   const handleResend = async () => {
     if (!pendingEmail) return;
     try {
-      await verifyEmail({ email: pendingEmail }).unwrap();
-      toast.success("Verification email resent.");
+      await initiateOnboarding({ email: pendingEmail, password: "" }).unwrap();
+      showToast("Verification email resent.", "success");
     } catch {
-      toast.error("Failed to resend. Please try again.");
+      showToast("Failed to resend. Please try again.", "error");
     }
   };
 
@@ -55,37 +54,43 @@ export function useOnboarding(onNext: () => void) {
 
   const handleDetails = async (data: DetailsFormData) => {
     try {
-      await register({
-        email: pendingEmail,
+      const payload: RegisterPayload = {
+        email:     pendingEmail,
         firstName: data.firstName,
-        lastName: data.lastName,
-        userType: data.userType,
-      }).unwrap();
-      setUserType(data.userType);
+        lastName:  data.lastName,
+        userType:  data.userType,
+        phone:     data.phone,
+        gender:    data.gender,
+      };
+      await register(payload).unwrap();
       if (data.userType === "BUYER") {
-        toast.success("Account created! Welcome to Selleasi.");
+        showToast("Account created! Welcome to Selleasi.", "success");
         navigate("/");
         return;
       }
       onNext();
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
-      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) =>
+        showToast(m, "error")
+      );
     }
   };
 
   const handleCreateStore = async (data: StoreFormData) => {
     try {
       const result = await createStore({
-        name: data.name,
-        subdomain: data.subdomain,
+        name:        data.name,
+        subdomain:   data.subdomain,
         description: data.description,
       }).unwrap();
-      toast.success("Store created! Let's start selling.");
+      showToast("Store created! Let's start selling.", "success");
       navigate(`/dashboard/store/${result.data._id}`);
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
-      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) =>
+        showToast(m, "error")
+      );
     }
   };
 
@@ -97,7 +102,7 @@ export function useOnboarding(onNext: () => void) {
     handleDetails,
     handleCreateStore,
     handleResend,
-    isAccountLoading: sendingEmail || settingPassword,
+    isAccountLoading: initiating,
     registering,
     creatingStore,
   };

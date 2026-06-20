@@ -21,6 +21,8 @@ export const passwordSchema = z
 export const detailsSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().min(1, "Phone is required"),
+  gender: z.enum(["Male", "Female"]),
   userType: z.enum(["BUYER", "SELLER"]),
 });
 

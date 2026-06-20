@@ -81,27 +81,23 @@ export const PasswordFormData: ProfilePasswordDataItem[] = [
   },
 ];
 
-
-
-// --------------------------- form Data List End --------------------
-
-// ------------- API REQUEST ROUTE -----------------
+// API REQUEST ROUTE
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
-export const AUTH_URL        = `${BASE_URL}/api/v1/auth`;
-export const USER_URL        = `${BASE_URL}/api/v1/users`;
-export const ROLE_URL        = `${BASE_URL}/api/v1/roles`;
-export const STORE_URL       = `${BASE_URL}/api/v1/stores`;
-export const PRODUCT_URL     = `${BASE_URL}/api/v1/products`;
-export const CART_URL        = `${BASE_URL}/api/v1/carts`;
-export const ORDER_URL       = `${BASE_URL}/api/v1/orders`;
-export const INVENTORY_URL   = `${BASE_URL}/api/v1/inventories`;
-export const PAYMENT_URL     = `${BASE_URL}/api/v1/payments`;
-export const PAYOUT_URL      = `${BASE_URL}/api/v1/payouts`;
-export const WALLET_URL      = `${BASE_URL}/api/v1/wallets`;
-export const NOTIFICATION_URL= `${BASE_URL}/api/v1/notifications`;
-export const REVIEW_URL      = `${BASE_URL}/api/v1/reviews`;
-export const CATEGORY_URL    = `${BASE_URL}/api/v1/categories`;
+export const AUTH_URL        = `${BASE_URL}/auth/api/v1/auth`;
+export const USER_URL        = `${BASE_URL}/users/api/v1/users`;
+export const ROLE_URL        = `${BASE_URL}/roles/api/v1/roles`;
+export const STORE_URL       = `${BASE_URL}/stores/api/v1/stores`;
+export const PRODUCT_URL     = `${BASE_URL}/products/api/v1/products`;
+export const CART_URL        = `${BASE_URL}/carts/api/v1/carts`;
+export const ORDER_URL       = `${BASE_URL}/orders/api/v1/orders`;
+export const INVENTORY_URL   = `${BASE_URL}/inventories/api/v1/inventories`;
+export const PAYMENT_URL     = `${BASE_URL}/payments/api/v1/payments`;
+export const PAYOUT_URL      = `${BASE_URL}/payouts/api/v1/payouts`;
+export const WALLET_URL      = `${BASE_URL}/wallets/api/v1/wallets`;
+export const NOTIFICATION_URL= `${BASE_URL}/notifications/api/v1/notifications`;
+export const REVIEW_URL      = `${BASE_URL}/reviews/api/v1/reviews`;
+export const CATEGORY_URL    = `${BASE_URL}/categories/api/v1/categories`;
 export const COLOR_URL       = `${BASE_URL}/api/v1/colors`;
 export const SIZE_URL        = `${BASE_URL}/api/v1/sizes`;
 export const UPLOAD_URL      = `${BASE_URL}/api/v1/uploads`;

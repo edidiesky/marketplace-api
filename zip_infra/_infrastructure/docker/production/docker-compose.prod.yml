@@ -1,0 +1,344 @@
+networks:
+  selleasi-network:
+    driver: bridge
+
+services:
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - selleasi-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  api-gateway:
+    container_name: api-gateway
+    restart: unless-stopped
+    env_file:
+      - ./env/api-gateway.env
+    networks:
+      - selleasi-network
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../api-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  authentication:
+    container_name: selleasi-authentication
+    restart: unless-stopped
+    env_file:
+      - ./env/authentication.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../authentication
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  products:
+    container_name: selleasi-products
+    restart: unless-stopped
+    env_file:
+      - ./env/products.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4003"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../products
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  payment:
+    container_name: payment
+    restart: unless-stopped
+    env_file:
+      - ./env/payment.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../payment
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  notification:
+    container_name: selleasi-notification
+    restart: unless-stopped
+    env_file:
+      - ./env/notification.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4006"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../notification
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  stores:
+    container_name: selleasi-stores
+    restart: unless-stopped
+    env_file:
+      - ./env/stores.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4007"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../stores
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  inventory:
+    container_name: inventory
+    restart: unless-stopped
+    env_file:
+      - ./env/inventory.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4008"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../inventory
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  cart:
+    container_name: cart
+    restart: unless-stopped
+    env_file:
+      - ./env/cart.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4009"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../cart
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  tenant:
+    container_name: selleasi-tenant
+    restart: unless-stopped
+    env_file:
+      - ./env/tenant.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4010"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../tenant
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  review:
+    container_name: selleasi-review
+    restart: unless-stopped
+    env_file:
+      - ./env/review.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4011"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4011/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../review
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  orders:
+    container_name: orders
+    restart: unless-stopped
+    env_file:
+      - ./env/orders.env
+    networks:
+      - selleasi-network
+    expose:
+      - "4012"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    build:
+      context: ../../../orders
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    networks:
+      - selleasi-network
+    expose:
+      - "9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    networks:
+      - selleasi-network
+    expose:
+      - "3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - loki_data:/loki
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    networks:
+      - selleasi-network
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    restart: unless-stopped
+    user: root
+    networks:
+      - selleasi-network
+    expose:
+      - "3200"
+      - "4318"
+      - "4317"
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./tempo/tempo-config.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/tmp/tempo
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    networks:
+      - selleasi-network
+    expose:
+      - "3000"
+    environment:
+      - GF_SERVER_ROOT_URL=https://grafana.selleasi.com
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+volumes:
+  redis-data:
+  prom_data:
+  grafana_data:
+  loki_data:
+  tempo-data:

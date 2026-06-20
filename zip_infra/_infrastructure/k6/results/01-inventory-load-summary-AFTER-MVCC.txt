@@ -1,0 +1,26 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: scripts/inventory/01-inventory-load.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 8m30s max duration (incl. graceful stop):
+              * default: Up to 100 looping VUs for 8m0s over 4 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+running (0m00.9s), 001/100 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 001/100 VUs  0m00.9s/8m00.0s
+
+running (0m01.9s), 001/100 VUs, 0 complete and 0 interrupted iterations
+default   [   0% ] 001/100 VUs  0m01.9s/8m00.0s
+
+running (0m02.9s), 001/100 VUs, 0 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m02.9s/8m00.0s
+
+running (0m03.9s), 001/100 VUs, 0 complete and 0 interrupted iterations
+default   [   1% ] 001/100 VUs  0m03.9s/8m00.0s
