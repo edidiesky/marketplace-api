@@ -1,118 +1,99 @@
-# Orders Service
+# orders-service
 
-Owns the order lifecycle for the marketplace: checkout (cart > reserved order), payment status tracking via the payment saga, fulfillment tracking, and order history for buyers and sellers.
+Orchestrates the checkout saga: fetches the cart, reserves stock from inventory (per item, HTTP internal), creates the order record, and coordinates state transitions driven by downstream payment events via RabbitMQ. Owns fulfillment status tracking and receipt generation (Cloudinary PDF upload).
 
-**Port:** `4012`
-**Database:** MongoDB
-**Cache:** Redis (order/list read-through cache, consumer idempotency keys)
-**Message broker:** RabbitMQ (topic exchanges: `orders`, `orders.dlx`, `payment`, `inventory`, `cart`, `notification`)
+## Key facts
 
----
+| Property       | Value                                          |
+|----------------|------------------------------------------------|
+| Port           | 4012                                           |
+| Container      | `selleazy_orders`                              |
+| Database       | MongoDB (`SELLEASI_ORDERS_API`)                |
+| Cache          | Redis (via `redLock.ts` for saga coordination) |
+| Broker         | RabbitMQ                                       |
+| Env files      | `.env` (root) + `backend/orders/.env`          |
 
-## Table of Contents
+## Inbound traffic
 
-1. [What this service talks to](#what-this-service-talks-to)
-2. [API](#api)
-3. [Architecture decisions](#architecture-decisions)
-4. [Prerequisites](#prerequisites)
-5. [Local setup](#local-setup)
-6. [Tests](#tests)
-7. [Operations](#operations)
-8. [Related Documentation](#related-documentation)
+**Public (no auth):**
+`GET /api/v1/orders/detail/:id` - fetches a single order by MongoDB `_id`. No JWT required. Returns full order data including cartItems, totalPrice, userId, sellerId, and transactionId.
 
----
+**Authenticated (JWT required):**
+All other routes except the internal abandon endpoint.
 
-## What this service talks to
+**Internal (`x-internal-secret` required):**
+`POST /api/v1/orders/internal/:orderId/abandon` - called by the payment service on terminal payment failure.
 
-Outbound (synchronous, internal-only HTTP):
-- **cart-service**: fetch cart snapshot at checkout (`GET /api/v1/carts/internal/:cartId`)
-- **inventory-service**: reserve/release stock during checkout (`POST /api/v1/inventories/reserve` and `/release`)
+## Outbound HTTP (internal)
 
-Inbound/outbound (async, RabbitMQ):
-- Consumes: `payment.completed`, `payment.failed`, `payment.initiated` (from payment-service), `inventory.reservation.failed` (from inventory-service)
-- Publishes: `order.created`, `order.completed`, `order.failed`, `order.abandoned`, `cart.item.out_of_stock`
+| Target | Endpoint | Trigger |
+|--------|----------|---------|
+| cart-service:4009 | `GET /api/v1/carts/internal/:cartId` | During checkout to fetch cart snapshot |
+| inventory-service:4008 | `POST /api/v1/inventories/reserve` | Per cart item during checkout |
 
-For the full order/fulfillment state machines, the checkout saga (reserve > create > compensate on failure), and failure-mode data flows: see [Orders TDD](../../_documentation/orders-tdd.md)
----
+Both calls use `x-internal-secret` header and an 8 s timeout via `AbortController`.
 
-## API
+## RabbitMQ publishes
 
-Full request/response contracts and error model: [api/contracts.md](./api/contracts.md) (link target, doc to be written in Module 2).
+| Exchange            | Routing key               | Trigger                             |
+|---------------------|---------------------------|-------------------------------------|
+| `selleasi.orders`   | `order.created`           | Checkout completes successfully     |
+| `selleasi.orders`   | `order.completed`         | Payment confirmed via webhook       |
+| `selleasi.orders`   | `order.failed`            | Payment failure confirmed           |
+| `selleasi.orders`   | `order.abandoned`         | Internal abandon endpoint called    |
+| `selleasi.orders`   | `cart.item.out_of_stock`  | Inventory reservation fails for an item |
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/v1/orders/:storeId/checkout` | user | creates order from cart, reserves inventory, idempotent on `requestId` |
-| GET | `/api/v1/orders/me` | user | buyer's order history, paginated |
-| GET | `/api/v1/orders/:storeId/store` | user (seller) | store's orders, paginated, filterable by `orderStatus` |
-| GET | `/api/v1/orders/detail/:id` | none | single order by id |
-| PATCH | `/api/v1/orders/:orderId/shipping` | user | buyer sets shipping address, only while order is payment-pending |
-| PATCH | `/api/v1/orders/:orderId/fulfillment` | user (seller) | seller advances fulfillment status |
-| POST | `/api/v1/orders/internal/:orderId/abandon` | internal only | cancels stale unpaid orders, called by scheduler |
+## RabbitMQ consumes
 
----
+| Queue                                                    | Routing key                     | Handler                                      |
+|----------------------------------------------------------|---------------------------------|----------------------------------------------|
+| `selleasi.orders.payment.completed.queue`                | `payment.completed`             | Marks order COMPLETED, generates receipt     |
+| `selleasi.orders.payment.failed.queue`                   | `payment.failed`                | Marks order FAILED                           |
+| `selleasi.orders.payment.initiated.queue`                | `payment.initiated`             | Updates order with payment reference         |
+| `selleasi.orders.inventory.reservation.failed.queue`     | `inventory.reservation.failed`  | Marks order FAILED, releases reservation     |
 
-## Architecture decisions
+## API route table
 
-Indexed in [architecture/decision/](./architecture/decision/) (to be populated in Module 4, e.g. RabbitMQ vs Kafka choice, receipt generation via Cloudinary, idempotency-key strategy for consumers).
+| Prefix              | Route file                               | Note                                  |
+|---------------------|------------------------------------------|---------------------------------------|
+| `/api/v1/orders`    | `src/domains/order/order.routes.ts`      | All order endpoints                   |
+| `/health`           | `src/app.ts`                             | Shallow                               |
+| `/metrics`          | `src/app.ts`                             | Prometheus. No auth guard.            |
 
----
+See [API Contracts](./API_CONTRACTS.md).
 
-## Prerequisites
+## Environment variables
 
-- Node.js 20+
-- Docker (for MongoDB, Redis, RabbitMQ via root `_infrastructure` docker compose)
-- Cloudinary account (receipt PDF/image uploads), credentials from team lead
-- Access to `cart-service` and `inventory-service` running locally or via the shared dev environment
-
----
-
-## Local setup
-
-```bash
-cd backend/orders
-cp .env.example .env
-npm install
-npm run dev
-```
-
-Required environment variables:
-
-| Variable | Purpose |
-|---|---|
-| `PORT` | defaults to `4012` if unset |
-| `DATABASE_URL` | MongoDB connection string |
-| `RABBITMQ_URL` | RabbitMQ connection string, must point at the same broker as cart/payment/inventory services |
-| `WEB_ORIGIN` | allowed CORS origin, throws on startup if unset |
-| `INTERNAL_SECRET` | shared secret for internal-only routes (e.g. `/internal/:orderId/abandon`), throws on startup if unset |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | receipt upload, throws on startup if `CLOUDINARY_CLOUD_NAME` unset |
-| `CART_SERVICE_URL` | base URL for cart-service internal API |
-| `INVENTORY_SERVICE_URL` | base URL for inventory-service internal API |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | trace export target, defaults to `http://tempo:4318/v1/traces` |
-
-Requires MongoDB, Redis, and RabbitMQ running locally (see root `_infrastructure` docker compose setup). RabbitMQ topology (exchanges, queues, DLQs) is asserted automatically on startup, no manual setup needed.
-
----
+| Variable                | Purpose                                     | Notes                                    |
+|-------------------------|---------------------------------------------|------------------------------------------|
+| `DATABASE_URL`          | MongoDB connection string                   | Required.                                |
+| `REDIS_HOST/PORT/PASSWORD` | Redis connection                         | Required in practice.                    |
+| `JWT_CODE`              | JWT verification secret                     | Required.                                |
+| `RABBITMQ_URL`          | AMQP connection string                      | Required.                                |
+| `WEB_ORIGIN`            | CORS origin                                 | Required.                                |
+| `INTERNAL_SECRET`       | Guards internal endpoints and outbound calls | Required. Defaults to `""` if missing.  |
+| `CART_SERVICE_URL`      | Cart service base URL                       | Defaults to `http://cart:4009`           |
+| `INVENTORY_SERVICE_URL` | Inventory service base URL                  | Defaults to `http://inventory:4008`      |
+| `PORT`                  | Listen port                                 | Defaults to `4012`                       |
+| `OTEL_SERVICE_NAME`     | Trace/log service tag                       | Set to `"orders-service"` in `.env`      |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary for receipt PDF uploads          | Required for receipt generation.         |
+| `CLOUDINARY_API_KEY`    | Cloudinary credential                       | Committed in service `.env` (test key).  |
+| `CLOUDINARY_API_SECRET` | Cloudinary credential                       | Committed in service `.env` (test key).  |
+| `BATCH_SIZE`            | Present in `.env`                           | Zero usages in `src/`. Dead.             |
 
 ## Tests
 
-```bash
-npm test                  # unit
-npm run test:integration  # requires the docker compose stack
-```
+| Script | What it runs |
+|--------|--------------|
+| `test` | Jest unit config |
 
----
+**Phase 4:** `orders.integration.test.ts` and `orders.service.test.ts` exist. Integration tests require live cart and inventory services.
 
 ## Operations
 
-- Health check: `GET /health`
-- Metrics (Prometheus): `GET /metrics`
-- Runbook: [RUNBOOK.md](./RUNBOOK.md) (to be written in Module 5)
-
----
-
-## Related Documentation
-
-- **Technical design doc**: [Orders TDD](../../_documentation/orders-tdd.md), order/fulfillment state machines, checkout saga, failure-mode data flows (Module 3)
-- **API contracts**: [api/contracts.md](./api/contracts.md), request/response shapes and error model (Module 2)
-- **Architecture decisions**: [architecture/decision/](./architecture/decision/), index of ADRs for this service (Module 4)
-- **Runbook**: [RUNBOOK.md](./RUNBOOK.md), alerts, diagnostics, remediation (Module 5)
+| Concern         | Detail                                                                                       |
+|-----------------|----------------------------------------------------------------------------------------------|
+| Health check    | `GET /health` - shallow.                                                                     |
+| Metrics         | `GET /metrics` - no auth guard.                                                              |
+| Rate limiting   | Gateway-enforced only.                                                                       |
+| Fulfillment FSM | Transitions validated by `fulfillmentTransitions.ts`. Invalid transitions rejected with 400. |
