@@ -1,0 +1,19 @@
+{
+  admin 0.0.0.0:2019
+  auto_https off
+}
+
+*.selleasi.com, selleasi.com {
+  handle /api/* {
+    reverse_proxy api-gateway:8000
+  }
+  handle {
+    reverse_proxy frontend:3000
+  }
+}
+
+:80 {
+  handle /caddy/health {
+    respond "ok" 200
+  }
+}
