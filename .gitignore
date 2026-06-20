@@ -26,3 +26,6 @@ backend/**_src.zip
 backend/zip_infra.zip
 frontend/frontend_src.zip
 zip_infra.zip
+
+# Binary zip snapshots — not canonical source
+*.zip
