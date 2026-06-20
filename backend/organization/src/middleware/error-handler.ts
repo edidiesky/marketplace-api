@@ -1,29 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import { Error as MongooseError }          from "mongoose";
+import { trace, SpanStatusCode }           from "@opentelemetry/api";
 import { AppError }                        from "../utils/AppError";
 import logger                              from "../utils/logger";
 
 interface MongoServerError {
   code?:     number;
   keyValue?: Record<string, unknown>;
-} 
+}
 
-function handleMongooseCastError(
-  err: MongooseError.CastError
-): AppError {
+function handleMongooseCastError(err: MongooseError.CastError): AppError {
   return AppError.badRequest(
     `Invalid value for field "${err.path}": ${err.value}`
   );
 }
 
-function handleMongooseDuplicateKey(
-  err: MongoServerError
-): AppError {
-  const field  = err.keyValue ? Object.keys(err.keyValue)[0] : "field";
-  const value  = err.keyValue ? Object.values(err.keyValue)[0] : "";
-  return AppError.conflict(
-    `${field} "${value}" already exists.`
-  );
+function handleMongooseDuplicateKey(err: MongoServerError): AppError {
+  const field = err.keyValue ? Object.keys(err.keyValue)[0]   : "field";
+  const value = err.keyValue ? Object.values(err.keyValue)[0] : "";
+  return AppError.conflict(`${field} "${value}" already exists.`);
 }
 
 function handleMongooseValidationError(
@@ -35,10 +30,13 @@ function handleMongooseValidationError(
   return AppError.badRequest(`Validation failed: ${messages}`);
 }
 
-function handleJoiValidationError(
-  err: { isJoi: boolean; details: Array<{ message: string }> }
-): AppError {
-  const messages = err.details.map((d) => d.message.replace(/"/g, "")).join(", ");
+function handleJoiValidationError(err: {
+  isJoi:   boolean;
+  details: Array<{ message: string }>;
+}): AppError {
+  const messages = err.details
+    .map((d) => d.message.replace(/"/g, ""))
+    .join(", ");
   return AppError.badRequest(messages);
 }
 
@@ -58,14 +56,21 @@ function normalizeError(err: unknown): AppError {
     return handleMongooseDuplicateKey(mongoErr);
   }
 
-  const joiErr = err as { isJoi?: boolean; details?: Array<{ message: string }> };
+  const joiErr = err as {
+    isJoi?:   boolean;
+    details?: Array<{ message: string }>;
+  };
   if (joiErr.isJoi === true && Array.isArray(joiErr.details)) {
     return handleJoiValidationError(
       err as { isJoi: boolean; details: Array<{ message: string }> }
     );
   }
 
-  const anyErr = err as { statusCode?: number; message?: string; stack?: string };
+  const anyErr = err as {
+    statusCode?: number;
+    message?:    string;
+    stack?:      string;
+  };
   const statusCode = anyErr.statusCode ?? 500;
   const message    = anyErr.message    ?? "An unexpected error occurred.";
 
@@ -76,29 +81,45 @@ function normalizeError(err: unknown): AppError {
 }
 
 export function errorHandler(
-  err:  unknown,
-  req:  Request,
-  res:  Response,
+  err:   unknown,
+  req:   Request,
+  res:   Response,
   _next: NextFunction
 ): void {
   const error = normalizeError(err);
+  const span  = trace.getActiveSpan();
 
   if (error.isOperational) {
+    if (span) {
+      span.setAttribute("app.error.operational",  true);
+      span.setAttribute("app.error.status_code",  error.statusCode);
+      span.setAttribute("app.error.message",      error.message);
+    }
+
     logger.warn("operational_error", {
       event:      "operational_error",
       statusCode: error.statusCode,
       message:    error.message,
       path:       req.path,
       method:     req.method,
+      service:    process.env.OTEL_SERVICE_NAME,
       requestId:  req.headers["x-request-id"] as string,
       details:    error.details,
     });
   } else {
+    if (span) {
+      span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+      span.recordException(
+        err instanceof Error ? err : new Error(String(err))
+      );
+    }
+
     logger.error("unexpected_server_error", {
       event:     "unexpected_server_error",
       message:   error.message,
       path:      req.path,
       method:    req.method,
+      service:   process.env.OTEL_SERVICE_NAME,
       requestId: req.headers["x-request-id"] as string,
       stack:     error.stack,
     });
@@ -109,13 +130,8 @@ export function errorHandler(
     message: error.message,
   };
 
-  if (error.details) {
-    body["details"] = error.details;
-  }
-
-  if (error.failedItems) {
-    body["failedItems"] = error.failedItems;
-  }
+  if (error.details)     body["details"]     = error.details;
+  if (error.failedItems) body["failedItems"] = error.failedItems;
 
   if (process.env.NODE_ENV === "development") {
     body["stack"] = error.stack;
@@ -126,7 +142,7 @@ export function errorHandler(
 
 export function NotFound(
   req:  Request,
-  _res:  Response,
+  _res: Response,
   next: NextFunction
 ): void {
   next(AppError.notFound(`Cannot ${req.method} ${req.originalUrl}`));
