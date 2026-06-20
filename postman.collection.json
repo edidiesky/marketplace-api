@@ -1,0 +1,855 @@
+{
+  "info": {
+    "name": "Selleasi Platform",
+    "_postman_id": "selleasi-platform-v1",
+    "description": "Full API collection for the Selleasi multi-tenant e-commerce platform. Base URL: http://localhost:8000. Set the `token` variable after login.\n\nVariables required:\n- `base_url`: http://localhost:8000\n- `token`: Bearer token from /auth/verify-otp\n- `refresh_token`: from /auth/verify-otp\n- `internal_secret`: value of INTERNAL_SECRET env var (for internal endpoints)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "internal_secret", "value": "" },
+    { "key": "store_id", "value": "" },
+    { "key": "organization_id", "value": "" },
+    { "key": "cart_id", "value": "" },
+    { "key": "order_id", "value": "" },
+    { "key": "payment_id", "value": "" },
+    { "key": "product_id", "value": "" },
+    { "key": "inventory_id", "value": "" },
+    { "key": "review_id", "value": "" },
+    { "key": "rule_id", "value": "" },
+    { "key": "wallet_id", "value": "" },
+    { "key": "payout_id", "value": "" },
+    { "key": "subdomain", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Initiate Onboarding",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/onboarding/initiate", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","onboarding","initiate"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password1!\",\n  \"confirmPassword\": \"Password1!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "2. Confirm Email Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/api/v1/auth/email/confirmation?token=TOKEN&email=user@example.com",
+              "host": ["{{base_url}}"],
+              "path": ["auth","api","v1","auth","email","confirmation"],
+              "query": [
+                { "key": "token", "value": "TOKEN" },
+                { "key": "email", "value": "user@example.com" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Complete Signup",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/signup", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","signup"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"userType\": \"seller:admin\",\n  \"phone\": \"+2348012345678\"\n}"
+            }
+          }
+        },
+        {
+          "name": "4. Login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/login", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password1!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "5. Verify OTP (get token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.accessToken) pm.collectionVariables.set('token', json.accessToken);",
+                  "if (json.refreshToken) pm.collectionVariables.set('refresh_token', json.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/verify-otp", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","verify-otp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/refresh-token", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","refresh-token"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/logout", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" }
+          }
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/request-reset", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","request-reset"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/password-reset", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","password-reset"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"RESET_TOKEN\",\n  \"newPassword\": \"NewPassword1!\"\n}" }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/api/v1/auth/password-change", "host": ["{{base_url}}"], "path": ["auth","api","v1","auth","password-change"] },
+            "body": { "mode": "raw", "raw": "{\n  \"newPassword\": \"NewPassword1!\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gateway Rules",
+      "item": [
+        {
+          "name": "Create Rule",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/v1/rules", "host": ["{{base_url}}"], "path": ["api","v1","rules"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_type\": \"ip\",\n  \"id_value\": \"*\",\n  \"resource\": \"/auth/*\",\n  \"limits\": {\n    \"algorithm\": \"sliding-window-log\",\n    \"max_req\": 10,\n    \"windowMs\": 60000\n  },\n  \"enabled\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Rules",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/rules?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api","v1","rules"],
+              "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Get Rule",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/v1/rules/{{rule_id}}", "host": ["{{base_url}}"], "path": ["api","v1","rules","{{rule_id}}"] }
+          }
+        },
+        {
+          "name": "Update Rule",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/v1/rules/{{rule_id}}", "host": ["{{base_url}}"], "path": ["api","v1","rules","{{rule_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"limits\": { \"max_req\": 20 }\n}" }
+          }
+        },
+        {
+          "name": "Toggle Rule",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/api/v1/rules/{{rule_id}}/toggle", "host": ["{{base_url}}"], "path": ["api","v1","rules","{{rule_id}}","toggle"] },
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": false\n}" }
+          }
+        },
+        {
+          "name": "Delete Rule",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/v1/rules/{{rule_id}}", "host": ["{{base_url}}"], "path": ["api","v1","rules","{{rule_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "item": [
+        {
+          "name": "Get My Organization",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/organization/api/v1/organization/me", "host": ["{{base_url}}"], "path": ["organization","api","v1","organization","me"] }
+          }
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/organization/api/v1/organization/?page=1&limit=20", "host": ["{{base_url}}"], "path": ["organization","api","v1","organization",""] }
+          }
+        },
+        {
+          "name": "Get Organization By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/organization/api/v1/organization/{{organization_id}}", "host": ["{{base_url}}"], "path": ["organization","api","v1","organization","{{organization_id}}"] }
+          }
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/organization/api/v1/organization/{{organization_id}}", "host": ["{{base_url}}"], "path": ["organization","api","v1","organization","{{organization_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"My Updated Org\",\n  \"description\": \"Updated description\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stores",
+      "item": [
+        {
+          "name": "Create Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.storeId) pm.collectionVariables.set('store_id', json.data.storeId);",
+                  "if (json.data && json.data.subdomain) pm.collectionVariables.set('subdomain', json.data.subdomain);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores",""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Store\",\n  \"email\": \"store@example.com\",\n  \"address\": {\n    \"street\": \"123 Main St\",\n    \"city\": \"Lagos\",\n    \"state\": \"Lagos\",\n    \"country\": \"Nigeria\",\n    \"postalCode\": \"100001\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Stores",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/me?page=1&limit=10", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","me"] }
+          }
+        },
+        {
+          "name": "Get All Stores",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/?page=1&limit=10", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores",""] }
+          }
+        },
+        {
+          "name": "Get Store By Id",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}"] }
+          }
+        },
+        {
+          "name": "Get Store By Subdomain",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/subdomain/{{subdomain}}", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","subdomain","{{subdomain}}"] }
+          }
+        },
+        {
+          "name": "Update Store",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Updated store description\"\n}" }
+          }
+        },
+        {
+          "name": "Update Store Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}/status", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}","status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" }
+          }
+        },
+        {
+          "name": "Add Custom Domain",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}/domain", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}","domain"] },
+            "body": { "mode": "raw", "raw": "{\n  \"customDomain\": \"shop.example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Verify Custom Domain",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}/domain/verify", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}","domain","verify"] }
+          }
+        },
+        {
+          "name": "Remove Custom Domain",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}/domain", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}","domain"] }
+          }
+        },
+        {
+          "name": "Delete Store",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/stores/api/v1/stores/{{store_id}}", "host": ["{{base_url}}"], "path": ["stores","api","v1","stores","{{store_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Create Inventory",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.inventoryId) pm.collectionVariables.set('inventory_id', json.data.inventoryId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/{{store_id}}/store", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","{{store_id}}","store"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantityOnHand\": 100,\n  \"reorderPoint\": 10,\n  \"productTitle\": \"Sample Product\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Store Inventory",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/{{store_id}}/store?page=1&limit=20", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","{{store_id}}","store"] }
+          }
+        },
+        {
+          "name": "Get Inventory By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/{{inventory_id}}", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","{{inventory_id}}"] }
+          }
+        },
+        {
+          "name": "Check Availability",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/check/{{product_id}}", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","check","{{product_id}}"] }
+          }
+        },
+        {
+          "name": "Update Inventory",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/{{inventory_id}}", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","{{inventory_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"quantityOnHand\": 200\n}" }
+          }
+        },
+        {
+          "name": "Delete Inventory",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/{{inventory_id}}", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","{{inventory_id}}"] }
+          }
+        },
+        {
+          "name": "[Internal] Reserve Stock",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-internal-secret", "value": "{{internal_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/reserve", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","reserve"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 1,\n  \"sagaId\": \"saga-001\",\n  \"userId\": \"user-001\"\n}" }
+          }
+        },
+        {
+          "name": "[Internal] Release Stock",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-internal-secret", "value": "{{internal_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/release", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","release"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 1,\n  \"sagaId\": \"saga-001\",\n  \"userId\": \"user-001\"\n}" }
+          }
+        },
+        {
+          "name": "[Internal] Commit Stock",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-internal-secret", "value": "{{internal_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/inventory/api/v1/inventories/commit", "host": ["{{base_url}}"], "path": ["inventory","api","v1","inventories","commit"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"quantity\": 1,\n  \"sagaId\": \"saga-001\",\n  \"userId\": \"user-001\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add To Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.cartId) pm.collectionVariables.set('cart_id', json.data.cartId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{store_id}}/store", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{store_id}}","store"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"productTitle\": \"Sample Product\",\n  \"productImage\": [\"https://example.com/image.jpg\"],\n  \"productPrice\": 5000,\n  \"quantity\": 1,\n  \"sellerId\": \"SELLER_ID\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get User Cart",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{store_id}}/store", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{store_id}}","store"] }
+          }
+        },
+        {
+          "name": "Get All Store Carts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{store_id}}/admin/carts?page=1&limit=20", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{store_id}}","admin","carts"] }
+          }
+        },
+        {
+          "name": "Get Cart By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{cart_id}}", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{cart_id}}"] }
+          }
+        },
+        {
+          "name": "Update Cart Item",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{store_id}}/items", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{store_id}}","items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"quantity\": 3\n}" }
+          }
+        },
+        {
+          "name": "Delete Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/cart/api/v1/carts/{{store_id}}/items", "host": ["{{base_url}}"], "path": ["cart","api","v1","carts","{{store_id}}","items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{product_id}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Checkout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.orderId) pm.collectionVariables.set('order_id', json.data.orderId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/{{store_id}}/checkout", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","{{store_id}}","checkout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"cartId\": \"{{cart_id}}\",\n  \"requestId\": \"{{$guid}}\"\n}" }
+          }
+        },
+        {
+          "name": "Add Shipping",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/{{order_id}}/shipping", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","{{order_id}}","shipping"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Lagos\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"phone\": \"+2348012345678\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/me?page=1&limit=10", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","me"] }
+          }
+        },
+        {
+          "name": "Get Store Orders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/{{store_id}}/store?page=1&limit=10", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","{{store_id}}","store"] }
+          }
+        },
+        {
+          "name": "Get Order Detail (Public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/detail/{{order_id}}", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","detail","{{order_id}}"] }
+          }
+        },
+        {
+          "name": "Update Fulfillment",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/orders/api/v1/orders/{{order_id}}/fulfillment", "host": ["{{base_url}}"], "path": ["orders","api","v1","orders","{{order_id}}","fulfillment"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"preparing\",\n  \"trackingNumber\": \"TRK123456\",\n  \"courierName\": \"DHL\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Initialize Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.paymentId) pm.collectionVariables.set('payment_id', json.data.paymentId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/payment/api/v1/payments/initialize", "host": ["{{base_url}}"], "path": ["payment","api","v1","payments","initialize"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"gateway\": \"paystack\",\n  \"customerEmail\": \"customer@example.com\",\n  \"customerName\": \"John Doe\",\n  \"currency\": \"NGN\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Payment History",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payments/history?page=1&limit=20", "host": ["{{base_url}}"], "path": ["payment","api","v1","payments","history"] }
+          }
+        },
+        {
+          "name": "Get Payment By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payments/{{payment_id}}", "host": ["{{base_url}}"], "path": ["payment","api","v1","payments","{{payment_id}}"] }
+          }
+        },
+        {
+          "name": "Get Payment Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payments/stats/{{store_id}}", "host": ["{{base_url}}"], "path": ["payment","api","v1","payments","stats","{{store_id}}"] }
+          }
+        },
+        {
+          "name": "Initiate Refund",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/payment/api/v1/payments/{{payment_id}}/refund", "host": ["{{base_url}}"], "path": ["payment","api","v1","payments","{{payment_id}}","refund"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Customer requested refund\"\n}" }
+          }
+        },
+        {
+          "name": "Get My Wallet",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/wallets/me", "host": ["{{base_url}}"], "path": ["payment","api","v1","wallets","me"] }
+          }
+        },
+        {
+          "name": "Reconcile Wallet",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/wallets/{{wallet_id}}/reconcile", "host": ["{{base_url}}"], "path": ["payment","api","v1","wallets","{{wallet_id}}","reconcile"] }
+          }
+        },
+        {
+          "name": "Request Payout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) pm.collectionVariables.set('payout_id', json.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/payment/api/v1/payouts/", "host": ["{{base_url}}"], "path": ["payment","api","v1","payouts",""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storeId\": \"{{store_id}}\",\n  \"amount\": 10000,\n  \"bankDetails\": {\n    \"accountNumber\": \"0123456789\",\n    \"bankCode\": \"044\",\n    \"accountName\": \"John Doe\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Payouts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payouts/me", "host": ["{{base_url}}"], "path": ["payment","api","v1","payouts","me"] }
+          }
+        },
+        {
+          "name": "Get Pending Payouts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payouts/pending", "host": ["{{base_url}}"], "path": ["payment","api","v1","payouts","pending"] }
+          }
+        },
+        {
+          "name": "Approve Payout",
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/payment/api/v1/payouts/{{payout_id}}/approve", "host": ["{{base_url}}"], "path": ["payment","api","v1","payouts","{{payout_id}}","approve"] }
+          }
+        },
+        {
+          "name": "Reject Payout",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/payment/api/v1/payouts/{{payout_id}}/reject", "host": ["{{base_url}}"], "path": ["payment","api","v1","payouts","{{payout_id}}","reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Insufficient documentation\"\n}" }
+          }
+        },
+        {
+          "name": "Webhook (Paystack) [Public]",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-paystack-signature", "value": "SIGNATURE_HASH" }
+            ],
+            "url": { "raw": "{{base_url}}/payment/api/v1/webhooks/paystack", "host": ["{{base_url}}"], "path": ["payment","api","v1","webhooks","paystack"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"TXN_REF\",\n    \"status\": \"success\",\n    \"amount\": 500000,\n    \"metadata\": {}\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get Product Reviews (Public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/review/api/v1/reviews/product/{{product_id}}?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["review","api","v1","reviews","product","{{product_id}}"],
+              "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Get Store Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/review/api/v1/reviews/store/{{store_id}}?status=pending&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["review","api","v1","reviews","store","{{store_id}}"],
+              "query": [{ "key": "status", "value": "pending" }, { "key": "page", "value": "1" }, { "key": "limit", "value": "20" }]
+            }
+          }
+        },
+        {
+          "name": "Get Review By Id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/{{review_id}}", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews","{{review_id}}"] }
+          }
+        },
+        {
+          "name": "Create Review",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.reviewId) pm.collectionVariables.set('review_id', json.data.reviewId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews",""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{product_id}}\",\n  \"storeId\": \"{{store_id}}\",\n  \"orderId\": \"{{order_id}}\",\n  \"rating\": 5,\n  \"title\": \"Excellent product quality\",\n  \"comment\": \"This product exceeded my expectations. Very well made and delivered on time.\",\n  \"isVerifiedPurchase\": true,\n  \"productTitle\": \"Sample Product\",\n  \"storeName\": \"My Store\",\n  \"reviewerName\": \"John Doe\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark Helpful",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/{{review_id}}/helpful", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews","{{review_id}}","helpful"] },
+            "body": { "mode": "raw", "raw": "{\n  \"helpful\": true\n}" }
+          }
+        },
+        {
+          "name": "Respond To Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/{{review_id}}/respond", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews","{{review_id}}","respond"] },
+            "body": { "mode": "raw", "raw": "{\n  \"text\": \"Thank you for your review! We appreciate your feedback.\"\n}" }
+          }
+        },
+        {
+          "name": "Approve Review",
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/{{review_id}}/approve", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews","{{review_id}}","approve"] }
+          }
+        },
+        {
+          "name": "Reject Review",
+          "request": {
+            "method": "PATCH",
+            "url": { "raw": "{{base_url}}/review/api/v1/reviews/{{review_id}}/reject", "host": ["{{base_url}}"], "path": ["review","api","v1","reviews","{{review_id}}","reject"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Checks",
+      "item": [
+        { "name": "Gateway Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] } } },
+        { "name": "Auth Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4001/health", "raw": "http://localhost:4001/health" } } },
+        { "name": "Organization Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4010/health" } } },
+        { "name": "Stores Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4007/health" } } },
+        { "name": "Inventory Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4008/health" } } },
+        { "name": "Cart Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4009/health" } } },
+        { "name": "Orders Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4012/health" } } },
+        { "name": "Payment Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4004/health" } } },
+        { "name": "Review Health", "request": { "auth": { "type": "noauth" }, "method": "GET", "url": { "raw": "http://localhost:4011/health" } } }
+      ]
+    }
+  ]
+}
