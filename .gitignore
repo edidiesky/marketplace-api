@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+backend/**_src.zip
+backend/zip_infra.zip
+frontend/frontend_src.zip
+zip_infra.zip
