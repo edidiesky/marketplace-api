@@ -3,21 +3,27 @@ import type { RootState } from "@/redux/store";
 import type { User } from "@/types/api";
 
 interface AuthState {
-  user: User | null;
-  accessToken: string | null;
-  isAuthenticated: boolean;
-  onboardingEmail: string | null;
-  requiresOtp: boolean;
-  pendingUserId: string | null;
+  user:                    User | null;
+  accessToken:             string | null;
+  isAuthenticated:         boolean;
+  onboardingEmail:         string | null;
+  requiresOtp:             boolean;
+  pendingUserId:           string | null;
+  onboardingStep:          number;
+  onboardingShowVerify:    boolean;
+  onboardingPendingEmail:  string;
 }
 
 const initialState: AuthState = {
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
-  onboardingEmail: null,
-  requiresOtp: false,
-  pendingUserId: null,
+  user:                   null,
+  accessToken:            null,
+  isAuthenticated:        false,
+  onboardingEmail:        null,
+  requiresOtp:            false,
+  pendingUserId:          null,
+  onboardingStep:         1,
+  onboardingShowVerify:   false,
+  onboardingPendingEmail: "",
 };
 
 const authSlice = createSlice({
@@ -28,33 +34,59 @@ const authSlice = createSlice({
       state,
       action: PayloadAction<{ user: User; accessToken: string }>
     ) => {
-      state.user = action.payload.user;
-      state.accessToken = action.payload.accessToken;
+      state.user            = action.payload.user;
+      state.accessToken     = action.payload.accessToken;
       state.isAuthenticated = true;
-      state.requiresOtp = false;
-      state.pendingUserId = null;
+      state.requiresOtp     = false;
+      state.pendingUserId   = null;
     },
+
     clearCredentials: (state) => {
-      state.user = null;
-      state.accessToken = null;
-      state.isAuthenticated = false;
-      state.requiresOtp = false;
-      state.pendingUserId = null;
-      state.onboardingEmail = null;
+      state.user                   = null;
+      state.accessToken            = null;
+      state.isAuthenticated        = false;
+      state.requiresOtp            = false;
+      state.pendingUserId          = null;
+      state.onboardingEmail        = null;
+      state.onboardingStep         = 1;
+      state.onboardingShowVerify   = false;
+      state.onboardingPendingEmail = "";
     },
+
     setOnboardingEmail: (state, action: PayloadAction<string>) => {
       state.onboardingEmail = action.payload;
     },
+
     setOtpPending: (
       state,
       action: PayloadAction<{ pendingUserId: string }>
     ) => {
-      state.requiresOtp = true;
+      state.requiresOtp   = true;
       state.pendingUserId = action.payload.pendingUserId;
     },
+
     clearOtpPending: (state) => {
-      state.requiresOtp = false;
+      state.requiresOtp   = false;
       state.pendingUserId = null;
+    },
+
+    setOnboardingStep: (state, action: PayloadAction<number>) => {
+      state.onboardingStep = action.payload;
+    },
+
+    setOnboardingShowVerify: (state, action: PayloadAction<boolean>) => {
+      state.onboardingShowVerify = action.payload;
+    },
+
+    setOnboardingPendingEmail: (state, action: PayloadAction<string>) => {
+      state.onboardingPendingEmail = action.payload;
+    },
+
+    resetOnboarding: (state) => {
+      state.onboardingStep         = 1;
+      state.onboardingShowVerify   = false;
+      state.onboardingPendingEmail = "";
+      state.onboardingEmail        = null;
     },
   },
 });
@@ -65,14 +97,21 @@ export const {
   setOnboardingEmail,
   setOtpPending,
   clearOtpPending,
+  setOnboardingStep,
+  setOnboardingShowVerify,
+  setOnboardingPendingEmail,
+  resetOnboarding,
 } = authSlice.actions;
 
 export default authSlice.reducer;
 
 // Selectors
-export const selectCurrentUser = (state: RootState) => state.auth.user;
-export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
-export const selectAccessToken = (state: RootState) => state.auth.accessToken;
-export const selectOnboardingEmail = (state: RootState) => state.auth.onboardingEmail;
-export const selectRequiresOtp = (state: RootState) => state.auth.requiresOtp;
-export const selectPendingUserId = (state: RootState) => state.auth.pendingUserId;
+export const selectCurrentUser             = (s: RootState) => s.auth.user;
+export const selectIsAuthenticated         = (s: RootState) => s.auth.isAuthenticated;
+export const selectAccessToken             = (s: RootState) => s.auth.accessToken;
+export const selectOnboardingEmail         = (s: RootState) => s.auth.onboardingEmail;
+export const selectRequiresOtp             = (s: RootState) => s.auth.requiresOtp;
+export const selectPendingUserId           = (s: RootState) => s.auth.pendingUserId;
+export const selectOnboardingStep          = (s: RootState) => s.auth.onboardingStep;
+export const selectOnboardingShowVerify    = (s: RootState) => s.auth.onboardingShowVerify;
+export const selectOnboardingPendingEmail  = (s: RootState) => s.auth.onboardingPendingEmail;

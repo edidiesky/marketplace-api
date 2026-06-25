@@ -167,7 +167,7 @@ export const authService = {
 
   // Step 2: StepDetails
   async registerUser(
-    params: RegisterUserDto,
+    params: RegisterUserDto & { res: Response },
   ): Promise<RegisterUserResponseDto> {
     const { email, firstName, lastName, userType, phone, address, gender } =
       params;
@@ -272,6 +272,7 @@ export const authService = {
     }
 
     await deleteOnboardingState(normalizedEmail);
+    const fullName = `${firstName} ${lastName}`.trim();
 
     logger.info("user_registered", {
       event: "user_registered",
@@ -282,11 +283,22 @@ export const authService = {
       requestId: requestContext.get()?.requestId,
     });
 
+    const { accessToken, refreshToken } = await generateToken(
+      params.res,
+      user._id.toString(),
+      userType,
+      fullName,
+      "",
+      deriveOrganizationType(userType),
+    );
+
     return {
       userId: user._id.toString(),
       email: user.email,
       userType: user.userType,
       organizationType: user.organizationType,
+      accessToken,
+      refreshToken,
     };
   },
 
@@ -391,10 +403,7 @@ export const authService = {
   ): Promise<AuthTokensDto> {
     const { email, otp, res } = params;
 
-    const user = await userRepository.findByEmail(
-      email,
-      "-passwordHash",
-    );
+    const user = await userRepository.findByEmail(email, "-passwordHash");
 
     if (!user) {
       logger.warn("2fa_verify_user_not_found", {
@@ -518,10 +527,7 @@ export const authService = {
       name: string;
     };
 
-    const user = await userRepository.findById(
-      userId,
-      "-passwordHash",
-    );
+    const user = await userRepository.findById(userId, "-passwordHash");
     if (!user) throw AppError.badRequest("User not found.");
 
     const newAccessToken = await signJwt(
@@ -576,7 +582,6 @@ export const authService = {
       userId: user._id,
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
     });
-    
 
     publishNotificationResetPassword({
       email,

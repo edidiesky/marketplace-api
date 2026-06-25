@@ -31,7 +31,11 @@ export interface RegisterUserResponseDto {
   email:            string;
   userType:         UserType;
   organizationType: OrganizationType;
+  accessToken:string;
+  refreshToken:string;
 }
+
+
 
 //  LOGIN 
 

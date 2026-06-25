@@ -6,7 +6,7 @@ import {
   SUCCESSFULLY_FETCHED_STATUS_CODE,
 } from "../../constants";
 import { AppError } from "../../utils/AppError";
-import { UserType } from "./auth.model";
+import { RegisterUserDto } from "./auth.dto";
 
 //  StepAccount
 export const HandleInitiateOnboarding = asyncHandler(
@@ -56,38 +56,25 @@ export const HandleConfirmEmailToken = asyncHandler(
 );
 
 //  StepDetails
-export const RegisterUser = asyncHandler(
+export const RegisterHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const {
-      email, firstName, lastName, userType, phone, address, gender,
-    } = req.body as {
-      email:     string;
-      firstName: string;
-      lastName:  string;
-      userType:  string;
-      phone:     string;
-      address?:  string;
-      gender?:   string;
-    };
+    const dto = req.body as RegisterUserDto;
+    const result = await authService.registerUser({ ...dto, res });
 
-    const result = await authService.registerUser({
-      email,
-      firstName,
-      lastName,
-      userType: userType as UserType,
-      phone,
-      address,
-      gender,
-    });
-
-    res.status(SUCCESSFULLY_CREATED_STATUS_CODE).json({
+    res.status(201).json({
       success: true,
-      data:    result,
-      message: "Account created successfully.",
+      data: {
+        userId:           result.userId,
+        email:            result.email,
+        userType:         result.userType,
+        organizationType: result.organizationType,
+      },
+      accessToken:  result.accessToken,
+      refreshToken: result.refreshToken,
+      message:      "Account created successfully.",
     });
   }
 );
-
 export const LoginUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { email, password, idempotencyKey } = req.body as {

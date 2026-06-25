@@ -1,122 +1,83 @@
-# Review Service (SellEasi)
-This service is totally isolated from the other service within Selleasi. I built it with a thought for scalability, decentralization for users who wishes to kick start their business easily.
+# review-service
 
-The review service owns feature like review lifecycle, plan enforcement, quota limits, and data isolation.
+Owns the Review entity: customer product reviews, seller responses, helpfulness votes, and moderation (approve/reject). The `src.zip` file was labeled `products` but contains the review service at port 4011. There is no products service source available for documentation.
 
-![Project Screenshot](/architecture/Onboarding%20Process%201.png)
+## Key facts
 
-## Repo Location
-```bash
-SELLEASI-ARCHITECTURE/
-└── review/
-    ├── src/
-    │   ├── controllers/
-    │   ├── __tests__/ 
-    │       │─────── unit/
-    │       │─────── integration/
-    │   ├── services/
-    │   ├── repositories/
-    │       │─────── IReviewRepository.ts
-    │       │─────── ReviewRepository.ts
-    │   ├── models/
-    │   ├── types/
-    │   ├── config/
-    │   ├── validators/
-    │   ├── route/
-    │   └── middleware/
-    ├── tests/
-    ├── Dockerfile
-    ├── package.json
-    └── README.md
-```
+| Property       | Value                                        |
+|----------------|----------------------------------------------|
+| Port           | 4011                                         |
+| Container      | `selleazy_review`                            |
+| Database       | MongoDB (`SELLEASI_REVIEW_API`)              |
+| Cache          | Redis (idempotency keys for order.completed) |
+| Broker         | RabbitMQ                                     |
+| Env files      | `.env` (root) + `backend/review/.env`        |
 
+## Inbound traffic
 
+**Public (no auth):**
+`GET /api/v1/reviews/product/:productId` - product review listing.
 
-## Core Responsibilities acheive by this Service
-1. Async creation of tenants via User onboarding
-2. Diverse Plan & Quota Enforcement (FREE, PRO, ENTERPRISE limits)
-3. Every record ahs a unique data isolation (tenantId)
-4. Soft delete and recovery implementation 
-5. Role based access control and Permissions by Review Type
+**Authenticated (JWT required):**
+All other routes. No RBAC middleware on any route. Approve and reject endpoints require only a valid JWT - any authenticated user can moderate any review.
 
+## Outbound
 
-## Review Model
-```javascript
-export interface IReview extends Document {
-  _id: Types.ObjectId;
+**RabbitMQ publishes:**
 
-  // Core Relations
-  productId: Types.ObjectId;
-  storeId: Types.ObjectId;
-  userId: Types.ObjectId;
-  orderId: Types.ObjectId;
+| Exchange           | Routing key        | Trigger                   |
+|--------------------|--------------------|---------------------------|
+| `selleasi.review`  | `review.created`   | Review submitted          |
+| `selleasi.review`  | `review.approved`  | Review approved by moderator |
 
-  productTitle: string;
-  productImage?: string;
-  storeName: string;
-  storeLogo?: string;
-  reviewerName: string;
-  reviewerImage?: string;
+**RabbitMQ consumes:**
 
-  // Review Content
-  rating: 1 | 2 | 3 | 4 | 5;
-  title: string;
-  comment: string;
-  images?: string[];
+| Queue                                      | Routing key       | Handler                                     |
+|--------------------------------------------|-------------------|---------------------------------------------|
+| `selleasi.review.order.completed.queue`    | `order.completed` | Logs event, sets idempotency key in Redis. Currently a no-op (no review unlock logic). |
 
-  // Verification & Moderation
-  isVerifiedPurchase: boolean;
-  status: ReviewStatus;
-  moderatedBy?: Types.ObjectId;
-  moderatedAt?: Date;
+**Outbound HTTP:** None.
 
-  // Engagement
-  helpfulCount: number;
-  unhelpfulCount: number;
-  reportCount: number;
+## API route table
 
-  // Store Response
-  response?: {
-    text: string;
-    respondedBy: Types.ObjectId;
-    respondedAt: Date;
-  };
+| Prefix              | Route file                                    | Note                               |
+|---------------------|-----------------------------------------------|------------------------------------|
+| `/api/v1/reviews`   | `src/domains/review/review.routes.ts`         | All review endpoints               |
+| `/health`           | `src/app.ts`                                  | Shallow. Reports as `review-service`. |
+| `/metrics`          | `src/app.ts`                                  | Prometheus. No auth guard.         |
 
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
+See [API Contracts](./API_CONTRACTS.md).
 
+## Environment variables
 
-### ROUTES
+| Variable            | Purpose                              | Notes                              |
+|---------------------|--------------------------------------|------------------------------------|
+| `DATABASE_URL`      | MongoDB connection string            | Required. Crashes on missing.      |
+| `REDIS_HOST`        | Redis host                           | Defaults to `"redis"`              |
+| `REDIS_PORT`        | Redis port                           | Defaults to `6379`                 |
+| `REDIS_PASSWORD`    | Redis auth                           | Required in practice.              |
+| `JWT_CODE`          | JWT verification secret              | Required.                          |
+| `RABBITMQ_URL`      | AMQP connection string               | Required.                          |
+| `WEB_ORIGIN`        | CORS origin                          | Required. Crashes on missing.      |
+| `PORT`              | Listen port                          | Defaults to `4011`                 |
+| `OTEL_SERVICE_NAME` | Trace/log service tag                | Set to `"review-service"` in `.env` |
+| `TEMPO_URL`         | OTLP trace endpoint                  | Same mismatch as other services.   |
+| `BATCH_SIZE`        | Present in `.env`                    | Zero usages in `src/`. Dead.       |
 
-| Method | Endpoint                                        | Description                  |
-| ------ | ---------------------------------------         | -------------------------    | 
-| POST   | `/api/v1/reviews`                               | Submit Review                |
-| POST   | `/api/v1/reviews/:id/respond`                   | Store owner leaving a reply  |
-| POST   | `/api/v1/reviews/:id/helpful`                   | Mark reply as helpful/unhelpful |
-| GET    | `/api/v1/reviews/:productId/product`            | Get Product Reviews            |
-| GET    | `/api/v1/reviews/:storeId/store`                | Get Store Reviews              |
-| DELETE | `/api/v1/reviews/:tenantId`                     | Delete Single Review         |
+## Tests
 
-## Environment Variables
+| Script          | What it runs              |
+|-----------------|---------------------------|
+| `test`          | Jest unit config          |
+| `test:coverage` | Unit tests with coverage  |
+| `test:watch`    | Jest in watch mode        |
 
-The service requires the following environment variables:
+**Phase 4:** `src/__tests__/integration/review.integration.test.ts` exists. No unit test for the handler layer; only `review.service.test.ts`.
 
-### Required Variables
+## Operations
 
-- `DATABASE_URL`: MongoDB connection string
-- `JWT_SECRET`: JWT signing secret
-- `IO_REDIS_URL`: Redis connection URL (e.g., you can use redis://localhost:6379)
-- `PORT`: Service port (default: 4001)
-- `FRONTEND_URl`: Frontend application URL for CORS configuration
-- `KAFKA_BROKER`: Kafka broker URL
-- `KAFKA_GROUP_ID`: Kafka consumer group ID
-- `KAFKA_TOPIC_USER`: Kafka topic for user events
-
-### Optional Variables
-
-- `NODE_ENV`: Environment (development/production)
-- `LOG_LEVEL`: Logging level (debug/info/warn/error)
-- `JWT_EXPIRES_IN`: JWT token expiration time
-- `REFRESH_TOKEN_EXPIRES_IN`: Refresh token expiration time
+| Concern       | Detail                                                                 |
+|---------------|------------------------------------------------------------------------|
+| Health check  | `GET /health` - shallow.                                               |
+| Metrics       | `GET /metrics` - no auth guard.                                        |
+| Rate limiting | Gateway-enforced only.                                                 |

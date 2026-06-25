@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
 import { Input } from "@/components/ui/input";
+
 const accountSchema = z.object({
   email:           z.string().email("Enter a valid email address"),
   password:        z.string().min(8, "Minimum 8 characters"),
@@ -20,13 +22,32 @@ interface Props {
 }
 
 export default function StepAccount({ onSubmit, isLoading, defaultEmail }: Props) {
+  const fieldsRef = useRef<HTMLDivElement>(null);
+
   const { register, handleSubmit, formState: { errors } } = useForm<AccountFormData>({
     resolver: zodResolver(accountSchema),
     defaultValues: { email: defaultEmail ?? "" },
   });
 
+  const shake = () => {
+    const el = fieldsRef.current;
+    if (!el) return;
+    el.classList.remove("shake");
+    // synchronous reflow — forces browser to acknowledge the class removal
+    // before adding it back so the animation restarts
+    el.getBoundingClientRect();
+    el.classList.add("shake");
+    el.addEventListener("animationend", () => el.classList.remove("shake"), { once: true });
+  };
+
+  const onInvalid = () => shake();
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      noValidate
+      className="flex flex-col gap-6"
+    >
       <div className="flex flex-col gap-1">
         <h1
           className="text-[28px] font-semibold leading-[1.1]"
@@ -39,7 +60,7 @@ export default function StepAccount({ onSubmit, isLoading, defaultEmail }: Props
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div ref={fieldsRef} className="flex flex-col gap-4">
         <Input
           label="Email address"
           type="email"

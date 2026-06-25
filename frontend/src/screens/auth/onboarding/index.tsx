@@ -1,6 +1,11 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
-import { selectOnboardingEmail } from "@/redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectOnboardingEmail,
+  selectOnboardingStep,
+  selectOnboardingShowVerify,
+  selectOnboardingPendingEmail,
+  setOnboardingStep,
+} from "@/redux/slices/authSlice";
 import AuthLayout from "../shared/AuthLayout";
 import StepAccount from "./steps/StepAccount";
 import StepDetails from "./steps/StepDetails";
@@ -12,15 +17,16 @@ const STEP_LABELS = ["Create your account", "Your details", "Create your store"]
 const TOTAL_STEPS = 3;
 
 export default function Onboarding() {
+  const dispatch   = useDispatch();
   const savedEmail = useSelector(selectOnboardingEmail);
-  const [step, setStep] = useState(1);
+  const step       = useSelector(selectOnboardingStep);
+  const showVerify = useSelector(selectOnboardingShowVerify);
+  const pendingEmail = useSelector(selectOnboardingPendingEmail);
 
-  const onNext = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS));
-  const onBack = () => setStep((s) => Math.max(s - 1, 1));
+  const onNext = () => dispatch(setOnboardingStep(Math.min(step + 1, TOTAL_STEPS)));
+  const onBack = () => dispatch(setOnboardingStep(Math.max(step - 1, 1)));
 
   const {
-    showVerify,
-    pendingEmail,
     handleAccount,
     handleVerified,
     handleDetails,
@@ -43,10 +49,7 @@ export default function Onboarding() {
   }
 
   return (
-    <AuthLayout
-      stepLabels={STEP_LABELS}
-      currentStep={step}
-    >
+    <AuthLayout stepLabels={STEP_LABELS} currentStep={step}>
       {step === 1 && (
         <StepAccount
           onSubmit={handleAccount}
@@ -54,21 +57,18 @@ export default function Onboarding() {
           defaultEmail={savedEmail ?? ""}
         />
       )}
-
       {step === 2 && (
         <StepDetails
           onSubmit={handleDetails}
           isLoading={registering}
         />
       )}
-
       {step === 3 && (
         <StepCreateStore
           onSubmit={handleCreateStore}
           isLoading={creatingStore}
         />
       )}
-
       {step > 1 && (
         <button
           onClick={onBack}

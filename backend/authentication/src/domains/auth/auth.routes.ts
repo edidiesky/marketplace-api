@@ -12,7 +12,7 @@ import {
 import {
   HandleInitiateOnboarding,
   HandleConfirmEmailToken,
-  RegisterUser,
+  RegisterHandler,
   LoginUser,
   Verify2FA,
   RefreshToken,
@@ -39,7 +39,7 @@ router.get("/email/confirmation", HandleConfirmEmailToken);
 router.post(
   "/signup",
   validateRequest(finalSignupOnboardingSchema),
-  RegisterUser
+  RegisterHandler
 );
 
 //  SESSION 

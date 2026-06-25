@@ -8,9 +8,6 @@ import swaggerUi from "swagger-ui-express";
 import dotenv         from "dotenv";
 dotenv.config()
 import authRoutes       from "./domains/auth/auth.routes";
-// import roleRoutes       from "./domains/roles/role.routes";
-// import permissionRoutes from "./domains/permissions/permission.routes";
-// import userRoleRoutes   from "./domains/user-roles/user-role.routes";
 
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";

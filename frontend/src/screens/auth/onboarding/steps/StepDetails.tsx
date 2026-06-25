@@ -2,12 +2,35 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { User, Briefcase } from "lucide-react";
-import { detailsSchema, type DetailsFormData } from "../schema/onboarding.schema";
+import {
+  detailsSchema,
+  type DetailsFormData,
+} from "../schema/onboarding.schema";
 
 interface Props {
   onSubmit: (data: DetailsFormData) => Promise<void>;
   isLoading: boolean;
 }
+
+const USER_TYPE_OPTIONS = [
+  {
+    value: "seller:admin" as const,
+    label: "Seller",
+    description: "I want to sell products",
+    Icon: Briefcase,
+  },
+  {
+    value: "customer" as const,
+    label: "Buyer",
+    description: "I want to buy products",
+    Icon: User,
+  },
+] satisfies Array<{
+  value: DetailsFormData["userType"];
+  label: string;
+  description: string;
+  Icon: React.ElementType;
+}>;
 
 export default function StepDetails({ onSubmit, isLoading }: Props) {
   const {
@@ -18,7 +41,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
     formState: { errors },
   } = useForm<DetailsFormData>({
     resolver: zodResolver(detailsSchema),
-    defaultValues: { userType: "SELLER" },
+    defaultValues: { userType: "seller:admin" },
   });
 
   const userType = watch("userType");
@@ -32,7 +55,10 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
         >
           Tell us about yourself
         </h1>
-        <p className="text-[15px]" style={{ color: "var(--color-muted-stone)" }}>
+        <p
+          className="text-[15px]"
+          style={{ color: "var(--color-muted-stone)" }}
+        >
           A few details to personalise your experience.
         </p>
       </div>
@@ -52,19 +78,28 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
         />
       </div>
 
+      <Input
+        label="Phone number"
+        placeholder="+2348012345678"
+        error={errors.phone?.message}
+        {...register("phone")}
+      />
+
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium" style={{ color: "var(--color-ink)" }}>
+        <p
+          className="text-sm font-medium"
+          style={{ color: "var(--color-ink)" }}
+        >
           I am joining as
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {(["SELLER", "BUYER"] as const).map((type) => {
-            const Icon = type === "SELLER" ? Briefcase : User;
-            const isSelected = userType === type;
+          {USER_TYPE_OPTIONS.map(({ value, label, description, Icon }) => {
+            const isSelected = userType === value;
             return (
               <button
-                key={type}
+                key={value}
                 type="button"
-                onClick={() => setValue("userType", type)}
+                onClick={() => setValue("userType", value)}
                 className="flex flex-col items-start gap-2 p-4 rounded-[14px] border-2 transition-all"
                 style={{
                   borderColor: isSelected ? "var(--color-ink)" : "#e5e7eb",
@@ -74,22 +109,32 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center"
                   style={{
-                    backgroundColor: isSelected ? "var(--color-ink)" : "var(--color-fog)",
+                    backgroundColor: isSelected
+                      ? "var(--color-ink)"
+                      : "var(--color-fog)",
                   }}
                 >
                   <Icon
                     size={15}
                     style={{
-                      color: isSelected ? "var(--color-canvas)" : "var(--color-muted-stone)",
+                      color: isSelected
+                        ? "var(--color-canvas)"
+                        : "var(--color-muted-stone)",
                     }}
                   />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-semibold" style={{ color: "var(--color-ink)" }}>
-                    {type === "SELLER" ? "Seller" : "Buyer"}
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--color-ink)" }}
+                  >
+                    {label}
                   </p>
-                  <p className="text-xs" style={{ color: "var(--color-muted-stone)" }}>
-                    {type === "SELLER" ? "I want to sell products" : "I want to buy products"}
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--color-muted-stone)" }}
+                  >
+                    {description}
                   </p>
                 </div>
               </button>
@@ -97,7 +142,9 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
           })}
         </div>
         {errors.userType && (
-          <p className="text-xs" style={{ color: "#ef4444" }}>{errors.userType.message}</p>
+          <p className="text-xs" style={{ color: "#ef4444" }}>
+            {errors.userType.message}
+          </p>
         )}
       </div>
 
@@ -105,7 +152,10 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
         type="submit"
         disabled={isLoading}
         className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
-        style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
+        style={{
+          backgroundColor: "var(--color-ink)",
+          color: "var(--color-canvas)",
+        }}
       >
         {isLoading ? "Creating account..." : "Continue"}
       </button>
