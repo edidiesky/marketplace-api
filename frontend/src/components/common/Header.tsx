@@ -1,22 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { selectCurrentUser } from "@/redux/slices/authSlice";
-import { useGetAllStoresQuery } from "@/redux/services/storeApi";
+import { selectCurrentUser, selectIsAuthenticated } from "@/redux/slices/authSlice";
+import { useGetMyStoresQuery } from "@/redux/services/storeApi";
 
 export default function Navbar() {
-  const currentUser = useSelector(selectCurrentUser);
-  const navigate = useNavigate();
+  const currentUser     = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const navigate        = useNavigate();
 
-  const { data: storesData } = useGetAllStoresQuery(
-    {},
-    { skip: !currentUser }
-  );
-  const firstStore = storesData?.data?.[0];
+  const { data: myStoreData } = useGetMyStoresQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+
+  const stores    = myStoreData?.data?.stores ?? [];
+  const firstStore = stores[0];
+  const storeId   = firstStore?.storeId ?? firstStore?._id;
 
   const handleDashboard = () => {
-    navigate(
-      firstStore ? `/dashboard/store/${firstStore._id}` : "/onboarding"
-    );
+    navigate(storeId ? `/dashboard/store/${storeId}` : "/onboarding/create-store");
   };
 
   return (
@@ -53,18 +54,28 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          {currentUser ? (
-            <button
-              onClick={handleDashboard}
-              className="h-9 px-5 text-base font-medium transition-opacity hover:opacity-80"
-              style={{
-                backgroundColor: "var(--color-ink)",
-                color: "var(--color-canvas)",
-                borderRadius: "9999px",
-              }}
-            >
-              Dashboard
-            </button>
+          {isAuthenticated && currentUser ? (
+            <div className="flex items-center gap-3">
+              {firstStore && (
+                <span
+                  className="hidden md:block text-sm font-medium"
+                  style={{ color: "var(--color-muted-stone)" }}
+                >
+                  {firstStore.name}
+                </span>
+              )}
+              <button
+                onClick={handleDashboard}
+                className="h-9 px-5 text-base font-medium transition-opacity hover:opacity-80"
+                style={{
+                  backgroundColor: "var(--color-ink)",
+                  color: "var(--color-canvas)",
+                  borderRadius: "9999px",
+                }}
+              >
+                Dashboard
+              </button>
+            </div>
           ) : (
             <>
               <Link
