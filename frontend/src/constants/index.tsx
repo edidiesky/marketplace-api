@@ -116,3 +116,9 @@ export const REVIEW_URL       = `${BASE_URL}/review/api/v1/reviews`;
  
 // categories service (port 4005) — gateway key is "categories"
 export const CATEGORY_URL     = `${BASE_URL}/categories/api/v1/categories`;
+
+// color service (port 4013)
+export const COLOR_URL        = `${BASE_URL}/color/api/v1/colors`;
+
+// size service (port 4015)
+export const SIZE_URL         = `${BASE_URL}/size/api/v1/sizes`;
