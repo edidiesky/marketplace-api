@@ -4,27 +4,26 @@ import { ProtectRoute } from "./guards/ProtectRoute";
 import Payments from "@/screens/dashboard/payments";
 
 const DashboardHome = lazy(() => import("@/screens/dashboard/home"));
-const Products = lazy(() => import("@/screens/dashboard/products"));
-const Orders = lazy(() => import("@/screens/dashboard/orders"));
-const Inventory = lazy(() => import("@/screens/dashboard/inventory"));
-const Customers = lazy(() => import("@/screens/dashboard/customers"));
-const Analytics = lazy(() => import("@/screens/dashboard/analytics"));
-const Messages = lazy(() => import("@/screens/dashboard/messages"));
-const Marketing = lazy(() => import("@/screens/dashboard/marketing"));
-const Categories = lazy(() => import("@/screens/dashboard/categories"));
-const Colors = lazy(() => import("@/screens/dashboard/colors"));
-const Sizes = lazy(() => import("@/screens/dashboard/size"));
-const Account = lazy(() => import("@/screens/dashboard/account"));
-const Payouts = lazy(() => import("@/screens/dashboard/payouts"));
+const Products      = lazy(() => import("@/screens/dashboard/products"));
+const Orders        = lazy(() => import("@/screens/dashboard/orders"));
+const Inventory     = lazy(() => import("@/screens/dashboard/inventory"));
+const Customers     = lazy(() => import("@/screens/dashboard/customers"));
+const Analytics     = lazy(() => import("@/screens/dashboard/analytics"));
+const Messages      = lazy(() => import("@/screens/dashboard/messages"));
+const Marketing     = lazy(() => import("@/screens/dashboard/marketing"));
+const Categories    = lazy(() => import("@/screens/dashboard/categories"));
+const Colors        = lazy(() => import("@/screens/dashboard/colors"));
+const Sizes         = lazy(() => import("@/screens/dashboard/size"));
+const Account       = lazy(() => import("@/screens/dashboard/account"));
+const Payouts       = lazy(() => import("@/screens/dashboard/payouts"));
 
 export const dashboardRoutes = [
   {
     path: "/dashboard/store/:id",
     element: (
-      // <ProtectRoute allowedRoles={["SELLER", "ADMIN"]}>
-      //   <DashboardLayout />
-      // </ProtectRoute>
-      <DashboardLayout />
+      <ProtectRoute>
+        <DashboardLayout />
+      </ProtectRoute>
     ),
     children: [
       {
@@ -43,7 +42,7 @@ export const dashboardRoutes = [
         path: "inventory",
         element: <Suspense fallback={<></>}><Inventory /></Suspense>,
       },
-       {
+      {
         path: "payments",
         element: <Suspense fallback={<></>}><Payments /></Suspense>,
       },
