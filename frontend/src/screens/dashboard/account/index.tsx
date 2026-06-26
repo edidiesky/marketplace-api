@@ -1,6 +1,5 @@
 import React from "react";
 import { SlSettings } from "react-icons/sl";
-import { CiCamera } from "react-icons/ci";
 import { HiMiniCamera } from "react-icons/hi2";
 export default function Account() {
   return (
