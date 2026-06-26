@@ -18,11 +18,14 @@ const orderStatusConfig: Record<OrderStatus, { label: string; className: string 
 };
 
 const fulfillmentConfig: Record<FulfillmentStatus, { label: string; className: string }> = {
-  unfulfilled:     { label: "Unfulfilled",     className: "bg-[#f2f0ed] text-[#4c4c4c]" },
-  preparing:       { label: "Preparing",       className: "bg-blue-50 text-blue-700"    },
-  dispatched:      { label: "Dispatched",      className: "bg-sky-50 text-sky-700"      },
-  delivered:       { label: "Delivered",       className: "bg-green-50 text-green-700"  },
-  delivery_failed: { label: "Delivery Failed", className: "bg-red-50 text-red-700"      },
+  unfulfilled:      { label: "Unfulfilled",      className: "bg-[#f2f0ed] text-[#4c4c4c]"  },
+  preparing:        { label: "Preparing",        className: "bg-blue-50 text-blue-700"      },
+  dispatched:       { label: "Dispatched",       className: "bg-sky-50 text-sky-700"        },
+  in_transit:       { label: "In Transit",       className: "bg-indigo-50 text-indigo-700"  },
+  out_for_delivery: { label: "Out for Delivery", className: "bg-purple-50 text-purple-700"  },
+  delivered:        { label: "Delivered",        className: "bg-green-50 text-green-700"    },
+  delivery_failed:  { label: "Delivery Failed",  className: "bg-red-50 text-red-700"        },
+  returned:         { label: "Returned",         className: "bg-orange-50 text-orange-700"  },
 };
 
 
@@ -39,9 +42,9 @@ export default function Orders() {
     { skip: !id }
   );
 
-  const orders: Order[] = ordersResponse?.data ?? [];
-  const totalPages = ordersResponse?.pagination?.totalPages ?? 1;
-  const total = ordersResponse?.pagination?.total ?? 0;
+  const orders: Order[]  = ordersResponse?.data?.orders     ?? [];
+  const totalPages       = ordersResponse?.data?.totalPages  ?? 1;
+  const total            = ordersResponse?.data?.totalCount  ?? 0;
 
   const filtered = orders.filter((row) =>
     [row._id, row.userId].some((val) =>
