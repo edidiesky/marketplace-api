@@ -94,7 +94,7 @@ export default function AuthLayout({
     >
       {/* left panel */}
       <div
-        className="hidden lg:flex flex-col justify-between p-10 border-r"
+        className="hidden lg:flex flex-col justify-between p-10"
         style={{ backgroundColor: "#ffffff", borderColor: "#f0f0ee" }}
       >
         <Link to="/" className="text-[15px] font-semibold" style={{ color: "#17191c" }}>
@@ -125,7 +125,7 @@ export default function AuthLayout({
         </div>
 
         <p className="text-xs" style={{ color: "#9ca3af" }}>
-          © {new Date().getFullYear()} Selleasi Technologies
+          © {new Date().getFullYear()} Edidiong
         </p>
       </div>
 

@@ -59,7 +59,7 @@ export default function Inventory() {
 
           {lowStock.length > 0 && (
             <div className="border border-yellow-200 bg-yellow-50 px-5 py-4">
-              <p className="text-sm font-semibold text-yellow-800 font-dashboard_regular">
+              <p className="text-sm font-semibold text-yellow-800 font-k_font">
                 {lowStock.length} item{lowStock.length > 1 ? "s" : ""} at or below reorder point
               </p>
               <p className="text-xs text-yellow-700 font-selleasy_normal mt-0.5">
@@ -83,7 +83,7 @@ export default function Inventory() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Product ID", "Available", "On Hand", "Reserved", "Reorder Point", "Warehouse", "Status", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -98,7 +98,7 @@ export default function Inventory() {
                     return (
                       <tr key={item._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
                         <td className="px-5 py-3 text-xs text-[#a3a6af] font-selleasy_normal whitespace-nowrap">{item.productId}</td>
-                        <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular">{item.quantityAvailable}</td>
+                        <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font">{item.quantityAvailable}</td>
                         <td className="px-5 py-3 text-[#4c4c4c] font-selleasy_normal">{item.quantityOnHand}</td>
                         <td className="px-5 py-3 text-[#4c4c4c] font-selleasy_normal">{item.quantityReserved}</td>
                         <td className="px-5 py-3 text-[#4c4c4c] font-selleasy_normal">{item.reorderPoint ?? "—"}</td>
@@ -111,7 +111,7 @@ export default function Inventory() {
                         <td className="px-5 py-3">
                           <button
                             onClick={() => setModal({ open: true, item })}
-                            className="text-xs font-semibold text-[#5d2a1a] hover:underline font-dashboard_regular whitespace-nowrap"
+                            className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font whitespace-nowrap"
                           >
                             Edit
                           </button>
@@ -133,11 +133,11 @@ export default function Inventory() {
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#a3a6af] font-selleasy_normal">Page {currentPage} of {totalPages} — {total} items</span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Prev</button>
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-dashboard_regular ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
               ))}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Next</button>
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
             </div>
           </div>
 

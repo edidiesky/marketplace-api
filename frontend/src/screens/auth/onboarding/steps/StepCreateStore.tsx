@@ -70,6 +70,14 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
             </span>
           </p>
         </div>
+         <div className="flex flex-col gap-1.5">
+          <Input
+            label="store email"
+            placeholder="kemis-boutique"
+            error={errors.name?.message}
+            {...register("email")}
+          />
+        </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium" style={{ color: "var(--color-ink)" }}>
             Description{" "}

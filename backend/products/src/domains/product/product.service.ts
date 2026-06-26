@@ -93,7 +93,7 @@ export const productService = {
           colors:         dto.colors   ?? [],
           size:           dto.size     ?? [],
           sku:            dto.sku,
-          
+          isArchive: dto.isArchive
         },
         session
       );

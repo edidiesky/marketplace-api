@@ -16,7 +16,7 @@ export default function Stats() {
             key={block.id}
             className={`flex flex-col gap-3 ${i < statBlocks.length - 1 ? "lg:border-r px-4 border-b lg:border-b-0 border-[#e8e6e3]" : "px-4"}`}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#a3a6af] font-dashboard_regular">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#a3a6af] font-k_font">
               {block.label}
             </p>
             <div>

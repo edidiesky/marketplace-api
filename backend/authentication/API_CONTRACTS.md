@@ -13,7 +13,6 @@ No list endpoints exist in this service.
 interface ErrorResponse {
   success: false;
   message: string;
-  // stack present only when NODE_ENV === "development"
   stack?: string;
 }
 ```

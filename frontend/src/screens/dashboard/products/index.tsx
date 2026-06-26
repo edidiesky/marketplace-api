@@ -47,7 +47,7 @@ export default function Product() {
             <button
               onClick={() => dispatch(openProductModal(null))}
               style={{ transition: "all .2s" }}
-              className="bg-[var(--dark-1)] rounded-full flex items-center gap-2 hover:opacity-90 text-white text-sm p-3 px-4 font-dashboard_regular"
+              className="bg-[var(--dark-1)] rounded-full flex items-center gap-2 hover:opacity-90 text-white text-sm p-2 px-4 font-k_font"
             >
               Add Product
             </button>

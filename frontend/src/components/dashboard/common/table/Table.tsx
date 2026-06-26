@@ -132,7 +132,7 @@ export const UserTable = ({
         </div>
       </div>
 
-      <div className="border border-[#e8e6e3] overflow-x-auto">
+      <div className="border rounded-2xl border-[#e8e6e3] overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#e8e6e3]">

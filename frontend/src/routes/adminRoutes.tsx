@@ -23,10 +23,9 @@ export const adminRoutes = [
   {
     path: "/admin",
     element: (
-      // <ProtectRoute allowedRoles={["ADMIN"]}>
-      //   <AdminLayout />
-      // </ProtectRoute>
-      <AdminLayout />
+      <ProtectRoute>
+        <AdminLayout />
+      </ProtectRoute>
     ),
     children: [
       { index: true,           element: <Suspense fallback={<Fallback />}><AdminHome /></Suspense>    },

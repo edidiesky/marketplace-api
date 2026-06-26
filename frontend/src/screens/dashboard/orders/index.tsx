@@ -98,7 +98,7 @@ export default function Orders() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Order ID", "Items", "Total", "Order Status", "Fulfillment", "Date", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -117,9 +117,9 @@ export default function Orders() {
                         className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors cursor-pointer"
                         onClick={() => setSelectedOrder(order)}
                       >
-                        <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular whitespace-nowrap text-xs">{order._id}</td>
+                        <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap text-xs">{order._id}</td>
                         <td className="px-5 py-3 text-[#4c4c4c] font-selleasy_normal">{order.items.length}</td>
-                        <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular whitespace-nowrap">₦{order.totalAmount.toLocaleString("en-NG")}</td>
+                        <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">₦{order.totalAmount.toLocaleString("en-NG")}</td>
                         <td className="px-5 py-3">
                           <span className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${osCfg.className}`}>{osCfg.label}</span>
                         </td>
@@ -149,11 +149,11 @@ export default function Orders() {
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#a3a6af] font-selleasy_normal">Page {currentPage} of {totalPages} — {total} orders</span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Prev</button>
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-dashboard_regular ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
               ))}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Next</button>
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
             </div>
           </div>
 

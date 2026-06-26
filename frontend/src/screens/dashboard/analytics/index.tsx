@@ -54,7 +54,7 @@ export default function Analytics() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2.5 text-sm font-semibold font-dashboard_regular transition-colors border-b-2 -mb-px whitespace-nowrap ${
+              className={`px-5 py-2.5 text-sm font-semibold font-k_font transition-colors border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === tab.key
                   ? "border-[#17191c] text-[#17191c]"
                   : "border-transparent text-[#777b86] hover:text-[#17191c]"

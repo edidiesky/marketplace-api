@@ -39,7 +39,7 @@ export const createStoreSchema = Joi.object({
   logo:           Joi.string().uri().optional(),
   email:          Joi.string().email().required(),
   phoneNumber:    Joi.string().optional(),
-  address:        addressSchema.required(),
+  address:        addressSchema.optional(),
   settings:       settingsSchema.optional(),
   notificationId: Joi.string().optional(),
 });

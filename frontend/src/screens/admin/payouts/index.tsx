@@ -44,7 +44,7 @@ export default function AdminPayouts() {
 
         {payouts.length === 0 && !isLoading && (
           <div className="border border-[#e8e6e3] px-5 py-16 flex flex-col items-center gap-2">
-            <p className="text-sm font-semibold text-[#17191c] font-dashboard_regular">No pending payouts</p>
+            <p className="text-sm font-semibold text-[#17191c] font-k_font">No pending payouts</p>
             <p className="text-xs text-[#777b86] font-selleasy_normal">All payout requests have been processed.</p>
           </div>
         )}
@@ -55,7 +55,7 @@ export default function AdminPayouts() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Payout ID", "Seller ID", "Amount", "Status", "Requested", "Actions"].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -66,7 +66,7 @@ export default function AdminPayouts() {
                   <tr key={payout._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
                     <td className="px-5 py-3 text-xs text-[#a3a6af] font-selleasy_normal whitespace-nowrap">{payout._id}</td>
                     <td className="px-5 py-3 text-xs text-[#777b86] font-selleasy_normal whitespace-nowrap">{payout.sellerId}</td>
-                    <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular whitespace-nowrap">
+                    <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
                       ₦{payout.amount.toLocaleString("en-NG")}
                     </td>
                     <td className="px-5 py-3">
@@ -80,14 +80,14 @@ export default function AdminPayouts() {
                         <button
                           onClick={() => handleApprove(payout._id)}
                           disabled={approving || rejecting}
-                          className="text-xs font-semibold text-green-700 hover:underline disabled:opacity-50 font-dashboard_regular"
+                          className="text-xs font-semibold text-green-700 hover:underline disabled:opacity-50 font-k_font"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleReject(payout._id)}
                           disabled={approving || rejecting}
-                          className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50 font-dashboard_regular"
+                          className="text-xs font-semibold text-red-600 hover:underline disabled:opacity-50 font-k_font"
                         >
                           Reject
                         </button>

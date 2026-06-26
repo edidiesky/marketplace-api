@@ -40,7 +40,7 @@ export default function Color() {
               <button
                 onClick={() => dispatch(onColorModal(""))}
                 style={{ transition: "all .2s" }}
-                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm lg:text-base p-3 px-4 font-dashboard_regular"
+                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm lg:text-base p-3 px-4 font-k_font"
               >
                  Add Color
               </button>

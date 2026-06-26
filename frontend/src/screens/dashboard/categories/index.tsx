@@ -40,7 +40,7 @@ export default function Category() {
               <button
                 onClick={() => dispatch(onCategoryModal(""))}
                 style={{ transition: "all .2s" }}
-                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm p-3 px-4 font-dashboard_regular"
+                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm p-3 px-4 font-k_font"
               >
                 <GoPlus fontSize={"24px"} /> Add Category
               </button>

@@ -100,11 +100,11 @@ const StoreSchema = new Schema<IStore>(
     email:       { type: String, required: true },
     phoneNumber: { type: String },
     address: {
-      street:     { type: String, required: true },
-      city:       { type: String, required: true },
-      state:      { type: String, required: true },
-      country:    { type: String, required: true },
-      postalCode: { type: String, required: true },
+      street:     { type: String },
+      city:       { type: String },
+      state:      { type: String },
+      country:    { type: String },
+      postalCode: { type: String },
     },
     settings: {
       currency:   { type: String, default: "NGN" },

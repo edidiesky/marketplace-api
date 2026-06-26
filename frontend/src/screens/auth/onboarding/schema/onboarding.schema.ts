@@ -45,7 +45,8 @@ export const storeSchema = z.object({
       /^[a-z0-9-]+$/,
       "Only lowercase letters, numbers, and hyphens allowed"
     ),
-  description: z.string().optional(),
+  description: z.string(),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
 });
 
 export type EmailFormData = z.infer<typeof emailSchema>;

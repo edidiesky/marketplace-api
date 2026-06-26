@@ -32,7 +32,7 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e8e6e3]">
           <div>
-            <p className="text-sm font-semibold text-[#17191c] font-dashboard_regular">Update Inventory</p>
+            <p className="text-sm font-semibold text-[#17191c] font-k_font">Update Inventory</p>
             <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">Adjust reorder point and warehouse details.</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-[#f2f0ed] transition-colors">
@@ -49,13 +49,13 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
             ].map((s) => (
               <div key={s.label}>
                 <p className="text-xs text-[#777b86] font-selleasy_normal">{s.label}</p>
-                <p className="text-sm font-semibold text-[#17191c] font-dashboard_regular">{s.value}</p>
+                <p className="text-sm font-semibold text-[#17191c] font-k_font">{s.value}</p>
               </div>
             ))}
           </div>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">Reorder point</span>
+            <span className="text-xs font-semibold text-[#17191c] font-k_font">Reorder point</span>
             <input
               type="number"
               min={0}
@@ -67,7 +67,7 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">Warehouse name</span>
+            <span className="text-xs font-semibold text-[#17191c] font-k_font">Warehouse name</span>
             <input
               type="text"
               value={warehouseName}
@@ -79,11 +79,11 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
         </div>
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-[#e8e6e3]">
-          <button onClick={onClose} className="text-sm font-semibold text-[#777b86] font-dashboard_regular hover:text-[#17191c]">Cancel</button>
+          <button onClick={onClose} className="text-sm font-semibold text-[#777b86] font-k_font hover:text-[#17191c]">Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-[var(--dark-1)] text-white text-sm font-semibold px-5 py-2 hover:opacity-90 disabled:opacity-50 font-dashboard_regular"
+            className="bg-[var(--dark-1)] text-white text-sm font-semibold px-5 py-2 hover:opacity-90 disabled:opacity-50 font-k_font"
           >
             {isLoading ? "Saving..." : "Save changes"}
           </button>

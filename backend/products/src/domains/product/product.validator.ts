@@ -25,6 +25,7 @@ export const createProductSchema = Joi.object({
   sku:       Joi.string().optional(),
   storeName: Joi.string().optional(),
   stockQuantity: Joi.number().min(0).default(0),
+  isArchive: Joi.boolean().required(),
 });
 
 export const updateProductSchema = Joi.object({

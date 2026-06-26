@@ -9,7 +9,7 @@ function StatCard({ label, value, sub, trend }: { label: string; value: string; 
   return (
     <div className="border border-[#e8e6e3] p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#777b86] uppercase tracking-widest font-dashboard_regular">{label}</span>
+        <span className="text-xs font-semibold text-[#777b86] uppercase tracking-widest font-k_font">{label}</span>
         {trend === "up" && <TrendingUp size={14} className="text-green-600" />}
         {trend === "down" && <TrendingDown size={14} className="text-red-500" />}
       </div>
@@ -61,7 +61,7 @@ export default function AdminHome() {
         {pendingPayouts > 0 && (
           <div className="border border-yellow-200 bg-yellow-50 px-5 py-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-yellow-800 font-dashboard_regular">
+              <p className="text-sm font-semibold text-yellow-800 font-k_font">
                 {pendingPayouts} payout request{pendingPayouts > 1 ? "s" : ""} awaiting approval
               </p>
               <p className="text-xs text-yellow-700 font-selleasy_normal mt-0.5">
@@ -70,7 +70,7 @@ export default function AdminHome() {
             </div>
             <button
               onClick={() => navigate("/admin/payouts")}
-              className="text-xs font-semibold bg-yellow-800 text-white px-4 py-2 hover:opacity-90 whitespace-nowrap font-dashboard_regular"
+              className="text-xs font-semibold bg-yellow-800 text-white px-4 py-2 hover:opacity-90 whitespace-nowrap font-k_font"
             >
               Review payouts
             </button>
@@ -80,10 +80,10 @@ export default function AdminHome() {
         <div className="border border-[#e8e6e3]">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8e6e3]">
             <div>
-              <p className="text-lg font-semibold text-[#17191c] font-dashboard_regular">Recent Payments</p>
+              <p className="text-lg font-semibold text-[#17191c] font-k_font">Recent Payments</p>
               <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">Last 5 transactions across the platform</p>
             </div>
-            <button onClick={() => navigate("/admin/payments")} className="text-xs font-semibold text-[#5d2a1a] hover:underline font-dashboard_regular">
+            <button onClick={() => navigate("/admin/payments")} className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font">
               View all
             </button>
           </div>
@@ -92,7 +92,7 @@ export default function AdminHome() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Payment ID", "Order ID", "Amount", "Gateway", "Status", "Date"].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -101,7 +101,7 @@ export default function AdminHome() {
                   <tr key={p._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
                     <td className="px-5 py-3 text-xs text-[#a3a6af] font-selleasy_normal whitespace-nowrap">{p._id}</td>
                     <td className="px-5 py-3 text-xs text-[#777b86] font-selleasy_normal whitespace-nowrap">{p.orderId}</td>
-                    <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular whitespace-nowrap">₦{p.amount.toLocaleString("en-NG")}</td>
+                    <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">₦{p.amount.toLocaleString("en-NG")}</td>
                     <td className="px-5 py-3">
                       <span className="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 capitalize">{p.gateway}</span>
                     </td>
@@ -134,11 +134,11 @@ export default function AdminHome() {
             { label: "Review Payouts",  desc: "Approve or reject pending payout requests",       path: "/admin/payouts",  action: "Go to Payouts"  },
           ].map((card) => (
             <div key={card.label} className="border border-[#e8e6e3] p-5 flex flex-col gap-3">
-              <p className="text-base font-semibold text-[#17191c] font-dashboard_regular">{card.label}</p>
+              <p className="text-base font-semibold text-[#17191c] font-k_font">{card.label}</p>
               <p className="text-xs text-[#777b86] font-selleasy_normal leading-relaxed">{card.desc}</p>
               <button
                 onClick={() => navigate(card.path)}
-                className="text-xs font-semibold text-[#5d2a1a] hover:underline font-dashboard_regular w-fit mt-auto"
+                className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font w-fit mt-auto"
               >
                 {card.action} →
               </button>

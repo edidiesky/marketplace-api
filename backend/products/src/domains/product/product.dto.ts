@@ -15,6 +15,7 @@ export interface CreateProductDto {
   size?:          IProductSize[];
   sku?:           string;
   stockQuantity?: number;
+  isArchive: boolean
 }
 
 export interface UpdateProductDto {

@@ -110,7 +110,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
  
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
+      <span className="text-sm font-semibold text-[#17191c] font-k_font">
         Product Images
       </span>
  
@@ -219,7 +219,7 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">{label}</span>
+      <span className="text-sm font-semibold text-[#17191c] font-k_font">{label}</span>
       <div className="border-[#e8e6e3] py-2 flex flex-wrap gap-2 min-h-[45px] focus-within:border-[#17191c] transition-colors">
         {tags.map((tag, i) => (
           <span
@@ -274,7 +274,7 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">{label}</span>
+      <span className="text-sm font-semibold text-[#17191c] font-k_font">{label}</span>
 
       {pairs.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -317,7 +317,7 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
         <button
           type="button"
           onClick={add}
-          className="h-[38px] px-3 border border-[#e8e6e3] text-sm text-[#17191c] hover:bg-[#f2f0ed] transition-colors font-dashboard_regular"
+          className="h-[38px] px-3 border border-[#e8e6e3] text-sm text-[#17191c] hover:bg-[#f2f0ed] transition-colors font-k_font"
         >
           Add
         </button>
@@ -418,7 +418,7 @@ const ProductModal = () => {
         {/* header */}
         <div className="border-b flex items-center justify-between px-8 h-[72px] shrink-0">
           <div>
-            <h4 className="text-base font-semibold text-[#17191c] font-dashboard_regular">
+            <h4 className="text-base font-semibold text-[#17191c] font-k_font">
               {isEdit ? "Edit Product" : "Create Product"}
             </h4>
             <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">
@@ -528,7 +528,7 @@ const ProductModal = () => {
 
                 {/* description */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
+                  <span className="text-sm font-semibold text-[#17191c] font-k_font">
                     Description
                   </span>
                   <div className="border border-[#e8e6e3] h-[220px] focus-within:border-[#17191c] transition-colors">
@@ -565,14 +565,14 @@ const ProductModal = () => {
         <div className="border-t h-[68px] flex items-center justify-between px-8 shrink-0">
           <button
             onClick={() => dispatch(closeProductModal())}
-            className="text-sm font-semibold text-[#4c4c4c] hover:text-[#17191c] transition-colors font-dashboard_regular"
+            className="text-sm font-semibold text-[#4c4c4c] hover:text-[#17191c] transition-colors font-k_font"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isBusy}
-            className="bg-[var(--dark-1)] rounded-full text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity font-dashboard_regular"
+            className="bg-[var(--dark-1)] rounded-full text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity font-k_font"
           >
             {isBusy
               ? isEdit ? "Updating..." : "Saving..."

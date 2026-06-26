@@ -29,7 +29,7 @@ export const storeRoutes = [
       {
         path: "cart/:cartId",
         element: (
-          <ProtectRoute allowedRoles={["BUYER"]}>
+          <ProtectRoute>
             <Suspense fallback={<Fallback />}><Cart /></Suspense>
           </ProtectRoute>
         ),
@@ -37,7 +37,7 @@ export const storeRoutes = [
       {
         path: "checkout/:cartId",
         element: (
-          <ProtectRoute allowedRoles={["BUYER"]}>
+          <ProtectRoute>
             <Suspense fallback={<Fallback />}><Checkout /></Suspense>
           </ProtectRoute>
         ),
@@ -57,7 +57,7 @@ export const storeRoutes = [
       {
         path: "profile",
         element: (
-          <ProtectRoute allowedRoles={["BUYER"]}>
+          <ProtectRoute>
             <Suspense fallback={<Fallback />}><BuyerProfile /></Suspense>
           </ProtectRoute>
         ),

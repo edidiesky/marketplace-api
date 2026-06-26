@@ -38,13 +38,13 @@ export default function ProductTableList({
   if (type === "product" && isProduct(tableData)) {
     return (
       <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-dashboard_regular">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-k_font">
           {tableData.name}
         </td>
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-k_font">
           ₦{tableData.price}
         </td>
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-k_font">
           {tableData.category.join(", ")}
         </td>
         <td className="px-5 py-3 whitespace-nowrap text-sm">
@@ -52,7 +52,7 @@ export default function ProductTableList({
             {tableData.size.map((s: ProductColorOrSize, index: number) => (
               <span
                 key={index}
-                className="text-xs px-2 py-0.5 border border-[#e8e6e3] text-[#4c4c4c] font-selleasy_normal"
+                className="text-xs px-2 py-0.5 border border-[#e8e6e3] text-[#4c4c4c] font-k_font"
               >
                 {s.value}
               </span>
@@ -65,7 +65,7 @@ export default function ProductTableList({
               <div
                 key={index}
                 style={{ backgroundColor: c.value }}
-                className="w-5 h-5 border border-[#e8e6e3]"
+                className="w-5 h-5 border rounded-full border-[#e8e6e3]"
                 title={c.name}
               />
             ))}
@@ -103,15 +103,15 @@ export default function ProductTableList({
 
     return (
       <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-        <td className="px-5 py-3 whitespace-nowrap text-xs text-[#a3a6af] font-selleasy_normal">
+        <td className="px-5 py-3 whitespace-nowrap text-xs text-[#a3a6af] font-k_font">
           {tableData._id}
         </td>
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-dashboard_regular">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#17191c] font-k_font">
           {tableData.name}
         </td>
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-k_font">
           {type === "Color" ? (
-            <div style={{ backgroundColor: tableData.value }} className="w-5 h-5 border border-[#e8e6e3]" />
+            <div style={{ backgroundColor: tableData.value }} className="w-7 rounded-full h-7 border border-[#e8e6e3]" />
           ) : (
             tableData.value
           )}
@@ -141,7 +141,7 @@ export default function ProductTableList({
   if (isCustomer(tableData)) {
     return (
       <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-selleasy_normal">
+        <td className="px-5 py-3 whitespace-nowrap text-sm text-[#4c4c4c] font-k_font">
           {tableData.phone_number}
         </td>
       </tr>

@@ -92,7 +92,7 @@ export default function Payouts() {
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">Bank code</span>
+                <span className="text-xs font-semibold text-[#17191c] font-k_font">Bank code</span>
                 <Input
                   type="text"
                   {...register("bankCode")}
@@ -105,7 +105,7 @@ export default function Payouts() {
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">Account number</span>
+                <span className="text-xs font-semibold text-[#17191c] font-k_font">Account number</span>
                 <Input
                   type="text"
                   {...register("accountNumber")}
@@ -123,7 +123,7 @@ export default function Payouts() {
               <button
                 type="submit"
                 disabled={isRequesting}
-                className="bg-[var(--dark-1)] text-white text-sm font-semibold px-6 py-2.5 hover:opacity-90 disabled:opacity-50 font-dashboard_regular"
+                className="bg-[var(--dark-1)] text-white text-sm font-semibold px-6 py-2.5 hover:opacity-90 disabled:opacity-50 font-k_font"
               >
                 {isRequesting ? "Submitting..." : "Request payout"}
               </button>
@@ -134,13 +134,13 @@ export default function Payouts() {
         {/* history table */}
         <div className="border border-[#e8e6e3] overflow-x-auto">
           <div className="px-5 py-4 border-b border-[#e8e6e3]">
-            <p className="text-lg font-semibold text-[#17191c] font-dashboard_regular">Payout history</p>
+            <p className="text-lg font-semibold text-[#17191c] font-k_font">Payout history</p>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e8e6e3]">
                 {["ID", "Amount", "Status", "Requested"].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-dashboard_regular">
+                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font">
                     {h}
                   </th>
                 ))}
@@ -159,7 +159,7 @@ export default function Payouts() {
                   return (
                     <tr key={payout._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
                       <td className="px-5 py-3 text-xs text-[#a3a6af] font-selleasy_normal">{payout._id}</td>
-                      <td className="px-5 py-3 font-semibold text-[#17191c] font-dashboard_regular whitespace-nowrap">
+                      <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
                         ₦{payout.amount.toLocaleString("en-NG")}
                       </td>
                       <td className="px-5 py-3">
@@ -185,11 +185,11 @@ export default function Payouts() {
         <div className="flex items-center justify-between">
           <span className="text-xs text-[#a3a6af] font-selleasy_normal">Page {currentPage} of {totalPages}</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Prev</button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-dashboard_regular ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
             ))}
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Next</button>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
           </div>
         </div>
 
