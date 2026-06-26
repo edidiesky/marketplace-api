@@ -81,7 +81,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 flex items-center justify-center gap-2 text-base font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+          className="w-full h-12 flex items-center justify-center gap-2 text-base font-medium transition-opacity hover:opacity-80 disabled:opacity-50 rounded-full"
           style={{
             backgroundColor: "var(--color-ink)",
             color: "var(--color-canvas)",
