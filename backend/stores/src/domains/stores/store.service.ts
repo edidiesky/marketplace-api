@@ -24,27 +24,27 @@ import { CustomDomainStatus, IStore, StoreStatus } from "./store.model";
 
 function toDto(store: IStore): StoreResponseDto {
   return {
-    storeId: store._id.toString(),
-    organizationId: store.organizationId.toString(),
-    ownerId: store.ownerId.toString(),
-    ownerName: store.ownerName,
-    ownerEmail: store.ownerEmail,
-    name: store.name,
-    subdomain: store.subdomain,
-    slug: store.slug,
-    description: store.description,
-    logo: store.logo,
-    banner: store.banner,
-    email: store.email,
-    phoneNumber: store.phoneNumber,
-    address: store.address,
-    settings: store.settings,
-    status: store.status,
-    customDomain: store.customDomain,
-    customDomainStatus: store.customDomainStatus,
+    storeId:               store._id?.toString() ?? "",
+    organizationId:        store.organizationId?.toString() ?? "",
+    ownerId:               store.ownerId?.toString() ?? "",
+    ownerName:             store.ownerName,
+    ownerEmail:            store.ownerEmail,
+    name:                  store.name,
+    subdomain:             store.subdomain,
+    slug:                  store.slug,
+    description:           store.description,
+    logo:                  store.logo,
+    banner:                store.banner,
+    email:                 store.email,
+    phoneNumber:           store.phoneNumber,
+    address:               store.address,
+    settings:              store.settings,
+    status:                store.status,
+    customDomain:          store.customDomain,
+    customDomainStatus:    store.customDomainStatus,
     customDomainVerifiedAt: store.customDomainVerifiedAt,
-    createdAt: store.createdAt,
-    updatedAt: store.updatedAt,
+    createdAt:             store.createdAt,
+    updatedAt:             store.updatedAt,
   };
 }
 
@@ -499,4 +499,3 @@ export const storeService = {
     });
   },
 };
-
