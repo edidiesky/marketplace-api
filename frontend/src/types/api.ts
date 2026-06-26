@@ -23,23 +23,45 @@ export interface PasswordResetPayload { token: string; password: string; }
 // The service layer maps currentPassword out and sends email from auth state
 export interface ChangePasswordPayload { currentPassword: string; newPassword: string; email: string; }
 
-export interface AuthResponse { success: boolean; data: { accessToken: string; user: User }; }
+export interface AuthResponse {
+  success:      boolean;
+  accessToken:  string;
+  refreshToken: string;
+  user: {
+    userId:           string;
+    userType:         string;
+    organizationId:   string;
+    organizationType: string;
+    name:             string;
+    roles:            string[];
+  };
+}
 
-//  User 
+//  User
 export interface User {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  userType: "BUYER" | "SELLER" | "ADMIN";
-  tenantId?: string;
-  tenantStatus?: "PENDING" | "ACTIVE" | "SUSPENDED";
-  tenantPlan?: "free" | "basic" | "premium" | "enterprise";
-  isEmailVerified: boolean;
-  profileImage?: string;
-  phone?: string;
-  gender?: "Male" | "Female";
-  createdAt: string;
+  userId:           string;
+  userType:
+    | "seller:admin"
+    | "seller:member"
+    | "seller:viewer"
+    | "customer"
+    | "platform:admin"
+    | "platform:staff"
+    | "investor"
+    | "advisor"
+    | "system";
+  organizationId:   string;
+  organizationType: string;
+  name:             string;
+  roles:            string[];
+  email?:           string;
+  firstName?:       string;
+  lastName?:        string;
+  isEmailVerified?: boolean;
+  profileImage?:    string;
+  phone?:           string;
+  gender?:          "Male" | "Female";
+  createdAt?:       string;
 }
 
 export interface UpdateUserPayload {
@@ -68,7 +90,8 @@ export interface UserQueryParams {
 
 //  Store 
 export interface Store {
-  _id: string;
+  _id?: string;
+  storeId?: string;
   name: string;
   subdomain: string;
   ownerId: string;
@@ -80,9 +103,19 @@ export interface Store {
   createdAt: string;
 }
 
-export interface CreateStorePayload { name: string; subdomain: string; description?: string; }
+export interface CreateStorePayload { name: string; subdomain: string; description?: string; email?: string; address?: string; }
 export interface UpdateStorePayload { name?: string; description?: string; logo?: string; address?: Record<string, string>; }
 export interface StoreListResponse { success: boolean; data: Store[]; pagination: PaginationMeta; }
+export interface MyStoreResponse {
+  success:    boolean;
+  data: {
+    stores:     Store[];
+    totalCount: number;
+    totalPages: number;
+    page:       number;
+    limit:      number;
+  };
+}
 
 //  Product 
 export interface ProductColorOrSize { name: string; value: string; }
@@ -125,7 +158,16 @@ export interface UpdateProductPayload {
   isArchive?: boolean;
 }
 
-export interface ProductListResponse { success: boolean; data: Product[]; total: number; page: number; }
+export interface ProductListResponse {
+  success:    boolean;
+  data: {
+    products:   Product[];
+    totalCount: number;
+    totalPages: number;
+    page:       number;
+    limit:      number;
+  };
+}
 export interface SearchProductsParams { q?: string; storeId?: string; minPrice?: number; maxPrice?: number; page?: number; limit?: number; }
 export interface AutocompleteResult { success: boolean; data: { name: string; _id: string }[]; }
 
@@ -197,7 +239,16 @@ export interface Order {
   createdAt: string;
 }
 
-export interface PaginatedOrders { success: boolean; data: Order[]; pagination: PaginationMeta; }
+export interface PaginatedOrders {
+  success: boolean;
+  data: {
+    orders:     Order[];
+    totalCount: number;
+    totalPages: number;
+    page:       number;
+    limit:      number;
+  };
+}
 
 //  Inventory 
 export interface Inventory {
