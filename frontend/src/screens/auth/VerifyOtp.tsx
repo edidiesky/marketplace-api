@@ -71,15 +71,22 @@ export default function VerifyOtp() {
     if (!email) { toast.error("Session expired. Please log in again."); return; }
     try {
       const result = await verifyOtp({ email, otp: code }).unwrap();
-      dispatch(setCredentials({ user: result.data.user, accessToken: result.data.accessToken }));
+      dispatch(setCredentials({
+        user:         result.user,
+        accessToken:  result.accessToken,
+        refreshToken: result.refreshToken,
+      }));
       dispatch(clearOtpPending());
-      const user = result.data.user;
-      if (user.userType === "ADMIN") { navigate("/admin"); return; }
-      if (user.userType === "SELLER") {
-        navigate(from !== "/" ? from : `/dashboard/store/${user.tenantId ?? ""}`);
+
+      const { userType } = result.user;
+
+      if (userType === "platform:admin" || userType === "platform:staff") {
+        navigate("/admin");
         return;
       }
-      navigate(from !== "/" ? from : "/");
+      if (!userType.startsWith("seller:")) {
+        navigate(from !== "/" ? from : "/");
+      }
     } catch {
       setOtp(Array(OTP_LENGTH).fill(""));
       inputRefs.current[0]?.focus();
