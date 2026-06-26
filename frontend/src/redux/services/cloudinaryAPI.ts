@@ -10,19 +10,18 @@ export interface CloudinaryUploadResponse {
   created_at:        string;
 }
 
-const CLOUD_NAME     = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
-const UPLOAD_PRESET  = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string;
-const UPLOAD_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-
 export interface UploadProgress {
   loaded:  number;
   total:   number;
   percent: number;
 }
 
+const CLOUD_NAME     = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
+const UPLOAD_PRESET  = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string;
+
 export async function uploadImageToCloudinary(
-  file:             File,
-  onProgress?:      (progress: UploadProgress) => void,
+  file:        File,
+  onProgress?: (progress: UploadProgress) => void,
 ): Promise<CloudinaryUploadResponse> {
   if (!CLOUD_NAME || !UPLOAD_PRESET) {
     throw new Error(
@@ -30,15 +29,15 @@ export async function uploadImageToCloudinary(
     );
   }
 
+  const endpoint = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
   const formData = new FormData();
-  formData.append("file",           file);
-  formData.append("upload_preset",  UPLOAD_PRESET);
-  formData.append("folder",         "selleasi/products");
+  formData.append("file",          file);
+  formData.append("upload_preset", UPLOAD_PRESET);
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-
-    xhr.open("POST", UPLOAD_ENDPOINT);
+    xhr.open("POST", endpoint);
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable && onProgress) {
@@ -59,8 +58,12 @@ export async function uploadImageToCloudinary(
         }
         resolve(data);
       } else {
-        const err = JSON.parse(xhr.responseText);
-        reject(new Error(err?.error?.message ?? `Cloudinary upload failed: ${xhr.status}`));
+        try {
+          const err = JSON.parse(xhr.responseText) as { error?: { message?: string } };
+          reject(new Error(err?.error?.message ?? `Upload failed: ${xhr.status}`));
+        } catch {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
       }
     });
 
