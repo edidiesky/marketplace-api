@@ -14,10 +14,10 @@ export default function Category() {
 
   const { id } = useParams();
   const { data: storeCategory } = useGetAllStoreCategoryQuery({ storeid: id });
+  const categories = (storeCategory as { data?: unknown[] } | undefined)?.data ?? [];
   const DEFAULT_HEADERS = ["ID", "Name", "Value", "Actions"];
   const dispatch = useDispatch();
 
-  // console.log("storeCategory", storeCategory);
   return (
     <>
       <AnimatePresence mode="wait">
@@ -48,20 +48,11 @@ export default function Category() {
           </div>
 
           <div className="w-full">
-            {/* <div className="w-full flex flex-col items-center justify-center  gap-4">
-              <h5 className="text-base lg:text-lg text-center font-dashboard_regular flex-1">
-                No Category Listings
-                <span className="block text-xs font-selleasy_normal leading-[1.4] text-[#64645f] max-w-[450px]">
-                  Make changes to your profile and to the entire app Enable
-                  dropdown and tab-complete suggestions while typing a query
-                </span>
-              </h5>
-            </div> */}
 
             <UserTable
               type="category"
               headers={DEFAULT_HEADERS}
-              data={storeCategory}
+              data={categories}
               onDeleteUser={() => {}}
               deleteModal={{
                 userId: "",
