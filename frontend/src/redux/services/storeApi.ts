@@ -1,12 +1,16 @@
 import { STORE_URL } from "@/constants";
 import { apiSlice } from "./apiSlice";
-import type { Store, StoreListResponse, CreateStorePayload, UpdateStorePayload, ApiSuccessResponse } from "@/types/api";
+import type { Store, StoreListResponse, MyStoreResponse, CreateStorePayload, UpdateStorePayload, ApiSuccessResponse } from "@/types/api";
 
 export const storeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createStore: builder.mutation<{ success: boolean; data: Store }, CreateStorePayload>({
       query: (body) => ({ method: "POST", url: STORE_URL, body }),
       invalidatesTags: ["Store"],
+    }),
+    getMyStores: builder.query<MyStoreResponse, void>({
+      query: () => ({ method: "GET", url: `${STORE_URL}/me` }),
+      providesTags: ["Store"],
     }),
     getAllStores: builder.query<StoreListResponse, { page?: number; limit?: number; isActive?: boolean; plan?: string }>({
       query: (params) => ({ method: "GET", url: STORE_URL, params }),
@@ -29,6 +33,8 @@ export const storeApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useCreateStoreMutation,
+  useGetMyStoresQuery,
+  useLazyGetMyStoresQuery,
   useGetAllStoresQuery,
   useGetStoreQuery,
   useUpdateStoreMutation,
