@@ -9,7 +9,6 @@ import type { RootState } from "@/redux/store";
 import { setCredentials, clearCredentials } from "@/redux/slices/authSlice";
 import { AUTH_URL } from "@/constants";
 
-// I made use of Single mutex to prevent concurrent refresh calls
 const refreshMutex = new Mutex();
 
 const rawBaseQuery = fetchBaseQuery({
@@ -24,12 +23,17 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
+function redirectToLogin() {
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login");
+  }
+}
+
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  // Wait if a refresh is already in progress
   await refreshMutex.waitForUnlock();
 
   let result = await rawBaseQuery(args, api, extraOptions);
@@ -38,9 +42,7 @@ export const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  // 401 received - attempt refresh
   if (refreshMutex.isLocked()) {
-    // Another request already triggered refresh, wait and retry with new token
     await refreshMutex.waitForUnlock();
     result = await rawBaseQuery(args, api, extraOptions);
     return result;
@@ -49,33 +51,50 @@ export const baseQueryWithReauth: BaseQueryFn<
   const release = await refreshMutex.acquire();
 
   try {
+    const storedRefreshToken = (api.getState() as RootState).auth.refreshToken;
+
+    if (!storedRefreshToken) {
+      api.dispatch(clearCredentials());
+      redirectToLogin();
+      return result;
+    }
+
     const refreshResult = await rawBaseQuery(
-      { url: `${AUTH_URL}/refresh-token`, method: "POST" },
+      {
+        url:    `${AUTH_URL}/refresh-token`,
+        method: "POST",
+        body:   { refreshToken: storedRefreshToken },
+        headers: { "Content-Type": "application/json" },
+      },
       api,
       extraOptions,
     );
 
     if (refreshResult.data) {
       const data = refreshResult.data as {
-        success: boolean;
-        data: { accessToken: string };
+        success:      boolean;
+        accessToken:  string;
+        refreshToken: string;
       };
+
       const currentUser = (api.getState() as RootState).auth.user;
 
-      if (currentUser) {
+      if (currentUser && data.accessToken) {
         api.dispatch(
           setCredentials({
-            user: currentUser,
-            accessToken: data.data.accessToken,
+            user:         currentUser,
+            accessToken:  data.accessToken,
+            refreshToken: data.refreshToken ?? storedRefreshToken,
           }),
         );
+        result = await rawBaseQuery(args, api, extraOptions);
+      } else {
+        api.dispatch(clearCredentials());
+        redirectToLogin();
       }
-
-      // Retry original request with new token
-      result = await rawBaseQuery(args, api, extraOptions);
     } else {
-      // logout if the refersh token has been tampered.
       api.dispatch(clearCredentials());
+      redirectToLogin();
     }
   } finally {
     release();
