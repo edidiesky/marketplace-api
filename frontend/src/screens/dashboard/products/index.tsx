@@ -3,8 +3,8 @@ import ProductModal from "@/components/modals/dashboard/productmanagement/Produc
 import DeleteProductModal from "@/components/modals/deleteModals/DeleteProductModal";
 import { useGetAllStoreProductsQuery } from "@/redux/services/productApi";
 import { openProductModal } from "@/redux/slices/modalSlice";
+import type { Product } from "@/types/api";
 import { AnimatePresence } from "framer-motion";
-import { GoPlus } from "react-icons/go";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
@@ -20,6 +20,8 @@ export default function Product() {
   );
 
   const { data: storeProduct } = useGetAllStoreProductsQuery({ storeid: id! }, { skip: !id });
+
+  const products: Product[] = storeProduct?.data?.products ?? [];
 
   const DEFAULT_HEADERS = ["title", "price", "category", "size", "color", "Actions"];
 
@@ -45,9 +47,9 @@ export default function Product() {
             <button
               onClick={() => dispatch(openProductModal(null))}
               style={{ transition: "all .2s" }}
-              className="bg-[var(--dark-1)] flex items-center gap-2 hover:opacity-90 text-white text-sm p-3 px-4 font-dashboard_regular"
+              className="bg-[var(--dark-1)] rounded-full flex items-center gap-2 hover:opacity-90 text-white text-sm p-3 px-4 font-dashboard_regular"
             >
-              <GoPlus fontSize="24px" /> Add Product
+              Add Product
             </button>
           </div>
 
@@ -55,7 +57,7 @@ export default function Product() {
             <UserTable
               type="product"
               headers={DEFAULT_HEADERS}
-              data={storeProduct?.data || []}
+              data={products}
               onDeleteUser={() => {}}
               deleteModal={{ userId: "" }}
             />
