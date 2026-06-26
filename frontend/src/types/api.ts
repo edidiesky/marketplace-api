@@ -138,13 +138,15 @@ export interface Product {
 }
 
 export interface CreateProductPayload {
-  name: string;
-  description: string;
-  price: number;
-  images: string[];
-  category: string[];
-  colors?: ProductColorOrSize[];
-  size?: ProductColorOrSize[];
+  name:          string;
+  description?:  string;
+  price:         number;
+  images?:       string[];
+  category?:     string[];
+  colors?:       ProductColorOrSize[];
+  size?:         ProductColorOrSize[];
+  sku?:          string;
+  stockQuantity?: number;
 }
 
 export interface UpdateProductPayload {
@@ -264,7 +266,16 @@ export interface Inventory {
 }
 
 export interface CreateInventoryPayload { productId: string; quantityOnHand: number; reorderPoint?: number; }
-export interface InventoryListResponse { success: boolean; data: Inventory[]; pagination: PaginationMeta; }
+export interface InventoryListResponse {
+  success: boolean;
+  data: {
+    inventories: Inventory[];
+    totalCount:  number;
+    totalPages:  number;
+    page:        number;
+    limit:       number;
+  };
+}
 export interface InventoryAvailabilityResponse { success: boolean; data: { quantityAvailable: number; isInStock: boolean }; }
 
 //  Payment 
