@@ -87,7 +87,7 @@ export function DataTable({
               {headers.map((h) => (
                 <th
                   key={h}
-                  className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap "
+                  className="px-5 py-3 text-left text-sm text-[#a3a6af] uppercase  whitespace-nowrap "
                 >
                   {h}
                 </th>

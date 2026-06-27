@@ -135,7 +135,7 @@ export default function StoreHeader() {
                     className="text-[#333] group-hover:text-[#171717]"
                   />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#E56000] text-white text-[9px] font-bold flex items-center justify-center rounded-full">
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#E56000] text-white text-[9px]  flex items-center justify-center rounded-full">
                       {cartCount}
                     </span>
                   )}

@@ -139,9 +139,13 @@ button:disabled {
 }
 
 tr,
-th,
 td {
-  font-family: "bold", sans-serif;
+  font-family: "Bold", sans-serif !important;
+  font-size: 15px !important;
+}
+
+th {
+  font-family: "DM Sans", sans-serif !important;
 }
 
 .text-dark {

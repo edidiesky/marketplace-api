@@ -126,8 +126,8 @@ function OrderSummary({
           <span className="text-base lg:text-lg text-[#999]">Calculated at checkout</span>
         </div>
         <div className="flex justify-between items-center py-3">
-          <span className="text-base lg:text-lg font-bold text-[#171717]">Total</span>
-          <span className="text-base lg:text-lg font-bold text-[#171717]">
+          <span className="text-base lg:text-lg  text-[#171717]">Total</span>
+          <span className="text-base lg:text-lg  text-[#171717]">
             ₦{total.toLocaleString("en-NG")}
           </span>
         </div>

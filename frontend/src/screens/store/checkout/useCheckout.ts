@@ -47,11 +47,16 @@ export function useCheckout() {
         requestId: crypto.randomUUID(),
       }).unwrap();
 
+      // Backend returns orderId not _id
       const newOrderId = result.data.orderId ?? result.data._id ?? "";
       sessionStorage.setItem("pending_order_id", newOrderId);
 
-      await addShipping({ orderId: newOrderId, ...data }).unwrap();
-      setCustomerInfo({ name: data.fullName, phone: data.phone, email: data.email });
+      // email is needed for payment but NOT accepted by the shipping endpoint
+      const { email: customerEmail, fullName, phone, ...shippingFields } = data;
+
+      await addShipping({ orderId: newOrderId, fullName, phone, ...shippingFields }).unwrap();
+
+      setCustomerInfo({ name: fullName, phone, email: customerEmail });
       setOrderId(newOrderId);
       setStep("payment");
     } catch {

@@ -81,7 +81,7 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
-              className="text-[11px] uppercase tracking-widest px-2 mb-1.5"
+              className="text-sm uppercase bold tracking-widest px-2 mb-1.5"
               style={{ color: "#a3a6af" }}
             >
               {group.label}
@@ -97,7 +97,7 @@ export default function Sidebar() {
                   data-tour={item.tour}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-base transition-colors w-full mb-0.5",
                       isActive
                         ? "bg-[#f5f5f3] text-[#17191c]"
                         : "text-[#4c4c4c] hover:bg-[#f5f5f3] hover:text-[#17191c]",

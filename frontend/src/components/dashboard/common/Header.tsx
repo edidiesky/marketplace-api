@@ -62,10 +62,10 @@ export default function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 outline-none transition-colors">
-                <div className="w-7 h-7 rounded-full bg-[#004E3F] flex items-center justify-center text-xs  text-white shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#004E3F] flex items-center justify-center text-sm  text-white shrink-0">
                   {currentStore?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm bold truncate max-w-[160px] text-gray-800">
+                <span className="text-base bold truncate max-w-[160px] text-gray-800">
                   {currentStore?.name ?? "Select store"}
                 </span>
                 <BiChevronDown size={16} className="shrink-0 text-gray-600" />
