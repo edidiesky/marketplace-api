@@ -297,7 +297,7 @@ export interface InventoryAvailabilityResponse { success: boolean; data: { quant
 
 //  Payment 
 export interface Payment {
-  _id: string;
+  paymentId: string;
   orderId: string;
   userId: string;
   amount: number;

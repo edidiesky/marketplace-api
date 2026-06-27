@@ -4,6 +4,8 @@ import { FulfillmentStatus, Order, OrderStatus } from "@/types/api";
 import { useState } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { showToast } from "@/components/common/Toast";
+import { ChartSelect } from "@/components/common/charts/Chartselect";
 
 
 const orderStatusConfig: Record<OrderStatus, { label: string; className: string }> = {
@@ -38,8 +40,8 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
 
   const handleUpdate = async () => {
     try {
-      await updateFulfillment({ orderId: order?._id, status, trackingNumber: trackingNumber || undefined, courierName: courierName || undefined }).unwrap();
-      toast.success("Fulfillment updated!");
+      await updateFulfillment({ orderId: order?.orderId as string, status, trackingNumber: trackingNumber || undefined, courierName: courierName || undefined }).unwrap();
+      showToast("Fulfillment updated!", 'success');
       onClose();
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
@@ -47,7 +49,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
     }
   };
 
-  const addr = order?.shippingAddress;
+  const addr = order?.shipping;
 
   return (
     <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-end z-50">
@@ -108,7 +110,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
           {addr && (
             <div className="border border-[#e8e6e3] px-4 py-3 flex flex-col gap-1">
               <p className="text-xs font-semibold text-[#a3a6af] uppercase tracking-widest font-dashboard_regular mb-2">Shipping address</p>
-              <p className="text-sm text-[#17191c] font-selleasy_normal">{addr.street}</p>
+              <p className="text-sm text-[#17191c] font-selleasy_normal">{addr.address}</p>
               <p className="text-sm text-[#17191c] font-selleasy_normal">{addr.city}, {addr.state}</p>
               <p className="text-sm text-[#17191c] font-selleasy_normal">{addr.country}{addr.postalCode ? ` ${addr.postalCode}` : ""}</p>
             </div>
@@ -119,15 +121,14 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
 
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-semibold text-[#17191c] font-dashboard_regular">Status</span>
-              <select
+              <ChartSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value as FulfillmentStatus)}
-                className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-selleasy_normal bg-white outline-none focus:border-[#17191c] transition-colors"
-              >
-                {FULFILLMENT_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>{fulfillmentConfig[opt].label}</option>
-                ))}
-              </select>
+                onValueChange={(v) => setStatus(v as FulfillmentStatus)}
+                options={FULFILLMENT_OPTIONS.map((opt) => ({
+                  label: fulfillmentConfig[opt].label,
+                  value: opt,
+                }))}
+              />
             </label>
 
             <label className="flex flex-col gap-1.5">

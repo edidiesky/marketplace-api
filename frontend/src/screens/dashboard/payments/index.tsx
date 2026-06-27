@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useGetPaymentHistoryQuery } from "@/redux/services/paymentApi";
 import type { Payment } from "@/types/api";
+import { ChartSelect } from "@/components/common/charts/Chartselect";
 
 const ROWS_PER_PAGE = 10;
 
@@ -53,27 +54,22 @@ export default function Payments() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <select
+           <ChartSelect
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as PaymentStatus | ""); setCurrentPage(1); }}
-            className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
-          >
-            <option value="">All statuses</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{statusConfig[s].label}</option>
-            ))}
-          </select>
-
-          <select
+            onValueChange={(v) => { setStatusFilter(v as PaymentStatus | ""); setCurrentPage(1); }}
+            options={[
+              { label: "All statuses", value: "" },
+              ...STATUS_OPTIONS.map((s) => ({ label: statusConfig[s].label, value: s })),
+            ]}
+          />
+          <ChartSelect
             value={gatewayFilter}
-            onChange={(e) => { setGatewayFilter(e.target.value as PaymentGateway | ""); setCurrentPage(1); }}
-            className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
-          >
-            <option value="">All gateways</option>
-            {GATEWAY_OPTIONS.map((g) => (
-              <option key={g} value={g}>{gatewayConfig[g].label}</option>
-            ))}
-          </select>
+            onValueChange={(v) => { setGatewayFilter(v as PaymentGateway | ""); setCurrentPage(1); }}
+            options={[
+              { label: "All gateways", value: "" },
+              ...GATEWAY_OPTIONS.map((g) => ({ label: gatewayConfig[g].label, value: g })),
+            ]}
+          />
         </div>
 
         <div className="border border-[#e8e6e3] overflow-x-auto">
@@ -95,17 +91,17 @@ export default function Payments() {
                   const sCfg = statusConfig[payment.status];
                   const gCfg = gatewayConfig[payment.gateway];
                   return (
-                    <tr key={payment._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                      <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{payment._id}</td>
+                    <tr key={payment.paymentId} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+                      <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{payment.paymentId}</td>
                       <td className="px-5 py-3 text-xs text-[#777b86] whitespace-nowrap">{payment.orderId}</td>
                       <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
                         ₦{payment.amount.toLocaleString("en-NG")}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${gCfg.className}`}>{gCfg.label}</span>
+                        <span className={`text-sm px-3 bold py-2 whitespace-nowrap ${gCfg.className}`}>{gCfg.label}</span>
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${sCfg.className}`}>{sCfg.label}</span>
+                        <span className={`text-sm px-3 bold py-2 whitespace-nowrap ${sCfg.className}`}>{sCfg.label}</span>
                       </td>
                       <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                         {new Date(payment.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
@@ -125,9 +121,9 @@ export default function Payments() {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages} — {totalCount} payments</span>
+          <span className="text-sm text-[#a3a6af] ">Page {currentPage} of {totalPages} — {totalCount} payments</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-sm  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
               <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
             ))}

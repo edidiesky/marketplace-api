@@ -12,25 +12,34 @@ interface ChartSelectOption {
 }
 
 interface ChartSelectProps {
-  value: string;
+  value:         string;
   onValueChange: (value: string) => void;
-  options: ChartSelectOption[];
+  options:       ChartSelectOption[];
+  placeholder?:  string;
 }
 
-export function ChartSelect({ value, onValueChange, options }: ChartSelectProps) {
+const EMPTY_SENTINEL = "__all__";
+
+function toInternal(v: string) { return v === "" ? EMPTY_SENTINEL : v; }
+function toExternal(v: string) { return v === EMPTY_SENTINEL ? "" : v; }
+
+export function ChartSelect({ value, onValueChange, options, placeholder }: ChartSelectProps) {
   return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="py-2 rounded h-auto cursor-pointer border shadow-custom-light bg-white flex items-center justify-center w-[140px]">
-        <SelectValue />
+    <Select
+      value={toInternal(value)}
+      onValueChange={(v) => onValueChange(toExternal(v))}
+    >
+      <SelectTrigger className="py-1 rounded h-auto cursor-pointer border shadow-custom-light bg-white flex items-center justify-center w-[140px]">
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-sm transition-opacity duration-200 ease-in-out">
+      <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-sm">
         {options.map((opt) => (
           <SelectItem
-            key={opt.value}
-            value={opt.value}
-            className="text-sm  text-gray-500 flex items-center gap-2 cursor-pointer hover:bg-gray-100 hover:text-gray-700 focus:text-gray-700"
+            key={toInternal(opt.value)}
+            value={toInternal(opt.value)}
+            className="text-sm text-gray-500 bold cursor-pointer hover:bg-gray-100 hover:text-gray-700 focus:text-gray-700"
           >
-            <div className="flex items-center gap-2 my-2">{opt.label}</div>
+            <div className="flex items-center bold gap-2 my-1">{opt.label}</div>
           </SelectItem>
         ))}
       </SelectContent>

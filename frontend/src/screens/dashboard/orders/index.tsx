@@ -6,6 +6,7 @@ import { ChevronDown, } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import OrderDrawer from "./components/modal/OrderModal";
 import { Input } from "@/components/ui/input";
+import { ChartSelect } from "@/components/common/charts/Chartselect";
 
 const ROWS_PER_PAGE = 10;
 
@@ -74,23 +75,26 @@ export default function Orders() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
-            <Input
+            <div className="flex-1">
+              <Input
               type="text"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               placeholder="Search by order ID..."
-              className="w-48 lg:w-64 px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm outline-none focus:border-[#17191c] transition-colors"
+              className="px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm outline-none focus:border-[#17191c] transition-colors"
             />
-            <select
+            </div>
+           <ChartSelect
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value as OrderStatus | ""); setCurrentPage(1); }}
-              className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
-            >
-              <option value="">All statuses</option>
-              {(Object.keys(orderStatusConfig) as OrderStatus[]).map((s) => (
-                <option key={s} value={s}>{orderStatusConfig[s].label}</option>
-              ))}
-            </select>
+              onValueChange={(v) => { setStatusFilter(v as OrderStatus | ""); setCurrentPage(1); }}
+              options={[
+                { label: "All statuses", value: "" },
+                ...(Object.keys(orderStatusConfig) as OrderStatus[]).map((s) => ({
+                  label: orderStatusConfig[s].label,
+                  value: s,
+                })),
+              ]}
+            />
           </div>
 
           <div className="border border-[#e8e6e3] overflow-x-auto">
