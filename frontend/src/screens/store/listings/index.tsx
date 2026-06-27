@@ -6,30 +6,39 @@ import CardLoader from "@/components/common/loader/CardLoader";
 import { useGetAllStoreProductsQuery } from "@/redux/services/productApi";
 import { useGetStoreQuery } from "@/redux/services/storeApi";
 import type { Product } from "@/types/api";
+import { useState } from "react";
 
-const categoriesList = [
-  "Casual collection",
-  "Deals",
-  "Men",
-  "Women",
-  "Spring collection",
-  "Streetwear",
-  "Uncategorized",
-  "Military",
-];
 
 export default function StoreListing() {
-  const { id } = useParams<{ id: string }>();
-
+const { id } = useParams<{ id: string }>();
+  const [search, setSearch]           = useState("");
+  const [activeCategory, setCategory] = useState<string | null>(null);
+ 
   const { data: storeProductData, isLoading } = useGetAllStoreProductsQuery(
     { storeid: id ?? "" },
     { skip: !id }
   );
+ 
 
-  const { data: storeData } = useGetStoreQuery(id ?? "", { skip: !id });
-
-  const products = storeProductData?.data ?? [];
+    const { data: storeData } = useGetStoreQuery(id ?? "", { skip: !id });
+ 
+  const allProducts: Product[] = storeProductData?.data?.products ?? [];
   const store = storeData?.data;
+ 
+  // derive categories from actual product data
+  const categories = Array.from(
+    new Set(allProducts.flatMap((p) => p.category ?? []))
+  ).filter(Boolean);
+ 
+  const filtered = allProducts.filter((p) => {
+    const matchesSearch =
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      !activeCategory ||
+      (p.category ?? []).includes(activeCategory);
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="w-full max-w-custom mx-auto flex flex-col">
@@ -40,12 +49,27 @@ export default function StoreListing() {
           className="w-full absolute top-0 left-0 object-cover z-10 h-full"
         />
         <div className="w-full absolute top-0 left-0 h-full bg-[rgba(0,0,0,.3)] z-10" />
-        <div className="w-full h-full p-4 lg:p-8 flex z-30 relative items-center">
+        <div className="w-full max-w-7xl mx-auto h-full p-4 lg:p-8 flex z-30 relative items-center">
           <h2 className="text-4xl lg:text-6xl text-white font-semibold">
             {store?.name}'s Shop
-            <span className="block pt-3 max-w-[700px] text-sm lg:text-lg text-[#c4c4c4] font-normal">
-              {store?.description}
+            {store?.description && (
+            <span className="mt-3 block text-white/70 text-sm lg:text-base max-w-[560px] leading-relaxed">
+              {store.description}
             </span>
+          )}
+          <div className="mt-5 flex items-center gap-3">
+            <span className="text-base text-white/50 font-medium">
+              {allProducts.length} product{allProducts.length !== 1 ? "s" : ""}
+            </span>
+            {store?.subdomain && (
+              <>
+                <span className="text-white/20">·</span>
+                <span className="text-base text-white/50">
+                  {store.subdomain}.selleasi.com
+                </span>
+              </>
+            )}
+          </div>
           </h2>
         </div>
       </div>
@@ -59,7 +83,7 @@ export default function StoreListing() {
           </div>
         ) : (
           <div className="w-full grid sm:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8">
-            {products.map((product: Product) => (
+            {allProducts?.map((product: Product) => (
               <ProductCard product={product} key={product._id} />
             ))}
           </div>
@@ -83,7 +107,7 @@ export default function StoreListing() {
             <div className="w-full flex flex-col gap-2">
               <h4 className="text-xl font-medium">Categories</h4>
               <div className="w-full flex flex-col">
-                {categoriesList.map((category) => (
+                {categories.map((category) => (
                   <div
                     key={category}
                     className="w-full cursor-pointer py-4 text-sm border-b"

@@ -36,10 +36,16 @@ export default function StoreHeader() {
                 className="flex items-center gap-2 h-10 px-4 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
               >
                 <User size={15} />
-                {currentUser.firstName}
+                {currentUser.name?.split(" ")[0] ?? "Account"}
               </button>
               <button
-                onClick={() => navigate(`/store/${id}/cart/${cartData?.data?._id ?? ""}`)}
+                onClick={() => {
+                  const cartId = cartData?.data?._id;
+                  if (cartId) {
+                    navigate(`/store/${id}/cart/${cartId}`);
+                  }
+                  // no cart yet — clicking does nothing until items are added
+                }}
                 className="relative flex items-center gap-2 h-10 px-4 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
               >
                 <ShoppingCart size={15} />

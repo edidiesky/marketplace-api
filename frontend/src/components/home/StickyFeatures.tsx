@@ -128,7 +128,7 @@ export default function StickyFeatures() {
         style={{ maxWidth: "1280px" }}
       >
         <span
-          className="text-base lg:text-xl font-medium uppercase tracking-widest"
+          className="text-base lg:text-xl font-medium uppercase "
           style={{ color: "var(--color-light-steel)" }}
         >
           Everything you need
@@ -170,7 +170,7 @@ export default function StickyFeatures() {
               {/* left: text */}
               <div className="flex flex-col gap-6">
                 <span
-                  className="text-xs font-semibold tracking-widest px-3 py-1.5 rounded-full w-fit border"
+                  className="text-xs font-semibold  px-3 py-1.5 rounded-full w-fit border"
                   style={{
                     color: feature.accentColor,
                     borderColor: feature.accentColor,

@@ -6,7 +6,7 @@ export default function Stats() {
     <div className="w-full border p-4 rounded-sm flex flex-col gap-6">
       <div className="w-full flex border-b pb-3 flex-col gap-1">
         <h3 className="text-xl">Store Performance Report</h3>
-        <p className="text-sm font-selleasy_normal text-[#64645f] max-w-[520px] leading-[1.6]">
+        <p className="text-sm font-k_font text-[#64645f] max-w-[520px] leading-[1.6]">
           Monitor how effectively your store is meeting sales targets.
         </p>
       </div>
@@ -16,14 +16,14 @@ export default function Stats() {
             key={block.id}
             className={`flex flex-col gap-3 ${i < statBlocks.length - 1 ? "lg:border-r px-4 border-b lg:border-b-0 border-[#e8e6e3]" : "px-4"}`}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#a3a6af] font-k_font">
+            <p className="text-xs font-semibold uppercase  text-[#a3a6af] font-k_font">
               {block.label}
             </p>
             <div>
               <p className="text-3xl font-bold text-[#17191c]">
                 {block.value}
               </p>
-              <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">
+              <p className="text-xs text-[#777b86] font-k_font mt-0.5">
                 {block.sub}
               </p>
             </div>
@@ -40,7 +40,7 @@ export default function Stats() {
                 {block.deltaPositive ? "+" : "-"}
                 {block.delta}
               </span>
-              <span className="text-xs text-[#777b86] font-selleasy_normal">
+              <span className="text-xs text-[#777b86] font-k_font">
                 {block.deltaNote}
               </span>
             </div>

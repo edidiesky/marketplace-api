@@ -50,7 +50,7 @@ export default function Size() {
             {/* <div className="w-full flex flex-col items-center justify-center  gap-4">
               <h5 className="text-base lg:text-lg text-center font-k_font flex-1">
                 No Size Listings
-                <span className="block text-xs font-selleasy_normal leading-[1.4] text-[#64645f] max-w-[450px]">
+                <span className="block text-xs font-k_font leading-[1.4] text-[#64645f] max-w-[450px]">
                   Make changes to your profile and to the entire app Enable
                   dropdown and tab-complete suggestions while typing a query
                 </span>

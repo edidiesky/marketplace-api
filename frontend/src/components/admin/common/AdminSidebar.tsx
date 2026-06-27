@@ -69,7 +69,7 @@ export default function AdminSidebar() {
     >
       <div className="h-[60px] flex items-center px-5 border-b shrink-0" style={{ borderColor: "#ebebeb" }}>
         <Link to="/admin" className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 bg-[#17191c] text-white">Admin</span>
+          <span className="text-[11px] font-semibold uppercase  px-2 py-0.5 bg-[#17191c] text-white">Admin</span>
           <span className="text-[15px] font-semibold tracking-tight" style={{ color: "#17191c" }}>Selleasi</span>
         </Link>
       </div>
@@ -77,7 +77,7 @@ export default function AdminSidebar() {
       <nav className="flex-1 overflow-y-auto py-4 px-3">
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="text-[11px] font-semibold uppercase tracking-widest px-2 mb-1.5" style={{ color: "#a3a6af" }}>
+            <p className="text-[11px] font-semibold uppercase  px-2 mb-1.5" style={{ color: "#a3a6af" }}>
               {group.label}
             </p>
             {group.items.map((item) => {

@@ -42,7 +42,7 @@ export default function Analytics() {
           <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">
             Analytics
           </h4>
-          <p className="text-sm font-selleasy_normal text-[#64645f] mt-1 max-w-[520px]">
+          <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[520px]">
             Track performance across orders, revenue, products, customers,
             payments, and inventory. Use these insights to drive business and
             marketing decisions.

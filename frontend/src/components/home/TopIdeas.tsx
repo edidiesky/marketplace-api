@@ -65,7 +65,7 @@ export default function StickyFeatures() {
   return (
     <section className="bg-white">
       <div className="px-4 lg:px-16 py-24 text-center max-w-7xl mx-auto">
-        <span className="text-xs uppercase tracking-widest text-[#888]">
+        <span className="text-xs uppercase  text-[#888]">
           Everything you need
         </span>
         <h2 className="text-3xl lg:text-5xl font-bold mt-2 max-w-2xl mx-auto leading-tight text-[#171717]">
@@ -84,7 +84,7 @@ export default function StickyFeatures() {
             <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
               <div className="flex flex-col gap-6">
                 <span
-                  className="text-xs font-semibold tracking-widest px-3 py-1 rounded-full w-fit"
+                  className="text-xs font-semibold  px-3 py-1 rounded-full w-fit"
                   style={{
                     backgroundColor: feature.bg,
                     color: feature.accent,

@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import { GoPlus } from "react-icons/go";
 import { LuSearch } from "react-icons/lu";
 import { RiExternalLinkFill } from "react-icons/ri";
 import { IoStorefrontOutline } from "react-icons/io5";
@@ -136,10 +137,20 @@ export default function Header() {
                               {store.name}
                             </span>
                           </div>
-                          <RiExternalLinkFill
-                            size={13}
-                            className="shrink-0 text-gray-300"
-                          />
+                          <a
+                            href={
+                              import.meta.env.PROD
+                                ? `https://${store.subdomain}.selleasi.com`
+                                : `/store/${sid}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="shrink-0 p-1 rounded hover:bg-gray-100 transition-colors"
+                            title="View store"
+                          >
+                            <RiExternalLinkFill size={13} className="text-gray-400" />
+                          </a>
                         </div>
                       </DropdownMenuRadioItem>
                     );
@@ -152,7 +163,7 @@ export default function Header() {
                     className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 outline-none transition-colors"
                     onSelect={() => navigate("/onboarding/create-store")}
                   >
-                    {/* <GoPlus fontSize="15px" /> */}
+                    <GoPlus fontSize="15px" />
                     Create Store
                   </DropdownMenuItem>
                 </div>
@@ -166,7 +177,7 @@ export default function Header() {
               <button
                 className="flex items-center rounded-full gap-2 bg-[var(--dark-1)] text-white text-sm font-semibold px-4 py-2 hover:opacity-90 outline-none transition-opacity"
               >
-                {/* <GoPlus fontSize="18px" /> */}
+                <GoPlus fontSize="18px" />
                 Create
                 <ChevronDown size={14} />
               </button>
@@ -180,14 +191,14 @@ export default function Header() {
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate(`/dashboard/store/${currentStoreId}/products`)}
               >
-                {/* <GoPlus fontSize="14px" className="text-gray-400" /> */}
+                <GoPlus fontSize="14px" className="text-gray-400" />
                 Add product
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate(`/dashboard/store/${currentStoreId}/orders`)}
               >
-                {/* <GoPlus fontSize="14px" className="text-gray-400" /> */}
+                <GoPlus fontSize="14px" className="text-gray-400" />
                 New order
               </DropdownMenuItem>
               <div className="h-px bg-gray-100 mx-1 my-1" />
@@ -195,7 +206,7 @@ export default function Header() {
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate("/onboarding/create-store")}
               >
-                {/* <GoPlus fontSize="14px" className="text-gray-400" /> */}
+                <GoPlus fontSize="14px" className="text-gray-400" />
                 New store
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -125,11 +125,6 @@ export const UserTable = ({
           placeholder={`Search ${type}s...`}
           className="w-48 lg:w-64 px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm font-k_font font-normal outline-none focus:border-[#17191c] transition-colors"
         />
-        <div className="w-full text-end font-k_font">
-          <span className="text-base font-k_font text-[#a3a6af] font-normal">
-          {filtered.length} {type}{filtered.length !== 1 ? "s" : ""}
-        </span>
-        </div>
       </div>
 
       <div className="border rounded-2xl border-[#e8e6e3] overflow-x-auto">

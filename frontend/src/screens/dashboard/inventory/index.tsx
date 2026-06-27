@@ -85,7 +85,7 @@ export default function Inventory() {
                   <p className="text-sm font-semibold text-yellow-800 font-k_font">
                     {lowStock.length} item{lowStock.length > 1 ? "s" : ""} at or below reorder point
                   </p>
-                  <p className="text-xs text-yellow-700 font-k_font mt-0.5">
+                  <p className="text-sm text-yellow-700 font-k_font mt-0.5">
                     Review these items and restock to avoid running out.
                   </p>
                 </div>
@@ -99,9 +99,9 @@ export default function Inventory() {
               return (
                 <tr
                   key={item._id}
-                  className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors"
+                  className="border-b py-4 border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors"
                 >
-                  <td className="px-5 py-3 text-xs text-[#a3a6af] font-k_font whitespace-nowrap">
+                  <td className="px-5 py-3 text-sm text-[#a3a6af] font-k_font whitespace-nowrap">
                     {item.productId}
                   </td>
                   <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font">
@@ -121,7 +121,7 @@ export default function Inventory() {
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${
+                      className={`text-sm font-semibold px-3 py-2 rounded-full whitespace-nowrap ${
                         isLow
                           ? "bg-yellow-50 text-yellow-800"
                           : "bg-green-50 text-green-700"
@@ -133,7 +133,7 @@ export default function Inventory() {
                   <td className="px-5 py-3">
                     <button
                       onClick={() => setModal({ open: true, item })}
-                      className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font whitespace-nowrap"
+                      className="text-sm font-semibold text-[#5d2a1a] hover:underline font-k_font whitespace-nowrap"
                     >
                       Edit
                     </button>

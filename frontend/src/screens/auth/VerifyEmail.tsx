@@ -142,7 +142,7 @@ export default function VerifyEmail() {
             }}
           >
             <p
-              className="text-xs font-semibold uppercase tracking-widest"
+              className="text-xs font-semibold uppercase "
               style={{ color: "var(--color-muted-stone)" }}
             >
               Possible reasons

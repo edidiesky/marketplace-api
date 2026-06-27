@@ -177,7 +177,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
           className="border-2 border-dashed border-[#e8e6e3] h-[130px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#17191c] hover:bg-[#fafaf9] transition-colors"
         >
           <Upload size={20} className="text-[#a3a6af]" />
-          <p className="text-sm text-[#777b86] font-selleasy_normal">
+          <p className="text-sm text-[#777b86] font-k_font">
             Drag & drop or <span className="text-[#17191c] font-semibold">browse</span>
           </p>
           <p className="text-xs text-[#a3a6af]">PNG, JPG, WebP — uploaded to Cloudinary CDN</p>
@@ -241,7 +241,7 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
             if (e.key === "Backspace" && !draft && tags.length > 0) remove(tags.length - 1);
           }}
           placeholder={tags.length === 0 ? placeholder : ""}
-          className="flex-1 min-w-[80px] text-sm outline-none bg-transparent font-selleasy_normal"
+          className="flex-1 min-w-[80px] text-sm outline-none bg-transparent font-k_font"
         />
       </div>
       <p className="text-xs text-[#a3a6af]">Press Enter or comma to add</p>
@@ -304,14 +304,14 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
           value={draftName}
           onChange={(e) => setDraftName(e.target.value)}
           placeholder="Name (e.g. Red)"
-          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-selleasy_normal"
+          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-k_font"
         />
         <Input
           type="text"
           value={draftValue}
           onChange={(e) => setDraftValue(e.target.value)}
           placeholder="Value (e.g. #FF0000)"
-          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-selleasy_normal"
+          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-k_font"
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
         />
         <button
@@ -421,7 +421,7 @@ const ProductModal = () => {
             <h4 className="text-base font-semibold text-[#17191c] font-k_font">
               {isEdit ? "Edit Product" : "Create Product"}
             </h4>
-            <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">
+            <p className="text-xs text-[#777b86] font-k_font mt-0.5">
               {isEdit
                 ? "Update your product details, pricing, and availability."
                 : "Fill in the details below to add a new product to your store."}
@@ -537,7 +537,7 @@ const ProductModal = () => {
                       onChange={handleDescription}
                       placeholder="Describe your product..."
                       modules={QUILL_MODULES}
-                      className="w-full h-[178px] text-sm font-selleasy_normal"
+                      className="w-full h-[178px] text-sm font-k_font"
                     />
                   </div>
                 </div>
@@ -552,7 +552,7 @@ const ProductModal = () => {
                   >
                     <div className={`w-4 h-4 bg-white rounded-full mt-0.5 shadow transition-transform ${form.isArchive ? "translate-x-5" : "translate-x-0.5"}`} />
                   </div>
-                  <span className="text-sm text-[#4c4c4c] font-selleasy_normal">
+                  <span className="text-sm text-[#4c4c4c] font-k_font">
                     Archive product (hidden from store)
                   </span>
                 </label>

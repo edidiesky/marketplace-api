@@ -37,7 +37,7 @@ export default function VerifyEmailInterstitial({ email, onResend, isResending, 
           className="p-4 flex flex-col gap-3 border"
           style={{ borderColor: "var(--color-stone-surface)", backgroundColor: "var(--color-fog)" }}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-muted-stone)" }}>
+          <p className="text-xs font-semibold uppercase " style={{ color: "var(--color-muted-stone)" }}>
             What happens next
           </p>
           {[

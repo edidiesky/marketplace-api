@@ -87,7 +87,7 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
-              className="text-[11px] font-semibold uppercase tracking-widest px-2 mb-1.5"
+              className="text-[11px] font-semibold uppercase  px-2 mb-1.5"
               style={{ color: "#a3a6af" }}
             >
               {group.label}

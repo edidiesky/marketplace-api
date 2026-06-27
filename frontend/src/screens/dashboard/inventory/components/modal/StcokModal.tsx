@@ -33,7 +33,7 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e8e6e3]">
           <div>
             <p className="text-sm font-semibold text-[#17191c] font-k_font">Update Inventory</p>
-            <p className="text-xs text-[#777b86] font-selleasy_normal mt-0.5">Adjust reorder point and warehouse details.</p>
+            <p className="text-xs text-[#777b86] font-k_font mt-0.5">Adjust reorder point and warehouse details.</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-[#f2f0ed] transition-colors">
             <X size={15} />
@@ -48,7 +48,7 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
               { label: "Reserved",  value: item.quantityReserved  },
             ].map((s) => (
               <div key={s.label}>
-                <p className="text-xs text-[#777b86] font-selleasy_normal">{s.label}</p>
+                <p className="text-xs text-[#777b86] font-k_font">{s.label}</p>
                 <p className="text-sm font-semibold text-[#17191c] font-k_font">{s.value}</p>
               </div>
             ))}
@@ -61,9 +61,9 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
               min={0}
               value={reorderPoint}
               onChange={(e) => setReorderPoint(Number(e.target.value))}
-              className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-selleasy_normal outline-none focus:border-[#17191c] transition-colors"
+              className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
             />
-            <span className="text-xs text-[#a3a6af] font-selleasy_normal">Alert triggers when available stock reaches this number.</span>
+            <span className="text-xs text-[#a3a6af] font-k_font">Alert triggers when available stock reaches this number.</span>
           </label>
 
           <label className="flex flex-col gap-1.5">
@@ -73,7 +73,7 @@ function UpdateStockModal({ item, onClose }: { item: Inventory; onClose: () => v
               value={warehouseName}
               onChange={(e) => setWarehouseName(e.target.value)}
               placeholder="e.g. Lagos Main Store"
-              className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-selleasy_normal outline-none focus:border-[#17191c] transition-colors"
+              className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
             />
           </label>
         </div>

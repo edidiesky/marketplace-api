@@ -86,7 +86,7 @@ export default function Growth() {
             </button>
           </div>
           <div>
-            <p className="text-xs text-[#777b86] font-normal uppercase tracking-widest">
+            <p className="text-xs text-[#777b86] font-normal uppercase ">
               Total Revenue
             </p>
             <p className="text-2xl font-bold text-[#17191c]">
@@ -176,7 +176,7 @@ export default function Growth() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-5 py-3 text-sm font-semibold text-[#a3a6af] uppercase tracking-widest whitespace-nowrap font-k_font"
+                    className="text-left px-5 py-3 text-sm font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font"
                   >
                     {h}
                   </th>

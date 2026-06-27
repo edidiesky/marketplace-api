@@ -65,7 +65,7 @@ export default function ResetPassword() {
             className="p-4 flex flex-col gap-2"
             style={{ backgroundColor: "var(--color-fog)" }}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--color-muted-stone)" }}>
+            <p className="text-xs font-semibold uppercase " style={{ color: "var(--color-muted-stone)" }}>
               Didn't receive it?
             </p>
             <p className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
