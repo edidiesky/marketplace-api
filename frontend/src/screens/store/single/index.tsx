@@ -8,6 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import ReactHtmlParser from "react-html-parser";
+
 import { useGetProductQuery } from "@/redux/services/productApi";
 import { useAddToCartMutation } from "@/redux/services/cartApi";
 import { useGetProductReviewsQuery } from "@/redux/services/reviewApi";
@@ -18,13 +20,6 @@ import ProductDescription from "./ProductDescription";
 import ProductReview from "./ProductReview";
 import SimilarProduct from "./SimiliarProduct";
 import { showToast } from "@/components/common/Toast";
-
-const SANITIZE_CONFIG = {
-  allowedTags:       ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2", "br"],
-  allowedAttributes: { a: ["href"] },
-  disallowedTagsMode: "discard" as const,
-};
- 
 
 export default function StoreSingleProduct() {
   const { id: storeId, productId } = useParams<{
@@ -48,9 +43,13 @@ export default function StoreSingleProduct() {
   const product = productData?.data;
   const reviews = reviewData?.data?.reviews ?? [];
 
-  const sanitizedDescription = product?.description
-    ? sanitizeHtml(product.description, SANITIZE_CONFIG)
-    : "";
+  const sanitizedValue = sanitizeHtml(product?.description?.slice(0, 100) as string, {
+          allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
+          allowedAttributes: {
+            a: ["href"],
+          },
+          disallowedTagsMode: "discard",
+        });
  
 
   const images = product?.images ?? [];
@@ -190,9 +189,9 @@ export default function StoreSingleProduct() {
                 <h4 className="text-base bold text-gray-600">
                   Local taxes included (where applicable)
                 </h4>
-                <p className="text-2xl text-[#171717]">{product.name}</p>
-                <p className="text-lg text-[#171717] leading-relaxed">
-                  {sanitizedDescription}
+                <p className="text-xl text-[#171717]">{product.name}</p>
+                <p className="text-base text-[#171717] leading-relaxed">
+                  {ReactHtmlParser(sanitizedValue)}
                 </p>
               </div>
 
