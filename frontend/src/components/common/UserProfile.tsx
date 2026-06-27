@@ -55,7 +55,7 @@ const UserProfile = () => {
                 className="w-10 h-10 object-cover rounded-full"
               />
             ) : (
-              <div className="w-10 h-10 flex items-center justify-center text-white text-sm font-medium rounded-full bg-[#A1718A]">
+              <div className="w-10 h-10 flex items-center justify-center text-white text-sm  rounded-full bg-[#A1718A]">
                 {currentUser.firstName?.charAt(0).toUpperCase()}
               </div>
             )}

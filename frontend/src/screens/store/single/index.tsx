@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import sanitizeHtml from "sanitize-html";
 import {
   Minus,
   Plus,
@@ -17,6 +18,13 @@ import Skeleton from "react-loading-skeleton";
 import ProductDescription from "./ProductDescription";
 import ProductReview from "./ProductReview";
 import SimilarProduct from "./SimiliarProduct";
+
+const SANITIZE_CONFIG = {
+  allowedTags:       ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2", "br"],
+  allowedAttributes: { a: ["href"] },
+  disallowedTagsMode: "discard" as const,
+};
+ 
 
 export default function StoreSingleProduct() {
   const { id: storeId, productId } = useParams<{
@@ -39,6 +47,11 @@ export default function StoreSingleProduct() {
 
   const product = productData?.data;
   const reviews = reviewData?.data?.reviews ?? [];
+
+  const sanitizedDescription = product?.description
+    ? sanitizeHtml(product.description, SANITIZE_CONFIG)
+    : "";
+ 
 
   const images = product?.images ?? [];
   const prevImage = () =>
@@ -92,7 +105,7 @@ export default function StoreSingleProduct() {
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
         <button
           onClick={() => navigate(`/store/${storeId}`)}
-          className="flex items-center gap-2 text-sm text-[#666] hover:text-[#171717] mb-8 transition-colors"
+          className="flex items-center gap-2 text-base bold text-[#666] hover:text-[#171717] mb-8 transition-colors"
         >
           <ArrowLeft size={16} />
           Back to store
@@ -106,9 +119,9 @@ export default function StoreSingleProduct() {
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
-                    className={`w-20 h-20 overflow-hidden border-2 rounded-2xl transition-colors bg-[#f0efec] shrink-0 ${
+                    className={`w-20 h-20 overflow-hidden border-2 rounded-2xl transition-colors bg-[#81807c86] shrink-0 ${
                       selectedImage === i
-                        ? "border-[#171717]"
+                        ? "border-[#171717] border-4"
                         : "border-transparent hover:border-[#ccc]"
                     }`}
                   >
@@ -181,7 +194,7 @@ export default function StoreSingleProduct() {
                 </h4>
                 <p className="text-2xl text-[#171717]">{product.name}</p>
                 <p className="text-lg text-[#171717] leading-relaxed">
-                  {product.description}
+                  {sanitizedDescription}
                 </p>
               </div>
 
@@ -224,7 +237,7 @@ export default function StoreSingleProduct() {
                   {product.category.map((cat) => (
                     <span
                       key={cat}
-                      className="px-3 bold py-1 bg-[#f4f3ee] text-base font-medium text-[#444]"
+                      className="px-3 bold py-1 bg-[#f4f3ee] text-base  text-[#444]"
                     >
                       {cat}
                     </span>

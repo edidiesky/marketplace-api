@@ -34,10 +34,10 @@ export default function NotFound() {
             </div>
           ))}
         </div>
-        <button onClick={() => navigate(-1)} className="w-full h-12 flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}>
+        <button onClick={() => navigate(-1)} className="w-full h-12 flex items-center justify-center text-sm  transition-opacity hover:opacity-80" style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}>
           ← Go back
         </button>
-        <button onClick={() => navigate("/")} className="w-full h-12 flex items-center justify-center text-sm font-medium border transition-opacity hover:opacity-70" style={{ color: "var(--color-ink)", borderColor: "var(--color-ink)" }}>
+        <button onClick={() => navigate("/")} className="w-full h-12 flex items-center justify-center text-sm  border transition-opacity hover:opacity-70" style={{ color: "var(--color-ink)", borderColor: "var(--color-ink)" }}>
           Return to homepage
         </button>
       </div>

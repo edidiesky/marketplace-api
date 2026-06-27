@@ -4,7 +4,7 @@ import { useGetAllStoreSizeQuery } from "@/redux/services/sizeApi";
 import { AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { onSizeModal } from "@/redux/slices/modalSlice";
+import { openSizeModal } from "@/redux/slices/modalSlice";
 import DeleteSizeModal from "@/components/modals/deleteModals/DeleteSizeModal";
 export default function Size() {
   const { isSizeModal, isDeleteModal } = useSelector(
@@ -13,6 +13,7 @@ export default function Size() {
 
   const { id } = useParams();
   const { data: storeSize } = useGetAllStoreSizeQuery({ storeid: id });
+  const sizes = (storeSize as { data?: unknown[] } | undefined)?.data ?? [];
   const DEFAULT_HEADERS = ["ID", "Name", "Value", "Actions"];
   const dispatch = useDispatch();
 
@@ -28,18 +29,18 @@ export default function Size() {
       <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-start lg:flex-row flex-col md:items-center justify-between gap-4">
-            <h4 className="text-2xl md:text-3xl flex-1">
+            <h4 className="text-2xl md:text-3xl font-selleasy_bold flex-1">
               Size Management
-              <span className="block text-sm  pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
+              <span className="block text-sm font-k_font font-normal pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
                 Make changes to your profile and to the entire app Enable
                 dropdown and tab-complete suggestions while typing a query
               </span>
             </h4>
             <div className="flex items-center justify-end">
               <button
-                onClick={() => dispatch(onSizeModal(""))}
+                onClick={() => dispatch(openSizeModal(""))}
                 style={{ transition: "all .2s" }}
-                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-base p-3 px-4 "
+                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-base p-3 px-4 font-dashboard_regular"
               >
                 Add Size
               </button>
@@ -48,9 +49,9 @@ export default function Size() {
 
           <div className="w-full">
             {/* <div className="w-full flex flex-col items-center justify-center  gap-4">
-              <h5 className="text-base lg:text-lg text-center flex-1">
+              <h5 className="text-base lg:text-lg text-center font-dashboard_regular flex-1">
                 No Size Listings
-                <span className="block text-xs leading-[1.4] text-[#64645f] max-w-[450px]">
+                <span className="block text-xs font-selleasy_normal leading-[1.4] text-[#64645f] max-w-[450px]">
                   Make changes to your profile and to the entire app Enable
                   dropdown and tab-complete suggestions while typing a query
                 </span>
@@ -60,7 +61,7 @@ export default function Size() {
             <UserTable
               type="Size"
               headers={DEFAULT_HEADERS}
-              data={storeSize}
+              data={sizes}
               onDeleteUser={() => {}}
             />
           </div>

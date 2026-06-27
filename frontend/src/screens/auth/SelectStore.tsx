@@ -93,7 +93,7 @@ export default function SelectStore() {
 
           <button
             onClick={() => navigate("/onboarding/create-store")}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-[12px] border text-sm font-medium transition-opacity hover:opacity-70"
+            className="w-full flex items-center justify-center gap-2 h-11 rounded-[12px] border text-sm  transition-opacity hover:opacity-70"
             style={{
               borderColor: "var(--color-stone-surface)",
               color:       "var(--color-ink)",

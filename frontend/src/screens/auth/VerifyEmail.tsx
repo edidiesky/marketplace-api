@@ -173,7 +173,7 @@ export default function VerifyEmail() {
           </div>
           <button
             onClick={() => navigate("/onboarding")}
-            className="w-full h-12 flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+            className="w-full h-12 flex items-center justify-center text-sm  transition-opacity hover:opacity-80"
             style={{
               backgroundColor: "var(--color-ink)",
               color: "var(--color-canvas)",

@@ -7,9 +7,6 @@ import {
   LuUsers,
   LuMessageSquare,
   LuMegaphone,
-  LuTag,
-  LuPalette,
-  LuRuler,
   LuSettings,
   LuLogOut,
   LuWallet,
@@ -24,33 +21,30 @@ const NAV_GROUPS = [
   {
     label: "Overview",
     items: [
-      { icon: LuLayoutDashboard, text: "Dashboard", path: "" },
-      { icon: LuBoxes, text: "Analytics", path: "analytics" },
+      { icon: LuLayoutDashboard, text: "Dashboard", path: "",          tour: "nav-dashboard"  },
+      { icon: LuBoxes,           text: "Analytics", path: "analytics", tour: "nav-analytics"  },
     ],
   },
   {
     label: "Store",
     items: [
-      { icon: LuPackage, text: "Products", path: "products" },
-      { icon: LuCreditCard, text: "Payments", path: "payments" },
-      { icon: LuBoxes, text: "Inventory", path: "inventory" },
-      { icon: LuShoppingCart, text: "Orders", path: "orders" },
-      // { icon: LuTag, text: "Categories", path: "categories" },
-      // { icon: LuPalette, text: "Colors", path: "colors" },
-      // { icon: LuRuler, text: "Sizes", path: "sizes" },
+      { icon: LuPackage,     text: "Products",  path: "products",  tour: "nav-products"  },
+      { icon: LuCreditCard,  text: "Payments",  path: "payments",  tour: "nav-payments"  },
+      { icon: LuBoxes,       text: "Inventory", path: "inventory", tour: "nav-inventory" },
+      { icon: LuShoppingCart,text: "Orders",    path: "orders",    tour: "nav-orders"    },
     ],
   },
   {
     label: "Customers",
     items: [
-      { icon: LuUsers, text: "Customers", path: "customers" },
-      { icon: LuMessageSquare, text: "Messages", path: "messages" },
-      { icon: LuMegaphone, text: "Marketing", path: "marketing" },
+      { icon: LuUsers,        text: "Customers", path: "customers", tour: "nav-customers" },
+      { icon: LuMessageSquare,text: "Messages",  path: "messages",  tour: "nav-messages"  },
+      { icon: LuMegaphone,    text: "Marketing", path: "marketing", tour: "nav-marketing" },
     ],
   },
   {
     label: "Finance",
-    items: [{ icon: LuWallet, text: "Payouts", path: "payouts" }],
+    items: [{ icon: LuWallet, text: "Payouts", path: "payouts", tour: "nav-payouts" }],
   },
 ];
 
@@ -87,7 +81,7 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
-              className="text-[11px]  uppercase  px-2 mb-1.5"
+              className="text-[11px] uppercase tracking-widest px-2 mb-1.5"
               style={{ color: "#a3a6af" }}
             >
               {group.label}
@@ -100,9 +94,10 @@ export default function Sidebar() {
                   key={to}
                   to={to}
                   end={!item.path}
+                  data-tour={item.tour}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm font-medium transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm transition-colors w-full mb-0.5",
                       isActive
                         ? "bg-[#f5f5f3] text-[#17191c]"
                         : "text-[#4c4c4c] hover:bg-[#f5f5f3] hover:text-[#17191c]",
@@ -132,7 +127,7 @@ export default function Sidebar() {
             />
           ) : (
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs  text-white shrink-0"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-sm text-white shrink-0"
               style={{ backgroundColor: "#17191c" }}
             >
               {currentUser?.firstName?.charAt(0).toUpperCase()}
@@ -140,7 +135,7 @@ export default function Sidebar() {
           )}
           <div className="flex-1 min-w-0">
             <p
-              className="text-[13px] font-medium truncate"
+              className="text-[13px] truncate"
               style={{ color: "#17191c" }}
             >
               {currentUser?.firstName} {currentUser?.lastName}
@@ -158,7 +153,7 @@ export default function Sidebar() {
 
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors w-full hover:bg-[#fff0f0]"
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] transition-colors w-full hover:bg-[#fff0f0]"
           style={{ color: "#777b86" }}
         >
           <LuLogOut size={14} className="shrink-0" />

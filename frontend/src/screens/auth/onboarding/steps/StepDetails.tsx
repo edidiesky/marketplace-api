@@ -87,7 +87,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
 
       <div className="flex flex-col gap-2">
         <p
-          className="text-sm font-medium"
+          className="text-sm "
           style={{ color: "var(--color-ink)" }}
         >
           I am joining as
@@ -151,7 +151,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
         style={{
           backgroundColor: "var(--color-ink)",
           color: "var(--color-canvas)",

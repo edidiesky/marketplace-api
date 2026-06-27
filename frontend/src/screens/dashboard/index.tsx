@@ -13,6 +13,8 @@ const Color = lazy(() => import("./colors/index"));
 const Categories = lazy(() => import("./categories/index"));
 const Size = lazy(() => import("./size/index"));
 
+
+
 export {
   DashboardHome,
   Product,

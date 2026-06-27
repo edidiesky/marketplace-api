@@ -45,7 +45,7 @@ export default function Navbar() {
             <Link
               key={item}
               to={`/${item.toLowerCase()}`}
-              className="text-base font-medium transition-opacity hover:opacity-60"
+              className="text-base  transition-opacity hover:opacity-60"
               style={{ color: "var(--color-ink)", letterSpacing: "-0.009em" }}
             >
               {item}
@@ -58,7 +58,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               {firstStore && (
                 <span
-                  className="hidden md:block text-sm font-medium"
+                  className="hidden md:block text-sm "
                   style={{ color: "var(--color-muted-stone)" }}
                 >
                   {firstStore.name}
@@ -66,7 +66,7 @@ export default function Navbar() {
               )}
               <button
                 onClick={handleDashboard}
-                className="h-9 px-5 text-base font-medium transition-opacity hover:opacity-80"
+                className="h-9 px-5 text-base  transition-opacity hover:opacity-80"
                 style={{
                   backgroundColor: "var(--color-ink)",
                   color: "var(--color-canvas)",
@@ -80,7 +80,7 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="h-9 px-5 text-base font-medium border transition-opacity hover:opacity-70 flex items-center"
+                className="h-9 px-5 text-base  border transition-opacity hover:opacity-70 flex items-center"
                 style={{
                   color: "var(--color-ink)",
                   borderColor: "var(--color-ink)",
@@ -91,7 +91,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/onboarding"
-                className="h-9 px-5 text-sm font-medium transition-opacity hover:opacity-80 flex items-center"
+                className="h-9 px-5 text-sm  transition-opacity hover:opacity-80 flex items-center"
                 style={{
                   backgroundColor: "var(--color-ink)",
                   color: "var(--color-canvas)",

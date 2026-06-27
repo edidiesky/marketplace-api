@@ -79,7 +79,7 @@ export default function NewPassword() {
 
           <button
             onClick={() => navigate("/login")}
-            className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+            className="w-full h-12 flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80"
             style={{
               backgroundColor: "var(--color-ink)",
               color: "var(--color-canvas)",
@@ -107,7 +107,7 @@ export default function NewPassword() {
           </p>
           <Link
             to="/reset-password"
-            className="text-sm font-medium underline underline-offset-4"
+            className="text-sm  underline underline-offset-4"
             style={{ color: "var(--color-ink)" }}
           >
             Request a new link
@@ -175,7 +175,7 @@ export default function NewPassword() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+          className="w-full h-12 flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
           style={{
             backgroundColor: "var(--color-ink)",
             color: "var(--color-canvas)",

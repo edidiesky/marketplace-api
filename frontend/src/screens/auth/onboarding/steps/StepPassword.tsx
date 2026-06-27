@@ -78,7 +78,7 @@ export default function StepPassword({ onSubmit, isLoading }: Props) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="w-full h-12 flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
         style={{
           backgroundColor: "var(--color-ink)",
           color: "var(--color-canvas)",

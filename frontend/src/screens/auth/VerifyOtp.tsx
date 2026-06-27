@@ -184,7 +184,7 @@ export default function VerifyOtp() {
           Wrong email?{" "}
           <button
             onClick={() => navigate("/login")}
-            className="font-medium underline underline-offset-4"
+            className=" underline underline-offset-4"
             style={{ color: "var(--color-ink)" }}
           >
             Go back

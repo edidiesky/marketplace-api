@@ -443,3 +443,82 @@ html.lenis body {
 .shake {
   animation: shake 0.45s ease-in-out;
 }
+
+
+/* Selleasi driver.js popover overrides */
+
+.driver-popover-title, .driver-popover-description, .driver-popover-next-btn, .driver-popover-footer-btn,  .driver-popover-footer-btn {
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.selleasi-tour-popover {
+  font-family: inherit;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+  border: 1px solid #e8e6e3 !important;
+  padding: 20px !important;
+  min-width: 280px !important;
+  max-width: 340px !important;
+  font-family: 'Bold', sans-serif;
+}
+ 
+.selleasi-tour-popover .driver-popover-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #17191c !important;
+  margin-bottom: 6px !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-description {
+  font-size: 13px !important;
+  color: #4c4c4c !important;
+  line-height: 1.6 !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: #a3a6af !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-footer {
+  margin-top: 16px !important;
+  gap: 8px !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-prev-btn,
+.selleasi-tour-popover .driver-popover-next-btn,
+.selleasi-tour-popover .driver-popover-done-btn {
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 7px 14px !important;
+  border: none !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-next-btn,
+.selleasi-tour-popover .driver-popover-done-btn {
+  background: #17191c !important;
+  color: #fff !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-next-btn:hover,
+.selleasi-tour-popover .driver-popover-done-btn:hover {
+  opacity: 0.85 !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-prev-btn {
+  background: #f2f0ed !important;
+  color: #17191c !important;
+}
+ 
+.selleasi-tour-popover .driver-popover-close-btn {
+  color: #a3a6af !important;
+  font-size: 18px !important;
+}
+ 
+/* highlight ring */
+.driver-active-element {
+  outline: 2px solid #17191c !important;
+  outline-offset: 3px !important;
+  border-radius: 4px !important;
+}

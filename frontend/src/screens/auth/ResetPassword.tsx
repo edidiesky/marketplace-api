@@ -120,7 +120,7 @@ export default function ResetPassword() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+          className="w-full h-12 flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
           style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
         >
           {isLoading ? "Sending..." : "Send reset link"}
@@ -130,7 +130,7 @@ export default function ResetPassword() {
           Remember your password?{" "}
           <Link
             to="/login"
-            className="font-medium underline underline-offset-4"
+            className=" underline underline-offset-4"
             style={{ color: "var(--color-ink)" }}
           >
             Sign in

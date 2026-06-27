@@ -5,7 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { GoPlus } from "react-icons/go";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { onColorModal } from "@/redux/slices/modalSlice";
+import { openColorModal } from "@/redux/slices/modalSlice";
 import DeleteColorModal from "@/components/modals/deleteModals/DeleteColorModal";
 export default function Color() {
   const { isColorModal, isDeleteModal } = useSelector(
@@ -14,6 +14,7 @@ export default function Color() {
 
   const { id } = useParams();
   const { data: storeColor } = useGetAllStoreColorQuery({ storeid: id });
+  const colors = (storeColor as { data?: unknown[] } | undefined)?.data ?? [];
   const DEFAULT_HEADERS = ["ID", "Name", "Value", "Actions"];
   const dispatch = useDispatch();
 
@@ -29,18 +30,18 @@ export default function Color() {
       <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-start lg:flex-row flex-col md:items-center justify-between gap-4">
-            <h4 className="text-2xl md:text-3xl flex-1">
+            <h4 className="text-2xl md:text-3xl font-selleasy_bold flex-1">
               Color Management
-              <span className="block text-sm  pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
+              <span className="block text-sm font-k_font font-normal pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
                 Make changes to your profile and to the entire app Enable
                 dropdown and tab-complete suggestions while typing a query
               </span>
             </h4>
             <div className="flex items-center justify-end">
               <button
-                onClick={() => dispatch(onColorModal(""))}
+                onClick={() => dispatch(openColorModal(""))}
                 style={{ transition: "all .2s" }}
-                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm lg:text-base p-3 px-4 "
+                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm lg:text-base p-3 px-4 font-dashboard_regular"
               >
                  Add Color
               </button>
@@ -51,7 +52,7 @@ export default function Color() {
             <UserTable
               type="Color"
               headers={DEFAULT_HEADERS}
-              data={storeColor}
+              data={colors}
               onDeleteUser={() => {}}
               deleteModal={{
                 userId: "",

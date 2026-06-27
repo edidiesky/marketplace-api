@@ -61,7 +61,7 @@ export default function VerifyEmailInterstitial({ email, onResend, isResending, 
           href="https://mail.google.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium border transition-opacity hover:opacity-70"
+          className="w-full h-12 flex items-center justify-center gap-2 text-sm  border transition-opacity hover:opacity-70"
           style={{ color: "var(--color-ink)", borderColor: "var(--color-ink)" }}
         >
           Open Gmail
@@ -70,7 +70,7 @@ export default function VerifyEmailInterstitial({ email, onResend, isResending, 
 
         <button
           onClick={onVerified}
-          className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+          className="w-full h-12 flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80"
           style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
         >
           I've verified my email →

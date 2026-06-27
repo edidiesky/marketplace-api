@@ -41,7 +41,7 @@ export default function PaymentSuccess() {
 
         {order && !isLoading && (
           <div className="w-full bg-[#f4f3ee] p-4 text-left flex flex-col gap-2">
-            <p className="text-xs text-[#888] uppercase tracking-wide font-medium">Order summary</p>
+            <p className="text-xs text-[#888] uppercase tracking-wide ">Order summary</p>
             <p className="text-sm  text-[#171717]">
               Order #{order._id.slice(-8).toUpperCase()}
             </p>
@@ -75,7 +75,7 @@ export default function PaymentSuccess() {
           </button>
           <button
             onClick={() => navigate("/profile")}
-            className="w-full h-12 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
+            className="w-full h-12 border border-black/10 text-sm  hover:bg-[#f4f3ee] transition-colors"
           >
             View my orders
           </button>

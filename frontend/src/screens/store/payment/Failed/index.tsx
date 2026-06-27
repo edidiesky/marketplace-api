@@ -20,7 +20,7 @@ export default function PaymentFailed() {
         </div>
 
         <div className="w-full bg-[#f4f3ee] p-4 text-left flex flex-col gap-1">
-          <p className="text-xs text-[#888] uppercase tracking-wide font-medium">What to do next</p>
+          <p className="text-xs text-[#888] uppercase tracking-wide ">What to do next</p>
           <p className="text-sm text-[#666] mt-1">Check your card details and try again, or switch to a different payment method.</p>
         </div>
 
@@ -33,7 +33,7 @@ export default function PaymentFailed() {
           </button>
           <button
             onClick={() => navigate("/")}
-            className="w-full h-12 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
+            className="w-full h-12 border border-black/10 text-sm  hover:bg-[#f4f3ee] transition-colors"
           >
             Back to Home
           </button>

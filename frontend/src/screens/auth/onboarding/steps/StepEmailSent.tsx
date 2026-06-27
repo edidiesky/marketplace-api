@@ -61,7 +61,7 @@ export default function StepEmailSent({ email, onResend, isResending }: Props) {
         href="https://mail.google.com"
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full h-12 flex items-center justify-center gap-2 text-sm font-medium border transition-opacity hover:opacity-70"
+        className="w-full h-12 flex items-center justify-center gap-2 text-sm  border transition-opacity hover:opacity-70"
         style={{
           color: "var(--color-ink)",
           borderColor: "var(--color-ink)",

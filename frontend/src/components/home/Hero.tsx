@@ -86,7 +86,7 @@ export default function Hero() {
           >
             <button
               onClick={handleCta}
-              className="h-16 px-7 text-base font-medium flex items-center gap-2 transition-opacity hover:opacity-80"
+              className="h-16 px-7 text-base  flex items-center gap-2 transition-opacity hover:opacity-80"
               style={{
                 backgroundColor: "var(--color-ink)",
                 color: "var(--color-canvas)",
@@ -98,7 +98,7 @@ export default function Hero() {
             </button>
             <button
               onClick={() => navigate("/login")}
-              className="h-16 px-7 text-base font-medium border transition-opacity hover:opacity-70"
+              className="h-16 px-7 text-base  border transition-opacity hover:opacity-70"
               style={{
                 color: "var(--color-ink)",
                 borderColor: "var(--color-ink)",

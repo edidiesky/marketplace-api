@@ -30,7 +30,7 @@ const About = () => {
             />
           </div>
           <div className="min-h-[170px] bg-white w-[90%] mx-auto p-4 rounded-md">
-            <span className="font-medium text-base">
+            <span className=" text-base">
               Create a unique experience for each device
             </span>
             <p className="text-sm text-[#64645f] mt-1">

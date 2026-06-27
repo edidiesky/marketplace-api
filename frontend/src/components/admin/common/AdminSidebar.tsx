@@ -89,7 +89,7 @@ export default function AdminSidebar() {
                   end={item.path === "/admin"}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px]  transition-colors w-full mb-0.5",
                       isActive
                         ? "bg-[#f5f5f3] text-[#17191c]"
                         : "text-[#4c4c4c] hover:bg-[#f5f5f3] hover:text-[#17191c]",
@@ -118,7 +118,7 @@ export default function AdminSidebar() {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-medium truncate" style={{ color: "#17191c" }}>
+            <p className="text-[13px]  truncate" style={{ color: "#17191c" }}>
               {currentUser?.firstName} {currentUser?.lastName}
             </p>
             <p className="text-[11px] truncate" style={{ color: "#a3a6af" }}>{currentUser?.email}</p>
@@ -127,7 +127,7 @@ export default function AdminSidebar() {
         </Link>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] font-medium transition-colors w-full hover:bg-[#fff0f0]"
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px]  transition-colors w-full hover:bg-[#fff0f0]"
           style={{ color: "#777b86" }}
         >
           <LuLogOut size={14} className="shrink-0" />

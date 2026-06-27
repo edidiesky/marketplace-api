@@ -65,7 +65,7 @@ export default function Header() {
                 <div className="w-7 h-7 rounded-full bg-[#004E3F] flex items-center justify-center text-xs  text-white shrink-0">
                   {currentStore?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm font-medium truncate max-w-[160px] text-gray-800">
+                <span className="text-sm  truncate max-w-[160px] text-gray-800">
                   {currentStore?.name ?? "Select store"}
                 </span>
                 <BiChevronDown size={16} className="shrink-0 text-gray-400" />
@@ -160,7 +160,7 @@ export default function Header() {
                 {/* divider + create */}
                 <div className="border-t border-gray-100 px-2 py-2">
                   <DropdownMenuItem
-                    className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 outline-none transition-colors"
+                    className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 text-sm  text-gray-600 hover:bg-gray-50 hover:text-gray-900 outline-none transition-colors"
                     onSelect={() => navigate("/onboarding/create-store")}
                   >
                     <GoPlus fontSize="15px" />

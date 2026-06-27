@@ -55,7 +55,7 @@ export default function ProductDescription({ product }: { product: Product }) {
               },
             ].map((row) => (
               <div key={row.label} className="grid grid-cols-2 gap-px">
-                <div className="bg-[#f6f6f6] px-4 py-3 text-sm font-medium text-[#171717]">
+                <div className="bg-[#f6f6f6] px-4 py-3 text-sm  text-[#171717]">
                   {row.label}
                 </div>
                 <div className="bg-[#f6f6f6] px-4 py-3 text-sm text-[#666]">

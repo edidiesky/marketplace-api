@@ -81,7 +81,7 @@ export default function Checkout() {
         <div className="flex items-center gap-3 mb-2">
           {steps.map((s, i) => (
             <div key={s.key} className="flex items-center gap-2">
-              <div className={`flex items-center gap-2 text-sm font-medium ${step === s.key ? "text-[#171717]" : "text-[#aaa]"}`}>
+              <div className={`flex items-center gap-2 text-sm  ${step === s.key ? "text-[#171717]" : "text-[#aaa]"}`}>
                 <div className={`w-6 h-6 flex items-center justify-center text-xs  ${step === s.key ? "bg-[#171717] text-white" : "bg-[#e5e5e5] text-[#aaa]"}`}>
                   {i + 1}
                 </div>
@@ -128,7 +128,7 @@ export default function Checkout() {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="w-full h-12 border border-black/10 text-sm font-medium hover:bg-[#f4f3ee] transition-colors"
+              className="w-full h-12 border border-black/10 text-sm  hover:bg-[#f4f3ee] transition-colors"
             >
               Back to cart
             </button>

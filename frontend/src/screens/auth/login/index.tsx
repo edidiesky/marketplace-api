@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginFormData } from "./schema/login.schema";
 import { useLogin } from "./hooks/useLogin";
 import { FaGoogle } from "react-icons/fa";
+import { useRef } from "react";
 
 export default function Login() {
   const { handleLogin, isLoading } = useLogin();
-
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const {
     register,
     handleSubmit,
@@ -19,10 +20,24 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
+  const shake = () => {
+    const el = fieldsRef.current;
+    if (!el) return;
+    el.classList.remove("shake");
+    el.getBoundingClientRect();
+    el.classList.add("shake");
+    el.addEventListener("animationend", () => el.classList.remove("shake"), {
+      once: true,
+    });
+  };
+
+  const onInvalid = () => shake();
+
   return (
     <AuthLayout>
       <form
-        onSubmit={handleSubmit(handleLogin)}
+        onSubmit={handleSubmit(handleLogin, onInvalid)}
+        noValidate
         className="flex w-[80%] flex-col gap-8"
       >
         <div className="flex flex-col gap-3">
@@ -43,13 +58,13 @@ export default function Login() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="w-full bg-gray-100 h-12 flex items-center justify-center gap-2 border text-base font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+            className="w-full bg-gray-100 h-12 flex items-center justify-center gap-2 border text-base  transition-opacity hover:opacity-80 disabled:opacity-50"
           >
             <FaGoogle /> Continue with Google
           </button>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div ref={fieldsRef}  className="flex flex-col gap-6">
           <Input
             label="Email address"
             type="email"
@@ -81,7 +96,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-12 flex items-center justify-center gap-2 text-base font-medium transition-opacity hover:opacity-80 disabled:opacity-50 rounded-full"
+          className="w-full h-12 flex items-center justify-center gap-2 text-base  transition-opacity hover:opacity-80 disabled:opacity-50 rounded-full"
           style={{
             backgroundColor: "var(--color-ink)",
             color: "var(--color-canvas)",
@@ -97,7 +112,7 @@ export default function Login() {
           Don't have an account?{" "}
           <Link
             to="/onboarding"
-            className="font-medium underline underline-offset-4"
+            className=" underline underline-offset-4"
             style={{ color: "var(--color-ink)" }}
           >
             Get started

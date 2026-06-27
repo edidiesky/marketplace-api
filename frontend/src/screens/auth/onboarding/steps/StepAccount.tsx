@@ -15,6 +15,7 @@ const accountSchema = z.object({
 
 export type AccountFormData = z.infer<typeof accountSchema>;
 
+
 interface Props {
   onSubmit: (data: AccountFormData) => Promise<void>;
   isLoading: boolean;
@@ -96,7 +97,7 @@ export default function StepAccount({ onSubmit, isLoading, defaultEmail }: Props
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
         style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
       >
         {isLoading ? "Creating account..." : "Continue"}

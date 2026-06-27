@@ -128,7 +128,7 @@ export default function StickyFeatures() {
         style={{ maxWidth: "1280px" }}
       >
         <span
-          className="text-base lg:text-xl font-medium uppercase "
+          className="text-base lg:text-xl  uppercase "
           style={{ color: "var(--color-light-steel)" }}
         >
           Everything you need

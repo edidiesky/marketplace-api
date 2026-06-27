@@ -65,7 +65,7 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
           />
           <p className="text-xs" style={{ color: "var(--color-muted-stone)" }}>
             Your store will be at{" "}
-            <span className="font-medium" style={{ color: "var(--color-ink)" }}>
+            <span className="" style={{ color: "var(--color-ink)" }}>
               {watch("subdomain") || "your-store"}.selleasi.com
             </span>
           </p>
@@ -79,7 +79,7 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium" style={{ color: "var(--color-ink)" }}>
+          <label className="text-sm " style={{ color: "var(--color-ink)" }}>
             Description{" "}
             <span style={{ color: "var(--color-muted-stone)" }}>(optional)</span>
           </label>
@@ -101,7 +101,7 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="w-full h-12 rounded-full flex items-center justify-center gap-2 text-sm  transition-opacity hover:opacity-80 disabled:opacity-50"
         style={{ backgroundColor: "var(--color-ink)", color: "var(--color-canvas)" }}
       >
         {isLoading ? "Creating store..." : "Launch my store"}
