@@ -16,18 +16,18 @@ export default function Cart() {
   const cart = cartData?.data;
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
-    if (!cartId) return;
+    if (!storeId) return;
     try {
-      await updateItem({ id: cartId, productId, quantity }).unwrap();
+      await updateItem({ storeId, productId, quantity }).unwrap();
     } catch {
       toast.error("Failed to update quantity");
     }
   };
 
   const handleDeleteItem = async (productId: string) => {
-    if (!cartId) return;
+    if (!storeId) return;
     try {
-      await deleteItem({ id: cartId, productId }).unwrap();
+      await deleteItem({ storeId, productId }).unwrap();
       toast.success("Item removed");
     } catch {
       toast.error("Failed to remove item");
@@ -50,7 +50,7 @@ export default function Cart() {
 
         <div className="flex items-center gap-3">
           <ShoppingCart size={22} className="text-[#171717]" />
-          <h1 className="text-2xl  text-[#171717]">My Shopping Cart</h1>
+          <h1 className="text-2xl font-bold text-[#171717]">My Shopping Cart</h1>
         </div>
 
         {!cart?.items?.length ? (
@@ -59,7 +59,7 @@ export default function Cart() {
             <p className="text-sm text-[#666]">Your cart is empty.</p>
             <button
               onClick={() => navigate(`/store/${storeId}`)}
-              className="h-10 px-6 bg-[#171717] text-white text-sm  hover:opacity-90 transition-opacity"
+              className="h-10 px-6 bg-[#171717] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               Continue shopping
             </button>
@@ -81,7 +81,7 @@ export default function Cart() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm  text-[#171717] truncate">{item.productTitle}</p>
+                    <p className="text-sm font-semibold text-[#171717] truncate">{item.productTitle}</p>
                     <p className="text-sm text-[#666]">₦{item.price.toLocaleString("en-NG")}</p>
                     {item.availabilityStatus === "unavailable" && (
                       <p className="text-xs text-red-500 mt-0.5">{item.unavailabilityReason ?? "Out of stock"}</p>
@@ -95,7 +95,7 @@ export default function Cart() {
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="w-8 text-center text-sm ">{item.quantity}</span>
+                    <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
                     <button
                       onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                       className="w-8 h-8 flex items-center justify-center hover:bg-[#f4f3ee] transition-colors"
@@ -104,7 +104,7 @@ export default function Cart() {
                     </button>
                   </div>
 
-                  <p className="text-sm  text-[#171717] w-24 text-right whitespace-nowrap">
+                  <p className="text-sm font-bold text-[#171717] w-24 text-right whitespace-nowrap">
                     ₦{(item.price * item.quantity).toLocaleString("en-NG")}
                   </p>
 
@@ -123,7 +123,7 @@ export default function Cart() {
                 <span>{cart.items.length} item{cart.items.length !== 1 ? "s" : ""}</span>
                 <span>₦{cart.totalPrice.toLocaleString("en-NG")}</span>
               </div>
-              <div className="flex justify-between  text-[#171717] text-base border-t pt-3">
+              <div className="flex justify-between font-bold text-[#171717] text-base border-t pt-3">
                 <span>Total</span>
                 <span>₦{cart.totalPrice.toLocaleString("en-NG")}</span>
               </div>
@@ -132,7 +132,7 @@ export default function Cart() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => navigate(`/store/${storeId}/checkout/${cartId}`)}
-                className="w-full h-12 bg-[#171717] text-white text-sm  flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                className="w-full h-12 bg-[#171717] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
               >
                 Proceed to Checkout
                 <ArrowRight size={16} />
