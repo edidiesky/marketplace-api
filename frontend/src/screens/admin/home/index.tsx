@@ -46,7 +46,7 @@ export default function AdminHome() {
       <div className="w-full flex flex-col gap-8">
 
         <div>
-          <h4 className="text-xl lg:text-2xl text-[#17191c]">Platform Overview</h4>
+          <h4 className="text-xl lg:text-2xl bold text-[#17191c]">Platform Overview</h4>
           <p className="text-sm text-[#64645f] mt-1 max-w-[480px]">
             Monitor platform-wide activity, pending actions, and key business metrics.
           </p>

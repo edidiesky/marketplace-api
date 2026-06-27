@@ -44,7 +44,7 @@ export default function Payments() {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h4 className="text-xl lg:text-2xl text-[#17191c]">Payments</h4>
+            <h4 className="text-xl lg:text-2xl bold text-[#17191c]">Payments</h4>
             <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
               View all payment transactions across your store orders.
             </p>

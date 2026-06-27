@@ -5,13 +5,12 @@ import { FiStar } from "react-icons/fi";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { id: storeId } = useParams<{ id: string }>();
-  const sid = product.storeId ?? product.store ?? storeId ?? "";
   const pid = product.productId ?? product._id ?? "";
   const originalPrice = Math.round(product.price * 1.15);
 
   return (
     <Link
-      to={`/store/${sid}/product/${pid}`}
+      to={`/store/${storeId}/product/${pid}`}
       className="w-full flex flex-col group gap-3"
     >
       <div

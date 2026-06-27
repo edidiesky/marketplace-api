@@ -38,7 +38,7 @@ const products: Product[] = storeProduct?.data?.products ?? [];
       <div className="w-full p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-center justify-between gap-4">
-            <h4 className="text-xl lg:text-2xl flex-1">
+            <h4 className="text-xl lg:text-2xl bold flex-1">
               Products Management
               <span className="block text-sm  pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
                 Manage your store products, update listings, and track inventory.

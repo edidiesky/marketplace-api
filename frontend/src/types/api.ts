@@ -125,6 +125,7 @@ export interface Product {
   productId?: string;
   storeId?: string;
   store?: string;
+  ownerId?: string;
   name: string;
   description: string;
   price: number;
@@ -346,4 +347,19 @@ export interface Review {
 }
 export interface CreateReviewPayload { productId: string; rating: number; comment: string; }
 export interface RespondToReviewPayload { response: string; }
-export interface ReviewListResponse { success: boolean; data: Review[]; }
+export interface ReviewStats {
+  averageRating: number;
+  totalReviews:  number;
+  distribution:  Record<string, number>;
+}
+export interface ReviewListResponse {
+  success: boolean;
+  data: {
+    reviews:    Review[];
+    stats:      ReviewStats;
+    totalCount: number;
+    totalPages: number;
+    page:       number;
+    limit:      number;
+  };
+}

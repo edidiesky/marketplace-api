@@ -64,7 +64,7 @@ export default function ProductShortDescription({
             <div className="flex items-center  gap-4">
               {data?.colors?.map((data, index) => {
                 return (
-                  <div className="w-14 cursor-pointer hover:bg-[#eee] h-14 rounded-full p-1 border">
+                  <div key={index} className="w-14 cursor-pointer hover:bg-[#eee] h-14 rounded-full p-1 border">
                     <div
                       style={{
                         background: `${data?.value}`,

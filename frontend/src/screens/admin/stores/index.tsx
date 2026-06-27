@@ -48,7 +48,7 @@ export default function AdminStores() {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h4 className="text-xl lg:text-2xl text-[#17191c]">Stores</h4>
+            <h4 className="text-xl lg:text-2xl bold text-[#17191c]">Stores</h4>
             <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
               View and manage all seller stores on the platform.
             </p>

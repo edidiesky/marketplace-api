@@ -62,7 +62,7 @@ export default function Payouts() {
     <div className="w-full p-4 py-8 lg:p-12 mx-auto">
       <div className="w-full flex flex-col gap-8">
         <div>
-          <h4 className="text-xl lg:text-2xl text-[#17191c]">Payouts</h4>
+          <h4 className="text-xl lg:text-2xl bold text-[#17191c]">Payouts</h4>
           <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
             Request a payout and track the status of past requests.
           </p>

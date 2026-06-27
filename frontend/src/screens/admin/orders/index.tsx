@@ -5,7 +5,7 @@ export default function Orders() {
       <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-8">
           <div className="w-full flex items-center justify-between gap-4">
-            <h4 className="text-xl lg:text-2xl flex-1">
+            <h4 className="text-xl lg:text-2xl bold flex-1">
             Orders
               <span className="block text-sm w leading-[1.4] text-[#64645f] max-w-[450px]">
                 Make changes to your profile and to the entire app Enable
