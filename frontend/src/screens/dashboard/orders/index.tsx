@@ -70,7 +70,7 @@ export default function Orders() {
                 View and manage all store orders. Click a row to update fulfillment.
               </p>
             </div>
-            <span className="text-xs text-[#a3a6af] mt-2">{total} total</span>
+            <span className="text-sm text-[#a3a6af] mt-2">{total} total</span>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -98,14 +98,14 @@ export default function Orders() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Order ID", "Items", "Total", "Order Status", "Fulfillment", "Date", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-sm text-[#a3a6af] uppercase">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">Loading orders...</td>
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af]">Loading orders...</td>
                   </tr>
                 ) : filtered.length > 0 ? (
                   filtered.map((order) => {
@@ -113,21 +113,29 @@ export default function Orders() {
                     const fsCfg = fulfillmentConfig[order.fulfillmentStatus];
                     return (
                       <tr
-                        key={order._id}
+                        key={order.orderId ?? order._id}
                         className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors cursor-pointer"
                         onClick={() => setSelectedOrder(order)}
                       >
-                        <td className="px-5 py-3  text-[#17191c] whitespace-nowrap text-xs">{order._id}</td>
-                        <td className="px-5 py-3 text-[#4c4c4c] ">{order.items.length}</td>
-                        <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">₦{order.totalAmount.toLocaleString("en-NG")}</td>
-                        <td className="px-5 py-3">
-                          <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${osCfg.className}`}>{osCfg.label}</span>
+                        <td className="px-5 py-3 text-[#17191c] font-dashboard_regular bold text-sm">
+                          {order.orderId ?? order._id}
+                        </td>
+                        <td className="px-5 py-3 text-[#4c4c4c]">
+                          {(order.cartItems ?? order.items ?? []).length}
+                        </td>
+                        <td className="px-5 py-3 text-[#17191c] font-dashboard_regular bold">
+                          ₦{(order.totalAmount ?? order.totalPrice ?? 0).toLocaleString("en-NG")}
                         </td>
                         <td className="px-5 py-3">
-                          <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${fsCfg.className}`}>{fsCfg.label}</span>
+                          <span className={`text-sm px-3 py-1 bold ${osCfg.className}`}>{osCfg.label}</span>
                         </td>
-                        <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
-                          {new Date(order.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                        <td className="px-5 py-3">
+                          <span className={`text-sm px-3 py-1 bold ${fsCfg.className}`}>{fsCfg.label}</span>
+                        </td>
+                        <td className="px-5 py-3 text-[#777b86] bold">
+                          {order.createdAt
+                            ? new Date(order.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })
+                            : "—"}
                         </td>
                         <td className="px-5 py-3 text-[#777b86]">
                           <ChevronDown size={14} />
@@ -137,7 +145,7 @@ export default function Orders() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af]">
                       No orders found{search ? ` for "${search}"` : ""}
                     </td>
                   </tr>
@@ -147,13 +155,13 @@ export default function Orders() {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages} — {total} orders</span>
+            <span className="text-sm text-[#a3a6af]">Page {currentPage} of {totalPages} — {total} orders</span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-sm border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Prev</button>
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-sm border font-dashboard_regular ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
               ))}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Next</button>
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-sm border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-dashboard_regular">Next</button>
             </div>
           </div>
 
