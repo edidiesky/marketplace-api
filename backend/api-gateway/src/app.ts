@@ -10,7 +10,6 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { errorHandler, NotFound }  from "./middleware/error-handler";
 import { authenticate }            from "./middleware/authentication";
-import { rateLimiter }             from "./middleware/rateLimiter";
 import { subdomainResolver }       from "./middleware/subdomainResolver";
 import { getBreaker }              from "./utils/createBreaker";
 import { apiGatewayRegistry }      from "./utils/metrics";
@@ -184,18 +183,18 @@ app.use(
   }
 );
 
-app.use(
-  "/:service/*",
-  (req: Request, res: Response, next: NextFunction) => {
-    const service = req.params["service"] as keyof Services;
-    const path    = req.params[0] as string;
+// app.use(
+//   "/:service/*",
+//   (req: Request, res: Response, next: NextFunction) => {
+//     const service = req.params["service"] as keyof Services;
+//     const path    = req.params[0] as string;
 
-    const isWebhook = service === "payment" && path.startsWith(WEBHOOK_PATH_PREFIX);
-    if (isWebhook) return next();
+//     const isWebhook = service === "payment" && path.startsWith(WEBHOOK_PATH_PREFIX);
+//     if (isWebhook) return next();
 
-    return rateLimiter(req, res, next);
-  }
-);
+//     return rateLimiter(req, res, next);
+//   }
+// );
 
 app.use(
   "/:service/*",

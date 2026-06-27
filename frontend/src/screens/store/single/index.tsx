@@ -13,11 +13,11 @@ import { useAddToCartMutation } from "@/redux/services/cartApi";
 import { useGetProductReviewsQuery } from "@/redux/services/reviewApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/slices/authSlice";
-import toast from "react-hot-toast";
 import Skeleton from "react-loading-skeleton";
 import ProductDescription from "./ProductDescription";
 import ProductReview from "./ProductReview";
 import SimilarProduct from "./SimiliarProduct";
+import { showToast } from "@/components/common/Toast";
 
 const SANITIZE_CONFIG = {
   allowedTags:       ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2", "br"],
@@ -61,9 +61,7 @@ export default function StoreSingleProduct() {
 
   const handleAddToCart = async () => {
     if (!currentUser) {
-      navigate("/login", {
-        state: { from: { pathname: `/store/${storeId}/product/${productId}` } },
-      });
+      navigate("/login", { state: { from: { pathname: `/store/${storeId}/product/${productId}` } } });
       return;
     }
     if (!storeId || !productId || !product) return;
@@ -71,17 +69,17 @@ export default function StoreSingleProduct() {
       const result = await addToCart({
         storeId,
         productId,
-        productTitle: product.name,
-        productImage: product.images ?? [],
-        productPrice: product.price,
+        productTitle:       product.name,
+        productImage:       product.images ?? [],
+        productPrice:       product.price,
         productDescription: product.description,
         quantity,
-        sellerId: product.ownerId ?? "",
+        sellerId:           product.ownerId ?? "",
       }).unwrap();
-      toast.success("Added to cart");
-      navigate(`/store/${storeId}/cart/${result.data._id}`);
+      showToast("Added to cart", "success");
+      navigate(`/store/${storeId}/cart/${result.data.cartId ?? result.data._id}`);
     } catch {
-      toast.error("Failed to add to cart");
+      showToast("Failed to add to cart", "error");
     }
   };
 

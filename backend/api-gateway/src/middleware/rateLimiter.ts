@@ -8,14 +8,14 @@ import logger from "../utils/logger";
 const KEY_PREFIX = "rl:gateway";
 
 const tokenBucket = new TokenBucketLimiter(redisClient.getClient(), {
-  capacity: 10,    
+  capacity: 10000,    
   refillRate: 1,    
   windowMs: 60_000, 
   keyPrefix: KEY_PREFIX,
 });
 
 const slidingWindow = new SlidingWindowLogLimiter(redisClient.getClient(), {
-  limit: 10,        
+  limit: 10000,        
   windowMs: 60_000, 
   keyPrefix: KEY_PREFIX,
 });

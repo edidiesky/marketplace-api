@@ -20,7 +20,7 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                     <tr>
                         {
                             tableheadList?.map((data, index) => {
-                                return <th className="text-sm py-6 bg-[#fafafa] px-3 text-[#969A9A] " key={index}>{data}</th>
+                                return <th className="text-sm py-6 bg-[#FAF8F5] px-3 text-[#969A9A] " key={index}>{data}</th>
                             })
                         }
                     </tr>
@@ -102,7 +102,7 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                 <tr>
                     {
                         tableheadList?.map((data, index) => {
-                            return <th className="text-sm py-8 bg-[#fafafa] px-3 text-[#969A9A] " key={index}>{data}</th>
+                            return <th className="text-sm py-8 bg-[#FAF8F5] px-3 text-[#969A9A] " key={index}>{data}</th>
                         })
                     }
                 </tr>
@@ -128,7 +128,7 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                                 24th October 2024
                             </td>
                             <td className="  py-6 text-center">
-                                <Link href="user/applied-jobs" className="shadows text-xs px-3 py-3 border rounded-md bg-[#fafafa]">
+                                <Link href="user/applied-jobs" className="shadows text-xs px-3 py-3 border rounded-md bg-[#FAF8F5]">
                                     View Application
                                 </Link>
                             </td>

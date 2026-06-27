@@ -120,25 +120,25 @@ export default function ProductShortDescription({
           <div className="flex items-center justify-end">
             <Link
               to={"cart/36364374"}
-              className="p-3 rounded-full text-xl hover:bg-[#fafafa]"
+              className="p-3 rounded-full text-xl hover:bg-[#FAF8F5]"
             >
               <TiSocialFacebook />
             </Link>
             <Link
               to={"cart/36364374"}
-              className="p-3 rounded-full text-lg  hover:bg-[#fafafa]"
+              className="p-3 rounded-full text-lg  hover:bg-[#FAF8F5]"
             >
               <FaXTwitter />
             </Link>
             <Link
               to={"cart/36364374"}
-              className="p-3 rounded-full text-lg  hover:bg-[#fafafa]"
+              className="p-3 rounded-full text-lg  hover:bg-[#FAF8F5]"
             >
               <FaInstagram />
             </Link>
             <Link
               to={"cart/36364374"}
-              className="p-3 rounded-full text-lg  hover:bg-[#fafafa]"
+              className="p-3 rounded-full text-lg  hover:bg-[#FAF8F5]"
             >
               <FaYoutube />
             </Link>

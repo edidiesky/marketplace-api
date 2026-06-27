@@ -178,24 +178,32 @@ export interface AutocompleteResult { success: boolean; data: { name: string; _i
 
 //  Cart 
 export interface CartItem {
-  productId: string;
-  productTitle: string;
-  price: number;
-  quantity: number;
-  images: string[];
-  availabilityStatus: "available" | "unavailable";
+  productId:           string;
+  productTitle:        string;
+  productDescription?: string;
+  productPrice:        number;
+  productQuantity:     number;
+  productImage:        string[];
+  reservedAt?:         string;
+  availabilityStatus:  "available" | "unavailable";
   unavailabilityReason?: string;
 }
 
 export interface Cart {
-  _id: string;
-  userId: string;
-  storeId: string;
-  items: CartItem[];
+  _id?:       string;
+  cartId?:    string;
+  userId:     string;
+  sellerId?:  string;
+  storeId:    string;
+  fullName?:  string;
+  email?:     string;
+  cartItems:  CartItem[];
+  quantity:   number;
   totalPrice: number;
-  quantity: number;
-  expireAt: string;
-  version: number;
+  expireAt:   string;
+  version:    number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 //  Order 

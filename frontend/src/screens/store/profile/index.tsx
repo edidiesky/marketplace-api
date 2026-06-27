@@ -145,7 +145,7 @@ export default function BuyerProfile() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#fafafa]">
+    <div className="w-full min-h-screen bg-[#FAF8F5]">
       <div className="max-w-4xl mx-auto px-4 lg:px-8 py-12 flex flex-col gap-8">
 
         <div className="flex items-center gap-4">

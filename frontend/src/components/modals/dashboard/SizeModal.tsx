@@ -78,7 +78,7 @@ const CreateSizeModal = () => {
         exit="exit"
         className="w-full min-h-[60%] md:w-[380px] md:max-w-[500px] md:min-h-[240px] justify-end md:justify-center pt-8 relative items-start flex flex-col gap-6 bg-white"
       >
-        <div onClick={() => dispatch(closeSizeModal())} className="absolute top-4 right-4 text-[#000] cursor-pointer w-12 h-12 flex items-center hover:bg-[#fafafa] justify-center text-xl">
+        <div onClick={() => dispatch(closeSizeModal())} className="absolute top-4 right-4 text-[#000] cursor-pointer w-12 h-12 flex items-center hover:bg-[#FAF8F5] justify-center text-xl">
           <RxCross2 />
         </div>
         <div className="w-full px-8 flex flex-col">

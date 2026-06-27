@@ -123,7 +123,7 @@ export default function StoreHeader() {
               {/* cart */}
               <button
                 onClick={() => {
-                  const cartId = cartData?.data?._id;
+                  const cartId = cartData?.data?.cartId ?? cartData?.data?._id;
                   if (cartId) navigate(`/store/${id}/cart/${cartId}`);
                 }}
                 className="relative flex flex-col items-center gap-0.5 p-3 rounded-full hover:bg-[#eeece2] transition-colors group"

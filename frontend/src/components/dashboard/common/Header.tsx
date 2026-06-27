@@ -46,8 +46,8 @@ export default function Header() {
       <div className="w-full border-b">
         <div className="max-w-[1300px] mx-auto px-4 lg:px-8 min-h-[50px] flex items-center justify-between">
           <button className="flex items-center gap-3 p-2 outline-none">
-            <Search size={16} className="text-gray-400" />
-            <span className="text-sm text-gray-400">Search or use cmd + k</span>
+            <Search size={16} className="text-gray-600" />
+            <span className="text-sm text-gray-600">Search or use cmd + k</span>
           </button>
           <button className="flex items-center gap-2 p-2 outline-none">
             <BellDot size={16} className="text-gray-700" />
@@ -65,35 +65,35 @@ export default function Header() {
                 <div className="w-7 h-7 rounded-full bg-[#004E3F] flex items-center justify-center text-xs  text-white shrink-0">
                   {currentStore?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm  truncate max-w-[160px] text-gray-800">
+                <span className="text-sm bold truncate max-w-[160px] text-gray-800">
                   {currentStore?.name ?? "Select store"}
                 </span>
-                <BiChevronDown size={16} className="shrink-0 text-gray-400" />
+                <BiChevronDown size={16} className="shrink-0 text-gray-600" />
               </button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
-              className="w-[260px] border border-gray-100 bg-white shadow-lg rounded-xl p-0 overflow-hidden"
+              className="w-[240px] border border-gray-300 bg-white rounded-xl p-0 overflow-hidden"
               align="start"
               sideOffset={8}
             >
               {/* search */}
               <div className="px-3 pt-3 pb-2">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-100">
-                  <LuSearch size={13} className="text-gray-400 shrink-0" />
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-300">
+                  <LuSearch size={13} className="text-gray-600 shrink-0" />
                   <input
                     type="text"
                     placeholder="Search stores..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full text-sm bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-400"
+                    className="w-full text-sm bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-600"
                   />
                 </div>
               </div>
 
               {/* section label */}
               <div className="px-4 pt-1 pb-2">
-                <span className="text-[11px]  text-gray-400 uppercase tracking-widest">
+                <span className="text-[11px] bold text-gray-600 uppercase tracking-widest">
                   My Stores
                 </span>
               </div>
@@ -128,11 +128,7 @@ export default function Header() {
                               />
                             </div>
                             <span
-                              className="text-sm truncate max-w-[140px]"
-                              style={{
-                                fontWeight: isActive ? 600 : 400,
-                                color:      isActive ? "#14532d" : "#374151",
-                              }}
+                              className="text-sm bold truncate max-w-[140px]"
                             >
                               {store.name}
                             </span>
@@ -149,7 +145,7 @@ export default function Header() {
                             className="shrink-0 p-1 rounded hover:bg-gray-100 transition-colors"
                             title="View store"
                           >
-                            <RiExternalLinkFill size={13} className="text-gray-400" />
+                            <RiExternalLinkFill size={15} className="text-gray-600" />
                           </a>
                         </div>
                       </DropdownMenuRadioItem>
@@ -163,7 +159,7 @@ export default function Header() {
                     className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 text-sm  text-gray-600 hover:bg-gray-50 hover:text-gray-900 outline-none transition-colors"
                     onSelect={() => navigate("/onboarding/create-store")}
                   >
-                    <GoPlus fontSize="15px" />
+                  
                     Create Store
                   </DropdownMenuItem>
                 </div>
@@ -191,14 +187,14 @@ export default function Header() {
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate(`/dashboard/store/${currentStoreId}/products`)}
               >
-                <GoPlus fontSize="14px" className="text-gray-400" />
+                
                 Add product
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate(`/dashboard/store/${currentStoreId}/orders`)}
               >
-                <GoPlus fontSize="14px" className="text-gray-400" />
+                
                 New order
               </DropdownMenuItem>
               <div className="h-px bg-gray-100 mx-1 my-1" />
@@ -206,7 +202,7 @@ export default function Header() {
                 className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 outline-none transition-colors"
                 onSelect={() => navigate("/onboarding/create-store")}
               >
-                <GoPlus fontSize="14px" className="text-gray-400" />
+                
                 New store
               </DropdownMenuItem>
             </DropdownMenuContent>

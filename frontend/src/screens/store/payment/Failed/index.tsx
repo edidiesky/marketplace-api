@@ -6,7 +6,7 @@ export default function PaymentFailed() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white border border-black/5 p-10 flex flex-col items-center gap-6 text-center">
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
           <XCircle size={32} className="text-red-500" />
