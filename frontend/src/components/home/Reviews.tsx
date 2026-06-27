@@ -8,13 +8,13 @@ const Reviews = () => {
   return (
     <div className="flex w-full py-20 items-center bg-[#fff] gap-8 justify-center">
       <div className="max-w-custom mx-auto w-[90%] flex flex-col gap-12 lg:gap-24">
-        {/* <h2 className="text-3xl lg:text-5xl w-full lg:mx-auto max-w-[650px] leading-[1.3] md:text-center capitalize text-dark font-bold">
+        {/* <h2 className="text-3xl lg:text-5xl w-full lg:mx-auto max-w-[650px] leading-[1.3] md:text-center capitalize text-dark ">
                     <AnimateTextWord type='bigtext_Center'>
                         600,000 companies have already made the move
                     </AnimateTextWord>
                 </h2> */}
         <h2 className="text-3xl lg:text-5xl w-full max-w-[750px] leading-[1.6] capitalize text-dark ">
-          <span className="font-bold">
+          <span className="">
             <AnimateTextWord>
               600,000 companies have already made the move
             </AnimateTextWord>
@@ -85,7 +85,7 @@ const Reviews = () => {
                   src={"/images/user_1.jpg"}
                   className="w-[50px] h-[50px] rounded-full object-cover"
                 />
-                <h4 className="text-base md:text-lg font-bold flex-1">
+                <h4 className="text-base md:text-lg  flex-1">
                   Carlos Costa
                   <span className="block text-sm lg:text-sm text-[#777]">
                     Foca
@@ -108,7 +108,7 @@ const Reviews = () => {
                   src={"/images/user_2.jpg"}
                   className="w-[50px] h-[50px] rounded-full object-cover"
                 />
-                <h4 className="text-base md:text-lg font-bold flex-1">
+                <h4 className="text-base md:text-lg  flex-1">
                   Carlos Costa
                   <span className="block text-sm lg:text-sm text-[#777]">
                     Foca

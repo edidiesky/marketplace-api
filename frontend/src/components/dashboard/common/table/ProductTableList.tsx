@@ -40,7 +40,7 @@ export default function ProductTableList({
       <tr className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
         {/* image */}
         <td className="px-4 py-2 w-[56px]">
-          <div className="w-10 h-10 border border-[#e8e6e3] overflow-hidden shrink-0 bg-[#f9f9f8]">
+          <div className="w-20 h-20 border border-[#e8e6e3] overflow-hidden shrink-0 bg-[#f9f9f8]">
             {tableData.images?.[0] ? (
               <img
                 src={tableData.images[0]}

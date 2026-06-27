@@ -74,7 +74,7 @@ const UserProfile = () => {
                 alt="User avatar"
               />
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">
+                <span className="text-sm ">
                   {currentUser.firstName} {currentUser.lastName}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -110,7 +110,7 @@ const UserProfile = () => {
 
             <button
               onClick={handleLogOut}
-              className="w-full text-center py-2 text-sm font-semibold text-destructive hover:bg-muted transition-colors"
+              className="w-full text-center py-2 text-sm  text-destructive hover:bg-muted transition-colors"
             >
               Sign Out
             </button>

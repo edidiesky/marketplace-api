@@ -47,7 +47,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="font-semibold text-center leading-[1.05]"
+            className=" text-center leading-[1.05]"
             style={{
               fontSize: "clamp(74px, 10vw, 80px)",
               color: "var(--color-ink)",
@@ -125,7 +125,7 @@ export default function Hero() {
               ].map((bg, i) => (
                 <div
                   key={i}
-                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center text-base font-semibold text-white"
+                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center text-base  text-white"
                   style={{
                     backgroundColor: bg,
                     borderColor: "var(--color-canvas)",
@@ -141,7 +141,7 @@ export default function Hero() {
             >
               Joined by{" "}
               <span
-                className="font-semibold"
+                className=""
                 style={{ color: "var(--color-ink)" }}
               >
                 10,000+

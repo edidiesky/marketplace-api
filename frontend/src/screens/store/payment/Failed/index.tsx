@@ -13,7 +13,7 @@ export default function PaymentFailed() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-[#171717]">Payment Failed</h1>
+          <h1 className="text-2xl  text-[#171717]">Payment Failed</h1>
           <p className="text-sm text-[#666] mt-2 leading-relaxed">
             Something went wrong with your payment. Your cart has been saved and you can try again.
           </p>
@@ -27,7 +27,7 @@ export default function PaymentFailed() {
         <div className="flex flex-col gap-3 w-full">
           <button
             onClick={() => navigate(-2 as unknown as string)}
-            className="w-full h-12 bg-[#171717] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="w-full h-12 bg-[#171717] text-white text-sm  hover:opacity-90 transition-opacity"
           >
             Try Again
           </button>

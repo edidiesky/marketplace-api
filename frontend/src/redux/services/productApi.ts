@@ -67,7 +67,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
       { id: string } & UpdateProductPayload
     >({
       query: ({ id, ...body }) => ({
-        method: "PUT",
+        method: "PATCH",
         url: `${PRODUCT_URL}/${id}`,
         body,
       }),

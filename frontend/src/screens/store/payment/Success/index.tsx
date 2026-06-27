@@ -26,7 +26,7 @@ export default function PaymentSuccess() {
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-[#171717]">Payment Successful</h1>
+          <h1 className="text-2xl  text-[#171717]">Payment Successful</h1>
           <p className="text-sm text-[#666] mt-2 leading-relaxed">
             Your order has been confirmed. You will receive a notification once it is being prepared.
           </p>
@@ -42,11 +42,11 @@ export default function PaymentSuccess() {
         {order && !isLoading && (
           <div className="w-full bg-[#f4f3ee] p-4 text-left flex flex-col gap-2">
             <p className="text-xs text-[#888] uppercase tracking-wide font-medium">Order summary</p>
-            <p className="text-sm font-semibold text-[#171717]">
+            <p className="text-sm  text-[#171717]">
               Order #{order._id.slice(-8).toUpperCase()}
             </p>
             <p className="text-sm text-[#666]">₦{order.totalAmount.toLocaleString("en-NG")}</p>
-            <span className="text-xs font-semibold px-2 py-0.5 bg-green-50 text-green-700 w-fit capitalize">
+            <span className="text-xs  px-2 py-0.5 bg-green-50 text-green-700 w-fit capitalize">
               {order.orderStatus}
             </span>
           </div>
@@ -69,7 +69,7 @@ export default function PaymentSuccess() {
               sessionStorage.removeItem("pending_order_id");
               navigate(-3 as unknown as string);
             }}
-            className="w-full h-12 bg-[#171717] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            className="w-full h-12 bg-[#171717] text-white text-sm  hover:opacity-90 transition-opacity"
           >
             Continue Shopping
           </button>

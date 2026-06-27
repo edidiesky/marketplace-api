@@ -8,9 +8,9 @@ export default function Account() {
       <div className="w-full  p-4 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-8">
           <div className="w-full">
-            <h4 className="text-3xl font-work_font font-semibold">
+            <h4 className="text-3xl ">
               Account
-              <span className="block text-sm w font-work_font font-normal leading-[1.4] text-[#64645f] max-w-[450px]">
+              <span className="block text-sm w  leading-[1.4] text-[#64645f] max-w-[450px]">
                 Make changes to your profile and to the entire app Enable
                 dropdown and tab-complete suggestions while typing a query
               </span>
@@ -18,14 +18,14 @@ export default function Account() {
           </div>
           {/* appearance and language */}
           <div className="w-full flex flex-col gap-2">
-            <h5 className="text-base font-work_font font-semibold flex-1 px-2">General</h5>
+            <h5 className="text-base  flex-1 px-2">General</h5>
 
             <div className="w-full p-4  p-8 bg-[#F3F3EE] rounded-lg flex flex-col">
               {/* appearance */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1">
+                <h5 className="text-base  flex-1">
                   <span> Appearance</span>
-                  <span className="block text-sm font-work_font font-normal text-[#64645f]">
+                  <span className="block text-sm  text-[#64645f]">
                     {" "}
                     How SellEasy looks on your device
                   </span>
@@ -33,7 +33,7 @@ export default function Account() {
                 <div className="flex items-center justify-end">
                   <div
                     style={{ transition: "all .2s" }}
-                    className="p-1 px-2 bg-[#E8E8E3] cursor-pointer hover:scale-[0.9] font-work_font font-semibold flex items-center gap-2 rounded-md text-[#13343b] text-base"
+                    className="p-1 px-2 bg-[#E8E8E3] cursor-pointer hover:scale-[0.9]  flex items-center gap-2 rounded-md text-[#13343b] text-base"
                   >
                     <SlSettings /> Dark
                   </div>
@@ -41,9 +41,9 @@ export default function Account() {
               </div>
               {/* language */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1">
+                <h5 className="text-base  flex-1">
                   <span> Language</span>
-                  <span className="block text-sm font-work_font font-normal text-[#64645f]">
+                  <span className="block text-sm  text-[#64645f]">
                     {" "}
                     The language used in the user interface
                   </span>
@@ -54,12 +54,12 @@ export default function Account() {
 
           {/* Account*/}
           <div className="w-full flex flex-col gap-2">
-            <h5 className="text-base font-work_font font-semibold flex-1 px-2">Account</h5>
+            <h5 className="text-base  flex-1 px-2">Account</h5>
 
             <div className="w-full p-4  p-8 bg-[#F3F3EE] rounded-lg flex flex-col">
               {/* Avatar */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1 font-work_font">
+                <h5 className="text-base  flex-1 ">
                   <span> Avatar</span>
                 </h5>
                 <div className="flex items-center justify-end">
@@ -73,7 +73,7 @@ export default function Account() {
               </div>
               {/* Email */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1 font-work_font">
+                <h5 className="text-base  flex-1 ">
                   <span> Email</span>
                 </h5>
                 <div className="flex items-center justify-end">
@@ -85,7 +85,7 @@ export default function Account() {
               </div>
               {/* Email */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1 font-work_font">
+                <h5 className="text-base  flex-1 ">
                   <span> Username</span>
                 </h5>
                 <div className="flex items-center justify-end">
@@ -100,14 +100,14 @@ export default function Account() {
 
           {/* Active Account*/}
           <div className="w-full flex flex-col gap-2">
-            <h5 className="text-ba font-work_font font-semiboldse px-2">System </h5>
+            <h5 className="text-ba se px-2">System </h5>
 
             <div className="w-full p-4  p-8 bg-[#F3F3EE] rounded-lg flex flex-col">
               {/* appearance */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1">
+                <h5 className="text-base  flex-1">
                   <span> Active account</span>
-                  <span className="block text-sm font-work_font font-normal text-[#64645f]">
+                  <span className="block text-sm  text-[#64645f]">
                     {" "}
                     You are signed in as eddyessien33951
                   </span>
@@ -123,9 +123,9 @@ export default function Account() {
               </div>
               {/* language */}
               <div className="border-b py-4 w-full flex items-center justify-between gap-3">
-                <h5 className="text-base font-work_font font-semibold flex-1">
+                <h5 className="text-base  flex-1">
                   <span> Delete account</span>
-                  <span className="block text-sm font-work_font font-normal text-[#64645f]">
+                  <span className="block text-sm  text-[#64645f]">
                     {" "}
                     Permanently delete your account and data
                   </span>

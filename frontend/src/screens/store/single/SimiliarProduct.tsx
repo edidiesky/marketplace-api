@@ -19,7 +19,7 @@ export default function SimilarProduct({ currentProductId }: { currentProductId:
 
   return (
     <div className="w-full py-12 border-t border-[#f0f0f0] flex flex-col gap-6">
-      <h3 className="text-xl font-semibold text-[#171717]">You Might Also Like</h3>
+      <h3 className="text-xl  text-[#171717]">You Might Also Like</h3>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <button
@@ -39,7 +39,7 @@ export default function SimilarProduct({ currentProductId }: { currentProductId:
               )}
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#171717] truncate">{product.name}</p>
+              <p className="text-sm  text-[#171717] truncate">{product.name}</p>
               <p className="text-sm text-[#666] mt-0.5">₦{product.price.toLocaleString("en-NG")}</p>
             </div>
           </button>

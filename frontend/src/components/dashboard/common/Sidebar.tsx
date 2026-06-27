@@ -87,7 +87,7 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
-              className="text-[11px] font-semibold uppercase  px-2 mb-1.5"
+              className="text-[11px]  uppercase  px-2 mb-1.5"
               style={{ color: "#a3a6af" }}
             >
               {group.label}
@@ -132,7 +132,7 @@ export default function Sidebar() {
             />
           ) : (
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-white shrink-0"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-xs  text-white shrink-0"
               style={{ backgroundColor: "#17191c" }}
             >
               {currentUser?.firstName?.charAt(0).toUpperCase()}

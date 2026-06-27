@@ -53,7 +53,7 @@ export default function Card({
             >
               <BiPlus fontSize={"14px"} />
             </button>
-            <span className="border-l family4 font-bold border-r">
+            <span className="border-l family4  border-r">
               {cartcount}
             </span>
             <button

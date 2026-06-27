@@ -19,7 +19,7 @@ export default function SelectStore() {
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-1">
           <h1
-            className="text-[28px] font-semibold leading-[1.1]"
+            className="text-[28px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
           >
             Welcome back{currentUser?.name ? `, ${currentUser.name.split(" ")[0]}` : ""}
@@ -55,7 +55,7 @@ export default function SelectStore() {
                   }}
                 >
                   <div
-                    className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 text-base font-semibold"
+                    className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 text-base "
                     style={{
                       backgroundColor: "var(--color-fog)",
                       color:           "var(--color-ink)",
@@ -65,7 +65,7 @@ export default function SelectStore() {
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span
-                      className="text-sm font-semibold truncate"
+                      className="text-sm  truncate"
                       style={{ color: "var(--color-ink)" }}
                     >
                       {store.name}

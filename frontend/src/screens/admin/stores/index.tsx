@@ -48,12 +48,12 @@ export default function AdminStores() {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">Stores</h4>
-            <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[420px]">
+            <h4 className="text-xl lg:text-2xl text-[#17191c]">Stores</h4>
+            <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
               View and manage all seller stores on the platform.
             </p>
           </div>
-          <span className="text-xs text-[#a3a6af] font-k_font mt-2">{total} total</span>
+          <span className="text-xs text-[#a3a6af] mt-2">{total} total</span>
         </div>
 
         <div className="flex items-center justify-between gap-4">
@@ -62,9 +62,9 @@ export default function AdminStores() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
             placeholder="Search stores..."
-            className="w-48 lg:w-64 px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
+            className="w-48 lg:w-64 px-4 h-[38px] bg-white border border-[#e8e6e3] text-sm outline-none focus:border-[#17191c] transition-colors"
           />
-          <span className="text-xs text-[#a3a6af] font-k_font">{filtered.length} shown</span>
+          <span className="text-xs text-[#a3a6af] ">{filtered.length} shown</span>
         </div>
 
         <div className="border border-[#e8e6e3] overflow-x-auto">
@@ -72,40 +72,40 @@ export default function AdminStores() {
             <thead>
               <tr className="border-b border-[#e8e6e3]">
                 {["Name", "Subdomain", "Plan", "Status", "Created", ""].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">Loading stores...</td></tr>
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">Loading stores...</td></tr>
               ) : filtered.length > 0 ? filtered.map((store) => (
                 <tr key={store._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                  <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">{store.name}</td>
-                  <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">{store.subdomain}</td>
+                  <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">{store.name}</td>
+                  <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">{store.subdomain}</td>
                   <td className="px-5 py-3">
-                    <span className="text-xs font-semibold px-2 py-0.5 bg-[#f2f0ed] text-[#4c4c4c] capitalize">{store.plan}</span>
+                    <span className="text-xs  px-2 py-0.5 bg-[#f2f0ed] text-[#4c4c4c] capitalize">{store.plan}</span>
                   </td>
                   <td className="px-5 py-3">
-                    <span className={`text-xs font-semibold px-2 py-0.5 ${store.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                    <span className={`text-xs  px-2 py-0.5 ${store.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                       {store.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">
+                  <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                     {new Date(store.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => handleToggleActive(store)}
-                        className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font whitespace-nowrap"
+                        className="text-xs  text-[#5d2a1a] hover:underline whitespace-nowrap"
                       >
                         {store.isActive ? "Deactivate" : "Activate"}
                       </button>
                       <button
                         onClick={() => handleDelete(store._id, store.name)}
                         disabled={deleting}
-                        className="text-xs font-semibold text-red-600 hover:underline font-k_font"
+                        className="text-xs  text-red-600 hover:underline "
                       >
                         Delete
                       </button>
@@ -113,20 +113,20 @@ export default function AdminStores() {
                   </td>
                 </tr>
               )) : (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">No stores found{search ? ` for "${search}"` : ""}</td></tr>
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">No stores found{search ? ` for "${search}"` : ""}</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#a3a6af] font-k_font">Page {currentPage} of {totalPages}</span>
+          <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages}</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
             ))}
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Next</button>
           </div>
         </div>
 

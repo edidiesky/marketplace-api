@@ -63,7 +63,7 @@ export default function NewPassword() {
               <CheckCircle size={20} className="text-green-600" />
             </div>
             <h1
-              className="text-[32px] font-semibold leading-[1.1]"
+              className="text-[32px]  leading-[1.1]"
               style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
             >
               Password updated
@@ -97,7 +97,7 @@ export default function NewPassword() {
       <AuthLayout>
         <div className="flex flex-col gap-6 w-[80%]">
           <h1
-            className="text-[32px] font-semibold leading-[1.1]"
+            className="text-[32px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Invalid link
@@ -125,7 +125,7 @@ export default function NewPassword() {
       >
         <div className="flex flex-col gap-3">
           <h1
-            className="text-[32px] font-semibold leading-[1.1]"
+            className="text-[32px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Set new password

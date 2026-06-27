@@ -9,12 +9,12 @@ function StatCard({ label, value, sub, trend }: { label: string; value: string; 
   return (
     <div className="border border-[#e8e6e3] p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#777b86] uppercase  font-k_font">{label}</span>
+        <span className="text-xs  text-[#777b86] uppercase  ">{label}</span>
         {trend === "up" && <TrendingUp size={14} className="text-green-600" />}
         {trend === "down" && <TrendingDown size={14} className="text-red-500" />}
       </div>
-      <p className="text-3xl font-selleasy_bold text-[#17191c]">{value}</p>
-      <p className="text-xs text-[#777b86] font-k_font">{sub}</p>
+      <p className="text-3xl text-[#17191c]">{value}</p>
+      <p className="text-xs text-[#777b86] ">{sub}</p>
     </div>
   );
 }
@@ -46,8 +46,8 @@ export default function AdminHome() {
       <div className="w-full flex flex-col gap-8">
 
         <div>
-          <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">Platform Overview</h4>
-          <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[480px]">
+          <h4 className="text-xl lg:text-2xl text-[#17191c]">Platform Overview</h4>
+          <p className="text-sm text-[#64645f] mt-1 max-w-[480px]">
             Monitor platform-wide activity, pending actions, and key business metrics.
           </p>
         </div>
@@ -61,16 +61,16 @@ export default function AdminHome() {
         {pendingPayouts > 0 && (
           <div className="border border-yellow-200 bg-yellow-50 px-5 py-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-yellow-800 font-k_font">
+              <p className="text-sm  text-yellow-800 ">
                 {pendingPayouts} payout request{pendingPayouts > 1 ? "s" : ""} awaiting approval
               </p>
-              <p className="text-xs text-yellow-700 font-k_font mt-0.5">
+              <p className="text-xs text-yellow-700 mt-0.5">
                 Review and approve or reject seller payout requests.
               </p>
             </div>
             <button
               onClick={() => navigate("/admin/payouts")}
-              className="text-xs font-semibold bg-yellow-800 text-white px-4 py-2 hover:opacity-90 whitespace-nowrap font-k_font"
+              className="text-xs  bg-yellow-800 text-white px-4 py-2 hover:opacity-90 whitespace-nowrap "
             >
               Review payouts
             </button>
@@ -80,10 +80,10 @@ export default function AdminHome() {
         <div className="border border-[#e8e6e3]">
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8e6e3]">
             <div>
-              <p className="text-lg font-semibold text-[#17191c] font-k_font">Recent Payments</p>
-              <p className="text-xs text-[#777b86] font-k_font mt-0.5">Last 5 transactions across the platform</p>
+              <p className="text-lg  text-[#17191c] ">Recent Payments</p>
+              <p className="text-xs text-[#777b86] mt-0.5">Last 5 transactions across the platform</p>
             </div>
-            <button onClick={() => navigate("/admin/payments")} className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font">
+            <button onClick={() => navigate("/admin/payments")} className="text-xs  text-[#5d2a1a] hover:underline ">
               View all
             </button>
           </div>
@@ -92,34 +92,34 @@ export default function AdminHome() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Payment ID", "Order ID", "Amount", "Gateway", "Status", "Date"].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {recentPayments.length > 0 ? recentPayments.map((p) => (
                   <tr key={p._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                    <td className="px-5 py-3 text-xs text-[#a3a6af] font-k_font whitespace-nowrap">{p._id}</td>
-                    <td className="px-5 py-3 text-xs text-[#777b86] font-k_font whitespace-nowrap">{p.orderId}</td>
-                    <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">₦{p.amount.toLocaleString("en-NG")}</td>
+                    <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{p._id}</td>
+                    <td className="px-5 py-3 text-xs text-[#777b86] whitespace-nowrap">{p.orderId}</td>
+                    <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">₦{p.amount.toLocaleString("en-NG")}</td>
                     <td className="px-5 py-3">
-                      <span className="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 capitalize">{p.gateway}</span>
+                      <span className="text-xs  px-2 py-0.5 bg-blue-50 text-blue-700 capitalize">{p.gateway}</span>
                     </td>
                     <td className="px-5 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 ${
+                      <span className={`text-xs  px-2 py-0.5 ${
                         p.status === "success"  ? "bg-green-50 text-green-700"   :
                         p.status === "failed"   ? "bg-red-50 text-red-700"       :
                         p.status === "refunded" ? "bg-[#f2f0ed] text-[#4c4c4c]" :
                         "bg-yellow-50 text-yellow-800"
                       }`}>{p.status}</span>
                     </td>
-                    <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">
+                    <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                       {new Date(p.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">No payments yet</td>
+                    <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">No payments yet</td>
                   </tr>
                 )}
               </tbody>
@@ -134,11 +134,11 @@ export default function AdminHome() {
             { label: "Review Payouts",  desc: "Approve or reject pending payout requests",       path: "/admin/payouts",  action: "Go to Payouts"  },
           ].map((card) => (
             <div key={card.label} className="border border-[#e8e6e3] p-5 flex flex-col gap-3">
-              <p className="text-base font-semibold text-[#17191c] font-k_font">{card.label}</p>
-              <p className="text-xs text-[#777b86] font-k_font leading-relaxed">{card.desc}</p>
+              <p className="text-base  text-[#17191c] ">{card.label}</p>
+              <p className="text-xs text-[#777b86] leading-relaxed">{card.desc}</p>
               <button
                 onClick={() => navigate(card.path)}
-                className="text-xs font-semibold text-[#5d2a1a] hover:underline font-k_font w-fit mt-auto"
+                className="text-xs  text-[#5d2a1a] hover:underline w-fit mt-auto"
               >
                 {card.action} →
               </button>

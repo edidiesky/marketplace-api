@@ -159,7 +159,7 @@ export function BarChartStacked({
     <div className={`${showBorder ? "border border-[#e8e6e3]" : ""} flex flex-col rounded-2xl`}>
       <div className="px-5 py-4 w-full border-b border-[#e8e6e3] flex items-start justify-between gap-4">
         <div className="w-full">
-          <p className="text-lg font-bold text-[#17191c]">{title}</p>
+          <p className="text-lg  text-[#17191c]">{title}</p>
           <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
         </div>
         <ChartSelect value={selectedFilter} onValueChange={onFilterChange} options={filterOptions} />

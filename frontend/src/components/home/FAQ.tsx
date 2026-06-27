@@ -32,7 +32,7 @@ const FAQ = () => {
     <div className="flex w-full py-32 bg-white flex-col gap-32">
       <div className="max-w-custom mx-auto w-[90%] flex flex-col gap-12 md:gap-20">
         <h2 className="text-3xl lg:text-5xl lg:pt-6 flex flex-col lg:justify-center lg:items-center w-full leading-[1.6] capitalize text-dark ">
-          <span className="font-semibold lg:text-center">
+          <span className=" lg:text-center">
             <AnimateTextWord>Frequently asked questions</AnimateTextWord>
           </span>
 
@@ -50,8 +50,8 @@ const FAQ = () => {
                 className="w-full p-8 py-12 border min-h-[600px] flex justify-between flex-col gap-8 bg-[#F6F5F1] rounded-[40px]"
               >
                 <div className="w-full flex flex-col gap-1">
-                  <h3 className="text-3xl font-semibold">{data?.title}</h3>
-                  <p className="text-base text-[var(--dark-grey)] font-normal">
+                  <h3 className="text-3xl ">{data?.title}</h3>
+                  <p className="text-base text-[var(--dark-grey)] ">
                     {data?.description}
                   </p>
                 </div>

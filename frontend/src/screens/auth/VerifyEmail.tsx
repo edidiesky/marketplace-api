@@ -69,7 +69,7 @@ export default function VerifyEmail() {
           </div>
           <div className="flex flex-col gap-2">
             <h1
-              className="text-[28px] font-semibold leading-[1.1]"
+              className="text-[28px]  leading-[1.1]"
               style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
             >
               Verifying your email
@@ -121,7 +121,7 @@ export default function VerifyEmail() {
           </div>
           <div className="flex flex-col gap-2">
             <h1
-              className="text-[28px] font-semibold leading-[1.1]"
+              className="text-[28px]  leading-[1.1]"
               style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
             >
               Verification failed
@@ -142,7 +142,7 @@ export default function VerifyEmail() {
             }}
           >
             <p
-              className="text-xs font-semibold uppercase "
+              className="text-xs  uppercase "
               style={{ color: "var(--color-muted-stone)" }}
             >
               Possible reasons
@@ -154,7 +154,7 @@ export default function VerifyEmail() {
             ].map((s) => (
               <div key={s} className="flex items-start gap-3">
                 <span
-                  className="w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
+                  className="w-5 h-5 flex items-center justify-center text-xs  shrink-0 mt-0.5"
                   style={{
                     backgroundColor: "var(--color-terracotta)",
                     color: "var(--color-canvas)",

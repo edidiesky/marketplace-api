@@ -134,7 +134,7 @@ export default function StickyFeatures() {
           Everything you need
         </span>
         <h2
-          className="text-5xl lg:text-7xl font-semibold mt-2 max-w-2xl mx-auto leading-[1.1]"
+          className="text-5xl lg:text-7xl  mt-2 max-w-2xl mx-auto leading-[1.1]"
           style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
         >
           One platform. Every tool your store needs.
@@ -170,7 +170,7 @@ export default function StickyFeatures() {
               {/* left: text */}
               <div className="flex flex-col gap-6">
                 <span
-                  className="text-xs font-semibold  px-3 py-1.5 rounded-full w-fit border"
+                  className="text-xs   px-3 py-1.5 rounded-full w-fit border"
                   style={{
                     color: feature.accentColor,
                     borderColor: feature.accentColor,
@@ -181,7 +181,7 @@ export default function StickyFeatures() {
                 </span>
 
                 <h3
-                  className="text-3xl lg:text-5xl font-semibold leading-[1.1]"
+                  className="text-3xl lg:text-5xl  leading-[1.1]"
                   style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
                 >
                   {feature.title}

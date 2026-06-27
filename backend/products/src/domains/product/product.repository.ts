@@ -195,7 +195,7 @@ export const productRepository = {
     session?:  mongoose.ClientSession
   ): Promise<void> {
     const options = session ? { session } : {};
-    await Product.findByIdAndUpdate(
+    const product = await Product.findByIdAndUpdate(
       id,
       {
         $set: {
@@ -204,11 +204,16 @@ export const productRepository = {
           deletedBy: new Types.ObjectId(deletedBy),
         },
       },
-      options
+      { ...options, new: true }
     ).exec();
 
+    // Clear both the id cache and all search caches so the list
+    // does not serve the deleted product from Redis after deletion.
     try {
-      await redisClient.del(getIdCacheKey(id));
+      await Promise.all([
+        redisClient.del(getIdCacheKey(id)),
+        invalidateSearchCache(product?.storeId?.toString() ?? ""),
+      ]);
     } catch (err) {
       logger.warn("product_cache_invalidation_failed_after_soft_delete", {
         event:     "product_cache_invalidation_failed_after_soft_delete",

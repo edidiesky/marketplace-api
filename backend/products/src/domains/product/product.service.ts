@@ -93,7 +93,7 @@ export const productService = {
           colors:         dto.colors   ?? [],
           size:           dto.size     ?? [],
           sku:            dto.sku,
-          isArchive: dto.isArchive
+          
         },
         session
       );
@@ -231,9 +231,12 @@ export const productService = {
     organizationId: string
   ): Promise<void> {
     const existing = await productRepository.findById(productId);
-    if (!existing || existing.isDeleted) {
+    if (!existing) {
       throw AppError.notFound("Product not found.");
     }
+
+    // Already deleted - idempotent, return success
+    if (existing.isDeleted) return;
 
     if (existing.organizationId.toString() !== organizationId) {
       throw AppError.forbidden(

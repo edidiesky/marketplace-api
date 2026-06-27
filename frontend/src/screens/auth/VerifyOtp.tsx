@@ -109,7 +109,7 @@ export default function VerifyOtp() {
       <div className="flex flex-col items-start w-full gap-6">
         <div className="flex flex-col gap-1">
           <h1
-            className="text-[32px] font-semibold leading-[1.1]"
+            className="text-[32px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Enter your code
@@ -120,7 +120,7 @@ export default function VerifyOtp() {
           >
             We sent a 6-digit code to{" "}
             <span
-              className="font-semibold"
+              className=""
               style={{ color: "var(--color-ink)" }}
             >
               {email}
@@ -139,7 +139,7 @@ export default function VerifyOtp() {
               value={digit}
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
-              className="flex-1 h-14 text-center text-xl w-full font-bold rounded-[12px] border-2 transition-all outline-none focus:ring-0"
+              className="flex-1 h-14 text-center text-xl w-full  rounded-[12px] border-2 transition-all outline-none focus:ring-0"
               style={{
                 borderColor: digit
                   ? "var(--color-ink)"

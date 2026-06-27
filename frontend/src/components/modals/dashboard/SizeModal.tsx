@@ -82,13 +82,13 @@ const CreateSizeModal = () => {
           <RxCross2 />
         </div>
         <div className="w-full px-8 flex flex-col">
-          <h3 className="text-2xl font-work_font font-bold">{sizeId ? "Update" : "Create"} your Size</h3>
-          <span className="block text-sm text-[#777] font-work_font max-w-[380px]">Give your Size a name and value, make it concise and brief.</span>
+          <h3 className="text-2xl ">{sizeId ? "Update" : "Create"} your Size</h3>
+          <span className="block text-sm text-[#777] max-w-[380px]">Give your Size a name and value, make it concise and brief.</span>
         </div>
         <form onSubmit={handleSubmit} className="w-full mt-4 flex justify-between flex-col gap-6">
           <div className="w-full px-8 flex items-start flex-col gap-2">
             {formData.map((form, index) => (
-              <label key={index} className="flex font-work_font font-semibold w-full flex-col gap-1 text-sm">
+              <label key={index} className="flex  w-full flex-col gap-1 text-sm">
                 {form.label}
                 <input
                   type={form.type}
@@ -96,7 +96,7 @@ const CreateSizeModal = () => {
                   name={form.name}
                   onChange={onChange}
                   placeholder={form.placeholder}
-                  className="text-sm font-normal input w-full bg-white border px-3 h-[40px]"
+                  className="text-sm  input w-full bg-white border px-3 h-[40px]"
                 />
               </label>
             ))}

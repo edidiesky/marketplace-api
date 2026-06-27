@@ -24,28 +24,28 @@ const DeleteProductModal = () => {
   };
 
   return (
-    <div className="h-[100vh] bg-[#16161639] inset-0 backdrop-blur-sm w-full fixed top-0 left-0 z-[5000] flex items-end md:items-center justify-end md:justify-center">
+    <div className="h-[100vh] bg-[#16161639] inset-0 backdrop-blur-sm w-full fixed top-0 left-0 z-[5000] flex items-end md:items-center justify-end md:justify-center px-4">
       <motion.div
         variants={slide}
         initial="initial"
         animate={isDeleteModal ? "enter" : "exit"}
         exit="exit"
-        className="w-full min-h-[30%] md:w-[500px] md:max-w-[550px] pt-6 md:min-h-[200px] justify-between relative items-start flex flex-col gap-4 bg-white"
+        className="w-full min-h-[30%] md:w-[500px] md:max-w-[550px] rounded-2xl pt-6 md:min-h-[200px] justify-between relative items-start flex flex-col gap-4 bg-white"
       >
         <div className="w-full flex px-8 items-center justify-between gap-1">
-          <h3 className="text-xl font-work_font font-semibold">
+          <h3 className="text-xl ">
             <span>Delete Product</span>
-            <span className="text-sm block font-normal font-work_font text-[#777] max-w-[550px]">
+            <span className="text-sm block  text-[#777] max-w-[550px]">
               Are you sure you want to delete this Product? This cannot be undone!
             </span>
           </h3>
         </div>
         <div className="w-full flex flex-col gap-4">
           <div className="w-full text-sm flex px-8 py-4 border-t items-center justify-end gap-3">
-            <button type="button" onClick={() => dispatch(closeDeleteModal())} className="btn btn_small flex items-center justify-center cursor-pointer font-work_font">
+            <button type="button" onClick={() => dispatch(closeDeleteModal())} className="btn btn_small flex items-center justify-center cursor-pointer ">
               Cancel
             </button>
-            <button onClick={handleDelete} className="btn btn_small_3 flex items-center justify-center cursor-pointer font-work_font">
+            <button onClick={handleDelete} className="btn btn_small_3 flex items-center justify-center cursor-pointer ">
               {isLoading ? (
                 <span className="flex w-full items-center justify-center gap-2">Deleting <Loader type="dots" color="#000" /></span>
               ) : <>Delete</>}

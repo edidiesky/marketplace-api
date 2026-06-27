@@ -68,7 +68,7 @@ export default function StickyFeatures() {
         <span className="text-xs uppercase  text-[#888]">
           Everything you need
         </span>
-        <h2 className="text-3xl lg:text-5xl font-bold mt-2 max-w-2xl mx-auto leading-tight text-[#171717]">
+        <h2 className="text-3xl lg:text-5xl  mt-2 max-w-2xl mx-auto leading-tight text-[#171717]">
           One platform. Every tool your store needs.
         </h2>
       </div>
@@ -84,7 +84,7 @@ export default function StickyFeatures() {
             <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
               <div className="flex flex-col gap-6">
                 <span
-                  className="text-xs font-semibold  px-3 py-1 rounded-full w-fit"
+                  className="text-xs   px-3 py-1 rounded-full w-fit"
                   style={{
                     backgroundColor: feature.bg,
                     color: feature.accent,
@@ -92,7 +92,7 @@ export default function StickyFeatures() {
                 >
                   {feature.tag}
                 </span>
-                <h3 className="text-2xl lg:text-4xl font-bold leading-tight text-[#171717]">
+                <h3 className="text-2xl lg:text-4xl  leading-tight text-[#171717]">
                   {feature.title}
                 </h3>
                 <ul className="flex flex-col gap-3">
@@ -131,7 +131,7 @@ export default function StickyFeatures() {
                 />
                 <div className="mt-auto">
                   <p
-                    className="text-lg font-semibold"
+                    className="text-lg "
                     style={{ color: feature.accent }}
                   >
                     {feature.cardLabel}

@@ -31,16 +31,16 @@ export default function Growth() {
         <div className="border rounded-xl border-[#e8e6e3] p-5 flex flex-col gap-3">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-base lg:text-lg font-semibold text-[#17191c] font-k_font">
+              <p className="text-base lg:text-lg  text-[#17191c] ">
                 Order Breakdown
               </p>
-              <p className="text-sn text-[#777b86] font-normal mt-0.5">
+              <p className="text-sn text-[#777b86]  mt-0.5">
                 Fulfilled vs pending
               </p>
             </div>
             <button
               onClick={() => navigate(`/dashboard/store/${id}/orders`)}
-              className="text-sm font-semibold text-[#5d2a1a] hover:underline font-k_font"
+              className="text-sm  text-[#5d2a1a] hover:underline "
             >
               See Details
             </button>
@@ -71,25 +71,25 @@ export default function Growth() {
         <div className="border rounded-xl border-[#e8e6e3] p-5 flex flex-col gap-3">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-base lg:text-lg font-semibold text-[#17191c] font-k_font">
+              <p className="text-base lg:text-lg  text-[#17191c] ">
                 Revenue vs Orders
               </p>
-              <p className="text-sm text-[#777b86] font-normal mt-0.5">
+              <p className="text-sm text-[#777b86]  mt-0.5">
                 Nov 2025 – Apr 2026
               </p>
             </div>
             <button
               onClick={() => navigate(`/dashboard/store/${id}/analytics`)}
-              className="text-sm font-semibold text-[#5d2a1a] hover:underline font-k_font"
+              className="text-sm  text-[#5d2a1a] hover:underline "
             >
               See Details
             </button>
           </div>
           <div>
-            <p className="text-xs text-[#777b86] font-normal uppercase ">
+            <p className="text-xs text-[#777b86]  uppercase ">
               Total Revenue
             </p>
-            <p className="text-2xl font-bold text-[#17191c]">
+            <p className="text-2xl  text-[#17191c]">
               ₦1,248,500
             </p>
           </div>
@@ -110,12 +110,12 @@ export default function Growth() {
         {/* <div className="border border-[#e8e6e3] p-5 flex flex-col gap-3">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-base font-semibold text-[#17191c] font-k_font">Top Products</p>
-              <p className="text-sm text-[#777b86] font-normal mt-0.5">Best performing this period</p>
+              <p className="text-base  text-[#17191c] ">Top Products</p>
+              <p className="text-sm text-[#777b86]  mt-0.5">Best performing this period</p>
             </div>
             <button
               onClick={() => navigate(`/dashboard/store/${id}/products`)}
-              className="text-sm font-semibold text-[#5d2a1a] hover:underline font-k_font"
+              className="text-sm  text-[#5d2a1a] hover:underline "
             >
               See Details
             </button>
@@ -133,10 +133,10 @@ export default function Growth() {
                 className={`flex items-center justify-between py-2.5 ${i < arr.length - 1 ? "border-b border-[#f2f0ed]" : ""}`}
               >
                 <div>
-                  <p className="text-sm font-semibold text-[#17191c] font-k_font">{p.name}</p>
-                  <p className="text-sm text-[#777b86] font-normal">{p.category}</p>
+                  <p className="text-sm  text-[#17191c] ">{p.name}</p>
+                  <p className="text-sm text-[#777b86] ">{p.category}</p>
                 </div>
-                <span className="text-sm font-semibold text-[#17191c] font-k_font">{p.sales} sold</span>
+                <span className="text-sm  text-[#17191c] ">{p.sales} sold</span>
               </div>
             ))}
           </div>
@@ -146,16 +146,16 @@ export default function Growth() {
       {/* recent orders table */}
       <div className="border border-[#e8e6e3]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8e6e3]">
-          <p className="text-base font-semibold text-[#17191c] font-k_font">
+          <p className="text-base  text-[#17191c] ">
             Recent Transactions
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[#777b86] font-normal">
+            <span className="text-sm text-[#777b86] ">
               1 Apr – 30 Apr, 2026
             </span>
             <button
               onClick={() => navigate(`/dashboard/store/${id}/orders`)}
-              className="flex items-center gap-1.5 bg-[var(--dark-1)] text-white text-sm font-semibold px-3 py-1.5 hover:opacity-90 font-k_font"
+              className="flex items-center gap-1.5 bg-[var(--dark-1)] text-white text-sm  px-3 py-1.5 hover:opacity-90 "
             >
               View all
             </button>
@@ -176,7 +176,7 @@ export default function Growth() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-5 py-3 text-sm font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font"
+                    className="text-left px-5 py-3 text-sm  text-[#a3a6af] uppercase  whitespace-nowrap "
                   >
                     {h}
                   </th>
@@ -191,27 +191,27 @@ export default function Growth() {
                     key={order?.id}
                     className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors"
                   >
-                    <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
+                    <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
                       {order?.customer}
                     </td>
-                    <td className="px-5 py-3 text-[#777b86] font-normal whitespace-nowrap">
+                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
                       {order?.orderId}
                     </td>
-                    <td className="px-5 py-3 text-[#777b86] font-normal whitespace-nowrap">
+                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
                       {order?.date}
                     </td>
-                    <td className="px-5 py-3 text-[#777b86] font-normal whitespace-nowrap">
+                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
                       {order?.time}
                     </td>
-                    <td className="px-5 py-3 text-[#4c4c4c] font-normal whitespace-nowrap">
+                    <td className="px-5 py-3 text-[#4c4c4c]  whitespace-nowrap">
                       {order?.type}
                     </td>
-                    <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
+                    <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
                       {order?.amount}
                     </td>
                     <td className="px-5 py-3">
                       <span
-                        className={`text-sm font-semibold px-2 py-0.5 whitespace-nowrap ${cfg.className}`}
+                        className={`text-sm  px-2 py-0.5 whitespace-nowrap ${cfg.className}`}
                       >
                         {cfg.label}
                       </span>

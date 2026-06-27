@@ -47,14 +47,14 @@ export default function ResetPassword() {
               <Mail size={20} style={{ color: "var(--color-terracotta)" }} />
             </div>
             <h1
-              className="text-[32px] font-semibold leading-[1.1]"
+              className="text-[32px]  leading-[1.1]"
               style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
             >
               Check your inbox
             </h1>
             <p className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
               We sent a password reset link to{" "}
-              <span className="font-semibold" style={{ color: "var(--color-ink)" }}>
+              <span className="" style={{ color: "var(--color-ink)" }}>
                 {submittedEmail}
               </span>
               . The link expires in 15 minutes.
@@ -65,14 +65,14 @@ export default function ResetPassword() {
             className="p-4 flex flex-col gap-2"
             style={{ backgroundColor: "var(--color-fog)" }}
           >
-            <p className="text-xs font-semibold uppercase " style={{ color: "var(--color-muted-stone)" }}>
+            <p className="text-xs  uppercase " style={{ color: "var(--color-muted-stone)" }}>
               Didn't receive it?
             </p>
             <p className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
               Check your spam folder or{" "}
               <button
                 onClick={() => setSent(false)}
-                className="font-semibold underline underline-offset-4 transition-opacity hover:opacity-60"
+                className=" underline underline-offset-4 transition-opacity hover:opacity-60"
                 style={{ color: "var(--color-ink)" }}
               >
                 try a different email address
@@ -98,7 +98,7 @@ export default function ResetPassword() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8 w-[80%]">
         <div className="flex flex-col gap-3">
           <h1
-            className="text-[32px] font-semibold leading-[1.1]"
+            className="text-[32px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Reset your password

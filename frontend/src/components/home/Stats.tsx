@@ -79,13 +79,13 @@ export default function StatsScroll() {
                 style={{ backgroundColor: stat.color }}
               />
               <p
-                className="text-5xl lg:text-6xl font-bold leading-none"
+                className="text-5xl lg:text-6xl  leading-none"
                 style={{ color: stat.color }}
               >
                 {stat.value}
               </p>
               <p
-                className="text-xl font-semibold leading-snug"
+                className="text-xl  leading-snug"
                 style={{ color: stat.color }}
               >
                 {stat.label}

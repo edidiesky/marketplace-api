@@ -20,17 +20,17 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                     <tr>
                         {
                             tableheadList?.map((data, index) => {
-                                return <th className="text-sm py-6 bg-[#fafafa] px-3 text-[#969A9A] font-normal" key={index}>{data}</th>
+                                return <th className="text-sm py-6 bg-[#fafafa] px-3 text-[#969A9A] " key={index}>{data}</th>
                             })
                         }
                     </tr>
                 </thead>
-                <tbody className="text-sm font-normal">
+                <tbody className="text-sm ">
                     {
                         tabledata?.map((data?: any, _?: any) => {
                             return <tr className="px-4 hover:bg-[#eee] border-b cursor-pointer text-start py-6" key={data?.id}>
 
-                                <td className=" font-normal py-6 text-center">
+                                <td className="  py-6 text-center">
                                     {/* <img
                                         src={data?.companyImage}
                                         width={50}
@@ -51,13 +51,13 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                                         {data?.applicantName}
                                     </div>
                                 </td>
-                                <td className=" font-normal py-6 text-center">
+                                <td className="  py-6 text-center">
                                     {data?.jobtitle}
                                 </td>
-                                <td className=" font-normal py-6 text-center">
+                                <td className="  py-6 text-center">
                                     {/* {data?.jobtitle} */} 24th October
                                 </td>
-                                {/* <td className=" font-normal py-6 text-center">24th Ocotber 2024</td> */}
+                                {/* <td className="  py-6 text-center">24th Ocotber 2024</td> */}
 
                                 <td className="py-6 text-center">
                                     {data?.ApplicationStatus === "HIRED" ? (
@@ -71,12 +71,12 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                                     ) :
 
                                         (
-                                            <span className="py-2 font-normal px-4 rounded-md bg-[#deddff] text-[#3e3aff] text-xs family1 danger text-center">
+                                            <span className="py-2  px-4 rounded-md bg-[#deddff] text-[#3e3aff] text-xs family1 danger text-center">
                                                 {data?.ApplicationStatus}
                                             </span>
                                         )}
                                 </td>
-                                <td className=" font-normal py-6 text-center">
+                                <td className="  py-6 text-center">
                                     <div className="w-full flex items-center  justify-center">
                                         <div className="w-10 h-10 rounded-full hover:bg-[#deddff] flex justify-center items-center">
                                             <BsTrash color={"#c31212"} />
@@ -102,17 +102,17 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                 <tr>
                     {
                         tableheadList?.map((data, index) => {
-                            return <th className="text-sm py-8 bg-[#fafafa] px-3 text-[#969A9A] font-normal" key={index}>{data}</th>
+                            return <th className="text-sm py-8 bg-[#fafafa] px-3 text-[#969A9A] " key={index}>{data}</th>
                         })
                     }
                 </tr>
             </thead>
-            <tbody className="text-sm font-normal">
+            <tbody className="text-sm ">
                 {
                     tabledata?.map((data?: any, _?: any) => {
                         return <tr className="px-4 border-b hover:bg-[#eee] cursor-pointer text-start py-6" key={data?.id}>
 
-                            <td className=" font-normal py-6 flex items-center justify-center text-center">
+                            <td className="  py-6 flex items-center justify-center text-center">
                                 <img
                                     src={data?.companyImage}
                                     width={50}
@@ -122,12 +122,12 @@ const TableCard = ({ tabledata, type, tableheadList }: {
                             </td>
                             <td className="text-base family2 py-6 text-center">{data?.company}
                             </td>
-                            <td className=" font-normal py-6 text-center">   {data?.jobtitle} </td>
+                            <td className="  py-6 text-center">   {data?.jobtitle} </td>
 
                             <td className="py-6 text-center">
                                 24th October 2024
                             </td>
-                            <td className=" font-normal py-6 text-center">
+                            <td className="  py-6 text-center">
                                 <Link href="user/applied-jobs" className="shadows text-xs px-3 py-3 border rounded-md bg-[#fafafa]">
                                     View Application
                                 </Link>

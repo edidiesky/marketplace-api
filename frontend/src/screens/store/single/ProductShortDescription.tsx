@@ -34,33 +34,33 @@ export default function ProductShortDescription({
       <div className="w-full flex flex-col gap-1">
         <div className="w-full flex flex-col gap-2  border-b py-4 border-dotted">
           <h3 className="text-3xl">{data?.name}</h3>
-          <h5 className="text-base space-y-2 font-k_font">
+          <h5 className="text-base space-y-2 ">
             <span className="block">SKU 028 
               {/* {data?.brand} */}
             </span>
             <span className="block">Be the first to leave a review.</span>
           </h5>
-          <h3 className="text-3xl lg:text-4xl font-work_font font-bold">${data?.price}</h3>
+          <h3 className="text-3xl lg:text-4xl ">${data?.price}</h3>
         </div>
 
         <div className="w-full flex flex-col gap-6  border-b py-4 border-dotted">
           {/* timer */}
           <div className="w-full bg-[#FFCE78] p-6 flex flex-col items-center gap-3">
-            <span className="text-base font-work_font font-semibold">
+            <span className="text-base ">
               Flash Sale
             </span>
             <div className="flex items-center gap-4">
               {/* Days */}
-              <span className="text-base font-work_font">0 0 Days</span>
-              <span className="text-base font-work_font">0 0 HRS</span>
-              <span className="text-base font-work_font">0 0 Min</span>
-              <span className="text-base font-work_font">0 0 Sec</span>
+              <span className="text-base ">0 0 Days</span>
+              <span className="text-base ">0 0 HRS</span>
+              <span className="text-base ">0 0 Min</span>
+              <span className="text-base ">0 0 Sec</span>
             </div>
           </div>
 
           {/* color */}
           <div className="w-full flex items-center gap-8">
-            <h3 className="text-lg font-work_font font-normal">Color</h3>
+            <h3 className="text-lg ">Color</h3>
             <div className="flex items-center  gap-4">
               {data?.colors?.map((data, index) => {
                 return (
@@ -79,13 +79,13 @@ export default function ProductShortDescription({
 
           {/* size */}
           <div className="w-full flex items-center gap-8">
-            <h3 className="text-lg font-work_font font-normal">Size</h3>
+            <h3 className="text-lg ">Size</h3>
             <div className="flex items-center  gap-4">
               {data?.size?.map((data, index) => {
                 return (
                   <div
                     key={index}
-                    className="w-16 cursor-pointer hover:bg-[#eee] font-work_font flex items-center justify-center h-12 rounded-md text-base p-1 border"
+                    className="w-16 cursor-pointer hover:bg-[#eee] flex items-center justify-center h-12 rounded-md text-base p-1 border"
                   >
                     {data?.value}
                   </div>
@@ -96,7 +96,7 @@ export default function ProductShortDescription({
 
           {/* cart button */}
           <div className="w-full py-3 flex items-center gap-4">
-            <div className="w-[180px] h-[45px] flex items-center font-work_font border rounded-full overflow-hidden">
+            <div className="w-[180px] h-[45px] flex items-center border rounded-full overflow-hidden">
               <div className="w-[50px] border-r h-full flex items-center justify-center text-sm">
                 <LuPlus />
               </div>
@@ -107,14 +107,14 @@ export default function ProductShortDescription({
                 <LuMinus />
               </div>
             </div>
-            <div className="btn btn_small flex-1 text-base font-work_font text-white">
+            <div className="btn btn_small flex-1 text-base text-white">
               <span className="p-1">Add to Cart</span>
             </div>
           </div>
         </div>
         {/* description */}
         <div className="w-full flex flex-col gap-2  border-b py-4 border-dotted">
-          <p className="text-base font-k_font">
+          <p className="text-base ">
            {ReactHtmlParser(sanitizedValue)}
           </p>
           <div className="flex items-center justify-end">

@@ -52,7 +52,7 @@ export default function ProductReview({ productId }: { productId: string }) {
 
   return (
     <div className="w-full py-12 border-t border-[#f0f0f0] flex flex-col gap-8">
-      <h3 className="text-xl font-semibold text-[#171717]">
+      <h3 className="text-xl  text-[#171717]">
         Customer Reviews ({reviews.length})
       </h3>
 
@@ -73,7 +73,7 @@ export default function ProductReview({ productId }: { productId: string }) {
               <p className="text-sm text-[#444] leading-relaxed">{review.comment}</p>
               {review.sellerResponse && (
                 <div className="bg-[#f6f6f6] px-4 py-3 text-sm text-[#666] border-l-2 border-[#171717]">
-                  <span className="text-xs font-semibold text-[#171717] block mb-1">Seller response</span>
+                  <span className="text-xs  text-[#171717] block mb-1">Seller response</span>
                   {review.sellerResponse}
                 </div>
               )}
@@ -84,13 +84,13 @@ export default function ProductReview({ productId }: { productId: string }) {
 
       {currentUser && (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-lg">
-          <h4 className="text-base font-semibold text-[#171717]">Write a review</h4>
+          <h4 className="text-base  text-[#171717]">Write a review</h4>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-[#171717]">Your rating</span>
+            <span className="text-xs  text-[#171717]">Your rating</span>
             <StarRating value={rating} onChange={setRating} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-[#171717]">Your review</span>
+            <span className="text-xs  text-[#171717]">Your review</span>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -102,7 +102,7 @@ export default function ProductReview({ productId }: { productId: string }) {
           <button
             type="submit"
             disabled={submitting || !comment.trim()}
-            className="h-11 bg-[#171717] text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 w-fit px-6"
+            className="h-11 bg-[#171717] text-white text-sm  hover:opacity-90 transition-opacity disabled:opacity-50 w-fit px-6"
           >
             {submitting ? "Submitting..." : "Submit review"}
           </button>

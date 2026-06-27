@@ -82,7 +82,7 @@ export default function Checkout() {
           {steps.map((s, i) => (
             <div key={s.key} className="flex items-center gap-2">
               <div className={`flex items-center gap-2 text-sm font-medium ${step === s.key ? "text-[#171717]" : "text-[#aaa]"}`}>
-                <div className={`w-6 h-6 flex items-center justify-center text-xs font-bold ${step === s.key ? "bg-[#171717] text-white" : "bg-[#e5e5e5] text-[#aaa]"}`}>
+                <div className={`w-6 h-6 flex items-center justify-center text-xs  ${step === s.key ? "bg-[#171717] text-white" : "bg-[#e5e5e5] text-[#aaa]"}`}>
                   {i + 1}
                 </div>
                 {s.label}
@@ -96,7 +96,7 @@ export default function Checkout() {
           <form onSubmit={handleSubmit(handleShipping)} className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
               <MapPin size={20} className="text-[#171717]" />
-              <h1 className="text-2xl font-bold text-[#171717]">Shipping Address</h1>
+              <h1 className="text-2xl  text-[#171717]">Shipping Address</h1>
             </div>
 
             <div className="bg-white border border-black/5 p-6 flex flex-col gap-4">
@@ -119,7 +119,7 @@ export default function Checkout() {
             <button
               type="submit"
               disabled={checkingOut || addingShipping}
-              className="w-full h-12 bg-[#171717] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full h-12 bg-[#171717] text-white text-sm  flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {checkingOut || addingShipping ? "Processing..." : "Continue to Payment"}
               <ArrowRight size={16} />
@@ -137,7 +137,7 @@ export default function Checkout() {
 
         {step === "payment" && (
           <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-bold text-[#171717]">Choose Payment Method</h1>
+            <h1 className="text-2xl  text-[#171717]">Choose Payment Method</h1>
 
             <div className="flex flex-col gap-3">
               {(["paystack", "flutterwave"] as const).map((g) => (
@@ -149,7 +149,7 @@ export default function Checkout() {
                     gateway === g ? "border-[#171717] bg-white" : "border-black/5 bg-white hover:border-black/20"
                   }`}
                 >
-                  <p className="text-sm font-semibold capitalize text-[#171717]">{g}</p>
+                  <p className="text-sm  capitalize text-[#171717]">{g}</p>
                   <p className="text-xs text-[#666] mt-0.5">
                     {g === "paystack"
                       ? "Pay with card, bank transfer, or USSD"
@@ -162,7 +162,7 @@ export default function Checkout() {
             <button
               onClick={handlePayment}
               disabled={paying}
-              className="w-full h-12 bg-[#171717] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full h-12 bg-[#171717] text-white text-sm  flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {paying ? "Redirecting..." : `Pay with ${gateway}`}
               <ArrowRight size={16} />

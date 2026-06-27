@@ -62,8 +62,8 @@ export default function Payouts() {
     <div className="w-full p-4 py-8 lg:p-12 mx-auto">
       <div className="w-full flex flex-col gap-8">
         <div>
-          <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">Payouts</h4>
-          <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[420px]">
+          <h4 className="text-xl lg:text-2xl text-[#17191c]">Payouts</h4>
+          <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
             Request a payout and track the status of past requests.
           </p>
         </div>
@@ -71,50 +71,50 @@ export default function Payouts() {
         {/* request form */}
         <div className="border border-[#e8e6e3]">
           <div className="px-6 py-4 border-b border-[#e8e6e3]">
-            <p className="text-lg font-semibold text-[#17191c]">Request a payout</p>
-            <p className="text-sm text-[#777b86] font-k_font mt-0.5">
+            <p className="text-lg  text-[#17191c]">Request a payout</p>
+            <p className="text-sm text-[#777b86] mt-0.5">
               Enter your bank details and the amount you want to withdraw.
             </p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-[#17191c]">Amount (₦)</span>
+                <span className="text-xs  text-[#17191c]">Amount (₦)</span>
                 <Input
                   type="number"
                   {...register("amount", { valueAsNumber: true })}
                   placeholder="e.g. 50000"
-                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
+                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm outline-none focus:border-[#17191c] transition-colors"
                 />
                 {errors.amount && (
-                  <span className="text-xs text-red-600 font-k_font">{errors.amount.message}</span>
+                  <span className="text-xs text-red-600 ">{errors.amount.message}</span>
                 )}
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-[#17191c] font-k_font">Bank code</span>
+                <span className="text-xs  text-[#17191c] ">Bank code</span>
                 <Input
                   type="text"
                   {...register("bankCode")}
                   placeholder="e.g. 044"
-                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
+                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm outline-none focus:border-[#17191c] transition-colors"
                 />
                 {errors.bankCode && (
-                  <span className="text-xs text-red-600 font-k_font">{errors.bankCode.message}</span>
+                  <span className="text-xs text-red-600 ">{errors.bankCode.message}</span>
                 )}
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-[#17191c] font-k_font">Account number</span>
+                <span className="text-xs  text-[#17191c] ">Account number</span>
                 <Input
                   type="text"
                   {...register("accountNumber")}
                   placeholder="10-digit account number"
                   maxLength={10}
-                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
+                  className="h-[42px] border border-[#e8e6e3] px-4 text-sm outline-none focus:border-[#17191c] transition-colors"
                 />
                 {errors.accountNumber && (
-                  <span className="text-xs text-red-600 font-k_font">{errors.accountNumber.message}</span>
+                  <span className="text-xs text-red-600 ">{errors.accountNumber.message}</span>
                 )}
               </label>
             </div>
@@ -123,7 +123,7 @@ export default function Payouts() {
               <button
                 type="submit"
                 disabled={isRequesting}
-                className="bg-[var(--dark-1)] text-white text-sm font-semibold px-6 py-2.5 hover:opacity-90 disabled:opacity-50 font-k_font"
+                className="bg-[var(--dark-1)] text-white text-sm  px-6 py-2.5 hover:opacity-90 disabled:opacity-50 "
               >
                 {isRequesting ? "Submitting..." : "Request payout"}
               </button>
@@ -134,13 +134,13 @@ export default function Payouts() {
         {/* history table */}
         <div className="border border-[#e8e6e3] overflow-x-auto">
           <div className="px-5 py-4 border-b border-[#e8e6e3]">
-            <p className="text-lg font-semibold text-[#17191c] font-k_font">Payout history</p>
+            <p className="text-lg  text-[#17191c] ">Payout history</p>
           </div>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#e8e6e3]">
                 {["ID", "Amount", "Status", "Requested"].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font">
+                  <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">
                     {h}
                   </th>
                 ))}
@@ -149,7 +149,7 @@ export default function Payouts() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">
+                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">
                     Loading payouts...
                   </td>
                 </tr>
@@ -158,14 +158,14 @@ export default function Payouts() {
                   const cfg = statusConfig[payout.status];
                   return (
                     <tr key={payout._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                      <td className="px-5 py-3 text-xs text-[#a3a6af] font-k_font">{payout._id}</td>
-                      <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
+                      <td className="px-5 py-3 text-xs text-[#a3a6af] ">{payout._id}</td>
+                      <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
                         ₦{payout.amount.toLocaleString("en-NG")}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`text-xs font-semibold px-2 py-0.5 ${cfg.className}`}>{cfg.label}</span>
+                        <span className={`text-xs  px-2 py-0.5 ${cfg.className}`}>{cfg.label}</span>
                       </td>
-                      <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">
+                      <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                         {new Date(payout.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                       </td>
                     </tr>
@@ -173,7 +173,7 @@ export default function Payouts() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">
+                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">
                     No payout requests yet
                   </td>
                 </tr>
@@ -183,13 +183,13 @@ export default function Payouts() {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#a3a6af] font-k_font">Page {currentPage} of {totalPages}</span>
+          <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages}</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
             ))}
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Next</button>
           </div>
         </div>
 

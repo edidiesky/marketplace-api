@@ -5,11 +5,10 @@ import { useGetAllStoreProductsQuery } from "@/redux/services/productApi";
 import { openProductModal } from "@/redux/slices/modalSlice";
 import { Product } from "@/types/api";
 import { AnimatePresence } from "framer-motion";
-import { GoPlus } from "react-icons/go";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
-export default function Product() {
+export default function Products() {
   const { id } = useParams();
   const dispatch = useDispatch();
 
@@ -39,18 +38,18 @@ const products: Product[] = storeProduct?.data?.products ?? [];
       <div className="w-full p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-center justify-between gap-4">
-            <h4 className="text-xl lg:text-2xl font-selleasy_bold flex-1">
+            <h4 className="text-xl lg:text-2xl flex-1">
               Products Management
-              <span className="block text-sm font-k_font font-normal pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
+              <span className="block text-sm  pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
                 Manage your store products, update listings, and track inventory.
               </span>
             </h4>
             <button
               onClick={() => dispatch(openProductModal(null))}
               style={{ transition: "all .2s" }}
-              className="bg-[var(--dark-1)] flex items-center gap-2 hover:opacity-90 text-white text-sm p-3 px-4 font-dashboard_regular"
+              className="bg-[var(--dark-1)] flex rounded-full items-center gap-2 hover:opacity-90 text-white text-sm p-3 px-4"
             >
-              <GoPlus fontSize="24px" /> Add Product
+               Add Product
             </button>
           </div>
 

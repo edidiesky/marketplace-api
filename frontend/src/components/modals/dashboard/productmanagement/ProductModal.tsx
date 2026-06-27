@@ -127,7 +127,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
+      <span className="text-sm  text-[#17191c] font-dashboard_regular">
         Product Images
       </span>
 
@@ -217,7 +217,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
           <Upload size={20} className="text-[#a3a6af]" />
           <p className="text-sm text-[#777b86] font-selleasy_normal">
             Drag & drop or{" "}
-            <span className="text-[#17191c] font-semibold">browse</span>
+            <span className="text-[#17191c] ">browse</span>
           </p>
           <p className="text-xs text-[#a3a6af]">
             PNG, JPG, WebP — uploaded to Cloudinary CDN
@@ -262,14 +262,14 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-k_font">
+      <span className="text-sm  text-[#17191c] ">
         {label}
       </span>
       <div className="border-[#e8e6e3] py-2 flex flex-wrap gap-2 min-h-[45px] focus-within:border-[#17191c] transition-colors">
         {tags.map((tag, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f2f0ed] text-xs text-[#17191c] font-semibold"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f2f0ed] text-xs text-[#17191c] "
           >
             {tag}
             <button
@@ -294,7 +294,7 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
               remove(tags.length - 1);
           }}
           placeholder={tags.length === 0 ? placeholder : ""}
-          className="flex-1 min-w-[80px] text-sm outline-none bg-transparent font-k_font"
+          className="flex-1 min-w-[80px] text-sm outline-none bg-transparent "
         />
       </div>
       <p className="text-xs text-[#a3a6af]">Press Enter or comma to add</p>
@@ -327,7 +327,7 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-k_font">
+      <span className="text-sm  text-[#17191c] ">
         {label}
       </span>
 
@@ -363,14 +363,14 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
           value={draftName}
           onChange={(e) => setDraftName(e.target.value)}
           placeholder="Name (e.g. Red)"
-          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-k_font"
+          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors "
         />
         <Input
           type="text"
           value={draftValue}
           onChange={(e) => setDraftValue(e.target.value)}
           placeholder="Value (e.g. #FF0000)"
-          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-k_font"
+          className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors "
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -381,7 +381,7 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
         <button
           type="button"
           onClick={add}
-          className="h-[38px] px-3 border border-[#e8e6e3] text-sm text-[#17191c] hover:bg-[#f2f0ed] transition-colors font-k_font"
+          className="h-[38px] px-3 border border-[#e8e6e3] text-sm text-[#17191c] hover:bg-[#f2f0ed] transition-colors "
         >
           Add
         </button>
@@ -495,10 +495,10 @@ const ProductModal = () => {
         {/* header */}
         <div className="border-b flex items-center justify-between px-8 h-[72px] shrink-0">
           <div>
-            <h4 className="text-base font-semibold text-[#17191c] font-k_font">
+            <h4 className="text-base  text-[#17191c] ">
               {isEdit ? "Edit Product" : "Create Product"}
             </h4>
-            <p className="text-xs text-[#777b86] font-k_font mt-0.5">
+            <p className="text-xs text-[#777b86] mt-0.5">
               {isEdit
                 ? "Update your product details, pricing, and availability."
                 : "Fill in the details below to add a new product to your store."}
@@ -619,7 +619,7 @@ const ProductModal = () => {
 
                 {/* description */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
+                  <span className="text-sm  text-[#17191c] font-dashboard_regular">
                     Description
                   </span>
                   <div className="border border-[#e8e6e3] h-[220px] focus-within:border-[#17191c] transition-colors">
@@ -658,7 +658,7 @@ const ProductModal = () => {
         <div className="border-t h-[68px] flex items-center justify-between px-8 shrink-0">
           <button
             onClick={() => dispatch(closeProductModal())}
-            className="text-sm font-semibold text-[#4c4c4c] hover:text-[#17191c] transition-colors font-dashboard_regular"
+            className="text-sm  text-[#4c4c4c] hover:text-[#17191c] transition-colors font-dashboard_regular"
           >
             Cancel
           </button>

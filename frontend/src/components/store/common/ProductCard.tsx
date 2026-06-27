@@ -1,50 +1,62 @@
-
-import { Link } from "react-router-dom";
-import { ShoppingCart, Star } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import {  ShoppingCart } from "lucide-react";
 import type { Product } from "@/types/api";
+import { FiStar } from "react-icons/fi";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { id: storeId } = useParams<{ id: string }>();
+  const sid = product.storeId ?? product.store ?? storeId ?? "";
+  const pid = product.productId ?? product._id ?? "";
+  const originalPrice = Math.round(product.price * 1.15);
+
   return (
     <Link
-      to={`/store/${product.store}/product/${product._id}`}
-      className="w-full flex flex-col group rounded-xl border border-black/5 overflow-hidden hover:shadow-md transition-shadow bg-white"
+      to={`/store/${sid}/product/${pid}`}
+      className="w-full flex flex-col group gap-3"
     >
-      <div className="w-full aspect-square overflow-hidden bg-[#f4f3ee]">
+      <div
+        className="w-full h-[300px] rounded-xl overflow-hidden bg-[#f5f4f0]"
+        style={{ aspectRatio: "3/4" }}
+      >
         {product.images?.[0] ? (
           <img
             src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#aaa] text-sm">
-            No image
+          <div className="w-full h-full flex items-center justify-center">
+            <ShoppingCart size={24} className="text-[#ccc]" />
           </div>
         )}
       </div>
 
-      <div className="p-4 flex flex-col gap-2">
-        <h4 className="text-sm font-semibold text-[#171717] line-clamp-1">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-base text-[#222] leading-[1.4] line-clamp-2 ">
           {product.name}
-        </h4>
+        </h3>
 
-        <div className="flex items-center gap-1">
+        {/* stars */}
+        <div className="flex items-center gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star
+            <FiStar
               key={i}
-              size={12}
-              className="text-amber-400 fill-amber-400"
+              size={17}
+              className="fill-[#000] text-[#000]"
             />
           ))}
+          <span className="text-base text-[#999]">
+            (10)
+          </span>
         </div>
 
-        <div className="flex items-center justify-between mt-1">
-          <span className="text-base font-bold text-[#171717]">
-            ₦{product.price.toLocaleString()}
+        {/* price row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-lg bold">
+            NGN {product.price.toLocaleString("en-NG")}
           </span>
-          <span className="flex items-center gap-1 text-xs text-[#666] hover:text-[#171717] transition-colors">
-            <ShoppingCart size={14} />
-            Add to cart
+          <span className="text-base text-[#999] line-through">
+            ₦{originalPrice.toLocaleString("en-NG")} 
           </span>
         </div>
       </div>

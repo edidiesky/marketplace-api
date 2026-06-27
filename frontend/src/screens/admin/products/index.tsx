@@ -40,9 +40,9 @@ export default function Product() {
       <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
         <div className="w-full flex flex-col gap-12">
           <div className="w-full flex items-center justify-between gap-4">
-            <h4 className="text-3xl font-selleasy_bold flex-1">
+            <h4 className="text-3xl flex-1">
               Products Management
-              <span className="block text-sm w font-k_font font-normal pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
+              <span className="block text-sm w  pt-1 leading-[1.3] text-[#64645f] max-w-[450px]">
                 Make changes to your profile and to the entire app Enable
                 dropdown and tab-complete suggestions while typing a query
               </span>
@@ -51,7 +51,7 @@ export default function Product() {
               <button
                 onClick={() => dispatch(onProductModal(""))}
                 style={{ transition: "all .2s" }}
-                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm p-3 px-4 font-k_font"
+                className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm p-3 px-4 "
               >
                 <GoPlus fontSize={"24px"} /> Add Product
               </button>
@@ -60,9 +60,9 @@ export default function Product() {
 
           <div className="w-full">
             {/* <div className="w-full flex flex-col items-center justify-center  gap-4">
-              <h5 className="text-base lg:text-lg text-center font-k_font flex-1">
+              <h5 className="text-base lg:text-lg text-center flex-1">
                 No Product Listings
-                <span className="block text-xs font-k_font leading-[1.4] text-[#64645f] max-w-[450px]">
+                <span className="block text-xs leading-[1.4] text-[#64645f] max-w-[450px]">
                   Make changes to your profile and to the entire app Enable
                   dropdown and tab-complete suggestions while typing a query
                 </span>

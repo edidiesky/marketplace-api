@@ -8,7 +8,7 @@ export default function Banner({ title }: { title: string }) {
         alt=""
         className="w-full absolute z-10 h-full object-cover"
       />
-      <div className="w-full font-work_font text-xs text-white z-20 h-full relative flex items-center justify-center">
+      <div className="w-full text-xs text-white z-20 h-full relative flex items-center justify-center">
         {title}
       </div>
     </div>

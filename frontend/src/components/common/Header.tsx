@@ -34,7 +34,7 @@ export default function Navbar() {
       >
         <Link
           to="/"
-          className="text-base font-semibold tracking-tight"
+          className="text-base  tracking-tight"
           style={{ color: "var(--color-ink)" }}
         >
           Selleasi

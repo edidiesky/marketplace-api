@@ -24,7 +24,7 @@ export default function StepEmail({ onSubmit, isLoading, defaultEmail }: Props) 
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[32px] font-semibold leading-[1.1]"
+          className="text-[32px]  leading-[1.1]"
           style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
         >
           Let's get started

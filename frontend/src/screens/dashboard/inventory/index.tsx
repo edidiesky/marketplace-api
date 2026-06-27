@@ -57,10 +57,10 @@ export default function Inventory() {
           {/* page header */}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">
+              <h4 className="text-xl lg:text-2xl text-[#17191c]">
                 Inventory
               </h4>
-              <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[420px]">
+              <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
                 Track stock levels, set reorder points, and manage warehouse details.
               </p>
             </div>
@@ -82,10 +82,10 @@ export default function Inventory() {
             toolbar={
               lowStock.length > 0 ? (
                 <div className="border border-yellow-200 bg-yellow-50 px-5 py-4">
-                  <p className="text-sm font-semibold text-yellow-800 font-k_font">
+                  <p className="text-sm  text-yellow-800 ">
                     {lowStock.length} item{lowStock.length > 1 ? "s" : ""} at or below reorder point
                   </p>
-                  <p className="text-sm text-yellow-700 font-k_font mt-0.5">
+                  <p className="text-sm text-yellow-700 mt-0.5">
                     Review these items and restock to avoid running out.
                   </p>
                 </div>
@@ -101,27 +101,27 @@ export default function Inventory() {
                   key={item._id}
                   className="border-b py-4 border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors"
                 >
-                  <td className="px-5 py-3 text-sm text-[#a3a6af] font-k_font whitespace-nowrap">
+                  <td className="px-5 py-3 text-sm text-[#a3a6af] whitespace-nowrap">
                     {item.productId}
                   </td>
-                  <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font">
+                  <td className="px-5 py-3  text-[#17191c] ">
                     {item.quantityAvailable}
                   </td>
-                  <td className="px-5 py-3 text-[#4c4c4c] font-k_font">
+                  <td className="px-5 py-3 text-[#4c4c4c] ">
                     {item.quantityOnHand}
                   </td>
-                  <td className="px-5 py-3 text-[#4c4c4c] font-k_font">
+                  <td className="px-5 py-3 text-[#4c4c4c] ">
                     {item.quantityReserved}
                   </td>
-                  <td className="px-5 py-3 text-[#4c4c4c] font-k_font">
+                  <td className="px-5 py-3 text-[#4c4c4c] ">
                     {item.reorderPoint ?? "—"}
                   </td>
-                  <td className="px-5 py-3 text-[#4c4c4c] font-k_font whitespace-nowrap">
+                  <td className="px-5 py-3 text-[#4c4c4c] whitespace-nowrap">
                     {item.warehouseName ?? "—"}
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`text-sm font-semibold px-3 py-2 rounded-full whitespace-nowrap ${
+                      className={`text-sm  px-3 py-2 rounded-full whitespace-nowrap ${
                         isLow
                           ? "bg-yellow-50 text-yellow-800"
                           : "bg-green-50 text-green-700"
@@ -133,7 +133,7 @@ export default function Inventory() {
                   <td className="px-5 py-3">
                     <button
                       onClick={() => setModal({ open: true, item })}
-                      className="text-sm font-semibold text-[#5d2a1a] hover:underline font-k_font whitespace-nowrap"
+                      className="text-sm  text-[#5d2a1a] hover:underline whitespace-nowrap"
                     >
                       Edit
                     </button>

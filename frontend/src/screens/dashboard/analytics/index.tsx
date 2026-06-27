@@ -39,10 +39,10 @@ export default function Analytics() {
     <div className="w-full p-4 py-8 lg:p-12 mx-auto">
       <div className="w-full flex flex-col gap-8">
         <div>
-          <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">
+          <h4 className="text-xl lg:text-2xl text-[#17191c]">
             Analytics
           </h4>
-          <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[520px]">
+          <p className="text-sm text-[#64645f] mt-1 max-w-[520px]">
             Track performance across orders, revenue, products, customers,
             payments, and inventory. Use these insights to drive business and
             marketing decisions.
@@ -54,7 +54,7 @@ export default function Analytics() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-2.5 text-sm font-semibold font-k_font transition-colors border-b-2 -mb-px whitespace-nowrap ${
+              className={`px-5 py-2.5 text-sm  transition-colors border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === tab.key
                   ? "border-[#17191c] text-[#17191c]"
                   : "border-transparent text-[#777b86] hover:text-[#17191c]"

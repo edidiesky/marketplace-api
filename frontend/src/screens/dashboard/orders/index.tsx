@@ -65,12 +65,12 @@ export default function Orders() {
 
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">Orders</h4>
-              <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[420px]">
+              <h4 className="text-xl lg:text-2xl text-[#17191c]">Orders</h4>
+              <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
                 View and manage all store orders. Click a row to update fulfillment.
               </p>
             </div>
-            <span className="text-xs text-[#a3a6af] font-k_font mt-2">{total} total</span>
+            <span className="text-xs text-[#a3a6af] mt-2">{total} total</span>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -84,7 +84,7 @@ export default function Orders() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value as OrderStatus | ""); setCurrentPage(1); }}
-              className="h-[38px] px-3 border border-[#e8e6e3] text-sm font-k_font bg-white outline-none focus:border-[#17191c] transition-colors"
+              className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
             >
               <option value="">All statuses</option>
               {(Object.keys(orderStatusConfig) as OrderStatus[]).map((s) => (
@@ -98,14 +98,14 @@ export default function Orders() {
               <thead>
                 <tr className="border-b border-[#e8e6e3]">
                   {["Order ID", "Items", "Total", "Order Status", "Fulfillment", "Date", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">Loading orders...</td>
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">Loading orders...</td>
                   </tr>
                 ) : filtered.length > 0 ? (
                   filtered.map((order) => {
@@ -117,16 +117,16 @@ export default function Orders() {
                         className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors cursor-pointer"
                         onClick={() => setSelectedOrder(order)}
                       >
-                        <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap text-xs">{order._id}</td>
-                        <td className="px-5 py-3 text-[#4c4c4c] font-k_font">{order.items.length}</td>
-                        <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">₦{order.totalAmount.toLocaleString("en-NG")}</td>
+                        <td className="px-5 py-3  text-[#17191c] whitespace-nowrap text-xs">{order._id}</td>
+                        <td className="px-5 py-3 text-[#4c4c4c] ">{order.items.length}</td>
+                        <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">₦{order.totalAmount.toLocaleString("en-NG")}</td>
                         <td className="px-5 py-3">
-                          <span className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${osCfg.className}`}>{osCfg.label}</span>
+                          <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${osCfg.className}`}>{osCfg.label}</span>
                         </td>
                         <td className="px-5 py-3">
-                          <span className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${fsCfg.className}`}>{fsCfg.label}</span>
+                          <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${fsCfg.className}`}>{fsCfg.label}</span>
                         </td>
-                        <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">
+                        <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                           {new Date(order.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                         </td>
                         <td className="px-5 py-3 text-[#777b86]">
@@ -137,7 +137,7 @@ export default function Orders() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">
                       No orders found{search ? ` for "${search}"` : ""}
                     </td>
                   </tr>
@@ -147,13 +147,13 @@ export default function Orders() {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#a3a6af] font-k_font">Page {currentPage} of {totalPages} — {total} orders</span>
+            <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages} — {total} orders</span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+                <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
               ))}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Next</button>
             </div>
           </div>
 

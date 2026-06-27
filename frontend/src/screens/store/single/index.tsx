@@ -95,7 +95,7 @@ export default function StoreSingleProduct() {
 
           <div className="flex flex-col gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-[#171717]">{product.name}</h1>
+              <h1 className="text-3xl  text-[#171717]">{product.name}</h1>
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -106,13 +106,13 @@ export default function StoreSingleProduct() {
               </div>
             </div>
 
-            <p className="text-3xl font-bold text-[#171717]">₦{product.price.toLocaleString("en-NG")}</p>
+            <p className="text-3xl  text-[#171717]">₦{product.price.toLocaleString("en-NG")}</p>
 
             <p className="text-sm text-[#666] leading-relaxed">{product.description}</p>
 
             {product.colors?.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-semibold text-[#171717]">Colors</span>
+                <span className="text-xs  text-[#171717]">Colors</span>
                 <div className="flex items-center gap-2">
                   {product.colors.map((c, i) => (
                     <div
@@ -128,10 +128,10 @@ export default function StoreSingleProduct() {
 
             {product.size?.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-semibold text-[#171717]">Sizes</span>
+                <span className="text-xs  text-[#171717]">Sizes</span>
                 <div className="flex items-center gap-2">
                   {product.size.map((s, i) => (
-                    <div key={i} className="px-3 py-1.5 border border-black/10 text-xs font-semibold text-[#171717] cursor-pointer hover:bg-[#f4f3ee] transition-colors">
+                    <div key={i} className="px-3 py-1.5 border border-black/10 text-xs  text-[#171717] cursor-pointer hover:bg-[#f4f3ee] transition-colors">
                       {s.value}
                     </div>
                   ))}
@@ -154,7 +154,7 @@ export default function StoreSingleProduct() {
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-[#f4f3ee] transition-colors">
                   <Minus size={14} />
                 </button>
-                <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
+                <span className="w-10 text-center text-sm ">{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-[#f4f3ee] transition-colors">
                   <Plus size={14} />
                 </button>
@@ -162,7 +162,7 @@ export default function StoreSingleProduct() {
               <button
                 onClick={handleAddToCart}
                 disabled={addingToCart}
-                className="flex-1 h-12 bg-[#171717] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="flex-1 h-12 bg-[#171717] text-white text-sm  flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <ShoppingCart size={16} />
                 {addingToCart ? "Adding..." : "Add to Cart"}

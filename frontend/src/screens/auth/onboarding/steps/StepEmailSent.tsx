@@ -11,7 +11,7 @@ export default function StepEmailSent({ email, onResend, isResending }: Props) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[32px] font-semibold leading-[1.1]"
+          className="text-[32px]  leading-[1.1]"
           style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
         >
           Check your inbox
@@ -22,7 +22,7 @@ export default function StepEmailSent({ email, onResend, isResending }: Props) {
         >
           We sent a verification link to{" "}
           <span
-            className="font-semibold"
+            className=""
             style={{ color: "var(--color-ink)" }}
           >
             {email}
@@ -42,7 +42,7 @@ export default function StepEmailSent({ email, onResend, isResending }: Props) {
         </div>
         <div className="flex flex-col gap-1">
           <p
-            className="text-sm font-semibold"
+            className="text-sm "
             style={{ color: "var(--color-ink)" }}
           >
             Verification link sent

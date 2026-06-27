@@ -27,7 +27,7 @@ export default function Login() {
       >
         <div className="flex flex-col gap-3">
           <h1
-            className="text-[32px] font-semibold leading-[1.1]"
+            className="text-[32px]  leading-[1.1]"
             style={{ color: "var(--color-ink)", letterSpacing: "-0.66px" }}
           >
             Welcome back

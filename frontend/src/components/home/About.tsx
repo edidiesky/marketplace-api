@@ -7,7 +7,7 @@ const About = () => {
     <div className="w-full py-24">
       <div className="w-full bg-[var(--dark-1)] lg:min-h-[800px] py-20 pb-36 flex items-center justify-center">
         <div className="max-w-custom mx-auto flex lg:items-center lg:justify-center flex-col gap-8">
-          <h2 className="text-3xl lg:text-[50px] max-w-[1000px] lg:mx-auto lg:text-center text-white font-normal leading-[60px]">
+          <h2 className="text-3xl lg:text-[50px] max-w-[1000px] lg:mx-auto lg:text-center text-white  leading-[60px]">
             <span className="block text-base pb-8 uppercase">
               WHAT WE DO AT SELLEASI
             </span>
@@ -51,7 +51,7 @@ const About = () => {
           />
         </div>
         <div className="max-w-custom z-20 relative mx-auto flex lg:items-center lg:justify-center flex-col gap-8">
-          <h2 className="text-3xl lg:text-[50px] max-w-[1000px] lg:mx-auto lg:text-center text-dark font-normal leading-[60px]">
+          <h2 className="text-3xl lg:text-[50px] max-w-[1000px] lg:mx-auto lg:text-center text-dark  leading-[60px]">
             <span className="block text-xs pb-2 uppercase">
               NOW IT'S YOUR TURN
             </span>

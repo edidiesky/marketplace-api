@@ -50,7 +50,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[28px] font-semibold leading-[1.1]"
+          className="text-[28px]  leading-[1.1]"
           style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
         >
           Tell us about yourself
@@ -125,7 +125,7 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
                 </div>
                 <div className="text-left">
                   <p
-                    className="text-sm font-semibold"
+                    className="text-sm "
                     style={{ color: "var(--color-ink)" }}
                   >
                     {label}

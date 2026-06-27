@@ -44,19 +44,19 @@ export default function Payments() {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h4 className="text-xl lg:text-2xl font-selleasy_bold text-[#17191c]">Payments</h4>
-            <p className="text-sm font-k_font text-[#64645f] mt-1 max-w-[420px]">
+            <h4 className="text-xl lg:text-2xl text-[#17191c]">Payments</h4>
+            <p className="text-sm text-[#64645f] mt-1 max-w-[420px]">
               View all payment transactions across your store orders.
             </p>
           </div>
-          <span className="text-xs text-[#a3a6af] font-k_font mt-2">{totalCount} total</span>
+          <span className="text-xs text-[#a3a6af] mt-2">{totalCount} total</span>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value as PaymentStatus | ""); setCurrentPage(1); }}
-            className="h-[38px] px-3 border border-[#e8e6e3] text-sm font-k_font bg-white outline-none focus:border-[#17191c] transition-colors"
+            className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
           >
             <option value="">All statuses</option>
             {STATUS_OPTIONS.map((s) => (
@@ -67,7 +67,7 @@ export default function Payments() {
           <select
             value={gatewayFilter}
             onChange={(e) => { setGatewayFilter(e.target.value as PaymentGateway | ""); setCurrentPage(1); }}
-            className="h-[38px] px-3 border border-[#e8e6e3] text-sm font-k_font bg-white outline-none focus:border-[#17191c] transition-colors"
+            className="h-[38px] px-3 border border-[#e8e6e3] text-sm bg-white outline-none focus:border-[#17191c] transition-colors"
           >
             <option value="">All gateways</option>
             {GATEWAY_OPTIONS.map((g) => (
@@ -81,14 +81,14 @@ export default function Payments() {
             <thead>
               <tr className="border-b border-[#e8e6e3]">
                 {["Payment ID", "Order ID", "Amount", "Gateway", "Status", "Date"].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap ">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">Loading payments...</td>
+                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">Loading payments...</td>
                 </tr>
               ) : payments.length > 0 ? (
                 payments.map((payment) => {
@@ -96,18 +96,18 @@ export default function Payments() {
                   const gCfg = gatewayConfig[payment.gateway];
                   return (
                     <tr key={payment._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                      <td className="px-5 py-3 text-xs text-[#a3a6af] font-k_font whitespace-nowrap">{payment._id}</td>
-                      <td className="px-5 py-3 text-xs text-[#777b86] font-k_font whitespace-nowrap">{payment.orderId}</td>
-                      <td className="px-5 py-3 font-semibold text-[#17191c] font-k_font whitespace-nowrap">
+                      <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{payment._id}</td>
+                      <td className="px-5 py-3 text-xs text-[#777b86] whitespace-nowrap">{payment.orderId}</td>
+                      <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
                         ₦{payment.amount.toLocaleString("en-NG")}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${gCfg.className}`}>{gCfg.label}</span>
+                        <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${gCfg.className}`}>{gCfg.label}</span>
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`text-xs font-semibold px-2 py-0.5 whitespace-nowrap ${sCfg.className}`}>{sCfg.label}</span>
+                        <span className={`text-xs  px-2 py-0.5 whitespace-nowrap ${sCfg.className}`}>{sCfg.label}</span>
                       </td>
-                      <td className="px-5 py-3 text-[#777b86] font-k_font whitespace-nowrap">
+                      <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
                         {new Date(payment.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                       </td>
                     </tr>
@@ -115,7 +115,7 @@ export default function Payments() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] font-k_font">
+                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-[#a3a6af] ">
                     No payments found
                   </td>
                 </tr>
@@ -125,13 +125,13 @@ export default function Payments() {
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#a3a6af] font-k_font">Page {currentPage} of {totalPages} — {totalCount} payments</span>
+          <span className="text-xs text-[#a3a6af] ">Page {currentPage} of {totalPages} — {totalCount} payments</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Prev</button>
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Prev</button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => i + 1).map((page) => (
-              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs font-semibold border font-k_font ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
+              <button key={page} onClick={() => setCurrentPage(page)} className={`h-8 w-8 text-xs  border ${currentPage === page ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]" : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"}`}>{page}</button>
             ))}
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] font-k_font">Next</button>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] ">Next</button>
           </div>
         </div>
 

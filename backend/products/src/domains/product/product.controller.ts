@@ -99,6 +99,7 @@ export const DeleteProductHandler = asyncHandler(
   }
 );
 
+
 export const RestoreProductHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { organizationId } = (req as AuthenticatedRequest).user;

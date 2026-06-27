@@ -75,7 +75,7 @@ export function DataTable({
             if (currentPage !== 1) onPageChange(1);
           }}
           placeholder={searchPlaceholder}
-          className="w-48 lg:w-64 h-[38px] bg-white border border-[#e8e6e3] text-sm font-k_font outline-none focus:border-[#17191c] transition-colors"
+          className="w-48 lg:w-64 h-[38px] bg-white border border-[#e8e6e3] text-sm outline-none focus:border-[#17191c] transition-colors"
         />
       </div>
 
@@ -87,7 +87,7 @@ export function DataTable({
               {headers.map((h) => (
                 <th
                   key={h}
-                  className="px-5 py-3 text-left text-xs font-semibold text-[#a3a6af] uppercase  whitespace-nowrap font-k_font"
+                  className="px-5 py-3 text-left text-xs  text-[#a3a6af] uppercase  whitespace-nowrap "
                 >
                   {h}
                 </th>
@@ -101,7 +101,7 @@ export function DataTable({
               <tr>
                 <td
                   colSpan={colSpan}
-                  className="px-5 py-12 text-center text-sm text-[#a3a6af] font-k_font"
+                  className="px-5 py-12 text-center text-sm text-[#a3a6af] "
                 >
                   {search
                     ? `${emptyMessage} for "${search}"`
@@ -117,14 +117,14 @@ export function DataTable({
 
       {/* pagination */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-[#a3a6af] font-k_font">
+        <span className="text-xs text-[#a3a6af] ">
           Page {currentPage} of {totalPages} — {total} records
         </span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors font-k_font"
+            className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors "
           >
             Prev
           </button>
@@ -132,7 +132,7 @@ export function DataTable({
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`h-8 w-8 text-xs font-semibold border font-k_font transition-colors ${
+              className={`h-8 w-8 text-xs  border transition-colors ${
                 currentPage === page
                   ? "bg-[var(--dark-1)] text-white border-[var(--dark-1)]"
                   : "border-[#e8e6e3] text-[#4c4c4c] hover:bg-[#f2f0ed]"
@@ -144,7 +144,7 @@ export function DataTable({
           <button
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="h-8 px-3 text-xs font-semibold border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors font-k_font"
+            className="h-8 px-3 text-xs  border border-[#e8e6e3] text-[#4c4c4c] disabled:opacity-40 hover:bg-[#f2f0ed] transition-colors "
           >
             Next
           </button>

@@ -13,14 +13,14 @@ export default function ProductDescription({ product }: { product: Product }) {
     <div className="w-full py-12 border-t border-[#f0f0f0]">
       <div className="grid lg:grid-cols-2 gap-12">
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-semibold text-[#171717]">Description</h3>
-          <div className="text-sm text-[#666] leading-relaxed font-k_font">
+          <h3 className="text-xl  text-[#171717]">Description</h3>
+          <div className="text-sm text-[#666] leading-relaxed ">
             {ReactHtmlParser(sanitized)}
           </div>
         </div>
 
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-semibold text-[#171717]">Additional Information</h3>
+          <h3 className="text-xl  text-[#171717]">Additional Information</h3>
           <div className="flex flex-col gap-px">
             {[
               { label: "Category", value: product.category.join(", ") || "—" },
@@ -44,7 +44,7 @@ export default function ProductDescription({ product }: { product: Product }) {
               },
             ].map((row) => (
               <div key={row.label} className="grid grid-cols-2 gap-px">
-                <div className="bg-[#f6f6f6] px-4 py-3 text-sm font-semibold text-[#171717]">
+                <div className="bg-[#f6f6f6] px-4 py-3 text-sm  text-[#171717]">
                   {row.label}
                 </div>
                 <div className="bg-[#f6f6f6] px-4 py-3 text-sm text-[#666]">

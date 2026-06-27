@@ -23,7 +23,7 @@ export default function StoreHeader() {
       <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
         <Link
           to={`/store/${id}`}
-          className="text-lg font-bold tracking-tight text-[#171717]"
+          className="text-lg  tracking-tight text-[#171717]"
         >
           {store?.name ?? "Store"}
         </Link>
