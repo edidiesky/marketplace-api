@@ -16,31 +16,36 @@ import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import type { ProductColorOrSize } from "@/types/api";
-import { uploadImageToCloudinary, UploadProgress } from "@/redux/services/cloudinaryAPI";
+import {
+  uploadImageToCloudinary,
+  UploadProgress,
+} from "@/redux/services/cloudinaryAPI";
 
-//  types 
+//  types
 
 interface ProductFormState {
-  name:           string;
-  price:          number;
-  images:         string[];
+  name: string;
+  price: number;
+  images: string[];
   stockQuantity: number;
-  description:    string;
-  isArchive:      boolean;
-  colors:         ProductColorOrSize[];
-  size:           ProductColorOrSize[];
-  category:       string[];
+  description: string;
+  isArchive: boolean;
+  colors: ProductColorOrSize[];
+  size: ProductColorOrSize[];
+  category: string[];
 }
 const EMPTY_FORM: ProductFormState = {
-  name: "", price: 0, images: [],
+  name: "",
+  price: 0,
+  images: [],
   stockQuantity: 0,
-  description: "", isArchive: false,
-  colors: [], size: [], category: [],
+  description: "",
+  isArchive: false,
+  colors: [],
+  size: [],
+  category: [],
 };
 
- 
-//  skeleton 
- 
 function FieldSkeleton() {
   return (
     <div className="flex flex-col gap-2">
@@ -49,77 +54,96 @@ function FieldSkeleton() {
     </div>
   );
 }
- 
-//  image upload section (Cloudinary) 
- 
+
+//  image upload section (Cloudinary)
+
 interface FileUploadState {
-  file:     File;
-  preview:  string;
+  file: File;
+  preview: string;
   progress: number;
-  error:    string | null;
+  error: string | null;
 }
- 
+
 interface ImageSectionProps {
-  images:   string[];
-  onChange: (images: string[]) => void;
+  images: string[];
+  onChange: (updater: string[] | ((prev: string[]) => string[])) => void;
 }
- 
+
 function ImageSection({ images, onChange }: ImageSectionProps) {
-  const inputRef                              = useRef<HTMLInputElement>(null);
-  const [pending, setPending]                 = useState<FileUploadState[]>([]);
- 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<FileUploadState[]>([]);
+
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith("image/")) return;
       const preview = URL.createObjectURL(file);
-      const entry: FileUploadState = { file, preview, progress: 0, error: null };
- 
+      const entry: FileUploadState = {
+        file,
+        preview,
+        progress: 0,
+        error: null,
+      };
+
       setPending((prev) => [...prev, entry]);
- 
+
       uploadImageToCloudinary(file, (p: UploadProgress) => {
         setPending((prev) =>
-          prev.map((e) => e.preview === preview ? { ...e, progress: p.percent } : e)
+          prev.map((e) =>
+            e.preview === preview ? { ...e, progress: p.percent } : e,
+          ),
         );
       })
         .then((res) => {
-          onChange([...images, res.secure_url]);
+          // Use functional form so concurrent uploads don't overwrite each other.
+          // Each call gets the latest committed images array, not the stale closure value.
+          onChange((prev: string[]) => [...prev, res.secure_url]);
           setPending((prev) => prev.filter((e) => e.preview !== preview));
           URL.revokeObjectURL(preview);
         })
         .catch((err: Error) => {
           setPending((prev) =>
-            prev.map((e) => e.preview === preview ? { ...e, error: err.message } : e)
+            prev.map((e) =>
+              e.preview === preview ? { ...e, error: err.message } : e,
+            ),
           );
         });
     });
   };
- 
-  const removeUploaded = (index: number) => onChange(images.filter((_, i) => i !== index));
-  const removePending  = (preview: string) => {
+
+  const removeUploaded = (index: number) =>
+    onChange(images.filter((_, i) => i !== index));
+  const removePending = (preview: string) => {
     URL.revokeObjectURL(preview);
     setPending((prev) => prev.filter((e) => e.preview !== preview));
   };
- 
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     handleFiles(e.dataTransfer.files);
   };
- 
+
   const hasAny = images.length > 0 || pending.length > 0;
- 
+
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm font-semibold text-[#17191c] font-k_font">
+      <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
         Product Images
       </span>
- 
+
       {hasAny && (
         <div className="grid grid-cols-4 gap-3">
           {/* committed images */}
           {images.map((src, i) => (
-            <div key={src} className="relative group aspect-square border border-[#e8e6e3] overflow-hidden">
-              <img src={src} alt={`product-${i}`} className="w-full h-full object-cover" />
+            <div
+              key={src}
+              className="relative group aspect-square border border-[#e8e6e3] overflow-hidden"
+            >
+              <img
+                src={src}
+                alt={`product-${i}`}
+                className="w-full h-full object-cover"
+              />
               <button
                 type="button"
                 onClick={() => removeUploaded(i)}
@@ -130,15 +154,24 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
               </button>
             </div>
           ))}
- 
+
           {/* in-flight uploads */}
           {pending.map((p) => (
-            <div key={p.preview} className="relative aspect-square border border-[#e8e6e3] overflow-hidden">
-              <img src={p.preview} alt="uploading" className="w-full h-full object-cover opacity-60" />
+            <div
+              key={p.preview}
+              className="relative aspect-square border border-[#e8e6e3] overflow-hidden"
+            >
+              <img
+                src={p.preview}
+                alt="uploading"
+                className="w-full h-full object-cover opacity-60"
+              />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-white/60">
                 {p.error ? (
                   <>
-                    <span className="text-[10px] text-red-600 text-center px-1">{p.error}</span>
+                    <span className="text-[10px] text-red-600 text-center px-1">
+                      {p.error}
+                    </span>
                     <button
                       type="button"
                       onClick={() => removePending(p.preview)}
@@ -149,14 +182,19 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
                   </>
                 ) : (
                   <>
-                    <Loader2 size={16} className="animate-spin text-[#17191c]" />
-                    <span className="text-[10px] text-[#4c4c4c]">{p.progress}%</span>
+                    <Loader2
+                      size={16}
+                      className="animate-spin text-[#17191c]"
+                    />
+                    <span className="text-[10px] text-[#4c4c4c]">
+                      {p.progress}%
+                    </span>
                   </>
                 )}
               </div>
             </div>
           ))}
- 
+
           {/* add more tile */}
           <button
             type="button"
@@ -168,7 +206,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
           </button>
         </div>
       )}
- 
+
       {!hasAny && (
         <div
           onDrop={handleDrop}
@@ -177,13 +215,16 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
           className="border-2 border-dashed border-[#e8e6e3] h-[130px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#17191c] hover:bg-[#fafaf9] transition-colors"
         >
           <Upload size={20} className="text-[#a3a6af]" />
-          <p className="text-sm text-[#777b86] font-k_font">
-            Drag & drop or <span className="text-[#17191c] font-semibold">browse</span>
+          <p className="text-sm text-[#777b86] font-selleasy_normal">
+            Drag & drop or{" "}
+            <span className="text-[#17191c] font-semibold">browse</span>
           </p>
-          <p className="text-xs text-[#a3a6af]">PNG, JPG, WebP — uploaded to Cloudinary CDN</p>
+          <p className="text-xs text-[#a3a6af]">
+            PNG, JPG, WebP — uploaded to Cloudinary CDN
+          </p>
         </div>
       )}
- 
+
       <input
         ref={inputRef}
         type="file"
@@ -195,13 +236,14 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
     </div>
   );
 }
-//  tag Input (colors, sizes, categories) 
+
+//  tag Input (colors, sizes, categories)
 
 interface TagInputProps {
-  label:       string;
+  label: string;
   placeholder: string;
-  tags:        string[];
-  onChange:    (tags: string[]) => void;
+  tags: string[];
+  onChange: (tags: string[]) => void;
 }
 
 function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
@@ -215,11 +257,14 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
     setDraft("");
   };
 
-  const remove = (index: number) => onChange(tags.filter((_, i) => i !== index));
+  const remove = (index: number) =>
+    onChange(tags.filter((_, i) => i !== index));
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-k_font">{label}</span>
+      <span className="text-sm font-semibold text-[#17191c] font-k_font">
+        {label}
+      </span>
       <div className="border-[#e8e6e3] py-2 flex flex-wrap gap-2 min-h-[45px] focus-within:border-[#17191c] transition-colors">
         {tags.map((tag, i) => (
           <span
@@ -227,7 +272,11 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f2f0ed] text-xs text-[#17191c] font-semibold"
           >
             {tag}
-            <button type="button" onClick={() => remove(i)} aria-label={`Remove ${tag}`}>
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              aria-label={`Remove ${tag}`}
+            >
               <X size={10} />
             </button>
           </span>
@@ -237,8 +286,12 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
-            if (e.key === "Backspace" && !draft && tags.length > 0) remove(tags.length - 1);
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              add();
+            }
+            if (e.key === "Backspace" && !draft && tags.length > 0)
+              remove(tags.length - 1);
           }}
           placeholder={tags.length === 0 ? placeholder : ""}
           className="flex-1 min-w-[80px] text-sm outline-none bg-transparent font-k_font"
@@ -249,20 +302,19 @@ function TagInput({ label, placeholder, tags, onChange }: TagInputProps) {
   );
 }
 
-//  color / size pair Input 
-
+//  color / size pair Input
 interface PairTagInputProps {
-  label:    string;
-  pairs:    ProductColorOrSize[];
+  label: string;
+  pairs: ProductColorOrSize[];
   onChange: (pairs: ProductColorOrSize[]) => void;
 }
 
 function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
-  const [draftName,  setDraftName]  = useState("");
+  const [draftName, setDraftName] = useState("");
   const [draftValue, setDraftValue] = useState("");
 
   const add = () => {
-    const name  = draftName.trim();
+    const name = draftName.trim();
     const value = draftValue.trim();
     if (!name || !value) return;
     onChange([...pairs, { name, value }]);
@@ -270,11 +322,14 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
     setDraftValue("");
   };
 
-  const remove = (index: number) => onChange(pairs.filter((_, i) => i !== index));
+  const remove = (index: number) =>
+    onChange(pairs.filter((_, i) => i !== index));
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-[#17191c] font-k_font">{label}</span>
+      <span className="text-sm font-semibold text-[#17191c] font-k_font">
+        {label}
+      </span>
 
       {pairs.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -290,7 +345,11 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
                 />
               )}
               {p.name}
-              <button type="button" onClick={() => remove(i)} aria-label={`Remove ${p.name}`}>
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                aria-label={`Remove ${p.name}`}
+              >
                 <X size={10} />
               </button>
             </span>
@@ -312,7 +371,12 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
           onChange={(e) => setDraftValue(e.target.value)}
           placeholder="Value (e.g. #FF0000)"
           className="flex-1 h-[38px] border border-[#e8e6e3] px-3 text-sm outline-none focus:border-[#17191c] transition-colors font-k_font"
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
         />
         <button
           type="button"
@@ -326,7 +390,7 @@ function PairTagInput({ label, pairs, onChange }: PairTagInputProps) {
   );
 }
 
-//  quill modules (stable reference) 
+//  quill modules (stable reference)
 
 const QUILL_MODULES = {
   toolbar: [
@@ -338,25 +402,25 @@ const QUILL_MODULES = {
 };
 
 const SANITIZE_CONFIG = {
-  allowedTags:       ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
+  allowedTags: ["p", "b", "i", "u", "a", "ul", "ol", "li", "h1", "h2"],
   allowedAttributes: { a: ["href"] },
   disallowedTagsMode: "discard" as const,
 };
 
-//  modal 
+//  modal
 
 const ProductModal = () => {
   const [form, setForm] = useState<ProductFormState>(EMPTY_FORM);
 
   const { open: isOpen, id: productId } = useSelector(
-    (state: { modals: { product: { open: boolean; id: string | null } } }) => state.modals.product
+    (state: { modals: { product: { open: boolean; id: string | null } } }) =>
+      state.modals.product,
   );
   const { id: storeId } = useParams();
-  const dispatch        = useDispatch();
+  const dispatch = useDispatch();
 
-  const { data: productResponse, isLoading: loadingProduct } = useGetProductQuery(
-    productId!, { skip: !productId }
-  );
+  const { data: productResponse, isLoading: loadingProduct } =
+    useGetProductQuery(productId!, { skip: !productId });
   const productData = productResponse?.data;
 
   const [createProduct, { isLoading: creating }] = useCreateProductMutation();
@@ -366,23 +430,31 @@ const ProductModal = () => {
   useEffect(() => {
     if (productData) {
       setForm({
-        name:           productData.name           ?? "",
-        price:          productData.price           ?? 0,
-        images:         productData.images          ?? [],
-        stockQuantity: productData.availableStock  ?? 0,
-        description:    productData.description     ?? "",
-        isArchive:      productData.isArchive       ?? false,
-        category:       productData.category        ?? [],
-        colors:         (productData.colors ?? []).map((c: ProductColorOrSize) => ({ name: c.name ?? "", value: c.value ?? "" })),
-        size:           (productData.size   ?? []).map((s: ProductColorOrSize) => ({ name: s.name ?? "", value: s.value ?? "" })),
+        name: productData.name ?? "",
+        price: productData.price ?? 0,
+        images: productData.images ?? [],
+        stockQuantity: productData.availableStock ?? 0,
+        description: productData.description ?? "",
+        isArchive: productData.isArchive ?? false,
+        category: productData.category ?? [],
+        colors: (productData.colors ?? []).map((c: ProductColorOrSize) => ({
+          name: c.name ?? "",
+          value: c.value ?? "",
+        })),
+        size: (productData.size ?? []).map((s: ProductColorOrSize) => ({
+          name: s.name ?? "",
+          value: s.value ?? "",
+        })),
       });
     } else {
       setForm(EMPTY_FORM);
     }
   }, [productData]);
 
-  const setField = <K extends keyof ProductFormState>(key: K, value: ProductFormState[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const setField = <K extends keyof ProductFormState>(
+    key: K,
+    value: ProductFormState[K],
+  ) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleDescription = (html: string) =>
     setField("description", sanitizeHtml(html, SANITIZE_CONFIG));
@@ -393,13 +465,18 @@ const ProductModal = () => {
         const result = await updateProduct({ id: productId, ...form }).unwrap();
         toast.success(`${result.data?.name} updated successfully!`);
       } else {
-        const result = await createProduct({ storeid: storeId!, ...form }).unwrap();
+        const result = await createProduct({
+          storeid: storeId!,
+          ...form,
+        }).unwrap();
         toast.success(`${result.data?.name} created successfully!`);
       }
       setTimeout(() => dispatch(closeProductModal()), 300);
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
-      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) => toast.error(m));
+      (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) =>
+        toast.error(m),
+      );
     }
   };
 
@@ -448,11 +525,15 @@ const ProductModal = () => {
                 className="flex flex-col gap-6"
               >
                 <div className="grid grid-cols-2 gap-4">
-                  {Array.from({ length: 4 }).map((_, i) => <FieldSkeleton key={i} />)}
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <FieldSkeleton key={i} />
+                  ))}
                 </div>
                 <div className="h-[130px] bg-[#f2f0ed] rounded animate-pulse" />
                 <div className="grid grid-cols-3 gap-4">
-                  {Array.from({ length: 3 }).map((_, i) => <FieldSkeleton key={i} />)}
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <FieldSkeleton key={i} />
+                  ))}
                 </div>
                 <div className="h-[200px] bg-[#f2f0ed] rounded animate-pulse" />
               </motion.div>
@@ -464,7 +545,7 @@ const ProductModal = () => {
                 exit={{ opacity: 0 }}
                 className="flex flex-col gap-6"
               >
-                {/* titleprice */}
+                {/* title + price */}
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="Title"
@@ -489,19 +570,29 @@ const ProductModal = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="Available Stock"
-                    id="availableStock"
-                    name="availableStock"
+                    id="stockQuantity"
+                    name="stockQuantity"
                     type="number"
                     placeholder="0"
                     value={form.stockQuantity}
-                    onChange={(e) => setField("stockQuantity", Number(e.target.value))}
+                    onChange={(e) =>
+                      setField("stockQuantity", Number(e.target.value))
+                    }
                   />
                 </div>
 
                 {/* images */}
                 <ImageSection
                   images={form.images}
-                  onChange={(imgs) => setField("images", imgs)}
+                  onChange={(updater) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      images:
+                        typeof updater === "function"
+                          ? updater(prev.images)
+                          : updater,
+                    }));
+                  }}
                 />
 
                 {/* category */}
@@ -528,7 +619,7 @@ const ProductModal = () => {
 
                 {/* description */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-semibold text-[#17191c] font-k_font">
+                  <span className="text-sm font-semibold text-[#17191c] font-dashboard_regular">
                     Description
                   </span>
                   <div className="border border-[#e8e6e3] h-[220px] focus-within:border-[#17191c] transition-colors">
@@ -537,7 +628,7 @@ const ProductModal = () => {
                       onChange={handleDescription}
                       placeholder="Describe your product..."
                       modules={QUILL_MODULES}
-                      className="w-full h-[178px] text-sm font-k_font"
+                      className="w-full h-[178px] text-sm font-selleasy_normal"
                     />
                   </div>
                 </div>
@@ -550,9 +641,11 @@ const ProductModal = () => {
                     onClick={() => setField("isArchive", !form.isArchive)}
                     className={`w-10 h-5 rounded-full transition-colors ${form.isArchive ? "bg-[#17191c]" : "bg-[#e8e6e3]"}`}
                   >
-                    <div className={`w-4 h-4 bg-white rounded-full mt-0.5 shadow transition-transform ${form.isArchive ? "translate-x-5" : "translate-x-0.5"}`} />
+                    <div
+                      className={`w-4 h-4 bg-white rounded-full mt-0.5 shadow transition-transform ${form.isArchive ? "translate-x-5" : "translate-x-0.5"}`}
+                    />
                   </div>
-                  <span className="text-sm text-[#4c4c4c] font-k_font">
+                  <span className="text-sm text-[#4c4c4c] font-selleasy_normal">
                     Archive product (hidden from store)
                   </span>
                 </label>
@@ -565,18 +658,22 @@ const ProductModal = () => {
         <div className="border-t h-[68px] flex items-center justify-between px-8 shrink-0">
           <button
             onClick={() => dispatch(closeProductModal())}
-            className="text-sm font-semibold text-[#4c4c4c] hover:text-[#17191c] transition-colors font-k_font"
+            className="text-sm font-semibold text-[#4c4c4c] hover:text-[#17191c] transition-colors font-dashboard_regular"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isBusy}
-            className="bg-[var(--dark-1)] rounded-full text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity font-k_font"
+            className="bg-[var(--dark-1)] text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity font-dashboard_regular"
           >
             {isBusy
-              ? isEdit ? "Updating..." : "Saving..."
-              : isEdit ? "Update product" : "Save product"}
+              ? isEdit
+                ? "Updating..."
+                : "Saving..."
+              : isEdit
+                ? "Update product"
+                : "Save product"}
           </button>
         </div>
       </motion.div>

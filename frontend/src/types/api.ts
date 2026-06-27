@@ -16,11 +16,8 @@ export interface LoginPayload { email: string; password: string; }
 export interface VerifyOtpPayload { email: string; otp: string; }
 export interface RequestResetPayload { email: string; }
 
-// Backend field is `newPassword` — the service layer maps `password` -> `newPassword`
 export interface PasswordResetPayload { token: string; password: string; }
 
-// Backend changePasswordSchema requires email + newPassword
-// The service layer maps currentPassword out and sends email from auth state
 export interface ChangePasswordPayload { currentPassword: string; newPassword: string; email: string; }
 
 export interface AuthResponse {
@@ -121,7 +118,8 @@ export interface MyStoreResponse {
 export interface ProductColorOrSize { name: string; value: string; }
 
 export interface Product {
-  _id: string;
+  _id?: string;
+  productId?: string;
   name: string;
   description: string;
   price: number;

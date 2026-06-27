@@ -9,7 +9,7 @@ import { useDeleteProductMutation } from "@/redux/services/productApi";
 const DeleteProductModal = () => {
   const dispatch = useDispatch();
   const { open: isDeleteModal, id: deleteId } = useSelector(
-    (state: { modal: { delete: { open: boolean; id: string | null } } }) => state.modal.delete
+    (state: { modals: { delete: { open: boolean; id: string | null } } }) => state.modals.delete
   );
   const [deleteProduct, { isLoading }] = useDeleteProductMutation();
 
