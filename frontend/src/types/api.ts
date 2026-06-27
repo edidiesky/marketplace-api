@@ -40,6 +40,7 @@ export interface AuthResponse {
 //  User
 export interface User {
   userId:           string;
+  email?:           string;
   userType:
     | "seller:admin"
     | "seller:member"
@@ -54,7 +55,6 @@ export interface User {
   organizationType: string;
   name:             string;
   roles:            string[];
-  email?:           string;
   firstName?:       string;
   lastName?:        string;
   isEmailVerified?: boolean;
@@ -237,21 +237,27 @@ export interface ShippingAddress {
 }
 
 export interface Order {
-  _id: string;
-  userId: string;
-  storeId: string;
-  cartId: string;
-  items: CartItem[];
-  totalAmount: number;
-  orderStatus: OrderStatus;
+  _id?:              string;
+  orderId?:          string;
+  userId:            string;
+  sellerId?:         string;
+  storeId:           string;
+  cartId?:           string;
+  fullName?:         string;
+  quantity?:         number;
+  totalPrice?:       number;
+  totalAmount?:      number;
+  cartItems?:        CartItem[];
+  items?:            CartItem[];
+  orderStatus:       OrderStatus;
   fulfillmentStatus: FulfillmentStatus;
-  shipping?: ShippingAddress;
-  trackingNumber?: string;
-  courierName?: string;
-  receiptUrl?: string;
-  createdAt: string;
+  shipping?:         ShippingAddress;
+  trackingNumber?:   string;
+  courierName?:      string;
+  receiptUrl?:       string;
+  createdAt?:        string;
+  updatedAt?:        string;
 }
-
 export interface PaginatedOrders {
   success: boolean;
   data: {
@@ -301,7 +307,14 @@ export interface Payment {
   createdAt: string;
 }
 
-export interface InitializePaymentPayload { orderId: string; gateway: "paystack" | "flutterwave"; }
+export interface InitializePaymentPayload {
+  orderId:       string;
+  gateway:       "paystack" | "flutterwave";
+  customerEmail: string;
+  customerName:  string;
+  phone?:        string;
+  currency?:     string;
+}
 export interface RefundPayload { amount?: number; reason?: string; }
 export interface PaymentHistoryResponse {
   success: boolean;

@@ -141,7 +141,7 @@ button:disabled {
 tr,
 th,
 td {
-  font-family: "Medium", sans-serif;
+  font-family: "bold", sans-serif;
 }
 
 .text-dark {

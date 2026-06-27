@@ -9,18 +9,17 @@ import {
 import AuthLayout from "../shared/AuthLayout";
 import StepAccount from "./steps/StepAccount";
 import StepDetails from "./steps/StepDetails";
-import StepCreateStore from "./steps/StepCreateStore";
 import VerifyEmailInterstitial from "./steps/VerifyEmailInterstitial";
 import { useOnboarding } from "./hooks/useOnboarding";
 
-const STEP_LABELS = ["Create your account", "Your details", "Create your store"];
-const TOTAL_STEPS = 3;
+const STEP_LABELS = ["Create your account", "Your details"];
+const TOTAL_STEPS = 2;
 
 export default function Onboarding() {
-  const dispatch   = useDispatch();
-  const savedEmail = useSelector(selectOnboardingEmail);
-  const step       = useSelector(selectOnboardingStep);
-  const showVerify = useSelector(selectOnboardingShowVerify);
+  const dispatch     = useDispatch();
+  const savedEmail   = useSelector(selectOnboardingEmail);
+  const step         = useSelector(selectOnboardingStep);
+  const showVerify   = useSelector(selectOnboardingShowVerify);
   const pendingEmail = useSelector(selectOnboardingPendingEmail);
 
   const onNext = () => dispatch(setOnboardingStep(Math.min(step + 1, TOTAL_STEPS)));
@@ -30,11 +29,9 @@ export default function Onboarding() {
     handleAccount,
     handleVerified,
     handleDetails,
-    handleCreateStore,
     handleResend,
     isAccountLoading,
     registering,
-    creatingStore,
   } = useOnboarding(onNext);
 
   if (showVerify) {
@@ -61,12 +58,6 @@ export default function Onboarding() {
         <StepDetails
           onSubmit={handleDetails}
           isLoading={registering}
-        />
-      )}
-      {step === 3 && (
-        <StepCreateStore
-          onSubmit={handleCreateStore}
-          isLoading={creatingStore}
         />
       )}
       {step > 1 && (

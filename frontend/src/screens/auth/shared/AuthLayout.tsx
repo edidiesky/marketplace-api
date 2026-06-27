@@ -19,7 +19,7 @@ function DefaultLeftPanel() {
   return (
     <div className="flex flex-col gap-4">
       <h2
-        className="text-[28px]  leading-[1.1] text-[#17191c]"
+        className="text-[28px] font-semibold leading-[1.1] text-[#17191c]"
         style={{ letterSpacing: "-0.5px" }}
       >
         Start selling in minutes.
@@ -94,27 +94,26 @@ export default function AuthLayout({
     >
       {/* left panel */}
       <div
-        className="hidden lg:flex flex-col justify-between p-10"
-        style={{ backgroundColor: "#ffffff", borderColor: "#f0f0ee" }}
+        className="hidden lg:flex flex-col justify-between p-10 bg-[#FAF8F5]" 
       >
-        <Link to="/" className="text-[15px] " style={{ color: "#17191c" }}>
-          Selleasi
-        </Link>
-
         <div className="flex flex-col gap-6">
           {resolvedSteps ? (
             <>
               <div className="flex flex-col gap-1">
-                <h2
-                  className="text-[22px] "
-                  style={{ color: "#17191c", letterSpacing: "-0.3px" }}
-                >
-                  Create Account
-                </h2>
-                {remainingCount != null && remainingCount > 0 && (
-                  <p className="text-sm" style={{ color: "#6b7280" }}>
-                    {remainingCount} step{remainingCount > 1 ? "s" : ""} remaining
-                  </p>
+                {leftContent ?? (
+                  <>
+                    <h2
+                      className="text-[22px] font-semibold"
+                      style={{ color: "#17191c", letterSpacing: "-0.3px" }}
+                    >
+                      Create Account
+                    </h2>
+                    {remainingCount != null && remainingCount > 0 && (
+                      <p className="text-sm" style={{ color: "#6b7280" }}>
+                        {remainingCount} step{remainingCount > 1 ? "s" : ""} remaining
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
               <StepChecklist steps={resolvedSteps} />
@@ -125,14 +124,13 @@ export default function AuthLayout({
         </div>
 
         <p className="text-xs" style={{ color: "#9ca3af" }}>
-          © {new Date().getFullYear()} Edidiong
+          © {new Date().getFullYear()} Selleasi Technologies
         </p>
       </div>
 
       {/* right panel */}
       <div
-        className="flex items-center justify-center p-6 lg:p-12"
-        style={{ backgroundColor: "var(--color-canvas)" }}
+        className="flex items-center justify-center p-6 lg:p-12 bg-[#FAF8F5]"
       >
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -142,7 +140,7 @@ export default function AuthLayout({
         >
           <Link
             to="/"
-            className="text-base  mb-8 block lg:hidden"
+            className="text-base font-semibold mb-8 block lg:hidden"
             style={{ color: "#17191c" }}
           >
             Selleasi
