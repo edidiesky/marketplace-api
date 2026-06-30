@@ -80,3 +80,22 @@ export function publishCartCleared(event: CartClearedEvent): void {
     event.cartId
   );
 }
+
+
+export interface CartClearFailedEvent {
+  orderId:  string;
+  sagaId:   string;
+  storeId:  string;
+  reason:   string;
+  failedAt: string;
+}
+ 
+export function publishCartClearFailed(event: CartClearFailedEvent): void {
+  publish(
+    EXCHANGES.CART,
+    "cart.clear.failed",
+    event,
+    event.sagaId
+  );
+}
+ 
