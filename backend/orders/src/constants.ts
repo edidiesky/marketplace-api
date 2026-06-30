@@ -27,6 +27,8 @@ export const EXCHANGES = {
   CART:         "selleasi.cart",
 } as const;
 
+
+
 export const ROUTING_KEYS = {
   ORDER_CREATED:             "order.created",
   ORDER_COMPLETED:           "order.completed",
@@ -39,6 +41,10 @@ export const ROUTING_KEYS = {
   PAYMENT_INITIATED:         "payment.initiated",
   INVENTORY_RESERVATION_FAILED: "inventory.reservation.failed",
   CART_ITEM_OUT_OF_STOCK:    "cart.item.out_of_stock",
+  ORDER_PAYMENT_CONFIRMED: "order.payment.confirmed",
+  ORDER_STOCK_COMMIT_FAILED_TOPIC: "inventory.stock.committed.failed.topic",
+  INVENTORY_STOCK_COMMITTED_TOPIC: "inventory.stock.committed.topic",
+  CART_CLEAR_FAILED: "cart.clear.failed",
 } as const;
 
 export type OrderRoutingKey =
@@ -49,7 +55,11 @@ export const QUEUES = {
   PAYMENT_FAILED:               "selleasi.orders.payment.failed.queue",
   PAYMENT_INITIATED:            "selleasi.orders.payment.initiated.queue",
   INVENTORY_RESERVATION_FAILED: "selleasi.orders.inventory.reservation.failed.queue",
-} as const;
+  ORDER_STOCK_COMMIT_FAILED_TOPIC: "selleasi.order.stock.committed.failed.queue",
 
+  // NEW
+  INVENTORY_STOCK_COMMITTED_TOPIC: "selleasi.orders.inventory.stock.committed.queue",
+  CART_CLEAR_FAILED:                "selleasi.orders.cart.clear.failed.queue",
+} as const;
 export const CART_SERVICE_URL      = process.env.CART_SERVICE_URL      ?? "http://cart:4009";
 export const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL ?? "http://inventory:4008";
