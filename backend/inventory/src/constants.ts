@@ -1,4 +1,3 @@
-
 /**
  * @description INVENTORY TOPICS
  */
@@ -9,6 +8,7 @@ export const ORDER_PAYMENT_COMPLETED_TOPIC = "order.payment.completed.topic";
 export const ORDER_PAYMENT_FAILED_TOPIC = "order.payment.failed.topic";
 export const ORDER_RESERVATION_FAILED_TOPIC = "order.reservation.failed.topic";
 export const ORDER_STOCK_COMMITTED_TOPIC = "order.stock.committed.topic";
+export const ORDER_STOCK_COMMIT_FAILED_TOPIC = "inventory.stock.committed.failed.topic";
 
 export const INVENTORY_CONSUMER_TOPICS = [
   PRODUCT_ONBOARDING_COMPLETED_TOPIC,
@@ -59,6 +59,15 @@ export const ROUTING_KEYS = {
   INVENTORY_RESERVED:    "inventory.reserved",
   INVENTORY_RELEASED:    "inventory.released",
   INVENTORY_COMMITTED:   "inventory.committed",
+  ORDER_CREATED:             "order.created",
+  ORDER_COMPLETED:           "order.completed",
+  ORDER_FAILED:               "order.failed",
+  ORDER_ABANDONED:            "order.abandoned",
+  INVENTORY_PAYMENT_COMPLETED_TOPIC : "order.payment.completed.topic",
+  INVENTORY_STOCK_COMMIT_FAILED_TOPIC :"inventory.stock.committed.failed.topic",
+  ORDER_PAYMENT_CONFIRMED: "order.payment.confirmed",
+  INVENTORY_COMMIT_SUCCEEDED: "inventory.commit.succeeded",
+  INVENTORY_COMMIT_FAILED:    "inventory.commit.failed"
 } as const;
 
 export type InventoryRoutingKey =
@@ -66,6 +75,9 @@ export type InventoryRoutingKey =
 
 export const QUEUES = {
   PRODUCT_CREATED: "selleasi.inventory.product.created.queue",
+  ORDER_COMPLETED: "selleasi.order.payment.completed.queue",
+  ORDER_FAILED:    "selleasi.inventory.order.failed.queue",
+  ORDER_ABANDONED: "selleasi.inventory.order.abandoned.queue",
 } as const;
 
 export const LOW_STOCK_THRESHOLD_MULTIPLIER = 1;

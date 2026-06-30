@@ -2,6 +2,7 @@ import { context, propagation } from "@opentelemetry/api";
 import { getRabbitMQChannel }   from "./connection";
 import { EXCHANGES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
 import { requestContext }       from "../context/requestContext";
+import { ICartItem } from "./handlers/inventory.handlers";
 
 function publish(
   exchange:       string,
@@ -64,6 +65,7 @@ export interface InventoryLowEvent {
   reorderPoint:      number;
 }
 
+
 export function publishInventoryReserved(
   event: InventoryReservedEvent
 ): void {
@@ -74,6 +76,8 @@ export function publishInventoryReserved(
     event.sagaId
   );
 }
+
+
 
 export function publishInventoryReleased(
   event: InventoryReleasedEvent
@@ -105,3 +109,44 @@ export function publishInventoryLow(event: InventoryLowEvent): void {
     event.productId
   );
 }
+
+// ORDER PUBLISHED EVENTS
+
+export interface InventoryCommitSucceededEvent {
+  orderId: string;
+  sagaId:  string;
+  storeId: string;
+  userId:  string;
+}
+ 
+export interface InventoryCommitFailedEvent {
+  orderId: string;
+  sagaId:  string;
+  storeId: string;
+  userId:  string;
+  reason:  string;
+}
+
+ 
+export function publishInventoryCommitSucceeded(
+  event: InventoryCommitSucceededEvent
+): void {
+  publish(
+    EXCHANGES.ORDERS,
+    ROUTING_KEYS.INVENTORY_COMMIT_SUCCEEDED,
+    event,
+    event.sagaId
+  );
+}
+ 
+export function publishInventoryCommitFailed(
+  event: InventoryCommitFailedEvent
+): void {
+  publish(
+    EXCHANGES.ORDERS,
+    ROUTING_KEYS.INVENTORY_COMMIT_FAILED,
+    event,
+    event.sagaId
+  );
+}
+ 
