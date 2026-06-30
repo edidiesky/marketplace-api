@@ -403,6 +403,8 @@ export const paymentService = {
         amount:        payment.amount,
         storeId:       payment.storeId.toString(),
         paymentDate:   new Date().toISOString(),
+        customerEmail: payment.customerEmail,
+        customerName:  payment.customerName,
       },
       session
     );

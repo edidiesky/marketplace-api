@@ -249,7 +249,7 @@ export default function StoreSingleProduct() {
                   >
                     <Minus size={18} />
                   </button>
-                  <span className="w-12 text-center text-sm">{quantity}</span>
+                  <span className="w-12 text-center text-base bold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     className="w-12 h-12 flex items-center justify-center hover:bg-[#f4f3ee] transition-colors"

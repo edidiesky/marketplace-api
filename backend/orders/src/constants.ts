@@ -5,6 +5,7 @@ export const MAX_RETRIES   = 3;
 export const BASE_DELAY_MS = 1_000;
 export const TIMEOUT_MS    = 8_000;
 
+
 export function getJitter(): number {
   return Math.random() * 1_000;
 }

@@ -65,9 +65,10 @@ export const ROUTING_KEYS = {
   ORDER_ABANDONED:            "order.abandoned",
   INVENTORY_PAYMENT_COMPLETED_TOPIC : "order.payment.completed.topic",
   INVENTORY_STOCK_COMMIT_FAILED_TOPIC :"inventory.stock.committed.failed.topic",
+  INVENTORY_COMMIT_SUCCEEDED: "inventory.stock.committed.topic",
+  INVENTORY_COMMIT_FAILED: "inventory.stock.committed.failed.topic",
+
   ORDER_PAYMENT_CONFIRMED: "order.payment.confirmed",
-  INVENTORY_COMMIT_SUCCEEDED: "inventory.commit.succeeded",
-  INVENTORY_COMMIT_FAILED:    "inventory.commit.failed"
 } as const;
 
 export type InventoryRoutingKey =
@@ -78,6 +79,8 @@ export const QUEUES = {
   ORDER_COMPLETED: "selleasi.order.payment.completed.queue",
   ORDER_FAILED:    "selleasi.inventory.order.failed.queue",
   ORDER_ABANDONED: "selleasi.inventory.order.abandoned.queue",
+  ORDER_PAYMENT_CONFIRMED: "selleasi.order.payment.confirmed.queue",
+
 } as const;
 
 export const LOW_STOCK_THRESHOLD_MULTIPLIER = 1;

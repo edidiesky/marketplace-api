@@ -1,15 +1,15 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import {Store } from "lucide-react";
 import { storeSchema, type StoreFormData } from "../schema/onboarding.schema";
-
+import { useRef } from "react";
 interface Props {
   onSubmit: (data: StoreFormData) => Promise<void>;
   isLoading: boolean;
 }
 
 export default function StepCreateStore({ onSubmit, isLoading }: Props) {
+  const fieldsRef = useRef<HTMLDivElement>(null);
   const {
     register,
     handleSubmit,
@@ -27,28 +27,33 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
     );
   };
 
+  const shake = () => {
+    const el = fieldsRef.current;
+    if (!el) return;
+    el.classList.remove("shake");
+    el.getBoundingClientRect();
+    el.classList.add("shake");
+    el.addEventListener("animationend", () => el.classList.remove("shake"), {
+      once: true,
+    });
+  };
+
+  const onInvalid = () => shake();
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1
-          className="text-[28px]  leading-[1.1]"
-          style={{ color: "var(--color-ink)", letterSpacing: "-0.5px" }}
+          className="text-2xl lg:text-3xl leading-[1.1]"
         >
           Create your store
         </h1>
-        <p className="text-[15px]" style={{ color: "var(--color-muted-stone)" }}>
+        <p className="text-[15px] bold" style={{ color: "var(--color-muted-stone)" }}>
           You can always change these details later.
         </p>
       </div>
 
-      <div
-        className="w-12 h-12 rounded-[12px] flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-warm-mist)" }}
-      >
-        <Store size={20} style={{ color: "var(--color-terracotta)" }} />
-      </div>
-
-      <div className="flex flex-col gap-4">
+      <div ref={fieldsRef} className="flex flex-col gap-4">
         <Input
           label="Store name"
           placeholder="Kemi's Boutique"
@@ -72,7 +77,7 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
         </div>
          <div className="flex flex-col gap-1.5">
           <Input
-            label="store email"
+            label="Store email"
             placeholder="kemis-boutique"
             error={errors.name?.message}
             {...register("email")}
@@ -81,7 +86,6 @@ export default function StepCreateStore({ onSubmit, isLoading }: Props) {
         <div className="flex flex-col gap-1.5">
           <label className="text-sm " style={{ color: "var(--color-ink)" }}>
             Description{" "}
-            <span style={{ color: "var(--color-muted-stone)" }}>(optional)</span>
           </label>
           <textarea
             placeholder="Tell customers what you sell..."

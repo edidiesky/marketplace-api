@@ -26,7 +26,6 @@ FROM node:20-alpine AS runtime
 
 ARG SERVICE_PORT=4001
 ARG SERVICE_DIR
-# Set to "true" only for services that render PDFs via Puppeteer (orders).
 ARG INSTALL_CHROMIUM=false
 
 WORKDIR /app

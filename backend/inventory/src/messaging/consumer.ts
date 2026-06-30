@@ -14,12 +14,12 @@ import logger                     from "../utils/logger";
 import { randomUUID }             from "crypto";
 
 const tracer = trace.getTracer(SERVICE_NAME);
-
 const queueHandlerMap: Record<string, string> = {
-  [QUEUES.PRODUCT_CREATED]: ROUTING_KEYS.PRODUCT_CREATED,
-  [QUEUES.ORDER_COMPLETED]: ROUTING_KEYS.ORDER_COMPLETED,
-  [QUEUES.ORDER_FAILED]:    ROUTING_KEYS.ORDER_FAILED,
-  [QUEUES.ORDER_ABANDONED]: ROUTING_KEYS.ORDER_ABANDONED,
+  [QUEUES.PRODUCT_CREATED]:         ROUTING_KEYS.PRODUCT_CREATED,
+  [QUEUES.ORDER_COMPLETED]:         ROUTING_KEYS.ORDER_COMPLETED,
+  [QUEUES.ORDER_FAILED]:            ROUTING_KEYS.ORDER_FAILED,
+  [QUEUES.ORDER_ABANDONED]:         ROUTING_KEYS.ORDER_ABANDONED,
+  [QUEUES.ORDER_PAYMENT_CONFIRMED]: ROUTING_KEYS.ORDER_PAYMENT_CONFIRMED,
 };
 
 export async function connectInventoryConsumer(): Promise<void> {

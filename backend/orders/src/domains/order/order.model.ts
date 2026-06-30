@@ -1,151 +1,155 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export enum OrderStatus {
-  PENDING           = "pending",
-  RESERVING         = "reserving",
-  PAYMENT_PENDING   = "payment_pending",
+  PENDING = "pending",
+  RESERVING = "reserving",
+  PAYMENT_PENDING = "payment_pending",
   PAYMENT_INITIATED = "payment_initiated",
-  COMPLETED         = "completed",
-  FAILED            = "failed",
-  CANCELLED         = "cancelled",
-  OUT_OF_STOCK      = "out_of_stock",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
+  OUT_OF_STOCK = "out_of_stock",
 }
 
 export enum PaymentChannel {
-  PAYSTACK     = "PAYSTACK",
-  FLUTTERWAVE  = "FLUTTERWAVE",
-  INTERSWITCH  = "INTERSWITCH",
-  STRIPE       = "STRIPE",
+  PAYSTACK = "PAYSTACK",
+  FLUTTERWAVE = "FLUTTERWAVE",
+  INTERSWITCH = "INTERSWITCH",
+  STRIPE = "STRIPE",
 }
 
 export enum FulfillmentStatus {
-  UNFULFILLED      = "unfulfilled",
-  PREPARING        = "preparing",
-  DISPATCHED       = "dispatched",
-  IN_TRANSIT       = "in_transit",
+  UNFULFILLED = "unfulfilled",
+  PREPARING = "preparing",
+  DISPATCHED = "dispatched",
+  IN_TRANSIT = "in_transit",
   OUT_FOR_DELIVERY = "out_for_delivery",
-  DELIVERED        = "delivered",
-  DELIVERY_FAILED  = "delivery_failed",
-  RETURNED         = "returned",
+  DELIVERED = "delivered",
+  DELIVERY_FAILED = "delivery_failed",
+  RETURNED = "returned",
 }
 
 export interface ICartItem {
-  productId:          Types.ObjectId;
-  productTitle:       string;
+  productId: Types.ObjectId;
+  productTitle: string;
   productDescription?: string;
-  productPrice:       number;
-  productQuantity:    number;
-  productImage:       string[];
-  reservedAt?:        Date;
+  productPrice: number;
+  productQuantity: number;
+  productImage: string[];
+  reservedAt?: Date;
 }
 
 export interface IShippingAddress {
-  fullName:    string;
-  address:     string;
-  city:        string;
-  state:       string;
-  country:     string;
-  phone:       string;
+  fullName: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  phone: string;
   postalCode?: string;
 }
 
 export interface IOrder extends Document {
-  _id:                Types.ObjectId;
-  userId:             Types.ObjectId;
-  sellerId:           Types.ObjectId;
-  storeId:            Types.ObjectId;
-  cartId:             Types.ObjectId;
-  fullName:           string;
-  quantity:           number;
-  totalPrice:         number;
-  cartItems:          ICartItem[];
-  version:            number;
-  orderStatus:        OrderStatus;
-  fulfillmentStatus:  FulfillmentStatus;
-  paymentChannel?:    PaymentChannel;
-  transactionId?:     string;
-  failureReason?:     string;
-  paymentDate?:       Date;
-  requestId:          string;
-  sagaId:             string;
-  shipping?:          IShippingAddress;
-  trackingNumber?:    string;
-  courierName?:       string;
-  receiptUrl?:        string;
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  sellerId: Types.ObjectId;
+  storeId: Types.ObjectId;
+  cartId: Types.ObjectId;
+  fullName: string;
+  quantity: number;
+  totalPrice: number;
+  cartItems: ICartItem[];
+  version: number;
+  orderStatus: OrderStatus;
+  fulfillmentStatus: FulfillmentStatus;
+  paymentChannel?: PaymentChannel;
+  transactionId?: string;
+  failureReason?: string;
+  paymentDate?: Date;
+  requestId: string;
+  sagaId: string;
+  shipping?: IShippingAddress;
+  trackingNumber?: string;
+  courierName?: string;
+  receiptUrl?: string;
   receiptGeneratedAt?: Date;
-  createdAt:          Date;
-  updatedAt:          Date;
+  createdAt: Date;
+  updatedAt: Date;
+  customerEmail?: string;
+  customerName?: string;
 }
 
 const CartItemSchema = new Schema<ICartItem>(
   {
     productId: {
-      type:     Schema.Types.ObjectId,
-      ref:      "Product",
+      type: Schema.Types.ObjectId,
+      ref: "Product",
       required: true,
     },
-    productTitle:       { type: String, required: true },
+    productTitle: { type: String, required: true },
     productDescription: { type: String },
-    productImage:       { type: [String], required: true },
-    productPrice:       { type: Number, required: true },
-    productQuantity:    { type: Number, required: true, min: 1 },
-    reservedAt:         { type: Date },
+    productImage: { type: [String], required: true },
+    productPrice: { type: Number, required: true },
+    productQuantity: { type: Number, required: true, min: 1 },
+    reservedAt: { type: Date },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const ShippingAddressSchema = new Schema<IShippingAddress>(
   {
-    fullName:   { type: String },
-    address:    { type: String },
-    city:       { type: String },
-    state:      { type: String },
-    country:    { type: String },
-    phone:      { type: String },
+    fullName: { type: String },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    country: { type: String },
+    phone: { type: String },
     postalCode: { type: String },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const OrderSchema = new Schema<IOrder>(
   {
-    userId:   { type: Schema.Types.ObjectId, required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, required: true, index: true },
     sellerId: { type: Schema.Types.ObjectId, required: true, index: true },
-    storeId:  { type: Schema.Types.ObjectId, required: true, index: true },
-    cartId:   { type: Schema.Types.ObjectId, required: true, index: true },
-    fullName:   { type: String, required: true },
+    storeId: { type: Schema.Types.ObjectId, required: true, index: true },
+    cartId: { type: Schema.Types.ObjectId, required: true, index: true },
+    fullName: { type: String, required: true },
     totalPrice: { type: Number, min: 0, required: true },
-    quantity:   { type: Number, required: true, min: 0 },
-    cartItems:  [CartItemSchema],
-    version:    { type: Number, default: 1, min: 1 },
+    quantity: { type: Number, required: true, min: 0 },
+    cartItems: [CartItemSchema],
+    version: { type: Number, default: 1, min: 1 },
     orderStatus: {
-      type:    String,
-      enum:    Object.values(OrderStatus),
+      type: String,
+      enum: Object.values(OrderStatus),
       default: OrderStatus.PENDING,
-      index:   true,
+      index: true,
     },
     fulfillmentStatus: {
-      type:    String,
-      enum:    Object.values(FulfillmentStatus),
+      type: String,
+      enum: Object.values(FulfillmentStatus),
       default: FulfillmentStatus.UNFULFILLED,
-      index:   true,
+      index: true,
     },
     paymentChannel: {
       type: String,
       enum: Object.values(PaymentChannel),
     },
-    transactionId:     { type: String },
-    paymentDate:       { type: Date },
-    failureReason:     { type: String },
-    requestId:         { type: String, required: true, unique: true },
-    sagaId:            { type: String, required: true, unique: true },
-    shipping:          { type: ShippingAddressSchema },
-    trackingNumber:    { type: String },
-    courierName:       { type: String },
-    receiptUrl:        { type: String },
-    receiptGeneratedAt:{ type: Date },
+    transactionId: { type: String },
+    paymentDate: { type: Date },
+    failureReason: { type: String },
+    requestId: { type: String, required: true, unique: true },
+    sagaId: { type: String, required: true, unique: true },
+    shipping: { type: ShippingAddressSchema },
+    trackingNumber: { type: String },
+    courierName: { type: String },
+    receiptUrl: { type: String },
+    receiptGeneratedAt: { type: Date },
+    customerEmail: { type: String },
+    customerName: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OrderSchema.pre("save", function (next) {

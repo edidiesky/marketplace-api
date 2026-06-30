@@ -39,7 +39,10 @@ export interface PaymentCompletedEvent {
   amount:        number;
   storeId:       string;
   paymentDate:   string;
+  customerEmail: string;
+  customerName:  string;
 }
+ 
 
 export interface PaymentFailedEvent {
   orderId:  string;
@@ -63,9 +66,57 @@ export interface PaymentRefundedEvent {
   reason:            string;
 }
 
+export interface PaymentCompletedEvent {
+  orderId:       string;
+  transactionId: string;
+  sagaId:        string;
+  amount:        number;
+  storeId:       string;
+  paymentDate:   string;
+  customerEmail: string;
+  customerName:  string;
+}
+ 
+
+export interface PaymentFailedEvent {
+  orderId:  string;
+  sagaId:   string;
+  storeId:  string;
+  reason:   string;
+  failedAt: string;
+}
+
+export interface PaymentInitiatedEvent {
+  orderId:       string;
+  transactionId: string;
+  sagaId:        string;
+}
+
+export interface PaymentRefundedEvent {
+  orderId:           string;
+  sagaId:            string;
+  originalPaymentId: string;
+  refundAmount:      number;
+  reason:            string;
+}
+
+const REQUIRED_PAYMENT_COMPLETED_FIELDS: (keyof PaymentCompletedEvent)[] = [
+  "orderId", "transactionId", "sagaId", "amount", "storeId",
+  "paymentDate", "customerEmail", "customerName",
+];
+
 export function publishPaymentCompleted(
   payload: Record<string, unknown>
 ): void {
+  const missing = REQUIRED_PAYMENT_COMPLETED_FIELDS.filter(
+    (field) => payload[field] === undefined || payload[field] === null
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `payment.completed event missing required field(s): ${missing.join(", ")}`
+    );
+  }
+
   publish(
     EXCHANGES.PAYMENT,
     ROUTING_KEYS.PAYMENT_COMPLETED,

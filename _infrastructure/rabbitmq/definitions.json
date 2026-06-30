@@ -11,6 +11,62 @@
   "bindings": [
     {
       "arguments": {},
+      "destination": "selleasi.payment.order.failed.queue",
+      "destination_type": "queue",
+      "routing_key": "order.failed",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.order.stock.committed.failed.queue",
+      "destination_type": "queue",
+      "routing_key": "inventory.stock.committed.failed.topic",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.orders.inventory.stock.committed.queue",
+      "destination_type": "queue",
+      "routing_key": "inventory.stock.committed.topic",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.orders.cart.clear.failed.queue",
+      "destination_type": "queue",
+      "routing_key": "cart.clear.failed",
+      "source": "selleasi.cart",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.inventory.order.completed.queue",
+      "destination_type": "queue",
+      "routing_key": "order.completed",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.inventory.order.failed.queue",
+      "destination_type": "queue",
+      "routing_key": "order.failed",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
+      "destination": "selleasi.inventory.order.payment.confirmed.queue",
+      "destination_type": "queue",
+      "routing_key": "order.payment.confirmed",
+      "source": "selleasi.orders",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {},
       "destination": "selleasi.audit.dead.queue",
       "destination_type": "queue",
       "routing_key": "audit.dead",
@@ -507,6 +563,97 @@
     }
   ],
   "queues": [
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.payment.dlx",
+        "x-dead-letter-routing-key": "payment.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.payment.order.failed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.orders.dlx",
+        "x-dead-letter-routing-key": "orders.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.order.stock.committed.failed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.orders.dlx",
+        "x-dead-letter-routing-key": "orders.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.orders.inventory.stock.committed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.orders.dlx",
+        "x-dead-letter-routing-key": "orders.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.orders.cart.clear.failed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.inventory.dlx",
+        "x-dead-letter-routing-key": "inventory.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.inventory.order.completed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.inventory.dlx",
+        "x-dead-letter-routing-key": "inventory.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.inventory.order.failed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
+    {
+      "arguments": {
+        "x-dead-letter-exchange": "selleasi.inventory.dlx",
+        "x-dead-letter-routing-key": "inventory.dead",
+        "x-delivery-limit": 5,
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "selleasi.inventory.order.payment.confirmed.queue",
+      "type": "quorum",
+      "vhost": "selleasi"
+    },
     {
       "arguments": { "x-queue-type": "quorum" },
       "auto_delete": false,

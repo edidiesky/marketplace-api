@@ -7,83 +7,89 @@ import {
   getJitter,
 } from "../../constants";
 import { requestContext } from "../../context/requestContext";
-import logger             from "../../utils/logger";
-import { orderService }   from "../../domains/order/order.service";
-import redisClient        from "../../config/redis";
+import logger from "../../utils/logger";
+import { orderService } from "../../domains/order/order.service";
+import redisClient from "../../config/redis";
 
 interface PaymentCompletedEvent {
-  orderId:       string;
+  orderId: string;
   transactionId: string;
-  paymentDate:   string;
-  sagaId:        string;
-  storeId:       string;
-  storeName?:    string;
+  paymentDate: string;
+  sagaId: string;
+  storeId: string;
+  storeName?: string;
+  customerEmail: string;
+  customerName: string;
 }
 
 interface InventoryStockCommittedEvent {
   orderId: string;
-  sagaId:  string;
+  sagaId: string;
 }
- 
+
 interface InventoryCommitFailedEvent {
   orderId: string;
-  sagaId:  string;
-  reason:  string;
+  sagaId: string;
+  reason: string;
 }
 
 interface CartClearFailedEvent {
-  orderId:  string;
-  sagaId:   string;
-  storeId:  string;
-  reason:   string;
+  orderId: string;
+  sagaId: string;
+  storeId: string;
+  reason: string;
   failedAt: string;
 }
 
-
 interface PaymentInitiatedEvent {
-  orderId:       string;
+  orderId: string;
   transactionId: string;
-  sagaId:        string;
+  sagaId: string;
 }
 
 interface PaymentFailedEvent {
-  orderId:  string;
-  reason:   string;
-  sagaId:   string;
-  userId:   string;
+  orderId: string;
+  reason: string;
+  sagaId: string;
+  userId: string;
 }
 
 interface InventoryReservationFailedEvent {
-  orderId:     string;
-  sagaId:      string;
-  reason:      string;
-  failedItems: Array<{ productId: string; productTitle: string; reason: string }>;
+  orderId: string;
+  sagaId: string;
+  reason: string;
+  failedItems: Array<{
+    productId: string;
+    productTitle: string;
+    reason: string;
+  }>;
 }
 
 export const orderHandlers: Record<
   string,
-  (
-    data:    unknown,
-    channel: Channel,
-    msg:     ConsumeMessage
-  ) => Promise<void>
+  (data: unknown, channel: Channel, msg: ConsumeMessage) => Promise<void>
 > = {
   [ROUTING_KEYS.PAYMENT_COMPLETED]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as PaymentCompletedEvent;
-    const { orderId, transactionId, paymentDate, sagaId, storeName } = event;
+    const { orderId, transactionId, paymentDate, sagaId, storeName,   customerEmail,
+          customerName, } = event;
 
     const idempotencyKey = `order:payment:success:${sagaId}`;
     const acquired = await redisClient.set(
-      idempotencyKey, "1", "EX", 3600, "NX"
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
     );
 
     if (!acquired) {
       logger.info("order_handler_payment_completed_duplicate", {
-        event:   "order_handler_payment_completed_duplicate",
+        event: "order_handler_payment_completed_duplicate",
         service: SERVICE_NAME,
         orderId,
         sagaId,
@@ -99,16 +105,18 @@ export const orderHandlers: Record<
           orderId,
           transactionId,
           new Date(paymentDate),
-          storeName ?? "Selleasi Store"
+          storeName ?? "Selleasi Store",
+          customerEmail,
+          customerName,
         );
 
         logger.info("order_handler_payment_completed", {
-          event:         "order_handler_payment_completed",
-          service:       SERVICE_NAME,
+          event: "order_handler_payment_completed",
+          service: SERVICE_NAME,
           orderId,
           transactionId,
           sagaId,
-          requestId:     requestContext.get()?.requestId,
+          requestId: requestContext.get()?.requestId,
         });
 
         channel.ack(msg);
@@ -116,12 +124,12 @@ export const orderHandlers: Record<
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error("order_handler_payment_completed_failed", {
-          event:     "order_handler_payment_completed_failed",
-          service:   SERVICE_NAME,
+          event: "order_handler_payment_completed_failed",
+          service: SERVICE_NAME,
           orderId,
           sagaId,
-          attempt:   attempt + 1,
-          error:     message,
+          attempt: attempt + 1,
+          error: message,
           requestId: requestContext.get()?.requestId,
         });
 
@@ -131,17 +139,16 @@ export const orderHandlers: Record<
         }
 
         const delay =
-          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) +
-          getJitter();
+          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) + getJitter();
         await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
 
   [ROUTING_KEYS.PAYMENT_INITIATED]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as PaymentInitiatedEvent;
     const { orderId, transactionId, sagaId } = event;
@@ -151,12 +158,12 @@ export const orderHandlers: Record<
         await orderService.markPaymentInitiated(orderId, transactionId);
 
         logger.info("order_handler_payment_initiated", {
-          event:         "order_handler_payment_initiated",
-          service:       SERVICE_NAME,
+          event: "order_handler_payment_initiated",
+          service: SERVICE_NAME,
           orderId,
           transactionId,
           sagaId,
-          requestId:     requestContext.get()?.requestId,
+          requestId: requestContext.get()?.requestId,
         });
 
         channel.ack(msg);
@@ -164,11 +171,11 @@ export const orderHandlers: Record<
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error("order_handler_payment_initiated_failed", {
-          event:     "order_handler_payment_initiated_failed",
-          service:   SERVICE_NAME,
+          event: "order_handler_payment_initiated_failed",
+          service: SERVICE_NAME,
           orderId,
-          attempt:   attempt + 1,
-          error:     message,
+          attempt: attempt + 1,
+          error: message,
           requestId: requestContext.get()?.requestId,
         });
 
@@ -178,29 +185,32 @@ export const orderHandlers: Record<
         }
 
         const delay =
-          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) +
-          getJitter();
+          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) + getJitter();
         await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
 
   [ROUTING_KEYS.PAYMENT_FAILED]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as PaymentFailedEvent;
     const { orderId, reason, sagaId } = event;
 
     const idempotencyKey = `order:payment:failed:${sagaId}`;
     const acquired = await redisClient.set(
-      idempotencyKey, "1", "EX", 3600, "NX"
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
     );
 
     if (!acquired) {
       logger.info("order_handler_payment_failed_duplicate", {
-        event:   "order_handler_payment_failed_duplicate",
+        event: "order_handler_payment_failed_duplicate",
         service: SERVICE_NAME,
         orderId,
         sagaId,
@@ -215,8 +225,8 @@ export const orderHandlers: Record<
         await orderService.markPaymentFailed(orderId, reason);
 
         logger.info("order_handler_payment_failed_processed", {
-          event:     "order_handler_payment_failed_processed",
-          service:   SERVICE_NAME,
+          event: "order_handler_payment_failed_processed",
+          service: SERVICE_NAME,
           orderId,
           sagaId,
           reason,
@@ -228,12 +238,12 @@ export const orderHandlers: Record<
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error("order_handler_payment_failed_error", {
-          event:     "order_handler_payment_failed_error",
-          service:   SERVICE_NAME,
+          event: "order_handler_payment_failed_error",
+          service: SERVICE_NAME,
           orderId,
           sagaId,
-          attempt:   attempt + 1,
-          error:     message,
+          attempt: attempt + 1,
+          error: message,
           requestId: requestContext.get()?.requestId,
         });
 
@@ -243,29 +253,32 @@ export const orderHandlers: Record<
         }
 
         const delay =
-          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) +
-          getJitter();
+          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) + getJitter();
         await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
 
   [ROUTING_KEYS.INVENTORY_RESERVATION_FAILED]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as InventoryReservationFailedEvent;
     const { orderId, sagaId, reason, failedItems } = event;
 
     const idempotencyKey = `order:reservation:failed:${sagaId}`;
     const acquired = await redisClient.set(
-      idempotencyKey, "1", "EX", 3600, "NX"
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
     );
 
     if (!acquired) {
       logger.info("order_handler_reservation_failed_duplicate", {
-        event:   "order_handler_reservation_failed_duplicate",
+        event: "order_handler_reservation_failed_duplicate",
         service: SERVICE_NAME,
         orderId,
         sagaId,
@@ -280,12 +293,12 @@ export const orderHandlers: Record<
         await orderService.markOutOfStock(orderId, reason, failedItems);
 
         logger.info("order_handler_reservation_failed_processed", {
-          event:           "order_handler_reservation_failed_processed",
-          service:         SERVICE_NAME,
+          event: "order_handler_reservation_failed_processed",
+          service: SERVICE_NAME,
           orderId,
           sagaId,
           failedItemCount: failedItems?.length ?? 0,
-          requestId:       requestContext.get()?.requestId,
+          requestId: requestContext.get()?.requestId,
         });
 
         channel.ack(msg);
@@ -293,12 +306,12 @@ export const orderHandlers: Record<
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error("order_handler_reservation_failed_error", {
-          event:     "order_handler_reservation_failed_error",
-          service:   SERVICE_NAME,
+          event: "order_handler_reservation_failed_error",
+          service: SERVICE_NAME,
           orderId,
           sagaId,
-          attempt:   attempt + 1,
-          error:     message,
+          attempt: attempt + 1,
+          error: message,
           requestId: requestContext.get()?.requestId,
         });
 
@@ -308,27 +321,32 @@ export const orderHandlers: Record<
         }
 
         const delay =
-          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) +
-          getJitter();
+          Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 30_000) + getJitter();
         await new Promise((r) => setTimeout(r, delay));
       }
     }
   },
-  
+
   [ROUTING_KEYS.INVENTORY_STOCK_COMMITTED_TOPIC]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as InventoryStockCommittedEvent;
     const { orderId, sagaId } = event;
- 
+
     const idempotencyKey = `order:commit-succeeded:${sagaId}`;
-    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    const acquired = await redisClient.set(
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
+    );
     if (!acquired) {
       logger.info("order_handler_commit_succeeded_duplicate", {
-        event:     "order_handler_commit_succeeded_duplicate",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_succeeded_duplicate",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
         requestId: requestContext.get()?.requestId,
@@ -336,46 +354,52 @@ export const orderHandlers: Record<
       channel.ack(msg);
       return;
     }
- 
+
     try {
       await orderService.handleInventoryCommitSucceeded(orderId, sagaId);
- 
+
       logger.info("order_handler_commit_succeeded_processed", {
-        event:     "order_handler_commit_succeeded_processed",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_succeeded_processed",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
         requestId: requestContext.get()?.requestId,
       });
- 
+
       channel.ack(msg);
     } catch (err) {
       logger.error("order_handler_commit_succeeded_processing_failed", {
-        event:     "order_handler_commit_succeeded_processing_failed",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_succeeded_processing_failed",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
-        error:     err instanceof Error ? err.message : String(err),
+        error: err instanceof Error ? err.message : String(err),
         requestId: requestContext.get()?.requestId,
       });
       channel.nack(msg, false, false);
     }
   },
- 
+
   [ROUTING_KEYS.ORDER_STOCK_COMMIT_FAILED_TOPIC]: async (
-    data:    unknown,
+    data: unknown,
     channel: Channel,
-    msg:     ConsumeMessage
+    msg: ConsumeMessage,
   ): Promise<void> => {
     const event = data as InventoryCommitFailedEvent;
     const { orderId, sagaId, reason } = event;
- 
+
     const idempotencyKey = `order:commit-failed:${sagaId}`;
-    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    const acquired = await redisClient.set(
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
+    );
     if (!acquired) {
       logger.info("order_handler_commit_failed_duplicate", {
-        event:     "order_handler_commit_failed_duplicate",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_failed_duplicate",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
         requestId: requestContext.get()?.requestId,
@@ -383,55 +407,65 @@ export const orderHandlers: Record<
       channel.ack(msg);
       return;
     }
- 
+
     try {
       await orderService.handleInventoryCommitFailed(orderId, sagaId, reason);
- 
+
       logger.info("order_handler_commit_failed_processed", {
-        event:     "order_handler_commit_failed_processed",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_failed_processed",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
         reason,
         requestId: requestContext.get()?.requestId,
       });
- 
+
       channel.ack(msg);
     } catch (err) {
       logger.error("order_handler_commit_failed_processing_failed", {
-        event:     "order_handler_commit_failed_processing_failed",
-        service:   SERVICE_NAME,
+        event: "order_handler_commit_failed_processing_failed",
+        service: SERVICE_NAME,
         orderId,
         sagaId,
-        error:     err instanceof Error ? err.message : String(err),
+        error: err instanceof Error ? err.message : String(err),
         requestId: requestContext.get()?.requestId,
       });
       channel.nack(msg, false, false);
     }
   },
-  [ROUTING_KEYS.CART_CLEAR_FAILED]: async (data: unknown, channel, msg): Promise<void> => {
+  [ROUTING_KEYS.CART_CLEAR_FAILED]: async (
+    data: unknown,
+    channel,
+    msg,
+  ): Promise<void> => {
     const event = data as CartClearFailedEvent;
     const { orderId, sagaId, storeId, reason } = event;
- 
+
     const idempotencyKey = `order:compensate:${sagaId}`;
-    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    const acquired = await redisClient.set(
+      idempotencyKey,
+      "1",
+      "EX",
+      3600,
+      "NX",
+    );
     if (!acquired) {
       channel.ack(msg);
       return;
     }
- 
+
     try {
       await orderService.compensateFailedCartClear(orderId, sagaId, reason);
       channel.ack(msg);
     } catch (err) {
       logger.error("order_compensate_cart_clear_failed_error", {
-        event:   "order_compensate_cart_clear_failed_error",
+        event: "order_compensate_cart_clear_failed_error",
         orderId,
         storeId,
         sagaId,
-        error:   err instanceof Error ? err.message : String(err),
+        error: err instanceof Error ? err.message : String(err),
       });
       channel.nack(msg, false, false);
     }
   },
-}
+};

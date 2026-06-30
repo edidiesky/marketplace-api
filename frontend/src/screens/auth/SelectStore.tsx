@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/slices/authSlice";
 import { useGetMyStoresQuery } from "@/redux/services/storeApi";
 import AuthLayout from "./shared/AuthLayout";
-import { Store, Plus, Loader2 } from "lucide-react";
+import { Store, Loader2 } from "lucide-react";
 import type { Store as StoreType } from "@/types/api";
 
 export default function SelectStore() {
@@ -48,10 +48,6 @@ export default function SelectStore() {
                   key={storeId}
                   onClick={() => navigate(`/dashboard/store/${storeId}`)}
                   className="w-full flex items-center gap-4 p-4 rounded-[14px] border-2 text-left transition-all hover:border-[var(--color-ink)]"
-                  style={{
-                    borderColor:     "var(--color-stone-surface)",
-                    backgroundColor: "var(--color-canvas)",
-                  }}
                 >
                   <div
                     className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 text-lg bold "
@@ -92,13 +88,12 @@ export default function SelectStore() {
 
           <button
             onClick={() => navigate("/onboarding/create-store")}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-[12px] border text-base  transition-opacity hover:opacity-70"
+            className="w-full flex items-center justify-center gap-2 h-14 rounded-full border text-base  transition-opacity hover:opacity-70"
             style={{
               borderColor: "var(--color-stone-surface)",
               color:       "var(--color-ink)",
             }}
           >
-            <Plus size={15} />
             Create a new store
           </button>
         </div>

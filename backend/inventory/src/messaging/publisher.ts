@@ -2,7 +2,6 @@ import { context, propagation } from "@opentelemetry/api";
 import { getRabbitMQChannel }   from "./connection";
 import { EXCHANGES, ROUTING_KEYS, SERVICE_NAME } from "../constants";
 import { requestContext }       from "../context/requestContext";
-import { ICartItem } from "./handlers/inventory.handlers";
 
 function publish(
   exchange:       string,

@@ -35,6 +35,7 @@ export class OrderCompletedHandler extends BaseNotificationHandler {
       orderId,
       storeId,
       receiptUrl,
+      
     });
 
     const notification = await notificationRepository.create({

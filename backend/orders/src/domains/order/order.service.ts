@@ -427,6 +427,8 @@ export const orderService = {
     transactionId: string,
     paymentDate: Date,
     storeName: string,
+    customerEmail: string,
+  customerName:  string,
   ): Promise<OrderResponseDto> {
     const order = await orderRepository.findById(orderId);
     if (!order) throw AppError.notFound("Order not found.");
@@ -438,7 +440,7 @@ export const orderService = {
     const updated = await orderRepository.updateStatus(
       orderId,
       OrderStatus.COMPLETED,
-      { transactionId, paymentDate },
+      { transactionId, paymentDate, customerEmail, customerName },
     );
     if (!updated) throw AppError.notFound("Order not found.");
 
@@ -458,13 +460,6 @@ export const orderService = {
       storeName,
     );
 
-    // Publish and return — this is the entire saga handoff. We do not
-    // wait for inventory to commit. inventory-service has its own
-    // consumer for ORDER_PAYMENT_CONFIRMED (see inventory.handlers.ts)
-    // that does the commit work and reports back via
-    // INVENTORY_STOCK_COMMITTED_TOPIC or ORDER_STOCK_COMMIT_FAILED_TOPIC,
-    // both handled below by handleInventoryCommitSucceeded /
-    // handleInventoryCommitFailed.
     publishOrderPaymentConfirmed({
       orderId,
       sagaId,
@@ -486,7 +481,6 @@ export const orderService = {
     return toDto(updated);
   },
 
-  // Called by order.handlers.ts when ROUTING_KEYS.INVENTORY_STOCK_COMMITTED_TOPIC
   // is received — inventory has confirmed every line item was committed.
   // Triggers cart-clear and announces the order as fully complete.
   // Previously this method did not exist anywhere in the file, which is
@@ -509,9 +503,6 @@ export const orderService = {
     const storeIdStr = order.storeId.toString();
     const userIdStr = order.userId.toString();
 
-    // cart-service's existing ORDER_STOCK_COMMITTED consumer reacts to
-    // this and clears the cart internally via clearCartByStoreId — no
-    // direct HTTP call to cart-service is made from here.
     publishOrderStockCommitted({
       orderId,
       sagaId,
@@ -528,6 +519,8 @@ export const orderService = {
       receiptUrl: order.receiptUrl ?? undefined,
       completedAt: new Date().toISOString(),
       cartItems: order.cartItems,
+      email:        order.customerEmail,
+      customerName: order.customerName ?? order.fullName,
     };
 
     publishOrderCompleted(completedEvent);
