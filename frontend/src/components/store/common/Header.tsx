@@ -25,7 +25,7 @@ export default function StoreHeader() {
   );
 
   const store = storeData?.data;
-  const cartCount = cartData?.data?.items?.length ?? 0;
+  const cartCount = cartData?.data?.cartItems?.length ?? 0;
 
   // derive categories from actual products
   const allProducts: Product[] = productsData?.data?.products ?? [];
@@ -60,10 +60,10 @@ export default function StoreHeader() {
           {store?.name ?? "Store"}
         </Link>
         <div className="flex w-full pb-4 flex-col gap-2">
-          <div className="w-full">
+          <div className="w-full flex items-center justify-center">
             <form
               onSubmit={handleSearch}
-              className="w-full flex items-center border border-[#c8c6c2] overflow-hidden h-[52px] rounded-full"
+              className="w-full lg:w-[600px] flex items-center border border-[#c8c6c2] overflow-hidden h-[52px] rounded-full"
             >
               <input
                 type="text"
@@ -72,6 +72,7 @@ export default function StoreHeader() {
                 placeholder={`Search ${store?.name ?? "this store"}...`}
                 className="flex-1 h-full px-4 text-base bold text-[#222] placeholder:text-[#aaa] outline-none bg-transparent"
               />
+
               <button
                 type="submit"
                 className="h-full aspect-square flex items-center justify-center bg-[#E56000] hover:bg-[#cc5500] transition-colors shrink-0"
@@ -104,7 +105,7 @@ export default function StoreHeader() {
                 title={currentUser.name?.split(" ")[0] ?? "Account"}
               >
                 <User
-                  size={20}
+                  size={24}
                   className="text-[#333] group-hover:text-[#171717]"
                 />
               </button>
@@ -131,11 +132,11 @@ export default function StoreHeader() {
               >
                 <div className="relative">
                   <ShoppingCart
-                    size={20}
+                    size={24}
                     className="text-[#333] group-hover:text-[#171717]"
                   />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#E56000] text-white text-[9px]  flex items-center justify-center rounded-full">
+                    <span className="absolute -top-3 -right-3 w-6 h-6 bg-[#E56000] text-white text-xs bold  flex items-center justify-center rounded-full">
                       {cartCount}
                     </span>
                   )}
@@ -153,7 +154,7 @@ export default function StoreHeader() {
                 }
                 className="flex flex-col items-center gap-0.5 p-3 rounded-full hover:bg-[#eeece2] transition-colors group"
               >
-                <User size={20} className="text-[#333]" />
+                <User size={24} className="text-[#333]" />
               </button>
 
               {/* favourites */}
@@ -165,7 +166,7 @@ export default function StoreHeader() {
                 }
                 className="flex flex-col items-center gap-0.5 p-3 rounded-full hover:bg-[#eeece2] transition-colors group"
               >
-                <Heart size={20} className="text-[#333]" />
+                <Heart size={24} className="text-[#333]" />
               </button>
 
               {/* cart */}
@@ -177,7 +178,7 @@ export default function StoreHeader() {
                 }
                 className="flex flex-col items-center gap-0.5 p-3 rounded-full hover:bg-[#eeece2] transition-colors group"
               >
-                <ShoppingCart size={20} className="text-[#333]" />
+                <ShoppingCart size={24} className="text-[#333]" />
               </button>
             </>
           )}

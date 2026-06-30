@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from "react";
 import DashboardLayout from "@/screens/dashboard/layout";
 import { ProtectRoute } from "./guards/ProtectRoute";
 import Payments from "@/screens/dashboard/payments";
+import PageLoader from "@/components/common/PageLoader";
 
 const DashboardHome = lazy(() => import("@/screens/dashboard/home"));
 const Products      = lazy(() => import("@/screens/dashboard/products"));
@@ -16,7 +17,7 @@ const Colors        = lazy(() => import("@/screens/dashboard/colors"));
 const Sizes         = lazy(() => import("@/screens/dashboard/size"));
 const Account       = lazy(() => import("@/screens/dashboard/account"));
 const Payouts       = lazy(() => import("@/screens/dashboard/payouts"));
-
+const Fallback = () => <PageLoader/>;
 export const dashboardRoutes = [
   {
     path: "/dashboard/store/:id",
@@ -28,59 +29,59 @@ export const dashboardRoutes = [
     children: [
       {
         index: true,
-        element: <Suspense fallback={<></>}><DashboardHome /></Suspense>,
+        element: <Suspense fallback={Fallback()}><DashboardHome /></Suspense>,
       },
       {
         path: "products",
-        element: <Suspense fallback={<></>}><Products /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Products /></Suspense>,
       },
       {
         path: "orders",
-        element: <Suspense fallback={<></>}><Orders /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Orders /></Suspense>,
       },
       {
         path: "inventory",
-        element: <Suspense fallback={<></>}><Inventory /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Inventory /></Suspense>,
       },
       {
         path: "payments",
-        element: <Suspense fallback={<></>}><Payments /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Payments /></Suspense>,
       },
       {
         path: "customers",
-        element: <Suspense fallback={<></>}><Customers /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Customers /></Suspense>,
       },
       {
         path: "analytics",
-        element: <Suspense fallback={<></>}><Analytics /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Analytics /></Suspense>,
       },
       {
         path: "messages",
-        element: <Suspense fallback={<></>}><Messages /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Messages /></Suspense>,
       },
       {
         path: "marketing",
-        element: <Suspense fallback={<></>}><Marketing /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Marketing /></Suspense>,
       },
       {
         path: "categories",
-        element: <Suspense fallback={<></>}><Categories /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Categories /></Suspense>,
       },
       {
         path: "colors",
-        element: <Suspense fallback={<></>}><Colors /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Colors /></Suspense>,
       },
       {
         path: "sizes",
-        element: <Suspense fallback={<></>}><Sizes /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Sizes /></Suspense>,
       },
       {
         path: "account",
-        element: <Suspense fallback={<></>}><Account /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Account /></Suspense>,
       },
       {
         path: "payouts",
-        element: <Suspense fallback={<></>}><Payouts /></Suspense>,
+        element: <Suspense fallback={Fallback()}><Payouts /></Suspense>,
       },
     ],
   },

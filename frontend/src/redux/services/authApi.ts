@@ -39,6 +39,7 @@ export interface InitiateOnboardingPayload {
 }
 export interface ChangePasswordPayload {
   newPassword: string;
+  currentPassword:string
 }
 
 export interface ConfirmEmailPayload {

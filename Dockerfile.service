@@ -26,6 +26,7 @@ FROM node:20-alpine AS runtime
 
 ARG SERVICE_PORT=4001
 ARG SERVICE_DIR
+# Set to "true" only for services that render PDFs via Puppeteer (orders).
 ARG INSTALL_CHROMIUM=false
 
 WORKDIR /app
@@ -48,11 +49,13 @@ RUN if [ "$INSTALL_CHROMIUM" = "true" ]; then \
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV NODE_ENV=production
 
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
+COPY ${SERVICE_DIR}/src/assets ./assets
 
 RUN chown -R selleasi:selleasi /app
 

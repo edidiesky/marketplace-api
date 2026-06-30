@@ -81,6 +81,7 @@ async function mvccRetry(
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
+
   logger.error("mvcc_max_retries_exhausted", {
     event:      "mvcc_max_retries_exhausted",
     service:    SERVICE_NAME,

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import AdminLayout from "@/screens/admin/layout";
 import { ProtectRoute } from "./guards/ProtectRoute";
+import PageLoader from "@/components/common/PageLoader";
 
 const AdminHome    = lazy(() => import("@/screens/admin/home"));
 const AdminStores  = lazy(() => import("@/screens/admin/stores"));
@@ -17,7 +18,7 @@ const Colors     = lazy(() => import("@/screens/dashboard/colors"));
 const Sizes      = lazy(() => import("@/screens/dashboard/size"));
 const Account    = lazy(() => import("@/screens/dashboard/account"));
 
-const Fallback = () => <></>;
+const Fallback = () => <PageLoader/>;
 
 export const adminRoutes = [
   {

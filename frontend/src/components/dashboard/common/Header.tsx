@@ -110,7 +110,7 @@ export default function Header() {
                         value={sid}
                         className="cursor-pointer rounded-lg px-3 py-2.5 outline-none transition-colors data-[highlighted]:bg-gray-50"
                         style={{
-                          backgroundColor: isActive ? "#f0fdf4" : undefined,
+                          backgroundColor: isActive ? "#eeece293" : undefined,
                         }}
                         onSelect={() => navigate(`/dashboard/store/${sid}`)}
                       >
@@ -119,7 +119,7 @@ export default function Header() {
                             <div
                               className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
                               style={{
-                                backgroundColor: isActive ? "#004E3F" : "#f3f4f6",
+                                backgroundColor: isActive ? "#004E3F" : "#eeece2",
                               }}
                             >
                               <IoStorefrontOutline

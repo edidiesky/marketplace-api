@@ -81,7 +81,7 @@ export default function Sidebar() {
         {NAV_GROUPS.map((group) => (
           <div key={group.label} className="mb-5">
             <p
-              className="text-sm uppercase bold tracking-widest px-2 mb-1.5"
+              className="text-xs uppercase bold tracking-widest px-2 mb-1.5"
               style={{ color: "#a3a6af" }}
             >
               {group.label}
@@ -97,10 +97,10 @@ export default function Sidebar() {
                   data-tour={item.tour}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-base transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm transition-colors w-full mb-0.5",
                       isActive
-                        ? "bg-[#f5f5f3] text-[#17191c]"
-                        : "text-[#4c4c4c] hover:bg-[#f5f5f3] hover:text-[#17191c]",
+                        ? "bg-[#eeece2] text-[#17191c]"
+                        : "text-[#4c4c4c] hover:bg-[#eeece2] hover:text-[#17191c]",
                     ].join(" ")
                   }
                 >
@@ -117,7 +117,7 @@ export default function Sidebar() {
       <div className="border-t p-3 shrink-0" style={{ borderColor: "#ebebeb" }}>
         <Link
           to={`${base}/account`}
-          className="flex items-center gap-2.5 px-2 py-2 rounded-[8px] hover:bg-[#f5f5f3] transition-colors mb-1 w-full"
+          className="flex items-center gap-2.5 px-2 py-2 rounded-[8px] hover:bg-[#eeece2] transition-colors mb-1 w-full"
         >
           {currentUser?.profileImage ? (
             <img

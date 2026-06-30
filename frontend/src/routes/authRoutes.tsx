@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { GuestOnlyRoute } from "./guards/GuestOnlyRoute";
 import { ProtectRoute } from "./guards/ProtectRoute";
+import PageLoader from "@/components/common/PageLoader";
 
 const Login         = lazy(() => import("@/screens/auth/login"));
 const VerifyOtp     = lazy(() => import("@/screens/auth/VerifyOtp"));
@@ -10,13 +11,13 @@ const ResetPassword = lazy(() => import("@/screens/auth/ResetPassword"));
 const NewPassword   = lazy(() => import("@/screens/auth/NewPassword"));
 const CreateStore   = lazy(() => import("@/screens/auth/CreateStore"));
 const SelectStore   = lazy(() => import("@/screens/auth/SelectStore"));
-
+const Fallback = () => <PageLoader/>;
 export const authRoutes = [
   {
     path: "/login",
     element: (
       <GuestOnlyRoute>
-        <Suspense fallback={<></>}><Login /></Suspense>
+        <Suspense fallback={Fallback()}><Login /></Suspense>
       </GuestOnlyRoute>
     ),
   },
@@ -24,27 +25,27 @@ export const authRoutes = [
     path: "/verify-otp",
     element: (
       <GuestOnlyRoute>
-        <Suspense fallback={<></>}><VerifyOtp /></Suspense>
+        <Suspense fallback={Fallback()}><VerifyOtp /></Suspense>
       </GuestOnlyRoute>
     ),
   },
   {
     path: "/onboarding",
     element: (
-      <Suspense fallback={<></>}><Onboarding /></Suspense>
+      <Suspense fallback={Fallback()}><Onboarding /></Suspense>
     ),
   },
   {
     path: "/onboarding/verify-email",
     element: (
-      <Suspense fallback={<></>}><VerifyEmail /></Suspense>
+      <Suspense fallback={Fallback()}><VerifyEmail /></Suspense>
     ),
   },
   {
     path: "/onboarding/create-store",
     element: (
       <ProtectRoute>
-        <Suspense fallback={<></>}><CreateStore /></Suspense>
+        <Suspense fallback={Fallback()}><CreateStore /></Suspense>
       </ProtectRoute>
     ),
   },
@@ -52,7 +53,7 @@ export const authRoutes = [
     path: "/select-store",
     element: (
       <ProtectRoute>
-        <Suspense fallback={<></>}><SelectStore /></Suspense>
+        <Suspense fallback={Fallback()}><SelectStore /></Suspense>
       </ProtectRoute>
     ),
   },
@@ -60,7 +61,7 @@ export const authRoutes = [
     path: "/reset-password",
     element: (
       <GuestOnlyRoute>
-        <Suspense fallback={<></>}><ResetPassword /></Suspense>
+        <Suspense fallback={Fallback()}><ResetPassword /></Suspense>
       </GuestOnlyRoute>
     ),
   },
@@ -68,7 +69,7 @@ export const authRoutes = [
     path: "/reset-password/:token",
     element: (
       <GuestOnlyRoute>
-        <Suspense fallback={<></>}><NewPassword /></Suspense>
+        <Suspense fallback={Fallback()}><NewPassword /></Suspense>
       </GuestOnlyRoute>
     ),
   },

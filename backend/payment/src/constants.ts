@@ -35,6 +35,7 @@ export const ROUTING_KEYS = {
   PAYMENT_FAILED:    "payment.failed",
   PAYMENT_INITIATED: "payment.initiated",
   PAYMENT_REFUNDED:  "payment.refunded",
+  ORDER_FAILED:              "order.failed",
 } as const;
 
 export type PaymentRoutingKey =

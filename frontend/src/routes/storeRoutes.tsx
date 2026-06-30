@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import StoreLayout from "@/screens/store/layout";
 import { ProtectRoute } from "./guards/ProtectRoute";
+import PageLoader from "@/components/common/PageLoader";
 
 const StoreListing   = lazy(() => import("@/screens/store/listings"));
 const Single         = lazy(() => import("@/screens/store/single"));
@@ -11,7 +12,7 @@ const PaymentSuccess = lazy(() => import("@/screens/store/payment/Success"));
 const PaymentFailed  = lazy(() => import("@/screens/store/payment/Failed"));
 const BuyerProfile   = lazy(() => import("@/screens/store/profile"));
 
-const Fallback = () => <></>;
+const Fallback = () => <PageLoader/>;
 
 export const storeRoutes = [
   {
@@ -45,6 +46,10 @@ export const storeRoutes = [
       {
         path: "reviews/:productId",
         element: <Suspense fallback={<Fallback />}><Reviews /></Suspense>,
+      },
+      {
+        path: "order/:orderId",
+        element: <Suspense fallback={<Fallback />}><PaymentSuccess /></Suspense>,
       },
       {
         path: "payment/success",
