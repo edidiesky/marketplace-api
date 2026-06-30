@@ -20,6 +20,26 @@ interface PaymentCompletedEvent {
   storeName?:    string;
 }
 
+interface InventoryStockCommittedEvent {
+  orderId: string;
+  sagaId:  string;
+}
+ 
+interface InventoryCommitFailedEvent {
+  orderId: string;
+  sagaId:  string;
+  reason:  string;
+}
+
+interface CartClearFailedEvent {
+  orderId:  string;
+  sagaId:   string;
+  storeId:  string;
+  reason:   string;
+  failedAt: string;
+}
+
+
 interface PaymentInitiatedEvent {
   orderId:       string;
   transactionId: string;
@@ -294,4 +314,124 @@ export const orderHandlers: Record<
       }
     }
   },
-};
+  
+  [ROUTING_KEYS.INVENTORY_STOCK_COMMITTED_TOPIC]: async (
+    data:    unknown,
+    channel: Channel,
+    msg:     ConsumeMessage
+  ): Promise<void> => {
+    const event = data as InventoryStockCommittedEvent;
+    const { orderId, sagaId } = event;
+ 
+    const idempotencyKey = `order:commit-succeeded:${sagaId}`;
+    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!acquired) {
+      logger.info("order_handler_commit_succeeded_duplicate", {
+        event:     "order_handler_commit_succeeded_duplicate",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        requestId: requestContext.get()?.requestId,
+      });
+      channel.ack(msg);
+      return;
+    }
+ 
+    try {
+      await orderService.handleInventoryCommitSucceeded(orderId, sagaId);
+ 
+      logger.info("order_handler_commit_succeeded_processed", {
+        event:     "order_handler_commit_succeeded_processed",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        requestId: requestContext.get()?.requestId,
+      });
+ 
+      channel.ack(msg);
+    } catch (err) {
+      logger.error("order_handler_commit_succeeded_processing_failed", {
+        event:     "order_handler_commit_succeeded_processing_failed",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        error:     err instanceof Error ? err.message : String(err),
+        requestId: requestContext.get()?.requestId,
+      });
+      channel.nack(msg, false, false);
+    }
+  },
+ 
+  [ROUTING_KEYS.ORDER_STOCK_COMMIT_FAILED_TOPIC]: async (
+    data:    unknown,
+    channel: Channel,
+    msg:     ConsumeMessage
+  ): Promise<void> => {
+    const event = data as InventoryCommitFailedEvent;
+    const { orderId, sagaId, reason } = event;
+ 
+    const idempotencyKey = `order:commit-failed:${sagaId}`;
+    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!acquired) {
+      logger.info("order_handler_commit_failed_duplicate", {
+        event:     "order_handler_commit_failed_duplicate",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        requestId: requestContext.get()?.requestId,
+      });
+      channel.ack(msg);
+      return;
+    }
+ 
+    try {
+      await orderService.handleInventoryCommitFailed(orderId, sagaId, reason);
+ 
+      logger.info("order_handler_commit_failed_processed", {
+        event:     "order_handler_commit_failed_processed",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        reason,
+        requestId: requestContext.get()?.requestId,
+      });
+ 
+      channel.ack(msg);
+    } catch (err) {
+      logger.error("order_handler_commit_failed_processing_failed", {
+        event:     "order_handler_commit_failed_processing_failed",
+        service:   SERVICE_NAME,
+        orderId,
+        sagaId,
+        error:     err instanceof Error ? err.message : String(err),
+        requestId: requestContext.get()?.requestId,
+      });
+      channel.nack(msg, false, false);
+    }
+  },
+  [ROUTING_KEYS.CART_CLEAR_FAILED]: async (data: unknown, channel, msg): Promise<void> => {
+    const event = data as CartClearFailedEvent;
+    const { orderId, sagaId, storeId, reason } = event;
+ 
+    const idempotencyKey = `order:compensate:${sagaId}`;
+    const acquired = await redisClient.set(idempotencyKey, "1", "EX", 3600, "NX");
+    if (!acquired) {
+      channel.ack(msg);
+      return;
+    }
+ 
+    try {
+      await orderService.compensateFailedCartClear(orderId, sagaId, reason);
+      channel.ack(msg);
+    } catch (err) {
+      logger.error("order_compensate_cart_clear_failed_error", {
+        event:   "order_compensate_cart_clear_failed_error",
+        orderId,
+        storeId,
+        sagaId,
+        error:   err instanceof Error ? err.message : String(err),
+      });
+      channel.nack(msg, false, false);
+    }
+  },
+}
