@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Selleasi Receipt ${orderShortId}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+</style>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+@page { size: A4; margin: 0; }
+
+html, body {
+  font-family: "Newsreader", sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+  line-height: 1.55;
+  background: #fff;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 18mm 18mm 24mm;
+  box-sizing: border-box;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.doc-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.logo { line-height: 0; }
+
+.meta-row {
+  display: flex;
+  gap: 36px;
+  margin-bottom: 28px;
+}
+.meta-item { display: flex; flex-direction: column; gap: 2px; }
+.meta-label { font-size: 11px; color: #6b6b6b; }
+.meta-value { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+
+.addr-row {
+  display: flex;
+  gap: 60px;
+  margin-bottom: 28px;
+}
+.addr-col { flex: 1; }
+.addr-label { font-size: 11px; font-weight: 700; color: #6b6b6b; margin-bottom: 6px; }
+.addr-line { font-size: 13px; color: #1a1a1a; }
+
+.due-row {
+  margin-bottom: 28px;
+}
+.due-amount {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.verify-link {
+  font-size: 13px;
+  color: #E56000;
+  text-decoration: underline;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+.items-table thead tr { border-bottom: 1px solid #1a1a1a; }
+.items-table th {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b6b6b;
+  text-align: left;
+  padding: 0 0 8px;
+}
+.th-qty, .th-unit, .th-amount { text-align: right; }
+
+.item-row td {
+  padding: 10px 0;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 13px;
+  vertical-align: top;
+}
+.item-title { font-weight: 500; color: #1a1a1a; }
+.item-qty, .item-unit, .item-amount { text-align: right; white-space: nowrap; }
+
+.totals-block {
+  width: 260px;
+  margin-left: auto;
+  margin-bottom: 36px;
+}
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #444;
+}
+.totals-row--total {
+  border-top: 1px solid #eaeaea;
+  margin-top: 4px;
+  padding-top: 10px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.totals-row--paid {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.tx-block {
+  border-top: 1px solid #eaeaea;
+  padding-top: 16px;
+  margin-bottom: 36px;
+}
+.tx-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b6b6b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.tx-row { display: flex; font-size: 12px; padding: 4px 0; }
+.tx-key { width: 150px; color: #6b6b6b; flex-shrink: 0; }
+.tx-val { color: #1a1a1a; word-break: break-all; }
+
+.footer {
+  font-size: 11px;
+  color: #9a9a9a;
+  text-align: center;
+  margin-top: 24px;
+}
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header-row">
+      <h1 class="doc-title">Invoice</h1>
+      <div class="logo">${LOGO_SVG}</div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Invoice number</span>
+        <span class="meta-value">${orderShortId}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Date of issue</span>
+        <span class="meta-value">${issueDate}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Date paid</span>
+        <span class="meta-value">${paidDate}</span>
+      </div>
+    </div>
+
+    <div class="addr-row">
+      ${fromBlock}
+      ${billToBlock}
+    </div>
+
+    <div class="due-row">
+      <div class="due-amount">${fmtNaira(order.totalPrice)} paid on ${paidDate}</div>
+      <a class="verify-link" href="${verificationUrl}">Verify this order</a>
+    </div>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th class="th-desc">Description</th>
+          <th class="th-qty">Qty</th>
+          <th class="th-unit">Unit price</th>
+          <th class="th-amount">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemRows}
+      </tbody>
+    </table>
+
+    <div class="totals-block">
+      <div class="totals-row">
+        <span class="totals-label">Subtotal</span>
+        <span class="totals-value">${fmtNaira(order.totalPrice)}</span>
+      </div>
+      <div class="totals-row totals-row--total">
+        <span class="totals-label">Total</span>
+        <span class="totals-value">${fmtNaira(order.totalPrice)}</span>
+      </div>
+      <div class="totals-row totals-row--paid">
+        <span class="totals-label">Amount paid</span>
+        <span class="totals-value">${fmtNaira(order.totalPrice)}</span>
+      </div>
+    </div>
+
+    <div class="tx-block">
+      <div class="tx-label">Transaction details</div>
+      <div class="tx-row"><span class="tx-key">Transaction ID</span><span class="tx-val">${escapeHtml(transactionId)}</span></div>
+      <div class="tx-row"><span class="tx-key">Order ID</span><span class="tx-val">${escapeHtml(order._id.toString())}</span></div>
+      <div class="tx-row"><span class="tx-key">Saga ID</span><span class="tx-val">${escapeHtml(order.sagaId)}</span></div>
+      <div class="tx-row"><span class="tx-key">Payment status</span><span class="tx-val">Completed</span></div>
+    </div>
+
+    <div class="footer">
+      This is a system-generated receipt and does not require a signature.<br/>
+      Selleasi Marketplace &middot; support@selleasi.com
+    </div>
+
+  </div>
+</body>
+</html>

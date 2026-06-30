@@ -11,7 +11,6 @@ export default function SelectStore() {
   const currentUser = useSelector(selectCurrentUser);
 
   const { data: myStoreData, isLoading } = useGetMyStoresQuery(undefined);
-
   const stores: StoreType[] = myStoreData?.data?.stores ?? [];
 
   return (
@@ -37,7 +36,7 @@ export default function SelectStore() {
                 className="animate-spin"
                 style={{ color: "var(--color-muted-stone)" }}
               />
-              <span className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
+              <span className="text-base" style={{ color: "var(--color-muted-stone)" }}>
                 Loading your stores...
               </span>
             </div>
@@ -55,7 +54,7 @@ export default function SelectStore() {
                   }}
                 >
                   <div
-                    className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 text-base "
+                    className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 text-lg bold "
                     style={{
                       backgroundColor: "var(--color-fog)",
                       color:           "var(--color-ink)",
@@ -65,13 +64,13 @@ export default function SelectStore() {
                   </div>
                   <div className="flex flex-col gap-0.5 min-w-0">
                     <span
-                      className="text-sm  truncate"
+                      className="text-base bold truncate"
                       style={{ color: "var(--color-ink)" }}
                     >
                       {store.name}
                     </span>
                     <span
-                      className="text-xs truncate"
+                      className="text-base truncate"
                       style={{ color: "var(--color-muted-stone)" }}
                     >
                       {store.subdomain}.selleasi.com
@@ -86,14 +85,14 @@ export default function SelectStore() {
               );
             })
           ) : (
-            <p className="text-sm" style={{ color: "var(--color-muted-stone)" }}>
+            <p className="text-base" style={{ color: "var(--color-muted-stone)" }}>
               You have no stores yet.
             </p>
           )}
 
           <button
             onClick={() => navigate("/onboarding/create-store")}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-[12px] border text-sm  transition-opacity hover:opacity-70"
+            className="w-full flex items-center justify-center gap-2 h-11 rounded-[12px] border text-base  transition-opacity hover:opacity-70"
             style={{
               borderColor: "var(--color-stone-surface)",
               color:       "var(--color-ink)",
