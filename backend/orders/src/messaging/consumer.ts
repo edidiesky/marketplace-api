@@ -16,11 +16,15 @@ import { randomUUID }          from "crypto";
 const tracer = trace.getTracer(SERVICE_NAME);
 
 const queueHandlerMap: Record<string, string> = {
-  [QUEUES.PAYMENT_COMPLETED]:            ROUTING_KEYS.PAYMENT_COMPLETED,
-  [QUEUES.PAYMENT_FAILED]:               ROUTING_KEYS.PAYMENT_FAILED,
-  [QUEUES.PAYMENT_INITIATED]:            ROUTING_KEYS.PAYMENT_INITIATED,
-  [QUEUES.INVENTORY_RESERVATION_FAILED]: ROUTING_KEYS.INVENTORY_RESERVATION_FAILED,
+  [QUEUES.PAYMENT_COMPLETED]:               ROUTING_KEYS.PAYMENT_COMPLETED,
+  [QUEUES.PAYMENT_FAILED]:                  ROUTING_KEYS.PAYMENT_FAILED,
+  [QUEUES.PAYMENT_INITIATED]:               ROUTING_KEYS.PAYMENT_INITIATED,
+  [QUEUES.INVENTORY_RESERVATION_FAILED]:    ROUTING_KEYS.INVENTORY_RESERVATION_FAILED,
+  [QUEUES.ORDER_STOCK_COMMIT_FAILED_TOPIC]: ROUTING_KEYS.ORDER_STOCK_COMMIT_FAILED_TOPIC,
+  [QUEUES.INVENTORY_STOCK_COMMITTED_TOPIC]: ROUTING_KEYS.INVENTORY_STOCK_COMMITTED_TOPIC,
+  [QUEUES.CART_CLEAR_FAILED]:               ROUTING_KEYS.CART_CLEAR_FAILED,
 };
+
 
 export async function connectOrdersConsumer(): Promise<void> {
   const channel = getRabbitMQChannel();
@@ -38,6 +42,7 @@ export async function connectOrdersConsumer(): Promise<void> {
       });
       continue;
     }
+
 
     await channel.consume(
       queue,
