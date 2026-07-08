@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetStoreOrdersQuery } from "@/redux/services/orderApi";
+import { useGetStoreOrdersQuery, useUpdateFulfillmentMutation } from "@/redux/services/orderApi";
 import type { Order, FulfillmentStatus, OrderStatus } from "@/types/api";
-import { ChevronDown, } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import OrderDrawer from "./components/modal/OrderModal";
 import { Input } from "@/components/ui/input";
 import { ChartSelect } from "@/components/common/charts/Chartselect";
+import { showToast } from "@/components/common/Toast";
+import OrderRowActions from "./OrderRowActions";
 
 const ROWS_PER_PAGE = 10;
 
@@ -43,9 +44,24 @@ export default function Orders() {
     { skip: !id }
   );
 
+  const [updateFulfillment] = useUpdateFulfillmentMutation();
+
   const orders: Order[]  = ordersResponse?.data?.orders     ?? [];
   const totalPages       = ordersResponse?.data?.totalPages  ?? 1;
   const total            = ordersResponse?.data?.totalCount  ?? 0;
+
+  const handleMarkDelivered = async (order: Order) => {
+    const orderId = order.orderId ?? order._id ?? "";
+    try {
+      await updateFulfillment({ orderId, status: "delivered" }).unwrap();
+      showToast("Order marked as delivered", "success");
+    } catch (err: unknown) {
+      const error = err as { data?: { error?: string[] }; error?: string };
+      (error?.data?.error ?? [error?.error ?? "Failed to update order"]).forEach(
+        (m) => showToast(m, "error")
+      );
+    }
+  };
 
   const filtered = orders.filter((row) =>
     [row._id, row.userId].some((val) =>
@@ -141,8 +157,12 @@ export default function Orders() {
                             ? new Date(order.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })
                             : "—"}
                         </td>
-                        <td className="px-5 py-3 text-[#777b86]">
-                          <ChevronDown size={14} />
+                        <td className="px-5 py-3 text-right">
+                          <OrderRowActions
+                            order={order}
+                            onViewDetails={setSelectedOrder}
+                            onMarkDelivered={handleMarkDelivered}
+                          />
                         </td>
                       </tr>
                     );

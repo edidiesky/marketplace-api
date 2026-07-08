@@ -53,8 +53,6 @@ export async function bootstrapProductIndex(): Promise<void> {
     mappings: {
       properties: {
         productId: { type: "keyword" as const },
-        storeId:   { type: "keyword" as const },
-        ownerId:   { type: "keyword" as const },
         storeName: { type: "keyword" as const },
         name: {
           type:            "text" as const,
@@ -70,10 +68,8 @@ export async function bootstrapProductIndex(): Promise<void> {
           search_analyzer: "search_analyzer",
         },
         price:     { type: "float"   as const },
-        images:    { type: "keyword" as const, index: false },
         isDeleted: { type: "boolean" as const },
         createdAt: { type: "date"    as const },
-        updatedAt: { type: "date"    as const },
       },
     },
   });

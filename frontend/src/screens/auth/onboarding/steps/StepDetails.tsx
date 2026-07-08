@@ -125,13 +125,13 @@ export default function StepDetails({ onSubmit, isLoading }: Props) {
                 </div>
                 <div className="text-left">
                   <p
-                    className="text-sm "
+                    className="text-base bold "
                     style={{ color: "var(--color-ink)" }}
                   >
                     {label}
                   </p>
                   <p
-                    className="text-xs"
+                    className="text-sm base"
                     style={{ color: "var(--color-muted-stone)" }}
                   >
                     {description}

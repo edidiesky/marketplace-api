@@ -6,6 +6,7 @@ import CardLoader from "@/components/common/loader/CardLoader";
 import { useGetAllStoreProductsQuery } from "@/redux/services/productApi";
 import { useGetStoreQuery } from "@/redux/services/storeApi";
 import type { Product } from "@/types/api";
+import LazyImage from "@/components/common/LazyImage";
 
 export default function StoreListing() {
   const { id } = useParams<{ id: string }>();
@@ -37,13 +38,12 @@ export default function StoreListing() {
     <div className="w-full">
       {/* hero */}
       <div className="w-full h-[320px] relative overflow-hidden">
-        <img
+        <LazyImage
           src={
             store?.logo ??
             "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&q=80"
           }
           alt="store banner"
-          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
         <div className="absolute inset-0 flex flex-col justify-end px-6 lg:px-16 pb-10 max-w-7xl mx-auto">

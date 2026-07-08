@@ -45,7 +45,6 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Order", "Cart", "Inventory"],
     }),
 
-    // PATCH /:orderId/shipping
     addShipping: builder.mutation<{ success: boolean; data: Order }, { orderId: string } & ShippingPayload>({
       query: ({ orderId, ...body }) => ({
         method: "PATCH",
@@ -55,8 +54,8 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_r, _e, { orderId }) => [{ type: "Order", id: orderId }],
     }),
 
-    // GET /:storeId/store — seller view of store orders
-    getStoreOrders: builder.query<PaginatedOrders, { storeId: string; page?: number; limit?: number; orderStatus?: string }>({
+    // GET /:storeId/store: seller view of store orders
+    getStoreOrders: builder.query<PaginatedOrders, { storeId: string; page?: number; limit?: number; orderStatus?: string; fulfillmentStatus?: string }>({
       query: ({ storeId, ...params }) => ({
         method: "GET",
         url: `${ORDER_URL}/${storeId}/store`,
@@ -65,7 +64,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Order"],
     }),
 
-    // GET /me — buyer's own orders
+    // GET /me: buyer's own orders
     // Backend route is /me not /my-orders
     getMyOrders: builder.query<PaginatedOrders, { page?: number; limit?: number }>({
       query: (params) => ({
@@ -76,7 +75,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       providesTags: ["Order"],
     }),
 
-    // GET /detail/:id — single order by ID
+    // GET /detail/:id: single order by ID
     getOrder: builder.query<{ success: boolean; data: Order }, string>({
       query: (id) => ({ method: "GET", url: `${ORDER_URL}/detail/${id}` }),
       providesTags: (_r, _e, id) => [{ type: "Order", id }],

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -66,32 +66,32 @@
   }
 
   @font-face {
-  font-family: 'Bold';
-  src: url('/fonts/Cabinet-bold.woff2') format('truetype');
-  font-style: normal;
-  font-display: swap;
-}
+    font-family: "Bold";
+    src: url("/fonts/Cabinet-bold.woff2") format("truetype");
+    font-style: normal;
+    font-display: swap;
+  }
 
-@font-face {
-  font-family: 'Medium';
-  src: url('/fonts/Cabinet-medium.woff2') format('truetype');
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Regular';
-  src: url('/fonts/Cabinet-regular.woff2') format('truetype');
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Instrument';
-  src: url('/fonts/InstrumentSans-VariableFont_wdth,wght.woff2')
-    format('truetype');
-  font-weight: 100 1000;
-  font-style: normal;
-  font-display: swap;
-}
+  @font-face {
+    font-family: "Medium";
+    src: url("/fonts/Cabinet-medium.woff2") format("truetype");
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Regular";
+    src: url("/fonts/Cabinet-regular.woff2") format("truetype");
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Instrument";
+    src: url("/fonts/InstrumentSans-VariableFont_wdth,wght.woff2")
+      format("truetype");
+    font-weight: 100 1000;
+    font-style: normal;
+    font-display: swap;
+  }
 
   body {
     @apply bg-background text-foreground;
@@ -102,17 +102,19 @@
   }
 
   h1,
-  h2{
+  h2 {
     font-family: "Bold", sans-serif;
   }
 
-  h3, a, link{
+  h3,
+  a,
+  link {
     font-family: "Medium", sans-serif;
   }
 
   h4,
   h5,
-  h6, span, p {
+  h6{
     font-family: "Regular", sans-serif;
   }
 }
@@ -156,8 +158,12 @@ th {
 }
 
 .bold {
-    font-family: "Bold", sans-serif;
-  }
+  font-family: "Bold", sans-serif !important;
+}
+
+.medium {
+  font-family: "Medium", sans-serif !important;
+}
 
 .btn {
   min-height: 50px;
@@ -327,7 +333,6 @@ html.lenis body {
   pointer-events: none;
 }
 
-
 .custom-toast {
   display: flex;
   align-items: center;
@@ -343,52 +348,52 @@ html.lenis body {
   line-height: 1.4;
   color: #17191c;
 }
- 
+
 .custom-toast.success {
   border-color: #bbf7d0;
   background-color: #f0fdf4;
 }
- 
+
 .custom-toast.error {
   border-color: #fecaca;
   background-color: #fff5f5;
 }
- 
+
 .custom-toast.info {
   border-color: #bfdbfe;
   background-color: #eff6ff;
 }
- 
+
 /*  Icon  */
- 
+
 .toast-icon {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
 }
- 
+
 .toast-icon.success {
   color: #16a34a;
 }
- 
+
 .toast-icon.error {
   color: #dc2626;
 }
- 
+
 .toast-icon.info {
   color: #2563eb;
 }
- 
+
 /*  Message  */
- 
+
 .toast-message {
   flex: 1;
   font-weight: 500;
   color: #17191c;
 }
- 
+
 /*  Action button  */
- 
+
 .toast-action {
   flex-shrink: 0;
   padding: 5px 12px;
@@ -399,9 +404,11 @@ html.lenis body {
   cursor: pointer;
   border: 1px solid transparent;
   background-color: transparent;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
- 
+
 .custom-toast.success .toast-action {
   color: #16a34a;
 }
@@ -409,15 +416,14 @@ html.lenis body {
   background-color: #16a34a;
   color: #fff;
 }
- 
+
 .custom-toast.error .toast-action {
   color: #dc2626;
-  
 }
 .custom-toast.error .toast-action:hover {
   color: #fff;
 }
- 
+
 .custom-toast.info .toast-action {
   color: #2563eb;
 }
@@ -425,70 +431,88 @@ html.lenis body {
   background-color: #2563eb;
   color: #fff;
 }
- 
+
 /*  Sonner reset  */
- 
+
 .sonner-root {
   all: unset;
 }
- 
 
 @keyframes shake {
-  0%   { transform: translateX(0); }
-  15%  { transform: translateX(-26px); }
-  30%  { transform: translateX(26px); }
-  45%  { transform: translateX(-14px); }
-  60%  { transform: translateX(14px); }
-  75%  { transform: translateX(-7px); }
-  90%  { transform: translateX(7px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-26px);
+  }
+  30% {
+    transform: translateX(26px);
+  }
+  45% {
+    transform: translateX(-14px);
+  }
+  60% {
+    transform: translateX(14px);
+  }
+  75% {
+    transform: translateX(-7px);
+  }
+  90% {
+    transform: translateX(7px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .shake {
   animation: shake 0.45s ease-in-out;
 }
 
-
 /* Selleasi driver.js popover overrides */
 
-.driver-popover-title, .driver-popover-description, .driver-popover-next-btn, .driver-popover-footer-btn,  .driver-popover-footer-btn {
-  font-family: 'DM Sans', sans-serif !important;
+.driver-popover-title,
+.driver-popover-description,
+.driver-popover-next-btn,
+.driver-popover-footer-btn,
+.driver-popover-footer-btn {
+  font-family: "DM Sans", sans-serif !important;
 }
 
 .selleasi-tour-popover {
   font-family: inherit;
   border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
   border: 1px solid #e8e6e3 !important;
   padding: 20px !important;
   min-width: 280px !important;
   max-width: 340px !important;
-  font-family: 'Bold', sans-serif;
+  font-family: "Bold", sans-serif;
 }
- 
+
 .selleasi-tour-popover .driver-popover-title {
   font-size: 15px !important;
   font-weight: 600 !important;
   color: #17191c !important;
   margin-bottom: 6px !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-description {
   font-size: 13px !important;
   color: #4c4c4c !important;
   line-height: 1.6 !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-progress-text {
   font-size: 11px !important;
   color: #a3a6af !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-footer {
   margin-top: 16px !important;
   gap: 8px !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-prev-btn,
 .selleasi-tour-popover .driver-popover-next-btn,
 .selleasi-tour-popover .driver-popover-done-btn {
@@ -498,28 +522,28 @@ html.lenis body {
   padding: 7px 14px !important;
   border: none !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-next-btn,
 .selleasi-tour-popover .driver-popover-done-btn {
   background: #17191c !important;
   color: #fff !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-next-btn:hover,
 .selleasi-tour-popover .driver-popover-done-btn:hover {
   opacity: 0.85 !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-prev-btn {
   background: #f2f0ed !important;
   color: #17191c !important;
 }
- 
+
 .selleasi-tour-popover .driver-popover-close-btn {
   color: #a3a6af !important;
   font-size: 18px !important;
 }
- 
+
 /* highlight ring */
 .driver-active-element {
   outline: 2px solid #17191c !important;

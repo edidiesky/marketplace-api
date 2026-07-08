@@ -84,6 +84,16 @@ export const productApiSlice = apiSlice.injectEndpoints({
       query: (id) => ({ method: "POST", url: `${PRODUCT_URL}/${id}/restore` }),
       invalidatesTags: ["Product"],
     }),
+    trackProductView: builder.mutation<
+      { success: boolean; data: { viewCount: number; counted: boolean } },
+      string
+    >({
+      query: (id) => ({ method: "POST", url: `${PRODUCT_URL}/${id}/view` }),
+      // Deliberately no invalidatesTags. This is a vanity counter, not
+      // product data, refetching the whole product on every view would
+      // be wasteful and would also refetch the gallery/description for
+      // nothing.
+    }),
   }),
 });
 
@@ -96,4 +106,5 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useRestoreProductMutation,
+  useTrackProductViewMutation,
 } = productApiSlice;

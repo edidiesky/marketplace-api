@@ -16,11 +16,8 @@ export interface LoginPayload { email: string; password: string; }
 export interface VerifyOtpPayload { email: string; otp: string; }
 export interface RequestResetPayload { email: string; }
 
-// Backend field is `newPassword` — the service layer maps `password` -> `newPassword`
 export interface PasswordResetPayload { token: string; password: string; }
 
-// Backend changePasswordSchema requires email + newPassword
-// The service layer maps currentPassword out and sends email from auth state
 export interface ChangePasswordPayload { currentPassword: string; newPassword: string; email: string; }
 
 export interface AuthResponse {
@@ -303,6 +300,8 @@ export interface Payment {
   amount: number;
   status: "pending" | "success" | "failed" | "refunded";
   gateway: "paystack" | "flutterwave";
+  customerName?: string;
+  customerEmail?: string;
   redirectUrl?: string;
   createdAt: string;
 }

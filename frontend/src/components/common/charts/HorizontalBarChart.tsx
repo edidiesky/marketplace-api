@@ -77,7 +77,7 @@ function ChartBody({ data, series, yAxisWidth, isCurrency, emptyMessage }: {
   emptyMessage: string;
 }) {
   const chartConfig = buildChartConfig(series);
-  const chartHeight = Math.max(data.length * 48, 300);
+  const chartHeight = Math.max(data.length * 48, 200);
 
   if (!data?.length) {
     return (

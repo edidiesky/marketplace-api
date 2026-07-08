@@ -45,7 +45,7 @@ export const searchRepository = {
     }
 
     if (params.q) {
-      must.push({
+      must.push({ 
         multi_match: {
           query:          params.q,
           fields:         ["name^3", "description"],

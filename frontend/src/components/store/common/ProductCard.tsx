@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import {  ShoppingCart } from "lucide-react";
 import type { Product } from "@/types/api";
 import { FiStar } from "react-icons/fi";
+import LazyImage from "@/components/common/LazyImage";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { id: storeId } = useParams<{ id: string }>();
@@ -18,10 +19,9 @@ export default function ProductCard({ product }: { product: Product }) {
         style={{ aspectRatio: "3/4" }}
       >
         {product.images?.[0] ? (
-          <img
+          <LazyImage
             src={product.images[0]}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

@@ -103,8 +103,8 @@ export function RadialBarChartCard({
   segments,
   centerLabel = "Total",
   trend,
-  innerRadius = 80,
-  outerRadius = 120,
+  innerRadius = 70,
+  outerRadius = 100,
   emptyMessage = "No data to display",
   isCurrency = true,
   hideHeader = false,
@@ -210,7 +210,7 @@ export function RadialBarChartCard({
                 ? <TrendingUp size={13} className="text-green-600" />
                 : <TrendingDown size={13} className="text-red-500" />
               }
-              <span className={`text-xs semibold ${trend.positive ? "text-green-600" : "text-red-500"}`}>
+              <span className={`text-xs bold ${trend.positive ? "text-green-600" : "text-red-500"}`}>
                 {trend.value}
               </span>
               <span className="text-xs text-[#777b86]">{trend.note}</span>
@@ -222,11 +222,10 @@ export function RadialBarChartCard({
     );
   }
 
-  // Full card with own border and header (hideHeader=false, default)
   return (
     <div className="border border-[#e8e6e3] flex flex-col rounded-2xl">
       <div className="px-5 py-4 border-b border-[#e8e6e3]">
-        <p className="text-lg bold text-[#17191c]">{title}</p>
+        <h3 className="text-lg bold text-[#17191c]">{title}</h3>
         <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
       </div>
       {isEmpty ? (
@@ -239,7 +238,7 @@ export function RadialBarChartCard({
           <ChartContainer
             config={chartConfig}
             className="mx-auto w-full"
-            style={{ height: "180px" }}
+            style={{ height: "140px" }}
           >
             <RechartsRadialBarChart
               data={data}
@@ -288,9 +287,9 @@ export function RadialBarChartCard({
               const val = Number(data[0]?.[s.datakey] ?? 0);
               const pct = total > 0 ? ((val / total) * 100).toFixed(1) : "0.0";
               return (
-                <div key={s.datakey} className="flex items-center gap-1.5">
+                <div key={s.datakey} className="flex bold items-center gap-1.5">
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                  <span className="text-sm text-[#4c4c4c]">
+                  <span className="text-sm bold text-[#4c4c4c]">
                     {s.label}{" "}<span className="text-[#777b86]">({pct}%)</span>
                   </span>
                 </div>
@@ -303,7 +302,7 @@ export function RadialBarChartCard({
                 ? <TrendingUp size={13} className="text-green-600" />
                 : <TrendingDown size={13} className="text-red-500" />
               }
-              <span className={`text-xs semibold ${trend.positive ? "text-green-600" : "text-red-500"}`}>
+              <span className={`text-xs bold ${trend.positive ? "text-green-600" : "text-red-500"}`}>
                 {trend.value}
               </span>
               <span className="text-xs text-[#777b86]">{trend.note}</span>

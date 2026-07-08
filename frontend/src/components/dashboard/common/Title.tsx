@@ -7,10 +7,10 @@ export default function Title({
 }) {
   return (
     <div>
-      <h4 className="text-xl lg:text-2xl bold font-selleasy_bold text-[#17191c]">
+      <h4 className="text-xl lg:text-2xl bold text-[#17191c]">
         {title}
       </h4>
-      <p className="text-sm text-[#64645f] mt-1 max-w-[520px] leading-[1.6]">
+      <p className="text-base text-[#64645f] mt-1 max-w-[520px] leading-[1.6]">
         {description}
       </p>
     </div>

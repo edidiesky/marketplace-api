@@ -25,6 +25,7 @@ if (!process.env.PAYSTACK_SECRET_KEY) {
   throw new Error("PAYSTACK_SECRET_KEY env var is not set");
 }
 
+
 app.use(helmet());
 app.use(cors({ origin: [process.env.WEB_ORIGIN], credentials: true }));
 app.use(morgan("dev"));

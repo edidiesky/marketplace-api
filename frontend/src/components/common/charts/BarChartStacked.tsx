@@ -116,11 +116,11 @@ function ChartBody({ data, chartConfig, dataKeys, isCurrency, emptyMessage }: {
   }
   return (
     <div className="px-2 py-4">
-      <ChartContainer config={chartConfig} className="w-full h-[280px] lg:h-[300px]">
+      <ChartContainer config={chartConfig} className="w-full h-[180px] lg:h-[200px]">
         <BarChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} stroke="#f2f0ed" strokeDasharray="4" />
-          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} tick={{ fontSize: 13, fontWeight:600, fill: "#777b86" }} tickFormatter={(v) => formatDate(v)} />
-          <YAxis tickLine={false} axisLine={false} tickMargin={8} width={isCurrency ? 70 : 55} tick={{ fontSize: 13, fontWeight:600, fill: "#777b86" }} tickFormatter={(v: number) => isCurrency ? formatCurrency(v) : v.toLocaleString("en-NG")} />
+          <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} tick={{ fontSize: 13, fontFamily:"Bold", fill: "#777b86" }} tickFormatter={(v) => formatDate(v)} />
+          <YAxis tickLine={false} axisLine={false} tickMargin={8} width={isCurrency ? 70 : 55} tick={{ fontSize: 13, fontFamily:"Bold", fill: "#777b86" }} tickFormatter={(v: number) => isCurrency ? formatCurrency(v) : v.toLocaleString("en-NG")} />
           <ChartTooltip cursor={{ fill: "#f2f0ed" }} content={<CustomTooltip dataKeys={dataKeys} chartConfig={chartConfig} isCurrency={isCurrency} />} />
           {dataKeys.map((key, index) => (
             <Bar key={key.datakey} dataKey={key.datakey} stackId="a" fill={key.color}
@@ -159,8 +159,8 @@ export function BarChartStacked({
     <div className={`${showBorder ? "border border-[#e8e6e3]" : ""} flex flex-col rounded-2xl`}>
       <div className="px-5 py-4 w-full border-b border-[#e8e6e3] flex items-start justify-between gap-4">
         <div className="w-full">
-          <p className="text-lg  text-[#17191c]">{title}</p>
-          <p className="text-sm text-[#777b86] mt-0.5">{description}</p>
+          <h4 className="text-lg bold text-[#17191c]">{title}</h4>
+          <p className="text-sm medium text-[#777b86] mt-0.5">{description}</p>
         </div>
         <ChartSelect value={selectedFilter} onValueChange={onFilterChange} options={filterOptions} />
       </div>

@@ -27,7 +27,7 @@ Client > Caddy (TLS, subdomain routing) > api-gateway (8000)
 | 4008 | inventory | selleazy_inventory | MongoDB (`SELLEASI_INVENTORY_API`) | MVCC stock, reservations, saga participant |
 | 4009 | cart | selleazy_cart | MongoDB (`SELLEASI_CART_API`) | Per-user per-store cart, saga participant |
 | 4010 | organization | selleazy_organization | MongoDB (`SELLEASI_ORGANIZATION_API`) | Org entity, onboarding saga participant |
-| 4011 | review | selleazy_review | MongoDB (`SELLEASI_REVIEW_API`) | Product reviews, moderation (`src.zip` mislabeled as products) |
+| 4011 | review | selleazy_review | MongoDB (`SELLEASI_REVIEW_API`) | Product reviews|
 | 4012 | orders | selleazy_orders | MongoDB (`SELLEASI_ORDERS_API`) | Checkout saga orchestrator |
 | 4017 | subscription | selleazy_subscription | MongoDB | Billing plans |
 
@@ -143,12 +143,12 @@ Root `.env` provides shared secrets (Redis, RabbitMQ, JWT, INTERNAL_SECRET, OTEL
 
 ## Related documentation
 
-- [api-gateway README](../api-gateway/README.md) | [API Contracts](../api-gateway/API_CONTRACTS.md)
-- [authentication README](../authentication/README.md) | [API Contracts](../authentication/API_CONTRACTS.md)
-- [organization README](../organization/README.md) | [API Contracts](../organization/API_CONTRACTS.md)
-- [review README](../review/README.md) | [API Contracts](../review/API_CONTRACTS.md)
-- [orders README](../orders/README.md) | [API Contracts](../orders/API_CONTRACTS.md)
-- [cart README](../cart/README.md) | [API Contracts](../cart/API_CONTRACTS.md)
-- [inventory README](../inventory/README.md) | [API Contracts](../inventory/API_CONTRACTS.md)
-- [payment README](../payment/README.md) | [API Contracts](../payment/API_CONTRACTS.md)
-- [stores README](../stores/README.md) | [API Contracts](../stores/API_CONTRACTS.md)
+- [api-gateway README](./backend/api-gateway/README.md) | [API Contracts](./backend/api-gateway/API_CONTRACTS.md)
+- [authentication README](./backend/authentication/README.md) | [API Contracts](./backend/authentication/API_CONTRACTS.md)
+- [organization README](./backend/organization/README.md) | [API Contracts](./backend/organization/API_CONTRACTS.md)
+- [review README](./backend/review/README.md) | [API Contracts](./backend/review/API_CONTRACTS.md)
+- [orders README](./backend/orders/README.md) | [API Contracts](./backend/orders/API_CONTRACTS.md)
+- [cart README](./backend/cart/README.md) | [API Contracts](./backend/cart/API_CONTRACTS.md)
+- [inventory README](./backend/inventory/README.md) | [API Contracts](./backend/inventory/API_CONTRACTS.md)
+- [payment README](./backend/payment/README.md) | [API Contracts](./backend/payment/API_CONTRACTS.md)
+- [stores README](./backend/stores/README.md) | [API Contracts](./backend/stores/API_CONTRACTS.md)

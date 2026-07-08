@@ -1,20 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { recentOrders, type RecentOrder } from "@/constants/mocks";
 import { RadialBarChartCard } from "@/components/common/charts/ChartRadialStacked";
 import { ordersByStatus, ordersOverTime } from "@/mocks/analytics";
 import { BarChartStacked } from "@/components/common/charts/BarChartStacked";
 import { ChartConfig } from "@/components/ui/chart";
 import useFilter from "@/screens/dashboard/analytics/components/common/shared";
-
-type OrderStatus = RecentOrder["status"];
-
-const statusConfig: Record<OrderStatus, { label: string; className: string }> =
-  {
-    pending: { label: "Pending", className: "text-yellow-700 bg-yellow-50" },
-    completed: { label: "Completed", className: "text-green-700 bg-green-50" },
-    failed: { label: "Failed", className: "text-red-700 bg-red-50" },
-    refunded: { label: "Refunded", className: "text-[#4c4c4c] bg-[#f2f0ed]" },
-  };
+import RecentTransactions from "./RecentTransactions";
 
 export default function Growth() {
   const navigate = useNavigate();
@@ -143,86 +133,8 @@ export default function Growth() {
         </div> */}
       </div>
 
-      {/* recent orders table */}
-      <div className="border border-[#e8e6e3]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e8e6e3]">
-          <p className="text-base  text-[#17191c] ">
-            Recent Transactions
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-[#777b86] ">
-              1 Apr – 30 Apr, 2026
-            </span>
-            <button
-              onClick={() => navigate(`/dashboard/store/${id}/orders`)}
-              className="flex items-center gap-1.5 bg-[var(--dark-1)] text-white text-sm  px-3 py-1.5 hover:opacity-90 "
-            >
-              View all
-            </button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#f2f0ed]">
-                {[
-                  "Customer",
-                  "Order ID",
-                  "Date",
-                  "Time",
-                  "Type",
-                  "Amount",
-                  "Status",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-5 py-3 text-sm  text-[#a3a6af] uppercase  whitespace-nowrap "
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders?.map((order) => {
-                const cfg = statusConfig[order?.status];
-                return (
-                  <tr
-                    key={order?.id}
-                    className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors"
-                  >
-                    <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
-                      {order?.customer}
-                    </td>
-                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
-                      {order?.orderId}
-                    </td>
-                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
-                      {order?.date}
-                    </td>
-                    <td className="px-5 py-3 text-[#777b86]  whitespace-nowrap">
-                      {order?.time}
-                    </td>
-                    <td className="px-5 py-3 text-[#4c4c4c]  whitespace-nowrap">
-                      {order?.type}
-                    </td>
-                    <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">
-                      {order?.amount}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`text-sm  px-2 py-0.5 whitespace-nowrap ${cfg.className}`}
-                      >
-                        {cfg.label}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* recent transactions, now a standalone component wired to real payment data */}
+      <RecentTransactions limit={10} />
     </div>
   );
 }

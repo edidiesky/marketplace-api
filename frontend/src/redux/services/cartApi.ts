@@ -75,6 +75,12 @@ export const cartApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Cart"],
     }),
+
+    // GET /engagement/:productId — public, no auth, "in N carts" social
+    // proof badge on the product page.
+    getCartEngagement: builder.query<{ success: boolean; data: { addsLast24h: number } }, string>({
+      query: (productId) => ({ method: "GET", url: `${CART_URL}/engagement/${productId}` }),
+    }),
   }),
 });
 
@@ -85,4 +91,5 @@ export const {
   useGetCartQuery,
   useUpdateCartItemMutation,
   useDeleteCartItemMutation,
+  useGetCartEngagementQuery,
 } = cartApiSlice;

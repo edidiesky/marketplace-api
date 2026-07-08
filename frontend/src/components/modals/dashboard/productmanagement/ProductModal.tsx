@@ -13,13 +13,13 @@ import {
 } from "@/redux/services/productApi";
 import { closeProductModal } from "@/redux/slices/modalSlice";
 import { Input } from "@/components/ui/input";
-import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import type { ProductColorOrSize } from "@/types/api";
 import {
   uploadImageToCloudinary,
   UploadProgress,
 } from "@/redux/services/cloudinaryAPI";
+import { showToast } from "@/components/common/Toast";
 
 //  types
 
@@ -127,7 +127,7 @@ function ImageSection({ images, onChange }: ImageSectionProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-sm  text-[#17191c] font-dashboard_regular">
+      <span className="text-sm  text-[#17191c] bold">
         Product Images
       </span>
 
@@ -463,19 +463,19 @@ const ProductModal = () => {
     try {
       if (productId) {
         const result = await updateProduct({ id: productId, ...form }).unwrap();
-        toast.success(`${result.data?.name} updated successfully!`);
+        showToast(`${result.data?.name} updated successfully!`, "success");
       } else {
         const result = await createProduct({
           storeid: storeId!,
           ...form,
         }).unwrap();
-        toast.success(`${result.data?.name} created successfully!`);
+        showToast(`${result.data?.name} created successfully!`, "success");
       }
       setTimeout(() => dispatch(closeProductModal()), 300);
     } catch (err: unknown) {
       const error = err as { data?: { error?: string[] }; error?: string };
       (error?.data?.error ?? [error?.error ?? "Unknown error"]).forEach((m) =>
-        toast.error(m),
+        showToast(m, "error"),
       );
     }
   };
@@ -619,7 +619,7 @@ const ProductModal = () => {
 
                 {/* description */}
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm  text-[#17191c] font-dashboard_regular">
+                  <span className="text-sm  text-[#17191c] bold">
                     Description
                   </span>
                   <div className="border border-[#e8e6e3] h-[220px] focus-within:border-[#17191c] transition-colors">
@@ -658,14 +658,14 @@ const ProductModal = () => {
         <div className="border-t h-[68px] flex items-center justify-between px-8 shrink-0">
           <button
             onClick={() => dispatch(closeProductModal())}
-            className="text-sm  text-[#4c4c4c] hover:text-[#17191c] transition-colors font-dashboard_regular"
+            className="text-sm  text-[#4c4c4c] hover:text-[#17191c] transition-colors bold"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isBusy}
-            className="bg-[var(--dark-1)] text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity font-dashboard_regular"
+            className="bg-[var(--dark-1)] text-white text-sm px-6 h-9 flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity bold"
           >
             {isBusy
               ? isEdit

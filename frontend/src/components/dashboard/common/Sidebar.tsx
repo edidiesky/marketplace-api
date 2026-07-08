@@ -97,7 +97,7 @@ export default function Sidebar() {
                   data-tour={item.tour}
                   className={({ isActive }) =>
                     [
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-sm transition-colors w-full mb-0.5",
+                      "flex items-center gap-2.5 px-2.5 py-2 bold rounded-[8px] text-sm transition-colors w-full mb-0.5",
                       isActive
                         ? "bg-[#eeece2] text-[#17191c]"
                         : "text-[#4c4c4c] hover:bg-[#eeece2] hover:text-[#17191c]",

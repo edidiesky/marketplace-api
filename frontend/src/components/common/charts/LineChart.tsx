@@ -95,7 +95,7 @@ function ChartBody({ data, chartConfig, series, isCurrency, emptyMessage }: {
   }
   return (
     <div className="px-2 py-4">
-      <ChartContainer config={chartConfig} className="w-full h-[280px] lg:h-[320px]">
+      <ChartContainer config={chartConfig} className="w-full h-[200px] lg:h-[240px]">
         <LineChart data={data} accessibilityLayer>
           <CartesianGrid vertical={false} stroke="#f2f0ed" strokeDasharray="4" />
           <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} tick={{ fontSize: 14, fill: "#777b86" }} tickFormatter={(v) => formatDate(v)} />
