@@ -19,7 +19,7 @@ export default function SimilarProduct({ currentProductId }: { currentProductId:
 
   return (
     <div className="w-full py-12 border-t border-[#f0f0f0] flex flex-col gap-6">
-      <h3 className="text-xl text-[#171717]">You Might Also Like</h3>
+      <h3 className="text-xl lg:text-3xl bold text-[#171717]">You Might Also Like</h3>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => {
           const pid = product.productId ?? product._id ?? "";

@@ -14,6 +14,7 @@ import { showToast } from "@/components/common/Toast";
 import ProductImage from "./ProductImage";
 import ProductInfoAccordion from "./Productinfoaccordion";
 import ProductPricePanel from "./ProductPricePanel";
+import SellerProfileCard from "./SellerProfileCard";
 
 export default function StoreSingleProduct() {
   const { id: storeId, productId } = useParams<{
@@ -78,18 +79,9 @@ export default function StoreSingleProduct() {
   }
 
   if (!product) return null;
-  // Returns & exchanges not accepted
-  // const shippingInfo = {
-  //   processingTime: "Ships out within 7–10 business days",
-  //   returnsAccepted: false,
-  //   shippingCost: "Cost to ship: USD 36.36",
-  //   shipsFrom: "Ships from: United States",
-  //   deliverTo: "Deliver to Nigeria",
-  // };
-
   return (
     <div className="w-full">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+      <div className="xl:max-w-7xl mx-auto py-12 lg:px-0 px-4">
         <button
           onClick={() => navigate(`/store/${storeId}`)}
           className="flex items-center gap-2 text-base bold text-[#666] hover:text-[#171717] mb-8 transition-colors"
@@ -100,8 +92,15 @@ export default function StoreSingleProduct() {
 
         <div className="grid lg:grid-cols-[60%_40%] gap-16">
           {/* left section of single product */}
-          <div className="flex w-full flex-col gap-8">
+          <div className="flex w-full flex-col gap-8 lg:gap-16">
             <ProductImage images={product?.images ?? []} />
+            <ProductReview
+              productId={productId ?? ""}
+              onViewAll={() =>
+                navigate(`/store/${storeId}/reviews/${productId}`)
+              }
+            />
+            <SellerProfileCard/>
           </div>
 
           {/* right section of single product */}
@@ -140,10 +139,6 @@ export default function StoreSingleProduct() {
           </div>
         </div>
 
-        <ProductReview
-          productId={productId ?? ""}
-          onViewAll={() => navigate(`/store/${storeId}/reviews/${productId}`)}
-        />
         <SimilarProduct currentProductId={productId ?? ""} />
       </div>
     </div>
