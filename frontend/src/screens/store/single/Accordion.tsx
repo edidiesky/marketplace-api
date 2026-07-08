@@ -41,7 +41,7 @@ export default function Accordion({
 
   return (
     <div
-      className={`flex flex-col divide-y divide-black/10 border-black/10 ${className}`}
+      className={`flex flex-col  ${className}`}
     >
       {items.map((item) => {
         const isOpen = openIds.has(item.id);
@@ -55,7 +55,7 @@ export default function Accordion({
               onClick={() => toggle(item.id)}
               aria-expanded={isOpen}
               aria-controls={panelId}
-              className="w-full flex hover:bg-[#33140008] items-center justify-between gap-4 p-4 rounded-full text-left text-base bold text-[#171717] hover:text-black h-14 transition-colors"
+              className="w-full flex hover:bg-[#33140008] items-center justify-between gap-4 p-4 rounded-full text-left text-base lg:text-lg bold text-[#171717] hover:text-black h-14 transition-colors"
             >
               <span className="flex items-center gap-2">
                 {item.icon}

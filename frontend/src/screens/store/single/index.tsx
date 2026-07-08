@@ -30,7 +30,7 @@ export default function StoreSingleProduct() {
   const { data: reviewData } = useGetProductReviewsQuery(productId ?? "", {
     skip: !productId,
   });
-  
+
   const [addToCart, { isLoading: addingToCart }] = useAddToCartMutation();
 
   const product = productData?.data;
@@ -78,6 +78,14 @@ export default function StoreSingleProduct() {
   }
 
   if (!product) return null;
+  // Returns & exchanges not accepted
+  // const shippingInfo = {
+  //   processingTime: "Ships out within 7–10 business days",
+  //   returnsAccepted: false,
+  //   shippingCost: "Cost to ship: USD 36.36",
+  //   shipsFrom: "Ships from: United States",
+  //   deliverTo: "Deliver to Nigeria",
+  // };
 
   return (
     <div className="w-full">
@@ -112,6 +120,22 @@ export default function StoreSingleProduct() {
             />
             <ProductInfoAccordion
               itemDetails={product.description ? [product.description] : []}
+              shippingInfo={{
+                processingTime: "7–10 business days",
+                returnsAccepted: false,
+                shippingCost: "USD 36.36",
+                shipsFrom: "United States",
+                deliverTo: "Nigeria",
+              }}
+              sellers={[
+                {
+                  id: "string",
+                  name: "string",
+                  avatarUrl: "string",
+                  isStarSeller: true,
+                  blurb: "string",
+                },
+              ]}
             />
           </div>
         </div>

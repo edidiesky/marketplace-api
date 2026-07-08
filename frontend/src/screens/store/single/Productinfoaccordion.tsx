@@ -86,6 +86,7 @@ export default function ProductInfoAccordion({
       : []),
   ];
 
+
   return (
     <div className="w-full flex flex-col gap-6">
       {isStarSeller && (
@@ -124,7 +125,7 @@ function ShippingContent({
   onEditDeliveryLocation?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 items-start">
       <div className="flex items-center gap-3">
         <Calendar size={18} className="text-[#666] shrink-0" />
         <span>Ships out within {info.processingTime}</span>
@@ -149,7 +150,7 @@ function ShippingContent({
           Ships from: <span className="bold">{info.shipsFrom}</span>
         </span>
       </div>
-      <div className="flex items-center gap-2 pt-1 text-[#171717]">
+      <div className="flex flex-1 rounded-full items-center gap-2 text-[#171717] py-3 px-4 cursor-pointer hover:bg-[#e8e6e3]">
         <span className="bold">Deliver to {info.deliverTo}</span>
         <button
           onClick={onEditDeliveryLocation}
