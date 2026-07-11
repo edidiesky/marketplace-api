@@ -46,7 +46,7 @@ export default function StoreListing() {
           alt="store banner"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-        <div className="absolute inset-0 flex flex-col justify-end px-6 lg:px-16 pb-10 max-w-7xl mx-auto">
+        <div className="absolute inset-0 flex flex-col justify-end px-6 lg:px-16 pb-10 max-w-screen-2xl mx-auto">
           <p className="text-[11px]  text-white/50 uppercase tracking-widest mb-2">
             Welcome to
           </p>
@@ -65,7 +65,7 @@ export default function StoreListing() {
       </div>
 
       {/* body */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-10">
 
         {/* controls row */}
         <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">

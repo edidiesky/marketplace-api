@@ -125,7 +125,7 @@ function ShippingContent({
   onEditDeliveryLocation?: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 items-start">
+    <div className="flex w-full flex-col gap-4 items-start">
       <div className="flex items-center gap-3">
         <Calendar size={18} className="text-[#666] shrink-0" />
         <span>Ships out within {info.processingTime}</span>

@@ -38,26 +38,12 @@ export default function BuyerProfile() {
   const displayName = user
     ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || currentUser.name
     : currentUser.name;
-
-  const initial = (displayName?.charAt(0) ?? "?").toUpperCase();
-
   return (
     <div className="w-full min-h-screen bg-[#FAF8F5]">
       <div className="max-w-4xl mx-auto px-4 lg:px-8 py-12 flex flex-col gap-8">
 
         {/* header */}
-        <div className="flex items-center gap-4">
-          {user?.profileImage ? (
-            <img src={user.profileImage} alt="avatar" className="w-14 h-14 object-cover" />
-          ) : (
-            <div className="w-14 h-14 bg-[#171717] flex items-center justify-center text-white text-xl">
-              {initial}
-            </div>
-          )}
-          <div>
-            <p className="text-lg text-[#171717]">{displayName}</p>
-          </div>
-        </div>
+        <p className="text-xl lg:text-2xl bold text-[#171717]">{displayName}</p>
 
         {/* tab bar */}
         <div className="flex items-center border-b border-[#e8e6e3] overflow-x-auto">

@@ -64,7 +64,7 @@ const features = [
 export default function StickyFeatures() {
   return (
     <section className="bg-white">
-      <div className="px-4 lg:px-16 py-24 text-center max-w-7xl mx-auto">
+      <div className="px-4 lg:px-16 py-24 text-center max-w-screen-2xl mx-auto">
         <span className="text-xs uppercase  text-[#888]">
           Everything you need
         </span>
@@ -81,7 +81,7 @@ export default function StickyFeatures() {
             className="sticky top-[68px] min-h-screen flex items-center px-4 lg:px-16 py-20 bg-white"
             style={{ zIndex: i + 1 }}
           >
-            <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+            <div className="w-full max-w-screen-2xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
               <div className="flex flex-col gap-6">
                 <span
                   className="text-xs   px-3 py-1 rounded-full w-fit"

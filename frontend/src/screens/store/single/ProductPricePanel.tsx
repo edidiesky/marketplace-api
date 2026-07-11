@@ -45,7 +45,7 @@ export default function ProductPricePanel({
 
   return (
     <div className="w-full flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
+      <div className="w-full flex flex-col gap-2">
         <div className="flex flex-col gap-2">
           <h4 className="text-lg bold text-red-600">10+ views in 24 Hours</h4>
           <h1 className="text-4xl lg:text-5xl text-[#171717]">
@@ -53,8 +53,8 @@ export default function ProductPricePanel({
           </h1>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
+        <div className="flex w-full flex-col gap-4">
+          <div className="flex w-full flex-col gap-2">
             <h4 className="text-base bold text-gray-600">
               Local taxes included (where applicable)
             </h4>
@@ -65,7 +65,7 @@ export default function ProductPricePanel({
           </div>
 
           {product.colors?.length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-2">
               <span className="text-lg bold text-[#171717]">
                 Colors Available
               </span>
@@ -83,7 +83,7 @@ export default function ProductPricePanel({
           )}
 
           {product.size?.length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-2">
               <span className="text-lg bold text-[#171717]">Sizes</span>
               <div className="flex items-center gap-2">
                 {product.size.map((s, i) => (
@@ -99,7 +99,7 @@ export default function ProductPricePanel({
           )}
 
           {product.category?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-full flex-wrap gap-2">
               {product.category.map((cat) => (
                 <span
                   key={cat}
@@ -111,7 +111,7 @@ export default function ProductPricePanel({
             </div>
           )}
           {/* sizes */}
-          <div className="flex items-center rounded-full border justify-between border-black/10 overflow-hidden">
+          <div className="flex w-full items-center rounded-full border justify-between border-black/10 overflow-hidden">
             <button
               onClick={onDecrement}
               className="w-12 h-12 flex items-center justify-center hover:bg-[#f4f3ee] transition-colors"

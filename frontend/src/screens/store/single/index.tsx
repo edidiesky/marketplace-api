@@ -67,7 +67,7 @@ export default function StoreSingleProduct() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12 grid lg:grid-cols-2 gap-16">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-12 grid lg:grid-cols-2 gap-16">
         <Skeleton className="w-full aspect-square" />
         <div className="flex flex-col gap-4">
           <Skeleton className="h-8 w-3/4" />
@@ -80,8 +80,8 @@ export default function StoreSingleProduct() {
 
   if (!product) return null;
   return (
-    <div className="w-full">
-      <div className="xl:max-w-7xl mx-auto py-12 lg:px-0 px-4">
+    <div className="max-w-screen-xl mx-auto">
+      <div className="w-full py-12 px-4">
         <button
           onClick={() => navigate(`/store/${storeId}`)}
           className="flex items-center gap-2 text-base bold text-[#666] hover:text-[#171717] mb-8 transition-colors"
@@ -90,7 +90,7 @@ export default function StoreSingleProduct() {
           Back to store
         </button>
 
-        <div className="grid lg:grid-cols-[60%_40%] gap-16">
+        <div className="grid lg:grid-cols-[60%_40%] gap-16 w-full">
           {/* left section of single product */}
           <div className="flex w-full flex-col gap-8 lg:gap-16">
             <ProductImage images={product?.images ?? []} />

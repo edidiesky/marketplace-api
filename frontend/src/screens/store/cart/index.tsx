@@ -184,7 +184,7 @@ export default function Cart() {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16 flex flex-col gap-4">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-16 flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-24 w-full" />
         ))}
@@ -197,7 +197,7 @@ export default function Cart() {
 
   return (
     <div className="w-full min-h-screen bg-[#FAF8F5] py-16">
-      <div className="w-[95%] max-w-7xl mx-auto">
+      <div className="w-[95%] max-w-screen-2xl mx-auto">
 
         <h1 className="text-4xl bold text-[#171717] mb-10">
           My Shopping Cart

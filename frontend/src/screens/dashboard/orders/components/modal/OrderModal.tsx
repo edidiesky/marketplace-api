@@ -248,18 +248,18 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
           </div>
         </div>
 
-        <div className="border-t border-[#e8e6e3] px-6 py-4 flex items-center justify-between">
-          <button onClick={onClose} className="text-sm  text-[#777b86] bold hover:text-[#17191c]">
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdate}
-            disabled={isLoading}
-            className="bg-[var(--dark-1)] text-white text-sm  px-5 py-2 hover:opacity-90 disabled:opacity-50 bold"
-          >
-            {isLoading ? "Saving..." : "Update fulfillment"}
-          </button>
-        </div>
+          <div className="border-t border-[#e8e6e3] px-6 py-4 flex items-center justify-between">
+            <button onClick={onClose} className="text-sm  text-[#777b86] bold hover:text-[#17191c]">
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdate}
+              disabled={isLoading}
+              className="bg-[var(--dark-1)] text-white text-sm  px-5 py-2 hover:opacity-90 disabled:opacity-50 bold"
+            >
+              {isLoading ? "Saving..." : "Update fulfillment"}
+            </button>
+          </div>
       </motion.div>
     </div>
   );

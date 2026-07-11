@@ -51,7 +51,7 @@ export default function StoreHeader() {
   return (
     <header className="w-full sticky top-0 z-50 bg-[#FAF8F5] border-b border-[#e8e6e3]">
       {/* main row */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 h-[138px] flex items-start py-6 gap-4">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 h-[138px] flex items-start py-6 gap-4">
         {/* left — store name */}
         <Link
           to={`/store/${id}`}
