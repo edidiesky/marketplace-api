@@ -4,6 +4,8 @@ import {
   SERVICE_NAME,
   RABBITMQ_URL,
   EXCHANGES,
+  QUEUES,
+  ROUTING_KEYS,
 } from "../constants";
 
 const MAX_RETRIES         = 10;
@@ -16,6 +18,24 @@ const EXCHANGE_LIST = [
   { name: EXCHANGES.STORES,       type: "topic"  as const },
   { name: EXCHANGES.STORES_DLX,   type: "direct" as const },
   { name: EXCHANGES.NOTIFICATION, type: "topic"  as const },
+  { name: EXCHANGES.PAYMENT,      type: "topic"  as const },
+];
+
+const QUEUE_TOPOLOGY = [
+  {
+    queue:      QUEUES.CUSTOMER_UPSERT_ON_PAYMENT,
+    exchange:   EXCHANGES.PAYMENT,
+    routingKey: ROUTING_KEYS.PAYMENT_COMPLETED,
+    options: {
+      durable:   true,
+      arguments: {
+        "x-queue-type":              "quorum",
+        "x-delivery-limit":          5,
+        "x-dead-letter-exchange":    EXCHANGES.STORES_DLX,
+        "x-dead-letter-routing-key": "stores.dead",
+      },
+    },
+  },
 ];
 
 export async function connectRabbitMQ(): Promise<void> {
@@ -44,10 +64,23 @@ export async function connectRabbitMQ(): Promise<void> {
         await channel.assertExchange(ex.name, ex.type, { durable: true });
       }
 
+      for (const t of QUEUE_TOPOLOGY) {
+        await channel.assertQueue(t.queue, t.options);
+        await channel.bindQueue(t.queue, t.exchange, t.routingKey);
+        logger.info("rabbitmq_queue_bound", {
+          event:      "rabbitmq_queue_bound",
+          service:    SERVICE_NAME,
+          queue:      t.queue,
+          exchange:   t.exchange,
+          routingKey: t.routingKey,
+        });
+      }
+
       logger.info("rabbitmq_connected", {
         event:     "rabbitmq_connected",
         service:   SERVICE_NAME,
         exchanges: EXCHANGE_LIST.map((e) => e.name),
+        queues:    QUEUE_TOPOLOGY.map((t) => t.queue),
       });
 
       return;
