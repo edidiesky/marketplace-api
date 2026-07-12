@@ -38,6 +38,39 @@ export const CheckoutHandler = asyncHandler(
   }
 );
 
+export const GetOrderAnalyticsHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const ctx     = readGatewayContext(req);
+    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const range = (req.query["range"] as string) ?? "3-months";
+    const analytics = await orderService.getAnalytics(storeId, range);
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      success: true,
+      data:    analytics,
+    });
+  }
+);
+
+export const GetOrderStatsHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const ctx     = readGatewayContext(req);
+    const storeId = ctx.store.storeId ?? req.params["storeId"] as string;
+
+    if (!storeId) throw AppError.badRequest("Store ID is required.");
+
+    const breakdown = await orderService.getStatusBreakdown(storeId);
+
+    res.status(SUCCESSFULLY_FETCHED_STATUS_CODE).json({
+      success: true,
+      data:    breakdown,
+    });
+  }
+);
+
 export const GetStoreOrdersHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const ctx     = readGatewayContext(req);
@@ -45,14 +78,16 @@ export const GetStoreOrdersHandler = asyncHandler(
 
     if (!storeId) throw AppError.badRequest("Store ID is required.");
 
-    const page        = Number(req.query["page"]  ?? 1);
-    const limit       = Number(req.query["limit"] ?? 10);
-    const orderStatus = req.query["orderStatus"]  as string | undefined;
+    const page              = Number(req.query["page"]  ?? 1);
+    const limit             = Number(req.query["limit"] ?? 10);
+    const orderStatus       = req.query["orderStatus"]       as string | undefined;
+    const fulfillmentStatus = req.query["fulfillmentStatus"] as string | undefined;
 
     const query: Record<string, unknown> = {
       storeId: new Types.ObjectId(storeId),
     };
-    if (orderStatus) query["orderStatus"] = orderStatus;
+    if (orderStatus)       query["orderStatus"]       = orderStatus;
+    if (fulfillmentStatus) query["fulfillmentStatus"] = fulfillmentStatus;
 
     const result = await orderService.getOrders(query, page, limit);
 
