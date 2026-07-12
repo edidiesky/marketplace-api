@@ -2,6 +2,7 @@ import logger      from "../utils/logger";
 import redisClient from "../config/redis";
 import { connectMongoDB }              from "../config/database";
 import { connectRabbitMQ }             from "../messaging/connection";
+import { connectStoresConsumer }       from "../messaging/consumer";
 import { trackError, serverHealthGauge } from "../utils/metrics";
 import { SERVICE_NAME }                from "../constants";
 
@@ -42,9 +43,10 @@ export async function bootstrapServer(): Promise<void> {
   if (!mongoUrl) throw new Error("DATABASE_URL is not defined");
 
   const steps: InitStep[] = [
-    { name: "mongodb",  fn: () => connectMongoDB(mongoUrl)           },
-    { name: "redis",    fn: async () => { await redisClient.ping(); } },
-    { name: "rabbitmq", fn: connectRabbitMQ                          },
+    { name: "mongodb",         fn: () => connectMongoDB(mongoUrl)           },
+    { name: "redis",           fn: async () => { await redisClient.ping(); } },
+    { name: "rabbitmq",        fn: connectRabbitMQ                          },
+    { name: "stores_consumer", fn: connectStoresConsumer                    },
   ];
 
   const start = process.hrtime.bigint();
