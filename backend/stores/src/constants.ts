@@ -21,18 +21,22 @@ export const EXCHANGES = {
   STORES:       "selleasi.stores",
   STORES_DLX:   "selleasi.stores.dlx",
   NOTIFICATION: "selleasi.notification",
+  PAYMENT:      "selleasi.payment",
 } as const;
 
 export const ROUTING_KEYS = {
   STORE_CREATED:                 "store.created",
   STORE_DOMAIN_VERIFIED:         "store.domain.verified",
   NOTIFICATION_STORE_ONBOARDING: "notification.store.onboarding.completed",
+  PAYMENT_COMPLETED:             "payment.completed",
 } as const;
 
 export type StoreRoutingKey =
   (typeof ROUTING_KEYS)[keyof typeof ROUTING_KEYS];
 
-export const QUEUES = {} as const;
+export const QUEUES = {
+  CUSTOMER_UPSERT_ON_PAYMENT: "selleasi.stores.customer.payment.completed.queue",
+} as const;
 
 export const PERMISSION_CACHE_TTL_SEC = 60 * 5;
 export const STORE_CACHE_TTL          = 3600;
