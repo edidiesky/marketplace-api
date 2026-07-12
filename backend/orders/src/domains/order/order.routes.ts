@@ -16,6 +16,8 @@ import {
   GetUserOrdersHandler,
   UpdateFulfillmentHandler,
   AbandonOrderHandler,
+  GetOrderStatsHandler,
+  GetOrderAnalyticsHandler,
 } from "./order.controller";
 
 const router = Router();
@@ -38,6 +40,18 @@ router.get(
   "/:storeId/store",
   authenticate,
   GetStoreOrdersHandler
+);
+
+router.get(
+  "/:storeId/stats",
+  authenticate,
+  GetOrderStatsHandler
+);
+
+router.get(
+  "/:storeId/analytics",
+  authenticate,
+  GetOrderAnalyticsHandler
 );
 
 router.get(
