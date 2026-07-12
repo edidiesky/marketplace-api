@@ -7,6 +7,7 @@ import morgan       from "morgan";
 import dotenv         from "dotenv";
 dotenv.config()
 import storeRoutes                from "./domains/stores/store.routes";
+import customerRoutes             from "./domains/customer/customer.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";
 import { reqReplyTime, storesRegistry } from "./utils/metrics";
@@ -49,6 +50,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/stores", storeRoutes);
+app.use("/api/v1/stores", customerRoutes);
 
 app.get("/metrics", async (_req, res) => {
   try {
