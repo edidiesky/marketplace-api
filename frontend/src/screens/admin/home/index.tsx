@@ -98,8 +98,8 @@ export default function AdminHome() {
               </thead>
               <tbody>
                 {recentPayments.length > 0 ? recentPayments.map((p) => (
-                  <tr key={p._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
-                    <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{p._id}</td>
+                  <tr key={p.paymentId} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+                    <td className="px-5 py-3 text-xs text-[#a3a6af] whitespace-nowrap">{p.paymentId}</td>
                     <td className="px-5 py-3 text-xs text-[#777b86] whitespace-nowrap">{p.orderId}</td>
                     <td className="px-5 py-3  text-[#17191c] whitespace-nowrap">₦{p.amount.toLocaleString("en-NG")}</td>
                     <td className="px-5 py-3">

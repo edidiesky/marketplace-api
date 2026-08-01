@@ -343,7 +343,7 @@ html.lenis body {
   border-radius: 10px;
   border: 1px solid transparent;
   background-color: #ffffff;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Bold", sans-serif;
   font-size: 13.5px;
   line-height: 1.4;
   color: #17191c;
@@ -399,7 +399,7 @@ html.lenis body {
   padding: 5px 12px;
   border-radius: 6px;
   font-size: 12px;
-  font-family: "DM Sans", sans-serif;
+  font-family: "Bold", sans-serif;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -487,7 +487,7 @@ html.lenis body {
   padding: 20px !important;
   min-width: 280px !important;
   max-width: 340px !important;
-  font-family: "Bold", sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 .selleasi-tour-popover .driver-popover-title {

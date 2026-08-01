@@ -10,39 +10,39 @@ export default function Stats() {
           Monitor how effectively your store is meeting sales targets.
         </p>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4">
         {statBlocks.map((block, i) => (
           <div
             key={block.id}
-            className={`flex flex-col gap-3 ${i < statBlocks.length - 1 ? "lg:border-r px-4 border-b lg:border-b-0 border-[#e8e6e3]" : "px-4"}`}
+            className={`flex flex-col gap-6 lg:gap-7 ${i < statBlocks.length - 1 ? "lg:border-r px-4 border-b lg:border-b-0 border-[#e8e6e3]" : "px-4"}`}
           >
-            <p className="text-xs  uppercase  text-[#a3a6af] ">
-              {block.label}
-            </p>
-            <div>
-              <p className="text-3xl  text-[#17191c]">
-                {block.value}
+            <div className="w-full flex flex-col gap-2">
+              <p className="text-xs  uppercase  text-[#a3a6af] ">
+                {block.label}
               </p>
-              <p className="text-xs text-[#777b86] mt-0.5">
-                {block.sub}
-              </p>
+              <div>
+                <p className="text-3xl  text-[#17191c]">{block.value}</p>
+                <p className="text-xs text-[#777b86] mt-0.5">{block.sub}</p>
+              </div>
             </div>
-            <div className="w-full h-1.5 bg-[#f2f0ed]">
-              <div
-                className="h-full rounded-full bg-[#5d2a1a]"
-                style={{ width: `${block.progress}%` }}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-xs  px-1.5 py-0.5 ${block.deltaPositive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
-              >
-                {block.deltaPositive ? "+" : "-"}
-                {block.delta}
-              </span>
-              <span className="text-xs text-[#777b86] ">
-                {block.deltaNote}
-              </span>
+            <div className="w-full flex flex-col gap-2">
+              <div className="w-full h-1.5 rounded-full bg-[#f2f0ed]">
+                <div
+                  className="h-full rounded-full bg-[#5d2a1a]"
+                  style={{ width: `${block.progress}%` }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-sm px-3 rounded-full py-0.5 ${block.deltaPositive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+                >
+                  {block.deltaPositive ? "+" : "-"}
+                  {block.delta}
+                </span>
+                <span className="text-xs text-[#777b86] ">
+                  {block.deltaNote}
+                </span>
+              </div>
             </div>
           </div>
         ))}

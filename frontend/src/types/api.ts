@@ -1,4 +1,4 @@
-//  Shared 
+//  Shared
 export interface ApiSuccessResponse {
   success: boolean;
   message: string;
@@ -11,33 +11,49 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
-//  Auth 
-export interface LoginPayload { email: string; password: string; }
-export interface VerifyOtpPayload { email: string; otp: string; }
-export interface RequestResetPayload { email: string; }
+//  Auth
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+export interface VerifyOtpPayload {
+  email: string;
+  otp: string;
+}
+export interface RequestResetPayload {
+  email: string;
+}
 
-export interface PasswordResetPayload { token: string; password: string; }
+export interface PasswordResetPayload {
+  token: string;
+  password: string;
+}
 
-export interface ChangePasswordPayload { currentPassword: string; newPassword: string; email: string; }
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  email: string;
+}
 
 export interface AuthResponse {
-  success:      boolean;
-  accessToken:  string;
+  success: boolean;
+  accessToken: string;
   refreshToken: string;
   user: {
-    userId:           string;
-    userType:         string;
-    organizationId:   string;
+    userId: string;
+    userType: string;
+    organizationId: string;
     organizationType: string;
-    name:             string;
-    roles:            string[];
+    name: string;
+    roles: string[];
   };
 }
 
 //  User
 export interface User {
-  userId:           string;
-  email?:           string;
+  _id?:string;
+  userId: string;
+  email?: string;
   userType:
     | "seller:admin"
     | "seller:member"
@@ -48,17 +64,17 @@ export interface User {
     | "investor"
     | "advisor"
     | "system";
-  organizationId:   string;
+  organizationId: string;
   organizationType: string;
-  name:             string;
-  roles:            string[];
-  firstName?:       string;
-  lastName?:        string;
+  name: string;
+  roles: string[];
+  firstName?: string;
+  lastName?: string;
   isEmailVerified?: boolean;
-  profileImage?:    string;
-  phone?:           string;
-  gender?:          "Male" | "Female";
-  createdAt?:       string;
+  profileImage?: string;
+  phone?: string;
+  gender?: "Male" | "Female";
+  createdAt?: string;
 }
 
 export interface UpdateUserPayload {
@@ -85,7 +101,7 @@ export interface UserQueryParams {
   email?: string;
 }
 
-//  Store 
+//  Store
 export interface Store {
   _id?: string;
   storeId?: string;
@@ -100,22 +116,40 @@ export interface Store {
   createdAt: string;
 }
 
-export interface CreateStorePayload { name: string; subdomain: string; description?: string; email?: string; address?: string; }
-export interface UpdateStorePayload { name?: string; description?: string; logo?: string; address?: Record<string, string>; }
-export interface StoreListResponse { success: boolean; data: Store[]; pagination: PaginationMeta; }
+export interface CreateStorePayload {
+  name: string;
+  subdomain: string;
+  description?: string;
+  email?: string;
+  address?: string;
+}
+export interface UpdateStorePayload {
+  name?: string;
+  description?: string;
+  logo?: string;
+  address?: Record<string, string>;
+}
+export interface StoreListResponse {
+  success: boolean;
+  data: Store[];
+  pagination: PaginationMeta;
+}
 export interface MyStoreResponse {
-  success:    boolean;
+  success: boolean;
   data: {
-    stores:     Store[];
+    stores: Store[];
     totalCount: number;
     totalPages: number;
-    page:       number;
-    limit:      number;
+    page: number;
+    limit: number;
   };
 }
 
-//  Product 
-export interface ProductColorOrSize { name: string; value: string; }
+//  Product
+export interface ProductColorOrSize {
+  name: string;
+  value: string;
+}
 
 export interface Product {
   _id?: string;
@@ -138,14 +172,14 @@ export interface Product {
 }
 
 export interface CreateProductPayload {
-  name:          string;
-  description?:  string;
-  price:         number;
-  images?:       string[];
-  category?:     string[];
-  colors?:       ProductColorOrSize[];
-  size?:         ProductColorOrSize[];
-  sku?:          string;
+  name: string;
+  description?: string;
+  price: number;
+  images?: string[];
+  category?: string[];
+  colors?: ProductColorOrSize[];
+  size?: ProductColorOrSize[];
+  sku?: string;
   stockQuantity?: number;
 }
 
@@ -161,55 +195,69 @@ export interface UpdateProductPayload {
 }
 
 export interface ProductListResponse {
-  success:    boolean;
+  success: boolean;
   data: {
-    products:   Product[];
+    products: Product[];
     totalCount: number;
     totalPages: number;
-    page:       number;
-    limit:      number;
+    page: number;
+    limit: number;
   };
 }
-export interface SearchProductsParams { q?: string; storeId?: string; minPrice?: number; maxPrice?: number; page?: number; limit?: number; }
-export interface AutocompleteResult { success: boolean; data: { name: string; _id: string }[]; }
+export interface SearchProductsParams {
+  q?: string;
+  storeId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  page?: number;
+  limit?: number;
+}
+export interface AutocompleteResult {
+  success: boolean;
+  data: { name: string; _id: string }[];
+}
 
-//  Cart 
+//  Cart
 export interface CartItem {
-  productId:           string;
-  productTitle:        string;
+  productId: string;
+  productTitle: string;
   productDescription?: string;
-  productPrice:        number;
-  productQuantity:     number;
-  productImage:        string[];
-  reservedAt?:         string;
-  availabilityStatus:  "available" | "unavailable";
+  productPrice: number;
+  productQuantity: number;
+  productImage: string[];
+  reservedAt?: string;
+  availabilityStatus: "available" | "unavailable";
   unavailabilityReason?: string;
 }
 
 export interface Cart {
-  _id?:       string;
-  cartId?:    string;
-  userId:     string;
-  sellerId?:  string;
-  storeId:    string;
-  fullName?:  string;
-  email?:     string;
-  cartItems:  CartItem[];
-  quantity:   number;
+  _id?: string;
+  cartId?: string;
+  userId: string;
+  sellerId?: string;
+  storeId: string;
+  fullName?: string;
+  email?: string;
+  cartItems: CartItem[];
+  quantity: number;
   totalPrice: number;
-  expireAt:   string;
-  version:    number;
+  expireAt: string;
+  version: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
-//  Order 
+//  Order
 export type OrderStatus =
+  | "pending"
+  | "reserving"
   | "payment_pending"
   | "payment_initiated"
   | "completed"
   | "failed"
+  | "cancelled"
   | "out_of_stock";
+
 
 // Full enum from order.model.ts
 export type FulfillmentStatus =
@@ -221,6 +269,21 @@ export type FulfillmentStatus =
   | "delivered"
   | "delivery_failed"
   | "returned";
+
+export interface OrderStatsResponse {
+  success: boolean;
+  data: Record<OrderStatus, number>;
+}
+
+export interface OrderAnalyticsResponse {
+  success: boolean;
+  data: {
+    ordersOverTime: { date: string; orders: number; avgValue: number }[];
+    fulfillmentRate: { fulfilled: number; unfulfilled: number };
+    ordersByDayOfWeek: { date: string; orders: number }[];
+    repeatVsNew: { repeat: number; new: number };
+  };
+}
 
 // Backend shipping is flat fields — NOT nested shippingAddress object
 export interface ShippingAddress {
@@ -234,39 +297,39 @@ export interface ShippingAddress {
 }
 
 export interface Order {
-  _id?:              string;
-  orderId?:          string;
-  userId:            string;
-  sellerId?:         string;
-  storeId:           string;
-  cartId?:           string;
-  fullName?:         string;
-  quantity?:         number;
-  totalPrice?:       number;
-  totalAmount?:      number;
-  cartItems?:        CartItem[];
-  items?:            CartItem[];
-  orderStatus:       OrderStatus;
+  _id?: string;
+  orderId?: string;
+  userId: string;
+  sellerId?: string;
+  storeId: string;
+  cartId?: string;
+  fullName?: string;
+  quantity?: number;
+  totalPrice?: number;
+  totalAmount?: number;
+  cartItems?: CartItem[];
+  items?: CartItem[];
+  orderStatus: OrderStatus;
   fulfillmentStatus: FulfillmentStatus;
-  shipping?:         ShippingAddress;
-  trackingNumber?:   string;
-  courierName?:      string;
-  receiptUrl?:       string;
-  createdAt?:        string;
-  updatedAt?:        string;
+  shipping?: ShippingAddress;
+  trackingNumber?: string;
+  courierName?: string;
+  receiptUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 export interface PaginatedOrders {
   success: boolean;
   data: {
-    orders:     Order[];
+    orders: Order[];
     totalCount: number;
     totalPages: number;
-    page:       number;
-    limit:      number;
+    page: number;
+    limit: number;
   };
 }
 
-//  Inventory 
+//  Inventory
 export interface Inventory {
   _id: string;
   productId: string;
@@ -279,20 +342,27 @@ export interface Inventory {
   warehouseName?: string;
 }
 
-export interface CreateInventoryPayload { productId: string; quantityOnHand: number; reorderPoint?: number; }
+export interface CreateInventoryPayload {
+  productId: string;
+  quantityOnHand: number;
+  reorderPoint?: number;
+}
 export interface InventoryListResponse {
   success: boolean;
   data: {
     inventories: Inventory[];
-    totalCount:  number;
-    totalPages:  number;
-    page:        number;
-    limit:       number;
+    totalCount: number;
+    totalPages: number;
+    page: number;
+    limit: number;
   };
 }
-export interface InventoryAvailabilityResponse { success: boolean; data: { quantityAvailable: number; isInStock: boolean }; }
+export interface InventoryAvailabilityResponse {
+  success: boolean;
+  data: { quantityAvailable: number; isInStock: boolean };
+}
 
-//  Payment 
+//  Payment
 export interface Payment {
   paymentId: string;
   orderId: string;
@@ -307,20 +377,23 @@ export interface Payment {
 }
 
 export interface InitializePaymentPayload {
-  orderId:       string;
-  gateway:       "paystack" | "flutterwave";
+  orderId: string;
+  gateway: "paystack" | "flutterwave";
   customerEmail: string;
-  customerName:  string;
-  phone?:        string;
-  currency?:     string;
+  customerName: string;
+  phone?: string;
+  currency?: string;
 }
-export interface RefundPayload { amount?: number; reason?: string; }
+export interface RefundPayload {
+  amount?: number;
+  reason?: string;
+}
 export interface PaymentHistoryResponse {
   success: boolean;
   data: { payments: Payment[]; totalCount: number; totalPages: number };
 }
 
-//  Payout 
+//  Payout
 export interface Payout {
   _id: string;
   sellerId: string;
@@ -328,9 +401,13 @@ export interface Payout {
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
-export interface PayoutRequestPayload { amount: number; bankCode: string; accountNumber: string; }
+export interface PayoutRequestPayload {
+  amount: number;
+  bankCode: string;
+  accountNumber: string;
+}
 
-//  Wallet 
+//  Wallet
 export interface Wallet {
   _id: string;
   sellerId: string;
@@ -339,7 +416,7 @@ export interface Wallet {
   ledgerBalance: number;
 }
 
-//  Notification 
+//  Notification
 export interface Notification {
   _id: string;
   userId: string;
@@ -350,10 +427,14 @@ export interface Notification {
 }
 export interface NotificationListResponse {
   success: boolean;
-  data: { notifications: Notification[]; totalCount: number; unreadCount: number };
+  data: {
+    notifications: Notification[];
+    totalCount: number;
+    unreadCount: number;
+  };
 }
 
-//  Review 
+//  Review
 export interface Review {
   _id: string;
   productId: string;
@@ -365,21 +446,69 @@ export interface Review {
   helpfulCount: number;
   createdAt: string;
 }
-export interface CreateReviewPayload { productId: string; rating: number; comment: string; }
-export interface RespondToReviewPayload { response: string; }
+export interface CreateReviewPayload {
+  productId: string;
+  rating: number;
+  comment: string;
+}
+export interface RespondToReviewPayload {
+  response: string;
+}
 export interface ReviewStats {
   averageRating: number;
-  totalReviews:  number;
-  distribution:  Record<string, number>;
+  totalReviews: number;
+  distribution: Record<string, number>;
 }
 export interface ReviewListResponse {
   success: boolean;
   data: {
-    reviews:    Review[];
-    stats:      ReviewStats;
+    reviews: Review[];
+    stats: ReviewStats;
     totalCount: number;
     totalPages: number;
-    page:       number;
-    limit:      number;
+    page: number;
+    limit: number;
   };
 }
+
+
+
+export interface PaymentAnalyticsResponse {
+  success: boolean;
+  data: {
+    statusBreakdown:    Record<string, number>;
+    gatewayBreakdown:   Record<string, number>;
+    volumeOverTime:     { date: string; volume: number }[];
+    refundRateOverTime: { date: string; rate: number }[];
+    avgValueByGateway:  { gateway: string; avgValue: number }[];
+  };
+}
+
+export interface InventoryAnalyticsResponse {
+  success: boolean;
+  data: {
+    lowStockItems:         { label: string; available: number }[];
+    stockStatePerProduct:  { label: string; available: number; reserved: number; onHand: number }[];
+    inventoryTurnoverRate: { label: string; turnover: number }[];
+    deadStockItems:        { label: string; daysSinceLastSale: number | null; lastSaleAt?: Date }[];
+  };
+}
+
+export interface ProductAnalyticsResponse {
+  success: boolean;
+  data: {
+    categoryBreakdown: { category: string; count: number }[];
+    activeVsArchived:  { active: number; archived: number };
+  };
+}
+
+export interface PaymentStatsResponse {
+  success: boolean;
+  data: {
+    totalAmount:        number;
+    successfulPayments: number;
+    failedPayments:     number;
+    pendingPayments:    number;
+  };
+}
+

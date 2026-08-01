@@ -118,8 +118,31 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
+}: React.ComponentProps<"div"> & {
+    active?: boolean
+    // Declared explicitly rather than pulled from
+    // ComponentProps<typeof RechartsPrimitive.Tooltip>: newer recharts
+    // versions changed that type's shape and no longer expose
+    // payload/label through it, which is what broke this file originally.
+    payload?: Array<{
+      dataKey?: string | number
+      name?: string | number
+      value?: string | number
+      color?: string
+      payload?: Record<string, unknown>
+      [key: string]: unknown
+    }>
+    label?: React.ReactNode
+    labelFormatter?: (label: React.ReactNode, payload: unknown[]) => React.ReactNode
+    labelClassName?: string
+    formatter?: (
+      value: unknown,
+      name: unknown,
+      item: unknown,
+      index: number,
+      payload: unknown
+    ) => React.ReactNode
+    color?: string
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: "line" | "dot" | "dashed"
@@ -182,7 +205,7 @@ function ChartTooltipContent({
         {payload.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const indicatorColor = color || (item.payload?.fill as string | undefined) || item.color
 
           return (
             <div
@@ -256,8 +279,17 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+}: React.ComponentProps<"div"> & {
+    // Same reasoning as ChartTooltipContent above: Pick<LegendProps,
+    // "payload"> stopped working when recharts restructured that type,
+    // declared explicitly instead.
+    payload?: Array<{
+      value?: string | number
+      dataKey?: string | number
+      color?: string
+      [key: string]: unknown
+    }>
+    verticalAlign?: "top" | "bottom" | "middle"
     hideIcon?: boolean
     nameKey?: string
   }) {

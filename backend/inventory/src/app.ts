@@ -7,6 +7,7 @@ import morgan       from "morgan";
 import dotenv         from "dotenv";
 dotenv.config()
 import inventoryRoutes            from "./domains/inventory/inventory.routes";
+import analyticsRoutes            from "./domains/analytics/analytics.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";
 import { reqReplyTime, inventoryRegistry } from "./utils/metrics";
@@ -40,7 +41,8 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "inventory-service" });
 });
 
-app.use("/api/v1/inventories", inventoryRoutes);
+app.use("/api/v1/inventories", inventoryRoutes); // analyticsRoutes
+app.use("/api/v1/inventories", analyticsRoutes); // analyticsRoutes
 
 app.get("/metrics", async (_req, res) => {
   try {

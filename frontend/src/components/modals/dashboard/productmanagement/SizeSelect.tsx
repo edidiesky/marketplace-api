@@ -19,7 +19,7 @@ export default function SizeSelect({
   const { data: storeSize } = useGetAllStoreSizeQuery({ storeid: id });
 
   const options: SelectOption[] =
-    (storeSize ?? []).map((select: ProductColorOrSize) => ({
+    (storeSize?.data ?? []).map((select: ProductColorOrSize) => ({
       label: select.name,
       value: select.value,
     }));

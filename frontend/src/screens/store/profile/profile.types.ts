@@ -19,15 +19,16 @@ export const PROFILE_TABS: TabDef[] = [
   { key: "address",       label: "Addresses"     },
   { key: "notifications", label: "Notifications" },
 ];
-
 export const orderStatusConfig: Record<OrderStatus, { label: string; className: string }> = {
-  payment_pending:   { label: "Pending",      className: "bg-yellow-50 text-yellow-800" },
-  payment_initiated: { label: "Initiated",    className: "bg-blue-50 text-blue-700"     },
-  completed:         { label: "Completed",    className: "bg-green-50 text-green-700"   },
-  failed:            { label: "Failed",       className: "bg-red-50 text-red-700"       },
-  out_of_stock:      { label: "Out of Stock", className: "bg-orange-50 text-orange-700" },
+  pending:           { label: "Pending",           className: "bg-yellow-50 text-yellow-800" },
+  reserving:         { label: "Reserving",         className: "bg-yellow-50 text-yellow-800" },
+  payment_pending:   { label: "Awaiting Payment",  className: "bg-yellow-50 text-yellow-800" },
+  payment_initiated: { label: "Processing",        className: "bg-blue-50 text-blue-700" },
+  completed:         { label: "Completed",         className: "bg-green-50 text-green-700" },
+  failed:            { label: "Failed",             className: "bg-red-50 text-red-700" },
+  cancelled:         { label: "Cancelled",          className: "bg-red-50 text-red-700" },
+  out_of_stock:      { label: "Out of Stock",       className: "bg-orange-50 text-orange-700" },
 };
-
 export const fulfillmentConfig: Record<FulfillmentStatus, { label: string; className: string }> = {
   unfulfilled:      { label: "Unfulfilled",      className: "bg-[#f2f0ed] text-[#4c4c4c]" },
   preparing:        { label: "Preparing",        className: "bg-blue-50 text-blue-700"    },

@@ -9,12 +9,12 @@ import {
 import { useDispatch } from "react-redux";
 import type { Product, ProductColorOrSize } from "@/types/api";
 
-type CategoryRow = { _id: string; name: string; value: string };
-type SizeRow = { _id: string; name: string; value: string };
-type ColorRow = { _id: string; name: string; value: string };
-type CustomerRow = { _id: string; phone_number: string };
+export type CategoryRow = { _id: string; name: string; value: string };
+export type SizeRow = { _id: string; name: string; value: string };
+export type ColorRow = { _id: string; name: string; value: string };
+export type CustomerRow = { _id: string; phone_number: string };
 
-type TableRow = Product | CategoryRow | SizeRow | ColorRow | CustomerRow;
+export type TableRow = Product | CategoryRow | SizeRow | ColorRow | CustomerRow;
 
 function isProduct(row: TableRow): row is Product {
   return "price" in row && "images" in row;

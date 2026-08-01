@@ -34,8 +34,13 @@ export default function AdminStores() {
   };
 
   const handleToggleActive = async (store: Store) => {
+    const storeId = store._id ?? store.storeId;
+    if (!storeId) {
+      toast.error("This store record is missing an ID, cannot update it.");
+      return;
+    }
     try {
-      await updateStore({ id: store._id, name: store.name }).unwrap();
+      await updateStore({ id: storeId, name: store.name }).unwrap();
       toast.success(`Store updated.`);
     } catch {
       toast.error("Failed to update store.");
@@ -103,7 +108,7 @@ export default function AdminStores() {
                         {store.isActive ? "Deactivate" : "Activate"}
                       </button>
                       <button
-                        onClick={() => handleDelete(store._id, store.name)}
+                        onClick={() => (store._id ?? store.storeId) && handleDelete((store._id ?? store.storeId)!, store.name)}
                         disabled={deleting}
                         className="text-xs  text-red-600 hover:underline "
                       >

@@ -18,7 +18,7 @@ export default function ColorSelect({
   const { id } = useParams();
   const { data: storeColor } = useGetAllStoreColorQuery({ storeid: id });
 
-  const options: SelectOption[] = (storeColor ?? []).map((select: ProductColorOrSize) => ({
+  const options: SelectOption[] = (storeColor?.data ?? []).map((select: ProductColorOrSize) => ({
     label: select.name,
     value: select.value,
   }));

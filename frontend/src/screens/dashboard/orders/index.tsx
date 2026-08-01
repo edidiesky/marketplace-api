@@ -12,10 +12,13 @@ import OrderRowActions from "./OrderRowActions";
 const ROWS_PER_PAGE = 10;
 
 const orderStatusConfig: Record<OrderStatus, { label: string; className: string }> = {
-  payment_pending:   { label: "Payment Pending",   className: "bg-yellow-50 text-yellow-800"  },
-  payment_initiated: { label: "Payment Initiated", className: "bg-blue-50 text-blue-700"      },
-  completed:         { label: "Completed",          className: "bg-green-50 text-green-700"   },
-  failed:            { label: "Failed",             className: "bg-red-50 text-red-700"       },
+  pending:           { label: "Pending",            className: "bg-yellow-50 text-yellow-800"  },
+  reserving:         { label: "Reserving",          className: "bg-yellow-50 text-yellow-800"  },
+  payment_pending:   { label: "Payment Pending",    className: "bg-yellow-50 text-yellow-800"  },
+  payment_initiated: { label: "Payment Initiated",  className: "bg-blue-50 text-blue-700"      },
+  completed:         { label: "Completed",           className: "bg-green-50 text-green-700"   },
+  failed:            { label: "Failed",              className: "bg-red-50 text-red-700"       },
+  cancelled:         { label: "Cancelled",           className: "bg-red-50 text-red-700"       },
   out_of_stock:      { label: "Out of Stock",       className: "bg-orange-50 text-orange-700" },
 };
 

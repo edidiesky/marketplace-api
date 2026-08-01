@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface ModalState {
+export interface ModalState {
   login: boolean;
   register: boolean;
   category: { open: boolean; id: string | null };

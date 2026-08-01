@@ -8,9 +8,15 @@ const ROWS_PER_PAGE = 10;
 type UserType = User["userType"];
 
 const userTypeConfig: Record<UserType, { label: string; className: string }> = {
-  BUYER:  { label: "Buyer",  className: "bg-blue-50 text-blue-700"        },
-  SELLER: { label: "Seller", className: "bg-[#fbe1d1] text-[#5d2a1a]"    },
-  ADMIN:  { label: "Admin",  className: "bg-[#17191c] text-white"         },
+  "seller:admin":  { label: "Seller Admin",  className: "bg-[#fbe1d1] text-[#5d2a1a]" },
+  "seller:member": { label: "Seller Member", className: "bg-[#fbe1d1] text-[#5d2a1a]" },
+  "seller:viewer": { label: "Seller Viewer", className: "bg-[#fbe1d1] text-[#5d2a1a]" },
+  "customer":      { label: "Customer",      className: "bg-blue-50 text-blue-700"    },
+  "platform:admin":{ label: "Platform Admin",className: "bg-[#17191c] text-white"      },
+  "platform:staff":{ label: "Platform Staff",className: "bg-[#17191c] text-white"      },
+  "investor":      { label: "Investor",      className: "bg-purple-50 text-purple-700" },
+  "advisor":       { label: "Advisor",       className: "bg-purple-50 text-purple-700" },
+  "system":        { label: "System",        className: "bg-gray-100 text-gray-600"    },
 };
 
 export default function AdminUsers() {
@@ -95,14 +101,14 @@ export default function AdminUsers() {
               ) : filtered.length > 0 ? filtered.map((user) => {
                 const cfg = userTypeConfig[user.userType];
                 return (
-                  <tr key={user._id} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
+                  <tr key={user?._id as string} className="border-b border-[#f2f0ed] last:border-0 hover:bg-[#fafaf9] transition-colors">
                     <td className="px-5 py-3 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         {user.profileImage ? (
                           <img src={user.profileImage} alt="avatar" className="w-7 h-7 object-cover shrink-0" />
                         ) : (
                           <div className="w-7 h-7 bg-[#17191c] flex items-center justify-center text-white text-xs  shrink-0">
-                            {user.firstName.charAt(0).toUpperCase()}
+                            {user?.firstName!.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <span className="text-sm  text-[#17191c] ">{user.firstName} {user.lastName}</span>
@@ -119,11 +125,11 @@ export default function AdminUsers() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
-                      {new Date(user.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(user?.createdAt as string).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                     <td className="px-5 py-3">
                       <button
-                        onClick={() => handleDelete(user._id, `${user.firstName} ${user.lastName}`)}
+                        onClick={() => handleDelete(user?._id as string, `${user.firstName} ${user.lastName}`)}
                         disabled={deleting}
                         className="text-xs  text-red-600 hover:underline "
                       >

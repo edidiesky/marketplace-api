@@ -1,20 +1,25 @@
 import UserTable from "@/components/dashboard/common/table/Table";
 import ProductModal from "@/components/modals/dashboard/productmanagement/ProductModal";
 import DeleteProductModal from "@/components/modals/deleteModals/DeleteProductModal";
-import { useGetAllStoreProductQuery } from "@/redux/services/productApi";
-import { onProductModal } from "@/redux/slices/modalSlice";
+import { useGetAllStoreProductsQuery } from "@/redux/services/productApi";
+import { ModalState, openProductModal } from "@/redux/slices/modalSlice";
 import { AnimatePresence } from "framer-motion";
 import { GoPlus } from "react-icons/go";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 export default function Product() {
   const { id } = useParams();
-  const { isProductModal, isDeleteModal } = useSelector(
-    (store: any) => store.modal
+  const { product, delete: deleteModalState } = useSelector(
+    (store: { modal: ModalState }) => store.modal
   );
   const dispatch = useDispatch();
 
-  const { data: storeProduct } = useGetAllStoreProductQuery({ storeid: id });
+  const { data: storeProductResponse } = useGetAllStoreProductsQuery(
+    { storeid: id ?? "" },
+    { skip: !id }
+  );
+  
+  const storeProduct = storeProductResponse?.data?.products ?? [];
   const DEFAULT_HEADERS = [
     "title",
     "price",
@@ -29,12 +34,12 @@ export default function Product() {
     <>
       {/* product management modal animation */}
       <AnimatePresence mode="wait">
-        {isProductModal && <ProductModal />}
+        {product.open && <ProductModal />}
       </AnimatePresence>
 
       {/* delete product management modal animation */}
       <AnimatePresence mode="wait">
-        {isDeleteModal && <DeleteProductModal />}
+        {deleteModalState.open && <DeleteProductModal />}
       </AnimatePresence>
 
       <div className="w-full  p-4 py-8 lg:p-12 mx-auto">
@@ -49,7 +54,7 @@ export default function Product() {
             </h4>
             <div className="flex items-center justify-end">
               <button
-                onClick={() => dispatch(onProductModal(""))}
+                onClick={() => dispatch(openProductModal(""))}
                 style={{ transition: "all .2s" }}
                 className="bg-[var(--dark-1)] flex items-center gap-2 rounded-xl hover:scale-[0.9] text-white text-sm p-3 px-4 "
               >

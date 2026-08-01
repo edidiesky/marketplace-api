@@ -14,7 +14,7 @@ export default function StoreHeader() {
   const currentUser = useSelector(selectCurrentUser);
   const [search, setSearch] = useState("");
   const [catOpen, setCatOpen] = useState(false);
-
+console.log(catOpen)
   const { data: storeData } = useGetStoreQuery(id ?? "", { skip: !id });
   const { data: cartData } = useGetUserCartQuery(id ?? "", {
     skip: !id || !currentUser,

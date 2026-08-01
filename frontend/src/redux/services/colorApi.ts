@@ -1,9 +1,15 @@
 import { COLOR_URL } from "@/constants";
 import { apiSlice } from "./apiSlice";
+import type { ColorRow } from "@/components/dashboard/common/table/ProductTableList";
+
+export interface ColorListResponse {
+  success: boolean;
+  data: ColorRow[];
+}
 
 export const colorApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAllStoreColor: builder.query({
+    getAllStoreColor: builder.query<ColorListResponse, { storeid?: string }>({
       query: (data) => ({
         method: "GET",
         credentials: "include",

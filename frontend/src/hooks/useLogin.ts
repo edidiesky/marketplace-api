@@ -2,7 +2,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { setOtpPending, setOnboardingEmail } from "@/redux/slices/authSlice";
 import { useLoginMutation } from "@/redux/services/authApi";
-import type { LoginFormData } from "../schema/login.schema";
+import type { LoginFormData } from "../screens/auth/login/schema/login.schema";
 
 export function useLogin() {
   const dispatch = useDispatch();

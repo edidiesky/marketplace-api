@@ -7,6 +7,7 @@ import morgan       from "morgan";
 import dotenv         from "dotenv"
 dotenv.config()
 import orderRoutes                from "./domains/order/order.routes";
+import analyticsRoutes                from "./domains/analytics/analytics.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware"; 
 import { reqReplyTime, ordersRegistry } from "./utils/metrics";
@@ -45,7 +46,8 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "orders-service" });
 });
 
-app.use("/api/v1/orders", orderRoutes); // PreviewReceiptHandler
+app.use("/api/v1/orders", orderRoutes); // analyticsRoutes
+app.use("/api/v1/analytics", analyticsRoutes); // analyticsRoutes
 app.use("/api/v1/orders/:orderId/receipt/preview", PreviewReceiptHandler); // PreviewReceiptHandler
 
 app.get("/metrics", async (_req, res) => {

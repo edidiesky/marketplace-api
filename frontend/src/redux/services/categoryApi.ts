@@ -1,9 +1,15 @@
 import { CATEGORY_URL } from "@/constants";
 import { apiSlice } from "./apiSlice";
+import type { CategoryRow } from "@/components/dashboard/common/table/ProductTableList";
+
+export interface CategoryListResponse {
+  success: boolean;
+  data: CategoryRow[];
+}
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAllStoreCategory: builder.query({
+    getAllStoreCategory: builder.query<CategoryListResponse, { storeid?: string }>({
       query: (data) => ({
         method: "GET",
         credentials: "include",

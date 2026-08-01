@@ -36,6 +36,16 @@ export const statBlocks: StatBlock[] = [
     deltaPositive: true,
     deltaNote: "Compared to previous 30 days",
   },
+   {
+    id: "cancelled",
+    label: "Total Products",
+    value: "1,248",
+    sub: "521 Products",
+    progress: 0,
+    delta: "9%",
+    deltaPositive: false,
+    deltaNote: "Compared to previous 30 days",
+  },
   {
     id: "orders",
     label: "Pending Orders",

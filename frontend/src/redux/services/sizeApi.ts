@@ -1,9 +1,15 @@
 import { SIZE_URL } from "@/constants";
 import { apiSlice } from "./apiSlice";
+import type { SizeRow } from "@/components/dashboard/common/table/ProductTableList";
+
+export interface SizeListResponse {
+  success: boolean;
+  data: SizeRow[];
+}
 
 export const sizeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getAllStoreSize: builder.query({
+    getAllStoreSize: builder.query<SizeListResponse, { storeid?: string }>({
       query: (data) => ({
         method: "GET",
         credentials: "include",

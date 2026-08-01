@@ -59,7 +59,9 @@ interface ProductReviewProps {
 // useGetProductReviewsQuery(productId) once the review list endpoint
 // returns AI-summary tags + rating rings. productId is accepted here
 // so that wiring is a one-line change later.
-export default function ProductReview({ _productId, onViewAll }: ProductReviewProps) {
+export default function ProductReview({ productId, onViewAll }: ProductReviewProps) {
+  console.log(productId);
+  
   return (
     <div className="w-full flex flex-col gap-6 lg:gap-14">
       <ProductReviewSummary />

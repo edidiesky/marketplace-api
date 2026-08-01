@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import morgan       from "morgan";
 
 import paymentRoutes              from "./domains/payment/payment.routes";
+import analyticsRoutes              from "./domains/analytics/analytics.routes";
 import walletRoutes               from "./domains/wallet/wallet.routes";
 import payoutRoutes               from "./domains/payout/payout.routes";
 import webhookRoutes              from "./domains/webhook/webhook.routes";
@@ -44,6 +45,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/payments",  paymentRoutes);
+app.use("/api/v1/payments",  analyticsRoutes);
 app.use("/api/v1/wallets",   walletRoutes);
 app.use("/api/v1/payouts",   payoutRoutes);
 app.use("/api/v1/webhooks",  webhookRoutes);

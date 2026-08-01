@@ -1,7 +1,5 @@
-import { Review } from "./ProductReviewList";
-import { ReviewStats } from "./ProductReviewSummary";
 
-export const sampleReviews: Review[] = [
+export const sampleReviews = [
   {
     id: "rev_1",
     reviewerName: "Brooke",
@@ -62,7 +60,7 @@ export const sampleReviews: Review[] = [
   },
 ];
 
-export const sampleReviewStats: ReviewStats = {
+export const sampleReviewStats = {
   average: 5.0,
   totalCount: 34,
   itemQuality: 5.0,

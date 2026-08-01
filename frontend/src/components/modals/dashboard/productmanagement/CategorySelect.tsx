@@ -18,7 +18,7 @@ export default function CategorySelect({
   const { id } = useParams();
   const { data: storeCategory } = useGetAllStoreCategoryQuery({ storeid: id });
 
-  const options: SelectOption[] = (storeCategory ?? []).map((select: ProductColorOrSize) => ({
+  const options: SelectOption[] = (storeCategory?.data ?? []).map((select: ProductColorOrSize) => ({
     label: select.name,
     value: select.value,
   }));

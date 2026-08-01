@@ -8,6 +8,7 @@ import dotenv         from "dotenv";
 dotenv.config()
 import productRoutes              from "./domains/product/product.routes";
 import searchRoutes               from "./domains/search/search.routes";
+import analyticsRoutes               from "./domains/analytics/analytics.routes";
 import { errorHandler, NotFound } from "./middleware/error-handler";
 import { contextMiddleware }      from "./middleware/contextMiddleware";
 import { reqReplyTime, productRegistry } from "./utils/metrics";
@@ -42,7 +43,8 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/v1/products", searchRoutes);
-app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/products", productRoutes); // analyticsRoutes
+app.use("/api/v1/products", analyticsRoutes); // analyticsRoutes
 
 app.get("/metrics", async (_req, res) => {
   try {

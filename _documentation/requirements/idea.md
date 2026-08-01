@@ -139,13 +139,18 @@ Double sale detection and cancellation
 
 Partial shipment with mixed fulfilled/cancelled items
 Order has 5 items. 3 ship today, 2 are out of stock and auto-cancelled. The customer already paid with a gift card + promo. How do you prorate the refund to the right payment methods without double-charging or leaving orphaned credit?
+
 Warehouse “ghost stock” during pick & pack
 System says 1 unit left. Picker scans it, but it’s missing (stolen, damaged, or miscounted by previous shift). Order is already “packed” in the system. Do you fail the whole order, back-order the item, or let the shipment go short?
+
+
 Split shipment + one package lost in transit
 Two packages, separate carriers. Package A delivered → customer happy. Package B lost after 14 days. Do you auto-refund only B, re-send B, or mark the entire order as “partially complete” forever?
 Coupon applied to order, then one item returned
 $100 order with $20 coupon. Customer returns $30 item. How much of the coupon value do you give back? Pro-rata? Full? What if it was a “buy 2 get 1 free” that no longer qualifies after return?
 Pre-order + live stock conflict
+
+
 Customer pre-orders item that arrives later. Meanwhile, live stock from another warehouse becomes available. Do you fulfill from live stock and cancel the pre-order slot, or hold both?
 International order with duties paid by customer at delivery
 Customer pays duties on doorstep but claims the item was damaged. Carrier refuses refund. Who eats the duty cost? How does your system track “customer-paid duties” separately from product value?
@@ -160,8 +165,10 @@ Customer adds last discounted item to cart, spends 8 minutes filling address/pay
 Multi-warehouse allocation with carrier restrictions
 Item exists in Warehouse A (cheap shipping) and B (expensive). System allocates from A, but carrier A won’t ship to that ZIP code. Do you re-allocate at packing time and eat the extra shipping cost?
 Order with “ship to store” + customer never picks up
+
 21 days later item is still at store. Do you auto-cancel and refund, or charge restocking + return shipping? What if it was a custom-engraved item?
 Tax nexus changes mid-order
+
 Customer checks out in State X (no nexus). By the time it ships, your company now has nexus in State X because of new warehouse. Do you retroactively charge tax?
 Refund issued but item already resold
 Customer returns item → you issue refund. Meanwhile another customer buys the returned item (now in “returned” inventory). First customer’s refund clears, second customer gets the item. Inventory count is now off by one.

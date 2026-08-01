@@ -1,13 +1,12 @@
 import { useState } from "react";
-import ProductTableList from "./ProductTableList";
-import type { Product } from "@/types/api";
+import ProductTableList, { TableRow } from "./ProductTableList";
 import { Input } from "@/components/ui/input";
 
 const DEFAULT_HEADERS = ["User Info", "Location", "Phone", "Status", "Actions"];
 
 type UserTableType = {
   headers: string[];
-  data: Product[];
+  data: TableRow[];
   onDeleteUser: (id: string) => void;
   onSort?: (key: string, direction: string) => void;
   hasMore?: boolean;
@@ -96,7 +95,7 @@ export const UserTable = ({
 
   // Guard: data may arrive as a paginated object instead of an array
   // depending on which backend endpoint is called. Always normalise to array.
-  const rows: Product[] = Array.isArray(data) ? data : [];
+  const rows: TableRow[] = Array.isArray(data) ? data : [];
 
   const filtered = rows.filter((row) =>
     Object.values(row).some((val) =>

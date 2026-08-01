@@ -77,7 +77,7 @@ export default function Customers() {
                           <img src={user.profileImage} alt="avatar" className="w-7 h-7 object-cover flex-shrink-0" />
                         ) : (
                           <div className="w-7 h-7 bg-[#17191c] flex items-center justify-center text-white text-xs  flex-shrink-0">
-                            {user.firstName.charAt(0).toUpperCase()}
+                            {user.firstName!.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <span className="text-sm  text-[#17191c] ">
@@ -98,7 +98,7 @@ export default function Customers() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-[#777b86] whitespace-nowrap">
-                      {new Date(user.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(user?.createdAt as string).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
                   </tr>
                 ))

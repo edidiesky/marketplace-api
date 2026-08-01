@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { apiSlice } from "./services/apiSlice";
+import { analyticsApiSlice } from "./services/analyticsApi";
 import authReducer, { setCredentials } from "./slices/authSlice";
 import modalReducer from "./slices/modalSlice";
 import { rtkQueryErrorMiddleware } from "./middleware/errorMiddleware";
@@ -25,12 +26,14 @@ function loadPersistedAuth() {
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    [analyticsApiSlice.reducerPath]: analyticsApiSlice.reducer,
     auth: authReducer,
     modals: modalReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       apiSlice.middleware,
+      analyticsApiSlice.middleware,
       rtkQueryErrorMiddleware,
     ),
   devTools: import.meta.env.DEV,

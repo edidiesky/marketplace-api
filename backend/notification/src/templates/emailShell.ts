@@ -3,16 +3,16 @@
 export const EMAIL_TOKENS = {
   bodyFontStack: `'Newsreader',Georgia,'Times New Roman',serif`,
   headingFontStack: `'Newsreader',Georgia,'Times New Roman',serif`,
-  canvas:      "#ffffff", // --color-canvas
-  ink:         "#17191c", // --color-ink
-  fog:         "#f7f7f8", // --color-fog, page background
-  terracotta:  "#5d2a1a", // --color-terracotta, primary/CTA
+  canvas:      "#ffffff",
+  ink:         "#17191c", 
+  fog:         "#faf9f5",
+  terracotta:  "rgb(17, 85, 204)",
   warmMist:    "#fbe1d1", // --color-warm-mist, soft accent backgrounds
   mutedStone:  "#4c4c4c", // --color-muted-stone, primary body text
   lightSteel:  "#777b86", // --color-light-steel, secondary text
-  hintOfGrey:  "#a3a6af", // --color-hint-of-grey, footer/caption text
-  border:      "#f0f0f0", // hairline, not a drop shadow
-  destructive: "#e53e3e", // sparingly, text only, never the whole button
+  hintOfGrey:  "#a3a6af",
+  border:      "#f0f0f0",
+  destructive: "#e53e3e",
 } as const;
 
 const GOOGLE_FONTS_LINK =
@@ -37,7 +37,7 @@ export interface EmailLayoutOptions {
   intro:          string;
   secondaryText?: string;
   infoRows?:      EmailInfoRow[];
-  codeBlock?:     string; // large centered code display, e.g. 2FA tokens
+  codeBlock?:     string;
   cta?:           EmailCta;
   secondaryLink?: { label: string; url: string };
   closingNote?:   string;
@@ -47,13 +47,15 @@ function renderCodeBlock(code?: string): string {
   if (!code) return "";
   const grouped = code.length === 6 ? `${code.slice(0, 3)} ${code.slice(3)}` : code;
   return `
-    <table cellpadding="0" cellspacing="0" style="margin:0 0 24px">
+    <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 24px">
       <tr>
-        <td style="border:1.5px solid #777;border-radius:8px;padding:18px 32px; background-color:#eee">
-          <span style="font-size:30px;font-weight:700;color:${EMAIL_TOKENS.ink};letter-spacing:4px;font-variant-numeric:tabular-nums;font-family:${EMAIL_TOKENS.bodyFontStack}">${grouped}</span>
+        <td style="border-radius:8px;padding:18px 32px; background-color:#faf9f5">
+          <span style="font-size:30px;font-weight:700;color:${EMAIL_TOKENS.ink};letter-spacing:4px;font-family:${EMAIL_TOKENS.bodyFontStack}">${grouped}</span>
         </td>
       </tr>
-    </table>`;
+    </table>
+    `;
+    
 }
 
 function renderInfoTable(rows: EmailInfoRow[]): string {
@@ -62,8 +64,8 @@ function renderInfoTable(rows: EmailInfoRow[]): string {
     .map(
       (r) => `
         <tr>
-          <td style="font-size:14px;color:${EMAIL_TOKENS.lightSteel};padding:12px 16px;border-bottom:1px solid ${EMAIL_TOKENS.border}">${r.label}</td>
-          <td style="font-size:14px;color:${EMAIL_TOKENS.ink};padding:12px 16px;border-bottom:1px solid ${EMAIL_TOKENS.border};text-align:right">${r.value}</td>
+          <td style="font-size:15px;color:${EMAIL_TOKENS.lightSteel};padding:12px 16px;border-bottom:1px solid ${EMAIL_TOKENS.border}">${r.label}</td>
+          <td style="font-size:15px;color:${EMAIL_TOKENS.ink};padding:12px 16px;border-bottom:1px solid ${EMAIL_TOKENS.border};text-align:right">${r.value}</td>
         </tr>`
     )
     .join("");
@@ -102,7 +104,7 @@ export function renderEmailLayout(opts: EmailLayoutOptions): string {
     <tr><td height="48"></td></tr>
     <tr>
       <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="background:${EMAIL_TOKENS.canvas};border:1px solid ${EMAIL_TOKENS.border};border-radius:12px">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:${EMAIL_TOKENS.canvas};border:2px solid ${EMAIL_TOKENS.border};border-radius:20px">
           <tr>
             <td style="padding:40px 48px 8px">
               <table cellpadding="0" cellspacing="0">
@@ -115,14 +117,14 @@ export function renderEmailLayout(opts: EmailLayoutOptions): string {
           <tr>
             <td style="padding:24px 48px 48px">
               <h1 style="margin:0 0 16px;font-size:28px;line-height:1.3;color:${headingColor ?? EMAIL_TOKENS.ink};font-weight:600;font-family:${EMAIL_TOKENS.headingFontStack}">${heading}</h1>
-              <p style="font-size:15px;line-height:26px;color:${EMAIL_TOKENS.mutedStone};margin:0 0 ${secondaryText ? "8px" : "28px"}">${intro}</p>
-              ${secondaryText ? `<p style="font-size:14px;line-height:22px;color:${EMAIL_TOKENS.lightSteel};margin:0 0 28px">${secondaryText}</p>` : ""}
+              <p style="font-size:15px;line-height:26px;color:${EMAIL_TOKENS.mutedStone};margin:0 0 ${secondaryText ? "16px" : "28px"}">${intro}</p>
+              ${secondaryText ? `<p style="font-size:15px;line-height:22px;color:${EMAIL_TOKENS.lightSteel};margin:0 0 28px">${secondaryText}</p>` : ""}
               ${renderCodeBlock(codeBlock)}
               ${renderInfoTable(infoRows)}
               ${renderCta(cta)}
               ${secondaryLink ? `
               <div style="margin-top:20px">
-                <a href="${secondaryLink.url}" style="color:${EMAIL_TOKENS.terracotta};font-size:14px;text-decoration:underline">${secondaryLink.label}</a>
+                <a href="${secondaryLink.url}" style="color:${EMAIL_TOKENS.terracotta};font-size:15px;text-decoration:underline">${secondaryLink.label}</a>
               </div>` : ""}
               ${closingNote ? `<p style="font-size:13px;color:${EMAIL_TOKENS.hintOfGrey};margin:32px 0 0;line-height:20px">${closingNote}</p>` : ""}
             </td>
